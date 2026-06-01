@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 520">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="56%" r="44%"><stop offset="0" stop-color="#dfffb9" stop-opacity="0.36"/><stop offset="0.6" stop-color="#80c68c" stop-opacity="0.12"/><stop offset="1" stop-color="#0b1513" stop-opacity="0"/></radialGradient>
+    <linearGradient id="stem" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8b6b47"/><stop offset="1" stop-color="#3a2519"/></linearGradient>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#7aa96d"/><stop offset="1" stop-color="#253f32"/></linearGradient>
+  </defs>
+  <circle cx="210" cy="276" r="178" fill="url(#glow)"/>
+  <ellipse cx="210" cy="436" rx="138" ry="42" fill="#020706" opacity="0.45"/>
+  <path d="M204 408C209 346 202 290 191 240" stroke="url(#stem)" stroke-width="18" stroke-linecap="round" fill="none"/>
+  <path d="M196 267C155 241 124 208 111 171C159 171 197 195 213 237C231 193 270 166 321 158C303 205 266 244 217 269" fill="url(#leaf)" opacity="0.93"/>
+  <path d="M112 171C152 184 185 207 213 237" stroke="#c8e7a4" stroke-opacity="0.22" stroke-width="5" fill="none"/>
+  <path d="M321 158C274 183 238 209 217 269" stroke="#d2f5ad" stroke-opacity="0.18" stroke-width="5" fill="none"/>
+  <path d="M204 402C178 418 154 421 121 416" stroke="#5b3722" stroke-width="8" stroke-linecap="round" opacity="0.7"/>
+  <path d="M207 403C238 419 263 421 298 414" stroke="#5b3722" stroke-width="8" stroke-linecap="round" opacity="0.7"/>
+</svg>

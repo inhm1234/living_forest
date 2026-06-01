@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 180" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#35583d" stop-opacity="0.05"/>
+      <stop offset="0.55" stop-color="#16291f" stop-opacity="0.72"/>
+      <stop offset="1" stop-color="#06100d" stop-opacity="0.96"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="180" fill="url(#g)"/>
+  <path d="M0 126 C90 86 158 146 244 108 C340 66 398 142 506 96 C624 44 670 148 788 92 C906 36 956 136 1056 104 C1120 84 1168 88 1200 76 L1200 180 L0 180 Z" fill="#0a1712" opacity="0.82"/>
+  <path d="M0 150 C120 108 208 154 310 128 C470 88 590 166 720 120 C846 76 960 146 1200 108 L1200 180 L0 180 Z" fill="#132a1e" opacity="0.78"/>
+  <g stroke="#294d34" stroke-width="5" stroke-linecap="round" opacity="0.55">
+    <path d="M70 170 C72 140 84 126 92 105"/>
+    <path d="M118 176 C120 136 130 120 148 92"/>
+    <path d="M220 170 C225 132 236 115 250 96"/>
+    <path d="M356 178 C360 142 370 122 390 100"/>
+    <path d="M505 176 C500 138 516 120 530 88"/>
+    <path d="M690 178 C700 136 708 112 726 84"/>
+    <path d="M862 176 C858 138 874 116 892 94"/>
+    <path d="M1010 178 C1018 138 1030 112 1046 88"/>
+    <path d="M1132 174 C1128 140 1146 120 1162 98"/>
+  </g>
+</svg>

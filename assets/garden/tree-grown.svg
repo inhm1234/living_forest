@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 780">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="52%" r="50%"><stop offset="0" stop-color="#e7ffc2" stop-opacity="0.18"/><stop offset="0.55" stop-color="#8bc38a" stop-opacity="0.08"/><stop offset="1" stop-color="#07100f" stop-opacity="0"/></radialGradient>
+    <linearGradient id="trunk" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#22130d"/><stop offset="0.42" stop-color="#8c623e"/><stop offset="0.72" stop-color="#51331f"/><stop offset="1" stop-color="#160d09"/></linearGradient>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#78976b"/><stop offset="0.55" stop-color="#314b38"/><stop offset="1" stop-color="#0f1e1a"/></linearGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="2.1"/></filter>
+  </defs>
+  <circle cx="310" cy="400" r="290" fill="url(#glow)"/>
+  <ellipse cx="310" cy="704" rx="236" ry="62" fill="#020605" opacity="0.56" filter="url(#soft)"/>
+  <path d="M282 682C300 576 300 461 276 336C304 348 329 419 331 682Z" fill="url(#trunk)"/>
+  <path d="M301 464C255 405 201 366 122 347" stroke="#533318" stroke-width="25" stroke-linecap="round" opacity="0.72"/>
+  <path d="M323 442C366 365 416 329 507 310" stroke="#604023" stroke-width="22" stroke-linecap="round" opacity="0.7"/>
+  <path d="M296 371C210 371 126 325 96 249C133 184 214 151 291 179C328 101 436 84 510 142C565 187 552 274 501 320C465 353 416 370 363 365C382 444 344 507 288 523C228 497 220 428 296 371Z" fill="url(#leaf)"/>
+  <path d="M82 389C134 302 225 289 298 371C228 421 146 434 82 389Z" fill="#23392d" opacity="0.95"/>
+  <path d="M532 367C485 450 397 457 291 520C299 431 397 356 532 367Z" fill="#20372b" opacity="0.92"/>
+  <path d="M295 660C248 697 190 712 114 696" stroke="#3f2618" stroke-width="15" stroke-linecap="round" opacity="0.72"/>
+  <path d="M328 662C381 700 445 705 526 684" stroke="#3f2618" stroke-width="15" stroke-linecap="round" opacity="0.72"/>
+  <path d="M290 204C258 252 239 304 234 366" stroke="#d7ffbd" stroke-opacity="0.06" stroke-width="16" fill="none"/>
+</svg>

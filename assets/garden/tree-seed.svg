@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 420">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="56%" r="44%"><stop offset="0" stop-color="#dfffb9" stop-opacity="0.48"/><stop offset="0.55" stop-color="#8ad19e" stop-opacity="0.16"/><stop offset="1" stop-color="#0b1513" stop-opacity="0"/></radialGradient>
+    <linearGradient id="seed" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9a7650"/><stop offset="1" stop-color="#3f2c1d"/></linearGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="1.2"/></filter>
+  </defs>
+  <circle cx="180" cy="228" r="132" fill="url(#glow)"/>
+  <path d="M112 314C145 294 218 293 252 316C218 335 147 336 112 314Z" fill="#06100d" opacity="0.55" filter="url(#soft)"/>
+  <path d="M158 278C164 240 198 228 215 196C228 238 202 274 178 292C168 291 161 286 158 278Z" fill="url(#seed)"/>
+  <path d="M180 252C169 223 153 203 131 190C159 186 178 196 191 220C205 194 227 181 257 178C230 202 209 226 197 259" fill="none" stroke="#abc77f" stroke-opacity="0.56" stroke-width="7" stroke-linecap="round"/>
+  <path d="M128 189C154 180 181 194 192 221C163 224 140 211 128 189Z" fill="#4f7856" opacity="0.82"/>
+  <path d="M257 178C235 209 216 224 193 221C202 193 225 178 257 178Z" fill="#5c8b62" opacity="0.82"/>
+</svg>
