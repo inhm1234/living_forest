@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>살아있는 숲 | 하루 한 번, 내 마음이 자라는 숲</title>
+  <meta
+    name="description"
+    content="하루에 한 번 지금의 마음을 남기면 내 나무와 월드 숲이 조용히 자라는 작은 체험판입니다. 기록은 이 기기에만 저장돼요."
+  />
+  <meta name="theme-color" content="#07100f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="application-name" content="살아있는 숲" />
+  <meta name="apple-mobile-web-app-title" content="살아있는 숲" />
+  <meta name="robots" content="index, follow" />
+
+  <meta property="og:locale" content="ko_KR" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="살아있는 숲" />
+  <meta property="og:title" content="살아있는 숲 | 하루 한 번, 내 마음이 자라는 숲" />
+  <meta
+    property="og:description"
+    content="하루에 한 번 지금의 마음을 남기면 내 나무와 월드 숲이 조용히 자라는 작은 체험판입니다."
+  />
+  <meta property="og:image" content="assets/share/living-forest-og.png" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="살아있는 숲 | 하루 한 번, 내 마음이 자라는 숲" />
+  <meta
+    name="twitter:description"
+    content="오늘의 마음을 남기면 내 나무와 월드 숲이 조용히 자라요."
+  />
+  <meta name="twitter:image" content="assets/share/living-forest-og.png" />
+
+  <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
+  <link rel="stylesheet" href="style.css?v=0.4.9" />
+</head>
+<body>
+  <noscript>
+    <div class="noscript-message">살아있는 숲은 JavaScript가 켜져 있어야 이용할 수 있어요.</div>
+  </noscript>
+  <main class="app">
+    <section id="worldScreen" class="screen screen-active">
+      <header class="hero world-hero">
+        <p class="version">로그인 없이 가볍게 시작하는 작은 숲</p>
+        <h1>살아있는 숲</h1>
+        <p class="subtitle">하루에 한 번, 지금의 마음을 내 나무에게 남겨요.</p>
+        <p class="demo-pill">체험판 · 기록은 이 기기에만 저장돼요</p>
+      </header>
+
+      <section class="world-card visual-card">
+        <div class="world-stage visual-stage" aria-label="전체 월드 숲">
+          <div class="stage-dim world-dim"></div>
+          <div class="world-depth world-depth-back" aria-hidden="true"></div>
+          <div class="world-canopy-shadow" aria-hidden="true"></div>
+          <div class="world-clearing" aria-hidden="true"></div>
+          <div class="world-spot-ground" aria-hidden="true"></div>
+          <div class="world-foreground" aria-hidden="true"></div>
+
+          <div class="world-fog world-fog-a"></div>
+          <div class="world-fog world-fog-b"></div>
+          <div class="world-light-orb orb-a"></div>
+          <div class="world-light-orb orb-b"></div>
+          <div class="world-light-orb orb-c"></div>
+          <div class="world-light-orb orb-d"></div>
+          <div class="world-soft-leaf leaf-a"></div>
+          <div class="world-soft-leaf leaf-b"></div>
+          <div class="world-animal bird-a"><img src="assets/garden/bird-silhouette.svg" alt="" /></div>
+          <div class="world-animal squirrel-a"><img src="assets/garden/squirrel-silhouette.svg" alt="" /></div>
+
+          <div id="worldNeighborSpots" class="world-neighbor-spots" aria-label="숲의 다른 자리들"></div>
+
+          <div id="myWorldSpot" class="my-world-spot world-seed" aria-label="내 자리">
+            <div class="my-spot-ring" aria-hidden="true"></div>
+            <div id="mySpotAura" class="my-spot-aura"></div>
+            <div id="mySpotVisual" class="my-spot-visual">•</div>
+            <p id="mySpotName" class="my-spot-name">내 자리</p>
+            <p id="mySpotStatus" class="my-spot-status">내 자리는 아직 씨앗을 기다리고 있어요.</p>
+          </div>
+        </div>
+
+        <div class="world-summary glass-panel">
+          <div class="world-summary-top">
+            <p id="worldSummaryName" class="summary-name">이름 없는 나무</p>
+            <span id="worldSummaryToday" class="summary-chip">오늘 기록 전</span>
+          </div>
+          <p id="worldSummaryText" class="world-summary-text">내 나무가 이 숲에 들어갈 준비를 하고 있어요.</p>
+          <p id="worldCommunityHint" class="world-community-hint">숲의 다른 자리들도 조용히 숨 쉬고 있어요.</p>
+        </div>
+
+        <div id="dailyLoopCard" class="daily-loop-card glass-panel" aria-live="polite">
+          <span class="daily-loop-kicker">오늘의 흐름</span>
+          <p id="dailyLoopTitle" class="daily-loop-title">내 나무를 심을 준비</p>
+          <p id="dailyLoopText" class="daily-loop-text">숲을 둘러보고, 내 나무가 자랄 작은 자리를 시작해요.</p>
+        </div>
+
+        <button id="goGardenBtn" class="primary-btn" type="button">내 나무 심으러 가기</button>
+      </section>
+    </section>
+
+    <section id="gardenScreen" class="screen">
+      <header class="hero garden-hero">
+        <button id="backToWorldBtnTop" class="ghost-btn small-btn" type="button">← 전체 숲</button>
+        <p class="version">오늘 내 나무 돌보기</p>
+        <h2 class="garden-title">밤 정원</h2>
+        <p class="subtitle">좋음도, 보통도, 피곤함도 모두 성장으로 남아요.</p>
+      </header>
+
+      <section class="forest-head glass-panel">
+        <p id="treeNameDisplay" class="tree-name-display">이름 없는 나무</p>
+        <div class="forest-meta">
+          <span id="todayDateChip" class="meta-chip">오늘 0000.00.00</span>
+          <span id="stageBadge" class="meta-chip">첫 기록을 기다리는 씨앗</span>
+          <span id="totalDays" class="meta-chip">0일</span>
+          <span id="todayStateChip" class="meta-chip">오늘 기록 전</span>
+        </div>
+      </section>
+
+      <section class="garden-card visual-card">
+        <div class="garden-stage visual-stage" id="sky" aria-label="내 밤 정원">
+          <div class="stage-dim garden-dim"></div>
+          <div class="garden-depth depth-back"></div>
+          <div class="garden-moon-glow"></div>
+          <div class="garden-fog fog-a"></div>
+          <div class="garden-fog fog-b"></div>
+          <div class="garden-focus-clearing" aria-hidden="true"></div>
+          <div class="tree-planting-ground" aria-hidden="true"></div>
+          <div class="garden-foreground"></div>
+
+          <div class="firefly firefly-1"></div>
+          <div class="firefly firefly-2"></div>
+          <div class="firefly firefly-3"></div>
+          <div class="firefly firefly-4"></div>
+          <div class="firefly firefly-5"></div>
+          <div class="firefly firefly-6"></div>
+
+          <div id="effectLayer" class="effect-layer" aria-hidden="true"></div>
+          <div id="bird" class="creature bird" aria-label="새">
+            <img src="assets/garden/bird-silhouette.svg" alt="" />
+          </div>
+
+          <div id="tree" class="tree tree-image-layer tree-stage-seed" aria-label="내 나무">
+            <img class="tree-shadow-image" src="assets/garden/tree-shadow.svg" alt="" />
+            <div class="tree-glow"></div>
+            <div class="tree-image-stack">
+              <img id="treeImage" class="tree-image" src="assets/garden/tree-seed.svg" alt="첫 기록을 기다리는 씨앗" />
+            </div>
+          </div>
+
+          <div id="squirrel" class="creature squirrel" aria-label="다람쥐">
+            <img src="assets/garden/squirrel-silhouette.svg" alt="" />
+          </div>
+
+          <div class="stage-message glass-panel">
+            <p id="growthMessage" class="message-main">오늘의 상태를 선택하면 나무가 자라요.</p>
+            <p id="creatureMessage" class="message-sub">어떤 선택도 성장으로 남아요.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="nameCard" class="name-card glass-panel">
+        <form id="treeNameForm" class="tree-name-form">
+          <input
+            id="treeNameInput"
+            type="text"
+            maxlength="16"
+            placeholder="나무 이름"
+            aria-label="내 나무 이름 입력"
+          />
+          <button type="submit">저장</button>
+        </form>
+        <p id="treeNameMessage" class="tree-name-message">나무 이름은 한 번만 정할 수 있어요.</p>
+      </section>
+
+      <section class="mood-card glass-panel">
+        <p id="moodGuide" class="mood-guide">하루에 한 번, 지금의 나와 가까운 상태를 골라주세요.</p>
+
+        <div class="mood-buttons">
+          <button type="button" data-mood="good">
+            <span>😄</span>
+            좋음
+          </button>
+          <button type="button" data-mood="normal">
+            <span>😐</span>
+            보통
+          </button>
+          <button type="button" data-mood="tired">
+            <span>😵</span>
+            피곤
+          </button>
+        </div>
+
+        <p id="todayStatus" class="today-status">아직 오늘의 상태를 기록하지 않았어요.</p>
+      </section>
+
+      <section id="completeCard" class="complete-card glass-panel hidden" aria-live="polite">
+        <span class="complete-kicker">오늘의 기록 완료</span>
+        <p id="completeMessage">오늘의 기운이 월드 숲에 조용히 스며들었어요.</p>
+      </section>
+
+      <button id="backToWorldBtnBottom" class="primary-btn return-btn" type="button">전체 숲으로 돌아가기</button>
+      <p class="storage-note">체험판에서는 기록이 이 기기에만 저장돼요. 기기를 바꾸면 기록이 이어지지 않을 수 있어요.</p>
+    </section>
+  </main>
+
+  <aside id="testModePanel" class="test-mode-panel hidden" aria-label="개발자 테스트 모드">
+    <div class="test-mode-head">
+      <div>
+        <strong>개발자 테스트 모드</strong>
+        <p>일반 기록과 분리된 테스트 저장소를 사용해요.</p>
+      </div>
+      <a href="index.html" class="test-normal-link">일반 화면</a>
+    </div>
+
+    <p class="test-storage-line">저장키: <span id="testModeStorageKey">livingForestV012_TEST</span></p>
+    <p class="test-storage-line">데이터: <span id="testModeDataInfo">schema 2 · local-tree</span></p>
+
+    <div class="test-preset-buttons">
+      <button type="button" data-test-preset="first">첫 방문자</button>
+      <button type="button" data-test-preset="named">이름만 있음</button>
+      <button type="button" data-test-preset="waiting">오늘 기록 전</button>
+      <button type="button" data-test-preset="done">오늘 기록 완료</button>
+      <button type="button" data-test-preset="grown">깊어진 나무</button>
+      <button type="button" data-test-preset="legacy">구버전 보정</button>
+      <button type="button" id="clearTestDataBtn">테스트 초기화</button>
+    </div>
+  </aside>
+
+
+  <script src="app.js?v=0.4.9"></script>
+</body>
+</html>
