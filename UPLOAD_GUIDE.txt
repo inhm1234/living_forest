@@ -1,0 +1,22 @@
+살아있는 숲 V0-4.9.1 적용 안내
+
+포함 파일:
+- index.html
+- app.js
+- VERSION.txt
+
+적용 방법:
+1. GitHub 저장소 inhm1234/living_forest 로 이동
+2. 기존 index.html, app.js, VERSION.txt 를 이 파일들로 덮어쓰기
+3. assets 폴더는 삭제하지 말 것
+4. GitHub Pages 반영 후 아래 주소에서 확인
+   https://inhm1234.github.io/living_forest/
+5. 테스트 모드는 아래 주소에서 확인
+   https://inhm1234.github.io/living_forest/?test=1
+
+확인 포인트:
+- ?test=1 접속
+- “이름만 있음” 버튼 클릭
+- 월드 숲 문구에 “아직 이름 없는”이 나오지 않고
+  “이름을 얻은 작은 자리가 오늘의 마음을 기다리고 있어요.”로 보이면 정상
+- 일반 화면에서는 개발자 테스트 패널이 보이지 않아야 정상

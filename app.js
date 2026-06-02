@@ -6,7 +6,7 @@
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V0-4.9",
+  version: "V0-4.9.1",
   dataSchemaVersion: 2,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST"
@@ -500,12 +500,15 @@ function getTreeState() {
 
 function getWorldSpotInfo() {
   const days = treeData.history.length;
+  const hasName = Boolean(treeData.treeName?.trim());
 
   if (days === 0) {
     return {
       className: "world-seed",
       visual: "•",
-      status: "숲 한가운데, 아직 이름 없는 작은 자리가 기다리고 있어요."
+      status: hasName
+        ? "이름을 얻은 작은 자리가 오늘의 마음을 기다리고 있어요."
+        : "숲 한가운데, 아직 이름 없는 작은 자리가 기다리고 있어요."
     };
   }
 
@@ -661,7 +664,9 @@ function renderWorld() {
     worldSummaryTodayElement.textContent = "오늘 기록 전";
 
     if (treeData.history.length === 0) {
-      worldSummaryTextElement.textContent = "숲 한가운데, 아직 이름 없는 작은 자리가 기다리고 있어요.";
+      worldSummaryTextElement.textContent = treeData.treeName?.trim()
+        ? "이름을 얻은 작은 자리가 오늘의 마음을 기다리고 있어요."
+        : "숲 한가운데, 아직 이름 없는 작은 자리가 기다리고 있어요.";
     } else {
       worldSummaryTextElement.textContent = "숲 곳곳의 자리들 사이에서 내 나무도 오늘의 기운을 기다리고 있어요.";
     }
