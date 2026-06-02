@@ -1,12 +1,12 @@
-// 살아있는 숲 V0-4.9
+// 살아있는 숲 V1.0
 // 프로젝트명: 살아있는 숲
-// 버전명: V0-4.9
-// 목적: 첫 공개 직전 점검과 배포 편의성을 정리하는 버전
+// 버전명: V1.0
+// 목적: 첫 체험판 공개 버전
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V0-4.9.1",
+  version: "V1.0",
   dataSchemaVersion: 2,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST"
