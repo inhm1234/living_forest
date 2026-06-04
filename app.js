@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.4 test
+// 살아있는 숲 V1.4.1 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.4 test
+// 버전명: V1.4.1 test
 // 목적: 방문자 등장 조건 개선 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.4 test",
+  version: "V1.4.1 test",
   dataSchemaVersion: 2,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST"
@@ -1494,6 +1494,31 @@ function applyTestPreset(preset) {
     return;
   }
 
+  if (preset === "visitor-after-care") {
+    const moods = ["good", "normal", "tired"];
+    const history = Array.from({ length: 8 }, (_, index) => {
+      return createHistoryRecord(index, moods[index % moods.length]);
+    });
+
+    treeData = normalizeTreeData(createNewTreeData({
+      leaf: 9,
+      trunk: 9,
+      root: 9,
+      treeId: createVisitorConditionTestTreeId(),
+      lastCheckDate: getTodayKey(),
+      history,
+      treeName: "기록 완료 테스트 나무"
+    }));
+    saveTreeData();
+    saveVisitorState({ events: [] });
+    todayVisitorEvent = null;
+    visitorPlayedSessionDate = null;
+    shouldHighlightWorldSpot = false;
+    renderAll();
+    showGardenScreen();
+    return;
+  }
+
   if (preset === "visitor-history") {
     seedVisitorHistoryForTest();
     return;
@@ -1620,7 +1645,12 @@ function showGardenScreen() {
   gardenScreenElement.classList.add("screen-active");
   worldScreenElement.classList.remove("screen-active");
   window.scrollTo({ top: 0, behavior: "smooth" });
-  prepareDailyVisitor({ allowCreate: false, allowPlay: false });
+
+  const canCheckVisitorAfterCare = hasCheckedToday();
+  prepareDailyVisitor({
+    allowCreate: canCheckVisitorAfterCare,
+    allowPlay: canCheckVisitorAfterCare
+  });
 }
 
 function renderAll() {
