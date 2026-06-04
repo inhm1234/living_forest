@@ -35,7 +35,7 @@
 
   <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.5.0-test" />
+  <link rel="stylesheet" href="style.css?v=1.6.0-test" />
 </head>
 <body>
   <noscript>
@@ -44,10 +44,10 @@
   <main class="app">
     <section id="worldScreen" class="screen screen-active">
       <header class="hero world-hero">
-        <p class="version">살아있는 숲 V1.5 test · 체험판</p>
+        <p class="version">살아있는 숲 V1.6 test · 체험판</p>
         <h1>살아있는 숲</h1>
         <p class="subtitle">하루에 한 번, 지금의 마음을 내 나무에게 남겨요.</p>
-        <p class="demo-pill">V1.5 test · 기록은 이 기기에만 저장돼요</p>
+        <p class="demo-pill">V1.6 test · 방문자가 남긴 흔적을 볼 수 있어요</p>
       </header>
 
       <section class="world-card visual-card">
@@ -103,7 +103,7 @@
     <section id="gardenScreen" class="screen">
       <header class="hero garden-hero">
         <button id="backToWorldBtnTop" class="ghost-btn small-btn" type="button">← 전체 숲</button>
-        <p class="version">오늘 내 나무 돌보기 · V1.5 test</p>
+        <p class="version">오늘 내 나무 돌보기 · V1.6 test</p>
         <h2 class="garden-title">밤 정원</h2>
         <p class="subtitle">좋음도, 보통도, 피곤함도 모두 성장으로 남아요.</p>
       </header>
@@ -200,6 +200,13 @@
         <p id="completeMessage">오늘의 기운이 월드 숲에 조용히 스며들었어요.</p>
       </section>
 
+      <section id="visitorTraceCard" class="visitor-trace-card glass-panel" aria-live="polite">
+        <span class="visitor-trace-kicker">오늘 남은 흔적</span>
+        <p id="visitorTraceTitle" class="visitor-trace-title">오늘은 조용한 정원이에요</p>
+        <p id="visitorTraceText" class="visitor-trace-text">방문자가 다녀가면 이곳에 작은 흔적이 남아요.</p>
+        <p id="visitorTraceMeta" class="visitor-trace-meta">오늘 기록 후 확인 가능</p>
+      </section>
+
       <section id="visitorLogCard" class="visitor-log-card glass-panel" aria-live="polite">
         <span class="visitor-log-kicker">숲의 방문 기록</span>
         <p id="visitorLogTitle" class="visitor-log-title">최근 숲에 다녀간 친구들</p>
@@ -241,6 +248,6 @@
   </aside>
 
 
-  <script src="app.js?v=1.5.0-test"></script>
+  <script src="app.js?v=1.6.0-test"></script>
 </body>
 </html>

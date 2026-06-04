@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.5 test
+// 살아있는 숲 V1.6 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.5 test
-// 목적: 저장 시스템 구조 정리 테스트판
+// 버전명: V1.6 test
+// 목적: 방문자 흔적 확장 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.5 test",
+  version: "V1.6 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST"
@@ -107,13 +107,19 @@ const visitorRules = {
     label: "작은 새",
     className: "visitor-bird-flight",
     message: "작은 새가 날아와 가지 근처에서 잠시 쉬었다가 다시 숲 위로 날아갔어요.",
-    recordMessage: "작은 새가 가지 근처에서 잠시 쉬어갔어요."
+    recordMessage: "작은 새가 가지 근처에서 잠시 쉬어갔어요.",
+    traceLabel: "깃털빛",
+    traceIcon: "✦",
+    traceMessage: "가지 근처에 아주 작은 깃털빛이 남아 있어요. 오늘의 정원이 누군가에게 잠시 쉬어갈 만큼 편안했다는 흔적이에요."
   },
   squirrel: {
     label: "다람쥐",
     className: "visitor-squirrel-walk",
     message: "다람쥐가 뿌리 근처까지 다가와 잠시 쉬었다가 숲 아래로 사라졌어요.",
-    recordMessage: "다람쥐가 뿌리 근처에서 조용히 머물다 갔어요."
+    recordMessage: "다람쥐가 뿌리 근처에서 조용히 머물다 갔어요.",
+    traceLabel: "도토리 흔적",
+    traceIcon: "✧",
+    traceMessage: "뿌리 근처에 작은 도토리 흔적이 남아 있어요. 내 나무가 천천히 뿌리내리고 있다는 조용한 표시예요."
   }
 };
 
@@ -251,6 +257,10 @@ const treeNameInputElement = document.querySelector("#treeNameInput");
 const treeNameMessageElement = document.querySelector("#treeNameMessage");
 const completeCardElement = document.querySelector("#completeCard");
 const completeMessageElement = document.querySelector("#completeMessage");
+const visitorTraceCardElement = document.querySelector("#visitorTraceCard");
+const visitorTraceTitleElement = document.querySelector("#visitorTraceTitle");
+const visitorTraceTextElement = document.querySelector("#visitorTraceText");
+const visitorTraceMetaElement = document.querySelector("#visitorTraceMeta");
 const visitorLogCardElement = document.querySelector("#visitorLogCard");
 const visitorLogTitleElement = document.querySelector("#visitorLogTitle");
 const visitorLogListElement = document.querySelector("#visitorLogList");
@@ -636,17 +646,48 @@ function chooseVisitorType(dateKey) {
   return hashStringToUnitInterval(`${treeData.treeId}-${dateKey}-visitor-type`) < 0.5 ? "bird" : "squirrel";
 }
 
+function getVisitorTraceInfo(visitorEvent) {
+  if (!visitorEvent?.hasVisitor || !visitorRules[visitorEvent.type]) {
+    return null;
+  }
+
+  const rule = visitorRules[visitorEvent.type];
+  const savedTrace = visitorEvent.trace && typeof visitorEvent.trace === "object" ? visitorEvent.trace : {};
+
+  return {
+    label: typeof savedTrace.label === "string" && savedTrace.label.trim() ? savedTrace.label : rule.traceLabel,
+    icon: typeof savedTrace.icon === "string" && savedTrace.icon.trim() ? savedTrace.icon : rule.traceIcon,
+    message: typeof savedTrace.message === "string" && savedTrace.message.trim() ? savedTrace.message : rule.traceMessage
+  };
+}
+
+function createVisitorTrace(type) {
+  if (!visitorRules[type]) {
+    return null;
+  }
+
+  const rule = visitorRules[type];
+
+  return {
+    label: rule.traceLabel,
+    icon: rule.traceIcon,
+    message: rule.traceMessage
+  };
+}
+
 function createVisitorEvent(dateKey, forceType = null) {
   const visitorState = loadVisitorState();
   const probability = forceType ? 1 : getVisitorProbability(visitorState);
   const roll = hashStringToUnitInterval(`${treeData.treeId}-${dateKey}-visitor-roll`);
   const hasVisitor = Boolean(forceType) || roll < probability;
   const type = hasVisitor ? (forceType || chooseVisitorType(dateKey)) : null;
+  const trace = hasVisitor ? createVisitorTrace(type) : null;
 
   return {
     dateKey,
     hasVisitor,
     type,
+    trace,
     probability: Number(probability.toFixed(2)),
     createdAt: getNowIsoString()
   };
@@ -696,7 +737,10 @@ function getVisitorIdleMessage(visitorEvent) {
   }
 
   if (visitorEvent?.hasVisitor && visitorEvent.type && visitorRules[visitorEvent.type]) {
-    return `오늘은 ${visitorRules[visitorEvent.type].label}가 다녀간 흔적이 정원에 남아 있어요.`;
+    const trace = getVisitorTraceInfo(visitorEvent);
+    return trace
+      ? `오늘은 ${visitorRules[visitorEvent.type].label}가 다녀가고 ${trace.label}을 남겼어요.`
+      : `오늘은 ${visitorRules[visitorEvent.type].label}가 다녀간 흔적이 정원에 남아 있어요.`;
   }
 
   return "오늘은 조용한 밤 정원이에요. 방문자가 없어도 나무는 천천히 숨 쉬고 있어요.";
@@ -752,6 +796,7 @@ async function prepareDailyVisitor({ forcePlay = false, allowCreate = false, all
 
   todayVisitorEvent = visitorEvent || null;
   updateVisitorMessage(todayVisitorEvent);
+  renderVisitorTrace(todayVisitorEvent);
   renderVisitorLog();
 
   if (visitorEvent && (allowPlay || forcePlay)) {
@@ -798,13 +843,58 @@ function getRecentVisitorRecords(limit = 3) {
     .slice(0, limit)
     .map((event) => {
       const rule = visitorRules[event.type];
+      const trace = getVisitorTraceInfo(event);
       return {
         ...event,
         label: rule.label,
         recordMessage: rule.recordMessage || rule.message,
+        traceLabel: trace?.label || rule.traceLabel,
+        traceIcon: trace?.icon || rule.traceIcon,
         displayDate: formatVisitorDate(event.dateKey)
       };
     });
+}
+
+function renderVisitorTrace(visitorEvent = todayVisitorEvent) {
+  if (!visitorTraceCardElement || !visitorTraceTitleElement || !visitorTraceTextElement || !visitorTraceMetaElement) {
+    return;
+  }
+
+  const trace = getVisitorTraceInfo(visitorEvent);
+  visitorTraceCardElement.classList.toggle("visitor-trace-ready", Boolean(trace));
+
+  if (!treeData.treeName?.trim()) {
+    visitorTraceTitleElement.textContent = "오늘 남은 흔적은 아직 없어요";
+    visitorTraceTextElement.textContent = "내 나무 이름을 정하면 언젠가 방문자가 작은 흔적을 남기고 갈 수 있어요.";
+    visitorTraceMetaElement.textContent = "이름을 정한 뒤 열려요";
+    return;
+  }
+
+  if (treeData.history.length < 3) {
+    visitorTraceTitleElement.textContent = "방문자 흔적은 조금 뒤에 열려요";
+    visitorTraceTextElement.textContent = "나무가 3일차 이상 자라면 새나 다람쥐가 찾아와 작은 흔적을 남길 수 있어요.";
+    visitorTraceMetaElement.textContent = "3일차 이후 가능";
+    return;
+  }
+
+  if (!hasCheckedToday()) {
+    visitorTraceTitleElement.textContent = "오늘 마음을 남기면 흔적이 생길 수 있어요";
+    visitorTraceTextElement.textContent = "방문자는 오늘 감정을 기록한 뒤 확률에 따라 찾아와요. 찾아오면 정원에 작은 흔적이 남아요.";
+    visitorTraceMetaElement.textContent = "오늘 기록 전";
+    return;
+  }
+
+  if (!trace) {
+    visitorTraceTitleElement.textContent = "오늘은 조용한 정원이에요";
+    visitorTraceTextElement.textContent = "방문자가 없어도 괜찮아요. 오늘의 나무는 조용히 숨 쉬며 다음 방문을 기다리고 있어요.";
+    visitorTraceMetaElement.textContent = "방문자 없음";
+    return;
+  }
+
+  const rule = visitorRules[visitorEvent.type];
+  visitorTraceTitleElement.textContent = `${trace.icon} ${trace.label}`;
+  visitorTraceTextElement.textContent = trace.message;
+  visitorTraceMetaElement.textContent = `${formatVisitorDate(visitorEvent.dateKey)} · ${rule.label}가 남긴 흔적`;
 }
 
 function renderVisitorLog() {
@@ -853,6 +943,7 @@ function renderVisitorLog() {
           <div>
             <strong>${record.displayDate} · ${record.label}</strong>
             <p>${record.recordMessage}</p>
+            <small class="visitor-log-trace">${record.traceIcon} ${record.traceLabel}</small>
           </div>
         </li>
       `;
@@ -1726,6 +1817,7 @@ function renderAll() {
   renderForestEffect(getTodayMoodState());
   renderMessages();
   renderCompleteCard();
+  renderVisitorTrace();
   renderVisitorLog();
   updateTodayStatus();
 }
