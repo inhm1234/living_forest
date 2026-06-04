@@ -1697,7 +1697,7 @@ body.dev-test-mode .test-preset-buttons button[data-test-preset="visitor-squirre
 }
 
 
-/* V1.3 test: 방문자 기록 1차 */
+/* V1.3: 방문자 기록 1차 안정판 */
 .visitor-log-card {
   margin-top: 14px;
   padding: 16px;
