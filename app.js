@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.3
+// 살아있는 숲 V1.4 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.3
-// 목적: 숲의 방문자 기록 1차 안정판
+// 버전명: V1.4 test
+// 목적: 방문자 등장 조건 개선 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.3",
+  version: "V1.4 test",
   dataSchemaVersion: 2,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST"
@@ -532,7 +532,7 @@ async function getVisitorDateKey() {
 function getVisitorProbability(visitorState) {
   const totalDays = treeData.history.length;
 
-  if (!treeData.treeName?.trim() || totalDays < 3) {
+  if (!treeData.treeName?.trim() || totalDays < 3 || !hasCheckedToday()) {
     return 0;
   }
 
@@ -631,8 +631,12 @@ function getVisitorIdleMessage(visitorEvent) {
     return "나무가 조금 더 자라면 숲의 작은 방문자가 찾아올 수 있어요.";
   }
 
+  if (!hasCheckedToday()) {
+    return "오늘의 마음을 남긴 뒤, 숲의 작은 방문자가 찾아올 수도 있어요.";
+  }
+
   if (visitorEvent?.hasVisitor && visitorEvent.type && visitorRules[visitorEvent.type]) {
-    return `오늘은 ${visitorRules[visitorEvent.type].label}가 이 정원에 들를지도 몰라요.`;
+    return `오늘은 ${visitorRules[visitorEvent.type].label}가 다녀간 흔적이 정원에 남아 있어요.`;
   }
 
   return "오늘은 조용한 밤 정원이에요. 방문자가 없어도 나무는 천천히 숨 쉬고 있어요.";
@@ -673,7 +677,7 @@ function playVisitorEvent(visitorEvent, force = false) {
   }, force ? 80 : 850);
 }
 
-async function prepareDailyVisitor({ forcePlay = false } = {}) {
+async function prepareDailyVisitor({ forcePlay = false, allowCreate = false, allowPlay = false } = {}) {
   if (!gardenScreenElement.classList.contains("screen-active")) {
     return;
   }
@@ -681,15 +685,18 @@ async function prepareDailyVisitor({ forcePlay = false } = {}) {
   const dateKey = await getVisitorDateKey();
   let visitorEvent = getStoredVisitorEvent(dateKey);
 
-  if (!visitorEvent) {
+  if (!visitorEvent && allowCreate) {
     visitorEvent = createVisitorEvent(dateKey);
     saveTodayVisitorEvent(visitorEvent);
   }
 
-  todayVisitorEvent = visitorEvent;
-  updateVisitorMessage(visitorEvent);
+  todayVisitorEvent = visitorEvent || null;
+  updateVisitorMessage(todayVisitorEvent);
   renderVisitorLog();
-  playVisitorEvent(visitorEvent, forcePlay);
+
+  if (visitorEvent && (allowPlay || forcePlay)) {
+    playVisitorEvent(visitorEvent, forcePlay);
+  }
 }
 
 function forceVisitorForTest(type) {
@@ -791,6 +798,21 @@ function renderVisitorLog() {
       `;
     })
     .join("");
+}
+
+function createVisitorConditionTestTreeId() {
+  const dateKey = getTodayKey();
+
+  for (let index = 0; index < 100; index += 1) {
+    const candidateTreeId = `visitor-condition-tree-${dateKey}-${index}`;
+    const roll = hashStringToUnitInterval(`${candidateTreeId}-${dateKey}-visitor-roll`);
+
+    if (roll < 0.32) {
+      return candidateTreeId;
+    }
+  }
+
+  return `visitor-condition-tree-${dateKey}`;
 }
 
 function seedVisitorHistoryForTest() {
@@ -1050,6 +1072,7 @@ function chooseMood(mood) {
   renderServiceFlow();
   renderCompleteCard();
   updateTodayStatus();
+  prepareDailyVisitor({ forcePlay: true, allowCreate: true, allowPlay: true });
 }
 
 function getWorldSlotVisual(slot) {
@@ -1446,6 +1469,31 @@ function applyTestPreset(preset) {
     return;
   }
 
+  if (preset === "visitor-before-care") {
+    const moods = ["good", "normal", "tired"];
+    const history = Array.from({ length: 8 }, (_, index) => {
+      return createHistoryRecord(index + 1, moods[index % moods.length]);
+    });
+
+    treeData = normalizeTreeData(createNewTreeData({
+      leaf: 9,
+      trunk: 9,
+      root: 9,
+      treeId: createVisitorConditionTestTreeId(),
+      lastCheckDate: getRelativeDateKey(1),
+      history,
+      treeName: "조건 테스트 나무"
+    }));
+    saveTreeData();
+    saveVisitorState({ events: [] });
+    todayVisitorEvent = null;
+    visitorPlayedSessionDate = null;
+    shouldHighlightWorldSpot = false;
+    renderAll();
+    showGardenScreen();
+    return;
+  }
+
   if (preset === "visitor-history") {
     seedVisitorHistoryForTest();
     return;
@@ -1572,7 +1620,7 @@ function showGardenScreen() {
   gardenScreenElement.classList.add("screen-active");
   worldScreenElement.classList.remove("screen-active");
   window.scrollTo({ top: 0, behavior: "smooth" });
-  prepareDailyVisitor();
+  prepareDailyVisitor({ allowCreate: false, allowPlay: false });
 }
 
 function renderAll() {
