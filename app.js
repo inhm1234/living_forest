@@ -1,15 +1,16 @@
-// 살아있는 숲 V1.6 test
+// 살아있는 숲 V1.6.1 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.6 test
+// 버전명: V1.6.1 test
 // 목적: 방문자 흔적 확장 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.6 test",
+  version: "V1.6.1 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
-  testStorageKey: "livingForestV012_TEST"
+  testStorageKey: "livingForestV012_TEST",
+  serviceTimeZoneOffsetMinutes: 9 * 60
 };
 
 const STORAGE_CONFIG = {
@@ -370,6 +371,11 @@ function getUtcDateKeyFromDate(dateValue) {
   return `${year}-${month}-${date}`;
 }
 
+function getServiceDateKeyFromDate(dateValue) {
+  const serviceTime = new Date(dateValue.getTime() + APP_CONFIG.serviceTimeZoneOffsetMinutes * 60 * 1000);
+  return getUtcDateKeyFromDate(serviceTime);
+}
+
 function getRelativeDateKey(daysAgo) {
   const dateValue = new Date();
   dateValue.setDate(dateValue.getDate() - daysAgo);
@@ -589,7 +595,7 @@ async function getVisitorDateKey() {
     if (serverDateHeader) {
       const serverDate = new Date(serverDateHeader);
       if (!Number.isNaN(serverDate.getTime())) {
-        return getUtcDateKeyFromDate(serverDate);
+        return getServiceDateKeyFromDate(serverDate);
       }
     }
   } catch {
@@ -698,6 +704,10 @@ function getStoredVisitorEvent(dateKey) {
   return visitorState.events.find((event) => event && event.dateKey === dateKey) || null;
 }
 
+function isTodayVisitorEvent(visitorEvent) {
+  return Boolean(visitorEvent && visitorEvent.dateKey === getTodayKey());
+}
+
 function saveTodayVisitorEvent(visitorEvent) {
   const visitorState = loadVisitorState();
   const events = visitorState.events.filter((event) => event && event.dateKey !== visitorEvent.dateKey);
@@ -736,7 +746,7 @@ function getVisitorIdleMessage(visitorEvent) {
     return "오늘의 마음을 남긴 뒤, 숲의 작은 방문자가 찾아올 수도 있어요.";
   }
 
-  if (visitorEvent?.hasVisitor && visitorEvent.type && visitorRules[visitorEvent.type]) {
+  if (isTodayVisitorEvent(visitorEvent) && visitorEvent?.hasVisitor && visitorEvent.type && visitorRules[visitorEvent.type]) {
     const trace = getVisitorTraceInfo(visitorEvent);
     return trace
       ? `오늘은 ${visitorRules[visitorEvent.type].label}가 다녀가고 ${trace.label}을 남겼어요.`
@@ -860,7 +870,7 @@ function renderVisitorTrace(visitorEvent = todayVisitorEvent) {
     return;
   }
 
-  const trace = getVisitorTraceInfo(visitorEvent);
+  const trace = isTodayVisitorEvent(visitorEvent) ? getVisitorTraceInfo(visitorEvent) : null;
   visitorTraceCardElement.classList.toggle("visitor-trace-ready", Boolean(trace));
 
   if (!treeData.treeName?.trim()) {
