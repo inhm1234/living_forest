@@ -1,15 +1,23 @@
-// 살아있는 숲 V1.4 stable
+// 살아있는 숲 V1.5 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.4 stable
-// 목적: 방문자 등장 조건 개선 안정판
+// 버전명: V1.5 test
+// 목적: 저장 시스템 구조 정리 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.4 stable",
-  dataSchemaVersion: 2,
+  version: "V1.5 test",
+  dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST"
+};
+
+const STORAGE_CONFIG = {
+  mode: "local-only",
+  provider: "browser-localStorage",
+  storageVersion: 1,
+  ownerType: "anonymous-local-device",
+  serverReady: false
 };
 
 const BASE_STORAGE_KEY = APP_CONFIG.baseStorageKey;
@@ -18,6 +26,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const isTestMode = urlParams.get("test") === "1";
 const STORAGE_KEY = isTestMode ? TEST_STORAGE_KEY : BASE_STORAGE_KEY;
 const VISITOR_STORAGE_KEY = `${STORAGE_KEY}_VISITOR_V12`;
+const OWNER_STORAGE_KEY = `${STORAGE_KEY}_OWNER_V15`;
 
 const moodRules = {
   good: {
@@ -264,6 +273,54 @@ function createTreeId() {
   return `local-tree-${Date.now()}-${randomPart}`;
 }
 
+function createLocalOwnerId() {
+  const randomPart = Math.random().toString(36).slice(2, 12);
+  return `local-owner-${Date.now()}-${randomPart}`;
+}
+
+function getOrCreateLocalOwnerId() {
+  const savedOwnerId = localStorage.getItem(OWNER_STORAGE_KEY);
+
+  if (typeof savedOwnerId === "string" && savedOwnerId.trim()) {
+    return savedOwnerId;
+  }
+
+  const ownerId = createLocalOwnerId();
+  localStorage.setItem(OWNER_STORAGE_KEY, ownerId);
+  return ownerId;
+}
+
+function createStorageInfo(updatedAt = getNowIsoString()) {
+  return {
+    mode: STORAGE_CONFIG.mode,
+    provider: STORAGE_CONFIG.provider,
+    storageVersion: STORAGE_CONFIG.storageVersion,
+    ownerType: STORAGE_CONFIG.ownerType,
+    localOwnerId: getOrCreateLocalOwnerId(),
+    serverUserId: null,
+    serverTreeId: null,
+    lastSyncedAt: null,
+    updatedAt
+  };
+}
+
+function normalizeStorageInfo(sourceData, updatedAt = getNowIsoString()) {
+  const sourceStorage = sourceData && typeof sourceData.storageInfo === "object" ? sourceData.storageInfo : {};
+  const storageVersion = Number(sourceStorage.storageVersion);
+
+  return {
+    mode: typeof sourceStorage.mode === "string" && sourceStorage.mode.trim() ? sourceStorage.mode : STORAGE_CONFIG.mode,
+    provider: typeof sourceStorage.provider === "string" && sourceStorage.provider.trim() ? sourceStorage.provider : STORAGE_CONFIG.provider,
+    storageVersion: Number.isFinite(storageVersion) && storageVersion > 0 ? storageVersion : STORAGE_CONFIG.storageVersion,
+    ownerType: typeof sourceStorage.ownerType === "string" && sourceStorage.ownerType.trim() ? sourceStorage.ownerType : STORAGE_CONFIG.ownerType,
+    localOwnerId: typeof sourceStorage.localOwnerId === "string" && sourceStorage.localOwnerId.trim() ? sourceStorage.localOwnerId : getOrCreateLocalOwnerId(),
+    serverUserId: typeof sourceStorage.serverUserId === "string" && sourceStorage.serverUserId.trim() ? sourceStorage.serverUserId : null,
+    serverTreeId: typeof sourceStorage.serverTreeId === "string" && sourceStorage.serverTreeId.trim() ? sourceStorage.serverTreeId : null,
+    lastSyncedAt: typeof sourceStorage.lastSyncedAt === "string" && sourceStorage.lastSyncedAt.trim() ? sourceStorage.lastSyncedAt : null,
+    updatedAt
+  };
+}
+
 function getNowIsoString() {
   return new Date().toISOString();
 }
@@ -278,6 +335,7 @@ function createNewTreeData(overrides = {}) {
     treeId: createTreeId(),
     createdAt: now,
     updatedAt: now,
+    storageInfo: createStorageInfo(now),
     leaf: 1,
     trunk: 1,
     root: 1,
@@ -360,6 +418,7 @@ function normalizeTreeData(rawData) {
   const createdAt = typeof sourceData.createdAt === "string" && sourceData.createdAt.trim()
     ? sourceData.createdAt
     : baseData.createdAt;
+  const updatedAt = typeof sourceData.updatedAt === "string" && sourceData.updatedAt.trim() ? sourceData.updatedAt : createdAt;
 
   return {
     appName: APP_CONFIG.name,
@@ -367,7 +426,8 @@ function normalizeTreeData(rawData) {
     dataSchemaVersion: APP_CONFIG.dataSchemaVersion,
     treeId: typeof sourceData.treeId === "string" && sourceData.treeId.trim() ? sourceData.treeId : baseData.treeId,
     createdAt,
-    updatedAt: typeof sourceData.updatedAt === "string" && sourceData.updatedAt.trim() ? sourceData.updatedAt : createdAt,
+    updatedAt,
+    storageInfo: normalizeStorageInfo(sourceData, updatedAt),
     leaf: toSafeNumber(sourceData.leaf, baseData.leaf),
     trunk: toSafeNumber(sourceData.trunk, baseData.trunk),
     root: toSafeNumber(sourceData.root, baseData.root),
@@ -1574,6 +1634,7 @@ function clearTestData() {
 
   localStorage.removeItem(TEST_STORAGE_KEY);
   localStorage.removeItem(VISITOR_STORAGE_KEY);
+  localStorage.removeItem(OWNER_STORAGE_KEY);
   treeData = loadTreeData();
   shouldHighlightWorldSpot = false;
   renderAll();
@@ -1586,7 +1647,8 @@ function renderTestModeStatus() {
   }
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${shortTreeId}`;
+  const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · ${shortTreeId}`;
 }
 
 function setupTestMode() {
