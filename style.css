@@ -1575,7 +1575,7 @@ body.dev-test-mode .demo-pill::after {
 }
 
 
-/* V1.1 test: 성장 목표와 월드 숲 자리 단계 보강 */
+/* V1.1: 성장 목표와 월드 숲 자리 단계 보강 */
 .my-world-spot.world-preview .my-spot-ring {
   box-shadow: 0 0 40px rgba(230, 255, 178, 0.22), 0 0 70px rgba(160, 230, 150, 0.12);
 }

@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.1 test
+// 살아있는 숲 V1.1
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.1 test
+// 버전명: V1.1
 // 목적: 성장 단계 안내와 월드 숲 자리 조건 보강
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.1 test",
+  version: "V1.1",
   dataSchemaVersion: 2,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST"
