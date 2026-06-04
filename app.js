@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.0
+// 살아있는 숲 V1.1 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.0
-// 목적: 첫 체험판 공개 버전
+// 버전명: V1.1 test
+// 목적: 성장 단계 안내와 월드 숲 자리 조건 보강
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.0",
+  version: "V1.1 test",
   dataSchemaVersion: 2,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST"
@@ -50,11 +50,45 @@ const moodRules = {
 
 const growthStageRules = [
   { minDays: 0, maxDays: 0, name: "첫 기록을 기다리는 씨앗" },
-  { minDays: 1, maxDays: 3, name: "작은 새싹" },
-  { minDays: 4, maxDays: 7, name: "어린 나무" },
-  { minDays: 8, maxDays: 14, name: "자라는 나무" },
-  { minDays: 15, maxDays: 29, name: "깊어지는 나무" },
+  { minDays: 1, maxDays: 2, name: "작은 새싹" },
+  { minDays: 3, maxDays: 6, name: "빛을 찾는 새싹" },
+  { minDays: 7, maxDays: 13, name: "숲에 자리 잡은 어린 나무" },
+  { minDays: 14, maxDays: 20, name: "자라는 나무" },
+  { minDays: 21, maxDays: 29, name: "깊어지는 나무" },
   { minDays: 30, maxDays: Infinity, name: "작은 숲의 중심나무" }
+];
+
+const growthMilestoneRules = [
+  {
+    day: 1,
+    title: "첫 변화",
+    message: "첫 기록만 남겨도 내 나무가 바로 반응해요."
+  },
+  {
+    day: 3,
+    title: "월드 숲 예고",
+    message: "월드 숲의 내 자리 주변에 작은 빛이 생겨요."
+  },
+  {
+    day: 7,
+    title: "숲에 자리 잡기",
+    message: "내 나무가 월드 숲에 정식으로 자리 잡아요."
+  },
+  {
+    day: 14,
+    title: "중간 성장",
+    message: "어린 나무가 더 뚜렷하게 자라기 시작해요."
+  },
+  {
+    day: 21,
+    title: "깊어지는 나무",
+    message: "내 나무의 기운이 숲 안에서 더 선명해져요."
+  },
+  {
+    day: 30,
+    title: "성숙한 나무",
+    message: "작은 숲의 중심나무로 완성돼요."
+  }
 ];
 
 const forestEffectRules = {
@@ -360,6 +394,50 @@ function getGrowthStage() {
     return totalDays >= stage.minDays && totalDays <= stage.maxDays;
   }) || growthStageRules[growthStageRules.length - 1];
 }
+
+function getNextGrowthMilestone() {
+  const totalDays = treeData.history.length;
+  return growthMilestoneRules.find((milestone) => totalDays < milestone.day) || null;
+}
+
+function getCurrentGrowthMilestone() {
+  const totalDays = treeData.history.length;
+  return [...growthMilestoneRules].reverse().find((milestone) => totalDays >= milestone.day) || null;
+}
+
+function getNextGoalMessage() {
+  const totalDays = treeData.history.length;
+  const nextMilestone = getNextGrowthMilestone();
+
+  if (!nextMilestone) {
+    return "30일 성숙 이후에는 숲의 방문자와 계절 변화로 긴 성장을 이어갈 수 있어요.";
+  }
+
+  const remainingDays = nextMilestone.day - totalDays;
+
+  if (remainingDays <= 1) {
+    return `다음 기록으로 ${nextMilestone.day}일차 ${nextMilestone.title}에 닿아요. ${nextMilestone.message}`;
+  }
+
+  return `${nextMilestone.day}일차 ${nextMilestone.title}까지 ${remainingDays}일 남았어요. ${nextMilestone.message}`;
+}
+
+function getWorldProgressMessage() {
+  const totalDays = treeData.history.length;
+  const currentMilestone = getCurrentGrowthMilestone();
+  const nextMessage = getNextGoalMessage();
+
+  if (totalDays === 0) {
+    return "첫 기록을 남기면 내 나무가 바로 반응하고, 3일차에는 월드 숲에 작은 빛이 생겨요.";
+  }
+
+  if (currentMilestone) {
+    return `${totalDays}일째 성장 중이에요. ${nextMessage}`;
+  }
+
+  return nextMessage;
+}
+
 function getServiceFlowInfo() {
   const hasName = Boolean(treeData.treeName?.trim());
   const hasHistory = treeData.history.length > 0;
@@ -406,12 +484,13 @@ function getDailyLoopInfo() {
   const checkedToday = hasCheckedToday();
   const todayRecord = getTodayRecord();
   const totalDays = treeData.history.length;
+  const nextGoalMessage = getNextGoalMessage();
 
   if (checkedToday && todayRecord) {
     return {
       state: "done",
       title: "오늘은 여기까지",
-      text: `오늘의 ${todayRecord.label} 기운이 숲에 남았어요. 이제 그만 쉬어도 괜찮아요.`
+      text: `오늘의 ${todayRecord.label} 기운이 숲에 남았어요. 이제 그만 쉬어도 괜찮아요. ${nextGoalMessage}`
     };
   }
 
@@ -419,7 +498,7 @@ function getDailyLoopInfo() {
     return {
       state: "start",
       title: "숲 한가운데 내 자리가 기다려요",
-      text: "이름을 정하고, 오늘의 마음 하나만 남겨도 충분해요."
+      text: "이름을 정하고 첫 마음을 남기면 나무가 바로 반응해요. 3일차에는 월드 숲에 작은 빛이 생겨요."
     };
   }
 
@@ -427,14 +506,14 @@ function getDailyLoopInfo() {
     return {
       state: "name",
       title: "내 나무 이름 정하기",
-      text: "이름을 한 번 정하면, 오늘의 마음을 남길 수 있어요."
+      text: "이름을 한 번 정하면, 오늘의 마음을 남기고 다음 성장 목표를 볼 수 있어요."
     };
   }
 
   return {
     state: "waiting",
     title: "오늘 내 나무 돌보기",
-    text: "좋음, 보통, 피곤 중 지금과 가까운 마음 하나만 골라도 충분해요."
+    text: `좋음, 보통, 피곤 중 지금과 가까운 마음 하나만 골라도 충분해요. ${nextGoalMessage}`
   };
 }
 
@@ -516,14 +595,30 @@ function getWorldSpotInfo() {
     return {
       className: "world-sprout",
       visual: "✦",
-      status: "월드 숲에 들어갈 준비를 하고 있어요."
+      status: "월드 숲에 들어갈 준비를 하고 있어요. 3일차에는 작은 빛이 생겨요."
+    };
+  }
+
+  if (days <= 6) {
+    return {
+      className: "world-sprout world-preview",
+      visual: "✦",
+      status: "월드 숲의 내 자리 주변에 작은 빛이 생겼어요. 7일차에는 정식으로 자리 잡아요."
+    };
+  }
+
+  if (days < 30) {
+    return {
+      className: "world-tree",
+      visual: "✧",
+      status: "내 나무가 월드 숲에 정식으로 자리 잡았어요."
     };
   }
 
   return {
-    className: "world-tree",
-    visual: "✧",
-    status: "월드 숲에 조용히 자리 잡았어요."
+    className: "world-tree world-mature",
+    visual: "✺",
+    status: "작은 숲의 중심나무로 깊게 뿌리내렸어요."
   };
 }
 
@@ -562,7 +657,7 @@ function chooseMood(mood) {
   renderTreeName();
   renderTree(true);
   renderForestEffect(rule.state, true);
-  renderMessages(`오늘은 ${rule.message} 오늘의 기운이 밤 정원과 숲에 조용히 스며들었어요.`);
+  renderMessages(`오늘은 ${rule.message} 오늘의 기운이 밤 정원과 숲에 조용히 스며들었어요. ${getNextGoalMessage()}`);
   renderServiceFlow();
   renderCompleteCard();
   updateTodayStatus();
@@ -668,7 +763,7 @@ function renderWorld() {
         ? "이름을 얻은 작은 자리가 오늘의 마음을 기다리고 있어요."
         : "숲 한가운데, 아직 이름 없는 작은 자리가 기다리고 있어요.";
     } else {
-      worldSummaryTextElement.textContent = "숲 곳곳의 자리들 사이에서 내 나무도 오늘의 기운을 기다리고 있어요.";
+      worldSummaryTextElement.textContent = getWorldProgressMessage();
     }
   }
 
@@ -744,7 +839,7 @@ function renderCompleteCard() {
   }
 
   completeCardElement.classList.remove("hidden");
-  completeMessageElement.textContent = `오늘의 ${todayRecord.label} 기운이 내 나무와 월드 숲의 내 자리에 조용히 스며들었어요. 오늘의 마음은 숲에 남았어요. 이제 그만 쉬어도 괜찮아요.`;
+  completeMessageElement.textContent = `오늘의 ${todayRecord.label} 기운이 내 나무와 월드 숲의 내 자리에 조용히 스며들었어요. 오늘의 마음은 숲에 남았어요. 이제 그만 쉬어도 괜찮아요. ${getNextGoalMessage()}`;
 }
 
 function renderHeader() {
@@ -913,7 +1008,7 @@ function updateTodayStatus() {
   } else {
     todayStatusElement.textContent = `오늘(${formatDate(getTodayKey())})의 상태를 아직 기록하지 않았어요.`;
     if (moodGuideElement) {
-      moodGuideElement.textContent = "하루에 한 번, 지금의 나와 가까운 상태를 골라주세요.";
+      moodGuideElement.textContent = `하루에 한 번, 지금의 나와 가까운 상태를 골라주세요. ${getNextGoalMessage()}`;
     }
     backToWorldBtnBottomElement.textContent = "전체 숲으로 돌아가기";
   }
@@ -963,14 +1058,14 @@ function createTestPresetData(preset) {
 
   if (preset === "grown") {
     const moods = ["good", "normal", "tired"];
-    const history = Array.from({ length: 18 }, (_, index) => {
+    const history = Array.from({ length: 30 }, (_, index) => {
       return createHistoryRecord(index, moods[index % moods.length]);
     });
 
     return createNewTreeData({
-      leaf: 19,
-      trunk: 19,
-      root: 19,
+      leaf: 31,
+      trunk: 31,
+      root: 31,
       lastCheckDate: getTodayKey(),
       history,
       treeName: "깊어진 테스트 나무"
