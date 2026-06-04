@@ -35,7 +35,7 @@
 
   <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.1.0" />
+  <link rel="stylesheet" href="style.css?v=1.2.0-test" />
 </head>
 <body>
   <noscript>
@@ -137,7 +137,7 @@
           <div class="firefly firefly-6"></div>
 
           <div id="effectLayer" class="effect-layer" aria-hidden="true"></div>
-          <div id="bird" class="creature bird" aria-label="새">
+          <div id="bird" class="creature bird visitor-creature" aria-label="방문자 새">
             <img src="assets/garden/bird-silhouette.svg" alt="" />
           </div>
 
@@ -149,7 +149,7 @@
             </div>
           </div>
 
-          <div id="squirrel" class="creature squirrel" aria-label="다람쥐">
+          <div id="squirrel" class="creature squirrel visitor-creature" aria-label="방문자 다람쥐">
             <img src="assets/garden/squirrel-silhouette.svg" alt="" />
           </div>
 
@@ -223,12 +223,14 @@
       <button type="button" data-test-preset="waiting">오늘 기록 전</button>
       <button type="button" data-test-preset="done">오늘 기록 완료</button>
       <button type="button" data-test-preset="grown">깊어진 나무</button>
+      <button type="button" data-test-preset="visitor-bird">방문자 새</button>
+      <button type="button" data-test-preset="visitor-squirrel">방문자 다람쥐</button>
       <button type="button" data-test-preset="legacy">구버전 보정</button>
       <button type="button" id="clearTestDataBtn">테스트 초기화</button>
     </div>
   </aside>
 
 
-  <script src="app.js?v=1.1.0"></script>
+  <script src="app.js?v=1.2.0-test"></script>
 </body>
 </html>

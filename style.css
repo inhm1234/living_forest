@@ -1589,3 +1589,109 @@ body.dev-test-mode .demo-pill::after {
   border-color: rgba(242, 255, 198, 0.34);
   box-shadow: 0 0 44px rgba(242, 255, 198, 0.24), 0 0 86px rgba(132, 210, 126, 0.18);
 }
+
+
+/* V1.2 test: 숲의 방문자 시스템 1차 */
+.visitor-creature {
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.visitor-creature.visitor-ready {
+  opacity: 1;
+}
+
+.bird.visitor-bird-flight {
+  animation: visitorBirdFlight 8.2s ease-in-out both;
+}
+
+.squirrel.visitor-squirrel-walk {
+  animation: visitorSquirrelWalk 8.8s ease-in-out both;
+}
+
+@keyframes visitorBirdFlight {
+  0% {
+    opacity: 0;
+    transform: translate(-420px, -120px) scale(0.78) rotate(-8deg);
+  }
+  18% {
+    opacity: 0.92;
+    transform: translate(-150px, -52px) scale(0.92) rotate(4deg);
+  }
+  34% {
+    opacity: 0.96;
+    transform: translate(0, 0) scale(1.04) rotate(0deg);
+  }
+  64% {
+    opacity: 0.96;
+    transform: translate(0, 0) scale(1.04) rotate(0deg);
+  }
+  78% {
+    opacity: 0.88;
+    transform: translate(120px, -46px) scale(0.94) rotate(6deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(390px, -150px) scale(0.78) rotate(10deg);
+  }
+}
+
+@keyframes visitorSquirrelWalk {
+  0% {
+    opacity: 0;
+    transform: translate(260px, 36px) scale(0.82);
+  }
+  22% {
+    opacity: 0.9;
+    transform: translate(90px, 18px) scale(0.96);
+  }
+  36% {
+    opacity: 0.96;
+    transform: translate(0, 0) scale(1.04);
+  }
+  66% {
+    opacity: 0.96;
+    transform: translate(0, 0) scale(1.04);
+  }
+  82% {
+    opacity: 0.82;
+    transform: translate(-86px, 20px) scale(0.94);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-250px, 48px) scale(0.82);
+  }
+}
+
+body.dev-test-mode .test-preset-buttons button[data-test-preset="visitor-bird"],
+body.dev-test-mode .test-preset-buttons button[data-test-preset="visitor-squirrel"] {
+  border-color: rgba(208, 255, 180, 0.28);
+  background: rgba(126, 183, 127, 0.13);
+}
+
+@media (max-width: 560px) {
+  .bird.visitor-bird-flight {
+    animation-name: visitorBirdFlightMobile;
+  }
+
+  .squirrel.visitor-squirrel-walk {
+    animation-name: visitorSquirrelWalkMobile;
+  }
+}
+
+@keyframes visitorBirdFlightMobile {
+  0% { opacity: 0; transform: translate(-240px, -112px) scale(0.74) rotate(-8deg); }
+  24% { opacity: 0.92; transform: translate(-84px, -40px) scale(0.9) rotate(4deg); }
+  40% { opacity: 0.96; transform: translate(0, 0) scale(1.02) rotate(0deg); }
+  66% { opacity: 0.96; transform: translate(0, 0) scale(1.02) rotate(0deg); }
+  100% { opacity: 0; transform: translate(220px, -130px) scale(0.74) rotate(10deg); }
+}
+
+@keyframes visitorSquirrelWalkMobile {
+  0% { opacity: 0; transform: translate(170px, 36px) scale(0.78); }
+  28% { opacity: 0.9; transform: translate(58px, 16px) scale(0.92); }
+  42% { opacity: 0.96; transform: translate(0, 0) scale(1.02); }
+  68% { opacity: 0.96; transform: translate(0, 0) scale(1.02); }
+  100% { opacity: 0; transform: translate(-165px, 44px) scale(0.78); }
+}

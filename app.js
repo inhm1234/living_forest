@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.1
+// 살아있는 숲 V1.2 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.1
-// 목적: 성장 단계 안내와 월드 숲 자리 조건 보강
+// 버전명: V1.2 test
+// 목적: 숲의 방문자 시스템 1차 테스트
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.1",
+  version: "V1.2 test",
   dataSchemaVersion: 2,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST"
@@ -17,6 +17,7 @@ const TEST_STORAGE_KEY = APP_CONFIG.testStorageKey;
 const urlParams = new URLSearchParams(window.location.search);
 const isTestMode = urlParams.get("test") === "1";
 const STORAGE_KEY = isTestMode ? TEST_STORAGE_KEY : BASE_STORAGE_KEY;
+const VISITOR_STORAGE_KEY = `${STORAGE_KEY}_VISITOR_V12`;
 
 const moodRules = {
   good: {
@@ -90,6 +91,20 @@ const growthMilestoneRules = [
     message: "작은 숲의 중심나무로 완성돼요."
   }
 ];
+
+
+const visitorRules = {
+  bird: {
+    label: "작은 새",
+    className: "visitor-bird-flight",
+    message: "작은 새가 날아와 가지 근처에서 잠시 쉬었다가 다시 숲 위로 날아갔어요."
+  },
+  squirrel: {
+    label: "다람쥐",
+    className: "visitor-squirrel-walk",
+    message: "다람쥐가 뿌리 근처까지 다가와 잠시 쉬었다가 숲 아래로 사라졌어요."
+  }
+};
 
 const forestEffectRules = {
   "leaf-strong": {
@@ -234,6 +249,9 @@ const testPresetButtons = document.querySelectorAll("[data-test-preset]");
 
 let treeData = loadTreeData();
 let shouldHighlightWorldSpot = false;
+let todayVisitorEvent = null;
+let visitorAnimationTimer = null;
+let visitorPlayedSessionDate = null;
 
 function createTreeId() {
   const randomPart = Math.random().toString(36).slice(2, 10);
@@ -268,6 +286,13 @@ function getDateKeyFromDate(dateValue) {
   const year = dateValue.getFullYear();
   const month = String(dateValue.getMonth() + 1).padStart(2, "0");
   const date = String(dateValue.getDate()).padStart(2, "0");
+  return `${year}-${month}-${date}`;
+}
+
+function getUtcDateKeyFromDate(dateValue) {
+  const year = dateValue.getUTCFullYear();
+  const month = String(dateValue.getUTCMonth() + 1).padStart(2, "0");
+  const date = String(dateValue.getUTCDate()).padStart(2, "0");
   return `${year}-${month}-${date}`;
 }
 
@@ -436,6 +461,243 @@ function getWorldProgressMessage() {
   }
 
   return nextMessage;
+}
+
+
+function loadVisitorState() {
+  const savedData = localStorage.getItem(VISITOR_STORAGE_KEY);
+
+  if (!savedData) {
+    return { events: [] };
+  }
+
+  try {
+    const parsedData = JSON.parse(savedData);
+    return {
+      events: Array.isArray(parsedData.events) ? parsedData.events.slice(0, 14) : []
+    };
+  } catch {
+    return { events: [] };
+  }
+}
+
+function saveVisitorState(visitorState) {
+  const events = Array.isArray(visitorState.events) ? visitorState.events.slice(0, 14) : [];
+  localStorage.setItem(VISITOR_STORAGE_KEY, JSON.stringify({ events }));
+}
+
+function hashStringToUnitInterval(text) {
+  let hash = 2166136261;
+  const source = String(text);
+
+  for (let index = 0; index < source.length; index += 1) {
+    hash ^= source.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return (hash >>> 0) / 4294967295;
+}
+
+async function getVisitorDateKey() {
+  if (isTestMode) {
+    return getTodayKey();
+  }
+
+  try {
+    const response = await fetch(window.location.href.split("#")[0], {
+      method: "HEAD",
+      cache: "no-store"
+    });
+    const serverDateHeader = response.headers.get("Date");
+
+    if (serverDateHeader) {
+      const serverDate = new Date(serverDateHeader);
+      if (!Number.isNaN(serverDate.getTime())) {
+        return getUtcDateKeyFromDate(serverDate);
+      }
+    }
+  } catch {
+    // GitHub Pages 서버 시간 확인에 실패하면 체험판에서는 기기 날짜로 자연스럽게 대체합니다.
+  }
+
+  return getTodayKey();
+}
+
+function getVisitorProbability(visitorState) {
+  const totalDays = treeData.history.length;
+
+  if (!treeData.treeName?.trim() || totalDays < 3) {
+    return 0;
+  }
+
+  let probability = 0.24;
+
+  if (totalDays >= 7) {
+    probability += 0.08;
+  }
+
+  if (totalDays >= 14) {
+    probability += 0.05;
+  }
+
+  const recentMisses = (visitorState.events || [])
+    .slice(0, 3)
+    .filter((event) => event && event.hasVisitor === false)
+    .length;
+
+  probability += recentMisses * 0.06;
+
+  return Math.min(probability, 0.52);
+}
+
+function chooseVisitorType(dateKey) {
+  const totalDays = treeData.history.length;
+
+  if (totalDays < 7) {
+    return "bird";
+  }
+
+  const state = getTreeState();
+
+  if (state === "leaf-strong") {
+    return hashStringToUnitInterval(`${treeData.treeId}-${dateKey}-visitor-type`) < 0.72 ? "bird" : "squirrel";
+  }
+
+  if (state === "root-strong") {
+    return hashStringToUnitInterval(`${treeData.treeId}-${dateKey}-visitor-type`) < 0.72 ? "squirrel" : "bird";
+  }
+
+  return hashStringToUnitInterval(`${treeData.treeId}-${dateKey}-visitor-type`) < 0.5 ? "bird" : "squirrel";
+}
+
+function createVisitorEvent(dateKey, forceType = null) {
+  const visitorState = loadVisitorState();
+  const probability = forceType ? 1 : getVisitorProbability(visitorState);
+  const roll = hashStringToUnitInterval(`${treeData.treeId}-${dateKey}-visitor-roll`);
+  const hasVisitor = Boolean(forceType) || roll < probability;
+  const type = hasVisitor ? (forceType || chooseVisitorType(dateKey)) : null;
+
+  return {
+    dateKey,
+    hasVisitor,
+    type,
+    probability: Number(probability.toFixed(2)),
+    createdAt: getNowIsoString()
+  };
+}
+
+function getStoredVisitorEvent(dateKey) {
+  const visitorState = loadVisitorState();
+  return visitorState.events.find((event) => event && event.dateKey === dateKey) || null;
+}
+
+function saveTodayVisitorEvent(visitorEvent) {
+  const visitorState = loadVisitorState();
+  const events = visitorState.events.filter((event) => event && event.dateKey !== visitorEvent.dateKey);
+  saveVisitorState({ events: [visitorEvent, ...events] });
+}
+
+function resetVisitorElements() {
+  window.clearTimeout(visitorAnimationTimer);
+  visitorAnimationTimer = null;
+
+  [birdElement, squirrelElement].forEach((element) => {
+    if (!element) {
+      return;
+    }
+
+    element.classList.remove(
+      "active",
+      "visitor-ready",
+      "visitor-playing",
+      "visitor-bird-flight",
+      "visitor-squirrel-walk"
+    );
+  });
+}
+
+function getVisitorIdleMessage(visitorEvent) {
+  if (!treeData.treeName?.trim()) {
+    return "나무 이름을 정하면 언젠가 작은 방문자가 찾아올 수도 있어요.";
+  }
+
+  if (treeData.history.length < 3) {
+    return "나무가 조금 더 자라면 숲의 작은 방문자가 찾아올 수 있어요.";
+  }
+
+  if (visitorEvent?.hasVisitor && visitorEvent.type && visitorRules[visitorEvent.type]) {
+    return `오늘은 ${visitorRules[visitorEvent.type].label}가 이 정원에 들를지도 몰라요.`;
+  }
+
+  return "오늘은 조용한 밤 정원이에요. 방문자가 없어도 나무는 천천히 숨 쉬고 있어요.";
+}
+
+function updateVisitorMessage(visitorEvent = todayVisitorEvent) {
+  if (!creatureMessageElement) {
+    return;
+  }
+
+  creatureMessageElement.textContent = getVisitorIdleMessage(visitorEvent);
+}
+
+function playVisitorEvent(visitorEvent, force = false) {
+  if (!visitorEvent?.hasVisitor || !visitorRules[visitorEvent.type]) {
+    updateVisitorMessage(visitorEvent);
+    return;
+  }
+
+  if (!force && visitorPlayedSessionDate === visitorEvent.dateKey) {
+    updateVisitorMessage(visitorEvent);
+    return;
+  }
+
+  visitorPlayedSessionDate = visitorEvent.dateKey;
+  resetVisitorElements();
+
+  const visitorRule = visitorRules[visitorEvent.type];
+  const visitorElement = visitorEvent.type === "bird" ? birdElement : squirrelElement;
+
+  if (!visitorElement) {
+    return;
+  }
+
+  visitorAnimationTimer = window.setTimeout(() => {
+    visitorElement.classList.add("visitor-ready", "visitor-playing", visitorRule.className);
+    creatureMessageElement.textContent = visitorRule.message;
+  }, force ? 80 : 850);
+}
+
+async function prepareDailyVisitor({ forcePlay = false } = {}) {
+  if (!gardenScreenElement.classList.contains("screen-active")) {
+    return;
+  }
+
+  const dateKey = await getVisitorDateKey();
+  let visitorEvent = getStoredVisitorEvent(dateKey);
+
+  if (!visitorEvent) {
+    visitorEvent = createVisitorEvent(dateKey);
+    saveTodayVisitorEvent(visitorEvent);
+  }
+
+  todayVisitorEvent = visitorEvent;
+  updateVisitorMessage(visitorEvent);
+  playVisitorEvent(visitorEvent, forcePlay);
+}
+
+function forceVisitorForTest(type) {
+  if (!isTestMode || !visitorRules[type]) {
+    return;
+  }
+
+  const dateKey = getTodayKey();
+  const visitorEvent = createVisitorEvent(dateKey, type);
+  saveTodayVisitorEvent(visitorEvent);
+  todayVisitorEvent = visitorEvent;
+  visitorPlayedSessionDate = null;
+  renderAll();
+  showGardenScreen();
+  playVisitorEvent(visitorEvent, true);
 }
 
 function getServiceFlowInfo() {
@@ -887,19 +1149,6 @@ function renderTree(animate = false) {
 
   birdElement.classList.remove("active");
   squirrelElement.classList.remove("active");
-
-  if (state === "leaf-strong") {
-    birdElement.classList.add("active");
-  }
-
-  if (state === "root-strong") {
-    squirrelElement.classList.add("active");
-  }
-
-  if (state === "balanced") {
-    birdElement.classList.add("active");
-    squirrelElement.classList.add("active");
-  }
 }
 
 function renderForestEffect(state = null, animate = false) {
@@ -934,17 +1183,7 @@ function renderMessages(customMessage) {
     growthMessageElement.textContent = "오늘의 상태를 선택하면 나무가 자라요.";
   }
 
-  const state = getTreeState();
-
-  if (state === "leaf-strong") {
-    creatureMessageElement.textContent = "작은 새가 빛 사이로 조용히 날아왔어요.";
-  } else if (state === "root-strong") {
-    creatureMessageElement.textContent = "다람쥐가 나무 아래를 천천히 지키고 있어요.";
-  } else if (state === "balanced") {
-    creatureMessageElement.textContent = "빛과 생명체가 밤 정원에 고르게 머물고 있어요.";
-  } else {
-    creatureMessageElement.textContent = "나무가 밤 정원 안에서 중심을 잡고 있어요.";
-  }
+  updateVisitorMessage(todayVisitorEvent);
 }
 
 function renderTreeName() {
@@ -1080,6 +1319,25 @@ function applyTestPreset(preset) {
     return;
   }
 
+  if (preset === "visitor-bird" || preset === "visitor-squirrel") {
+    const moods = ["good", "normal", "tired"];
+    const history = Array.from({ length: 8 }, (_, index) => {
+      return createHistoryRecord(index, moods[index % moods.length]);
+    });
+    treeData = normalizeTreeData(createNewTreeData({
+      leaf: 9,
+      trunk: 9,
+      root: 9,
+      lastCheckDate: getTodayKey(),
+      history,
+      treeName: "방문자 테스트 나무"
+    }));
+    saveTreeData();
+    shouldHighlightWorldSpot = false;
+    forceVisitorForTest(preset === "visitor-bird" ? "bird" : "squirrel");
+    return;
+  }
+
   if (preset === "legacy") {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       leaf: 5,
@@ -1110,6 +1368,7 @@ function clearTestData() {
   }
 
   localStorage.removeItem(TEST_STORAGE_KEY);
+  localStorage.removeItem(VISITOR_STORAGE_KEY);
   treeData = loadTreeData();
   shouldHighlightWorldSpot = false;
   renderAll();
@@ -1181,6 +1440,7 @@ function showGardenScreen() {
   gardenScreenElement.classList.add("screen-active");
   worldScreenElement.classList.remove("screen-active");
   window.scrollTo({ top: 0, behavior: "smooth" });
+  prepareDailyVisitor();
 }
 
 function renderAll() {
