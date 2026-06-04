@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.2.1
+// 살아있는 숲 V1.3 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.2.1
-// 목적: 숲의 방문자 시스템 1차 안정판
+// 버전명: V1.3 test
+// 목적: 숲의 방문자 기록 1차 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.2.1",
+  version: "V1.3 test",
   dataSchemaVersion: 2,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST"
@@ -97,12 +97,14 @@ const visitorRules = {
   bird: {
     label: "작은 새",
     className: "visitor-bird-flight",
-    message: "작은 새가 날아와 가지 근처에서 잠시 쉬었다가 다시 숲 위로 날아갔어요."
+    message: "작은 새가 날아와 가지 근처에서 잠시 쉬었다가 다시 숲 위로 날아갔어요.",
+    recordMessage: "작은 새가 가지 근처에서 잠시 쉬어갔어요."
   },
   squirrel: {
     label: "다람쥐",
     className: "visitor-squirrel-walk",
-    message: "다람쥐가 뿌리 근처까지 다가와 잠시 쉬었다가 숲 아래로 사라졌어요."
+    message: "다람쥐가 뿌리 근처까지 다가와 잠시 쉬었다가 숲 아래로 사라졌어요.",
+    recordMessage: "다람쥐가 뿌리 근처에서 조용히 머물다 갔어요."
   }
 };
 
@@ -240,6 +242,10 @@ const treeNameInputElement = document.querySelector("#treeNameInput");
 const treeNameMessageElement = document.querySelector("#treeNameMessage");
 const completeCardElement = document.querySelector("#completeCard");
 const completeMessageElement = document.querySelector("#completeMessage");
+const visitorLogCardElement = document.querySelector("#visitorLogCard");
+const visitorLogTitleElement = document.querySelector("#visitorLogTitle");
+const visitorLogListElement = document.querySelector("#visitorLogList");
+const visitorLogEmptyElement = document.querySelector("#visitorLogEmpty");
 const moodButtons = document.querySelectorAll("[data-mood]");
 const testModePanelElement = document.querySelector("#testModePanel");
 const testModeStorageKeyElement = document.querySelector("#testModeStorageKey");
@@ -474,7 +480,7 @@ function loadVisitorState() {
   try {
     const parsedData = JSON.parse(savedData);
     return {
-      events: Array.isArray(parsedData.events) ? parsedData.events.slice(0, 14) : []
+      events: Array.isArray(parsedData.events) ? parsedData.events.slice(0, 21) : []
     };
   } catch {
     return { events: [] };
@@ -482,7 +488,7 @@ function loadVisitorState() {
 }
 
 function saveVisitorState(visitorState) {
-  const events = Array.isArray(visitorState.events) ? visitorState.events.slice(0, 14) : [];
+  const events = Array.isArray(visitorState.events) ? visitorState.events.slice(0, 21) : [];
   localStorage.setItem(VISITOR_STORAGE_KEY, JSON.stringify({ events }));
 }
 
@@ -682,6 +688,7 @@ async function prepareDailyVisitor({ forcePlay = false } = {}) {
 
   todayVisitorEvent = visitorEvent;
   updateVisitorMessage(visitorEvent);
+  renderVisitorLog();
   playVisitorEvent(visitorEvent, forcePlay);
 }
 
@@ -698,6 +705,126 @@ function forceVisitorForTest(type) {
   renderAll();
   showGardenScreen();
   playVisitorEvent(visitorEvent, true);
+}
+
+function formatVisitorDate(dateKey) {
+  if (!isValidDateKey(dateKey)) {
+    return "어느 날";
+  }
+
+  if (dateKey === getTodayKey()) {
+    return "오늘";
+  }
+
+  if (dateKey === getRelativeDateKey(1)) {
+    return "어제";
+  }
+
+  return formatDate(dateKey);
+}
+
+function getRecentVisitorRecords(limit = 3) {
+  const visitorState = loadVisitorState();
+
+  return (visitorState.events || [])
+    .filter((event) => event?.hasVisitor && visitorRules[event.type])
+    .slice(0, limit)
+    .map((event) => {
+      const rule = visitorRules[event.type];
+      return {
+        ...event,
+        label: rule.label,
+        recordMessage: rule.recordMessage || rule.message,
+        displayDate: formatVisitorDate(event.dateKey)
+      };
+    });
+}
+
+function renderVisitorLog() {
+  if (!visitorLogCardElement || !visitorLogTitleElement || !visitorLogListElement || !visitorLogEmptyElement) {
+    return;
+  }
+
+  const hasName = Boolean(treeData.treeName?.trim());
+  const totalDays = treeData.history.length;
+  const records = getRecentVisitorRecords(3);
+
+  visitorLogCardElement.classList.toggle("visitor-log-ready", records.length > 0);
+
+  if (!hasName) {
+    visitorLogTitleElement.textContent = "방문 기록은 나무 이름을 정한 뒤 열려요";
+    visitorLogListElement.innerHTML = "";
+    visitorLogEmptyElement.textContent = "내 나무가 생기면 언젠가 작은 방문자의 흔적도 남을 수 있어요.";
+    visitorLogEmptyElement.classList.remove("hidden");
+    return;
+  }
+
+  if (totalDays < 3) {
+    visitorLogTitleElement.textContent = "방문자는 나무가 조금 자란 뒤 찾아와요";
+    visitorLogListElement.innerHTML = "";
+    visitorLogEmptyElement.textContent = "3일차 이후부터 새나 다람쥐가 정원에 잠시 들를 수 있어요.";
+    visitorLogEmptyElement.classList.remove("hidden");
+    return;
+  }
+
+  if (records.length === 0) {
+    visitorLogTitleElement.textContent = "아직 남은 방문 기록이 없어요";
+    visitorLogListElement.innerHTML = "";
+    visitorLogEmptyElement.textContent = "방문자가 없어도 나무는 천천히 자라고 있어요. 가끔 숲의 작은 친구가 찾아올 거예요.";
+    visitorLogEmptyElement.classList.remove("hidden");
+    return;
+  }
+
+  visitorLogTitleElement.textContent = "최근 숲에 다녀간 친구들";
+  visitorLogEmptyElement.classList.add("hidden");
+  visitorLogListElement.innerHTML = records
+    .map((record) => {
+      const typeClass = record.type === "bird" ? "visitor-log-bird" : "visitor-log-squirrel";
+      return `
+        <li class="visitor-log-item ${typeClass}">
+          <span class="visitor-log-icon" aria-hidden="true">${record.type === "bird" ? "✦" : "✧"}</span>
+          <div>
+            <strong>${record.displayDate} · ${record.label}</strong>
+            <p>${record.recordMessage}</p>
+          </div>
+        </li>
+      `;
+    })
+    .join("");
+}
+
+function seedVisitorHistoryForTest() {
+  if (!isTestMode) {
+    return;
+  }
+
+  const moods = ["good", "normal", "tired"];
+  const history = Array.from({ length: 12 }, (_, index) => {
+    return createHistoryRecord(index, moods[index % moods.length]);
+  });
+
+  treeData = normalizeTreeData(createNewTreeData({
+    leaf: 13,
+    trunk: 13,
+    root: 13,
+    lastCheckDate: getTodayKey(),
+    history,
+    treeName: "방문 기록 테스트 나무"
+  }));
+  saveTreeData();
+
+  const events = [
+    createVisitorEvent(getTodayKey(), "bird"),
+    createVisitorEvent(getRelativeDateKey(1), "squirrel"),
+    createVisitorEvent(getRelativeDateKey(3), "bird")
+  ];
+
+  saveVisitorState({ events });
+  todayVisitorEvent = events[0];
+  visitorPlayedSessionDate = null;
+  shouldHighlightWorldSpot = false;
+  renderAll();
+  showGardenScreen();
 }
 
 function getServiceFlowInfo() {
@@ -1319,6 +1446,11 @@ function applyTestPreset(preset) {
     return;
   }
 
+  if (preset === "visitor-history") {
+    seedVisitorHistoryForTest();
+    return;
+  }
+
   if (preset === "visitor-bird" || preset === "visitor-squirrel") {
     const moods = ["good", "normal", "tired"];
     const history = Array.from({ length: 8 }, (_, index) => {
@@ -1454,6 +1586,7 @@ function renderAll() {
   renderForestEffect(getTodayMoodState());
   renderMessages();
   renderCompleteCard();
+  renderVisitorLog();
   updateTodayStatus();
 }
 

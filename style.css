@@ -1695,3 +1695,93 @@ body.dev-test-mode .test-preset-buttons button[data-test-preset="visitor-squirre
   68% { opacity: 0.96; transform: translate(0, 0) scale(1.02); }
   100% { opacity: 0; transform: translate(-165px, 44px) scale(0.78); }
 }
+
+
+/* V1.3 test: 방문자 기록 1차 */
+.visitor-log-card {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 24px;
+}
+
+.visitor-log-kicker {
+  display: inline-flex;
+  margin-bottom: 6px;
+  color: rgba(218, 248, 199, 0.72);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.visitor-log-title {
+  margin: 0;
+  color: #f4ffe9;
+  font-size: 17px;
+  font-weight: 950;
+  line-height: 1.35;
+}
+
+.visitor-log-list {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.visitor-log-item {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 11px 12px;
+  border: 1px solid rgba(225, 255, 211, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.visitor-log-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(217, 247, 181, 0.12);
+  color: #efffcf;
+  font-size: 18px;
+  box-shadow: 0 0 18px rgba(216, 255, 176, 0.1);
+}
+
+.visitor-log-item strong {
+  display: block;
+  color: #f2ffe7;
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.visitor-log-item p,
+.visitor-log-empty {
+  margin: 4px 0 0;
+  color: rgba(238, 246, 232, 0.72);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.visitor-log-card.visitor-log-ready {
+  border-color: rgba(223, 255, 180, 0.22);
+  background: rgba(28, 54, 38, 0.42);
+}
+
+.visitor-log-item.visitor-log-bird .visitor-log-icon {
+  background: rgba(208, 255, 180, 0.13);
+}
+
+.visitor-log-item.visitor-log-squirrel .visitor-log-icon {
+  background: rgba(226, 178, 119, 0.13);
+}
+
+body.dev-test-mode .test-preset-buttons button[data-test-preset="visitor-history"] {
+  border-color: rgba(208, 255, 180, 0.28);
+  background: rgba(126, 183, 127, 0.13);
+}
