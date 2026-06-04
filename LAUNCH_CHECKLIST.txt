@@ -1,4 +1,10 @@
-살아있는 숲 V1.2 stable 체크리스트
+살아있는 숲 V1.2.1 stable 체크리스트
+
+[버전 확인]
+□ GitHub 저장소 README 상단에 현재 안정판 V1.2.1 stable이 보인다.
+□ 홈페이지 첫 화면에 V1.2.1 버전이 보인다.
+□ 개인 정원 상단에도 V1.2.1 버전이 보인다.
+□ index.html?test=1 테스트 패널 데이터에 V1.2.1이 보인다.
 
 [일반 화면]
 □ index.html 접속 시 월드 숲이 먼저 보인다.
@@ -15,7 +21,6 @@
 
 [테스트 모드]
 □ index.html?test=1로 테스트 패널이 열린다.
-□ 데이터 표시에 V1.2가 보인다.
 □ 방문자 새 버튼이 작동한다.
 □ 방문자 다람쥐 버튼이 작동한다.
 □ 오늘 기록 전 / 오늘 기록 완료 / 깊어진 나무 프리셋이 기존처럼 작동한다.
@@ -23,7 +28,7 @@
 
 [배포]
 □ assets 폴더를 삭제하지 않았다.
-□ index.html / style.css / app.js / VERSION.txt / UPLOAD_GUIDE.txt를 덮어썼다.
+□ README.md / index.html / style.css / app.js / VERSION.txt / UPLOAD_GUIDE.txt를 덮어썼다.
 □ GitHub Pages에서 새로고침 후 최신 화면이 보인다.
 
-모두 통과하면: V1.2 stable 적용 완료
+모두 통과하면: V1.2.1 stable 적용 완료
