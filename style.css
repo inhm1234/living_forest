@@ -3987,3 +3987,212 @@ body[data-world-time="day"] .daily-loop-card {
     width: 118px;
   }
 }
+
+
+/* V1.10.3 test: 월드 숲 군집/레이어 보정 2차 */
+.world-neighbor-spots {
+  z-index: 8;
+}
+
+.neighbor-spot {
+  z-index: var(--slot-depth, 4);
+  width: 96px;
+  height: 120px;
+  transform-origin: center bottom;
+}
+
+.neighbor-ground {
+  width: 70px;
+  height: 22px;
+  bottom: 11px;
+  opacity: 0.88;
+}
+
+.neighbor-tree-wrap {
+  width: 82px;
+  height: 98px;
+  bottom: 10px;
+}
+
+.neighbor-tree-shadow {
+  opacity: 0.24;
+}
+
+.neighbor-tree-image {
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.24)) blur(var(--slot-blur, 0px));
+  opacity: calc(var(--slot-opacity, 0.75) + 0.06);
+}
+
+.neighbor-spot small {
+  bottom: -4px;
+  padding: 2px 6px;
+  font-size: 8.5px;
+  background: rgba(8, 18, 16, 0.24);
+  border-color: rgba(231, 255, 222, 0.06);
+  color: rgba(242, 255, 233, 0.68);
+  opacity: 0.05;
+  transform: translateX(-50%) scale(0.9);
+}
+
+.world-focus-active .neighbor-spot small,
+.neighbor-spot:hover small {
+  opacity: 0.68;
+  background: rgba(8, 18, 16, 0.38);
+  transform: translateX(-50%) scale(1);
+}
+
+/* smaller distant trees, denser near clusters */
+.neighbor-spot.world-tree-seed .neighbor-tree-wrap {
+  width: 36px;
+  height: 44px;
+}
+
+.neighbor-spot.world-tree-sprout .neighbor-tree-wrap {
+  width: 46px;
+  height: 54px;
+}
+
+.neighbor-spot.world-tree-sapling .neighbor-tree-wrap {
+  width: 58px;
+  height: 70px;
+}
+
+.neighbor-spot.world-tree-young .neighbor-tree-wrap {
+  width: 72px;
+  height: 86px;
+}
+
+.neighbor-spot.world-tree-hero .neighbor-tree-wrap {
+  width: 80px;
+  height: 94px;
+}
+
+/* make my tree a representative tree, not a card-like centerpiece */
+.my-world-spot {
+  bottom: 86px;
+  width: 188px;
+}
+
+.my-spot-ring {
+  width: 96px;
+  height: 96px;
+  opacity: 0.62;
+}
+
+.my-spot-visual {
+  width: 148px;
+  height: 156px;
+}
+
+.my-spot-ground-shadow {
+  width: 140px;
+  height: 32px;
+  bottom: 18px;
+  background: radial-gradient(ellipse, rgba(238, 255, 192, 0.18), rgba(44, 79, 45, 0.2) 54%, transparent 76%);
+}
+
+.my-spot-tree-image {
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.28));
+}
+
+.my-world-spot .my-spot-name {
+  background: rgba(8, 18, 16, 0.22);
+  border-color: rgba(231, 255, 222, 0.08);
+  opacity: 0.82;
+}
+
+.my-world-spot .my-spot-status {
+  max-width: 160px;
+  margin-top: 4px;
+  font-size: 10.5px;
+  opacity: 0.34;
+}
+
+.world-focus-active .my-spot-name,
+.world-focus-active .my-spot-status {
+  opacity: 0.92;
+}
+
+.world-focus-active .my-spot-ring {
+  opacity: 0.92;
+  box-shadow: 0 0 0 12px rgba(232, 255, 185, 0.05), 0 0 44px rgba(225, 255, 178, 0.2);
+}
+
+.world-focus-active .my-spot-tree-image {
+  filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 16px rgba(224, 255, 181, 0.18));
+}
+
+/* unify with scene lighting */
+.world-time-day .neighbor-tree-image {
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.2)) blur(var(--slot-blur, 0px)) brightness(1.03) saturate(1.04);
+}
+
+.world-time-day .neighbor-ground,
+.world-time-day .my-spot-ground-shadow {
+  background: radial-gradient(ellipse, rgba(245, 255, 194, 0.18), rgba(62, 109, 62, 0.2) 54%, transparent 76%);
+}
+
+.world-time-sunset .neighbor-tree-image {
+  filter: drop-shadow(0 8px 13px rgba(0, 0, 0, 0.24)) blur(var(--slot-blur, 0px)) brightness(0.98) saturate(1.02) sepia(0.08);
+}
+
+.world-time-night .neighbor-tree-image {
+  filter: drop-shadow(0 9px 15px rgba(0, 0, 0, 0.34)) blur(calc(var(--slot-blur, 0px) + 0.12px)) brightness(0.88) saturate(0.94);
+}
+
+.world-time-night .neighbor-ground,
+.world-time-night .my-spot-ground-shadow {
+  background: radial-gradient(ellipse, rgba(190, 220, 255, 0.1), rgba(21, 38, 48, 0.18) 54%, transparent 76%);
+}
+
+@media (max-width: 560px) {
+  .neighbor-spot {
+    width: 82px;
+    height: 104px;
+  }
+
+  .neighbor-tree-wrap {
+    width: 68px;
+    height: 84px;
+  }
+
+  .neighbor-spot.world-tree-seed .neighbor-tree-wrap {
+    width: 30px;
+    height: 38px;
+  }
+
+  .neighbor-spot.world-tree-sprout .neighbor-tree-wrap {
+    width: 38px;
+    height: 46px;
+  }
+
+  .neighbor-spot.world-tree-sapling .neighbor-tree-wrap {
+    width: 50px;
+    height: 62px;
+  }
+
+  .neighbor-spot.world-tree-young .neighbor-tree-wrap {
+    width: 62px;
+    height: 76px;
+  }
+
+  .neighbor-spot.world-tree-hero .neighbor-tree-wrap {
+    width: 68px;
+    height: 82px;
+  }
+
+  .my-world-spot {
+    width: 170px;
+    bottom: 82px;
+  }
+
+  .my-spot-visual {
+    width: 132px;
+    height: 140px;
+  }
+
+  .my-world-spot .my-spot-status {
+    max-width: 148px;
+    font-size: 10px;
+  }
+}
