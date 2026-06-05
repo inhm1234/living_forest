@@ -6,7 +6,7 @@
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10.3 test",
+  version: "V1.10.4 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -1361,14 +1361,14 @@ function getWorldSpotInfo() {
     return {
       className: "world-tree",
       visual: "✧",
-      status: "내 나무가 주변 나무들과 함께 월드 숲에 자리 잡고 있어요."
+      status: "내 나무가 주변 나무들 사이에서 조용히 자리를 넓혀가고 있어요."
     };
   }
 
   return {
     className: "world-tree world-mature",
     visual: "✺",
-    status: "오래 돌본 대표 나무가 숲 속에서 깊게 뿌리내렸어요."
+    status: "오래 돌본 대표 나무가 숲의 결 속에서 깊게 뿌리내렸어요."
   };
 }
 
@@ -1672,7 +1672,7 @@ function renderWorldNeighbors() {
       return `
         <article
           class="neighbor-spot slot-${slot.state} ${sizeClass}"
-          style="--slot-x: ${slot.x}%; --slot-y: ${slot.y}%; --slot-scale: ${slot.scale}; --slot-opacity: ${slot.opacity}; --slot-mobile-x: ${slot.mobileX}%; --slot-mobile-y: ${slot.mobileY}%; --slot-mobile-scale: ${slot.mobileScale}; --slot-depth: ${slot.depth || 4}; --slot-blur: ${(slot.scale < 0.7 ? 0.85 : slot.scale < 0.9 ? 0.45 : slot.scale > 1.05 ? 0.08 : 0.2).toFixed(2)}px;"
+          style="--slot-x: ${slot.x}%; --slot-y: ${slot.y}%; --slot-scale: ${slot.scale}; --slot-opacity: ${slot.opacity}; --slot-mobile-x: ${slot.mobileX}%; --slot-mobile-y: ${slot.mobileY}%; --slot-mobile-scale: ${slot.mobileScale}; --slot-depth: ${slot.depth || 4}; --slot-blur: ${(slot.scale < 0.7 ? 1.0 : slot.scale < 0.9 ? 0.55 : slot.scale > 1.05 ? 0.1 : 0.24).toFixed(2)}px; --slot-brightness: ${(slot.depth <= 2 ? 0.9 : slot.depth <= 4 ? 0.96 : slot.depth >= 8 ? 0.98 : 1).toFixed(2)}; --slot-sat: ${(slot.depth <= 2 ? 0.9 : slot.depth <= 4 ? 0.95 : 1).toFixed(2)}; --slot-shadow: ${(slot.depth <= 2 ? 0.18 : slot.depth <= 4 ? 0.22 : 0.26).toFixed(2)};"
           aria-label="${slot.name}, ${slot.days}일째 자라는 자리, ${stateLabel}"
         >
           <span class="neighbor-ground" aria-hidden="true"></span>
@@ -1836,7 +1836,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 월드 숲 군집/레이어 보정 2차`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 월드 숲 배경 통합감 보정`;
   }
 }
 
