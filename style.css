@@ -3338,3 +3338,160 @@ body[data-world-time="day"] .daily-loop-card {
 .garden-stage.garden-time-night .stage-message {
   background: rgba(6, 18, 16, 0.56);
 }
+
+/* V1.9 test: 고화질 나무 성장 이미지 실제 적용 */
+.tree-image-layer {
+  transition: width 0.55s ease, height 0.55s ease, bottom 0.55s ease;
+}
+
+.tree-image {
+  object-position: center bottom;
+}
+
+.tree-stage-germination {
+  width: 188px;
+  height: 210px;
+  bottom: 118px;
+}
+
+.tree-stage-sprout {
+  width: 188px;
+  height: 242px;
+  bottom: 108px;
+}
+
+.tree-stage-seedling {
+  width: 208px;
+  height: 274px;
+  bottom: 100px;
+}
+
+.tree-stage-leafy-seedling {
+  width: 228px;
+  height: 296px;
+  bottom: 94px;
+}
+
+.tree-stage-sapling {
+  width: 248px;
+  height: 322px;
+  bottom: 86px;
+}
+
+.tree-stage-branching-sapling {
+  width: 266px;
+  height: 342px;
+  bottom: 80px;
+}
+
+.tree-stage-early-tree {
+  width: 292px;
+  height: 364px;
+  bottom: 72px;
+}
+
+.tree-stage-young-canopy {
+  width: 318px;
+  height: 392px;
+  bottom: 62px;
+}
+
+.tree-stage-young {
+  width: 340px;
+  height: 420px;
+  bottom: 56px;
+}
+
+.tree-stage-hero {
+  width: 370px;
+  height: 452px;
+  bottom: 48px;
+}
+
+.tree-stage-germination .tree-glow,
+.tree-stage-sprout .tree-glow,
+.tree-stage-seedling .tree-glow,
+.tree-stage-leafy-seedling .tree-glow {
+  height: 54%;
+  bottom: 4%;
+  opacity: 0.72;
+}
+
+.tree-stage-germination .tree-shadow-image,
+.tree-stage-sprout .tree-shadow-image,
+.tree-stage-seedling .tree-shadow-image,
+.tree-stage-leafy-seedling .tree-shadow-image {
+  width: 110%;
+  bottom: -16px;
+  opacity: 0.46;
+}
+
+.tree-stage-hero .tree-glow,
+.tree-stage-young .tree-glow,
+.tree-stage-young-canopy .tree-glow {
+  width: 120%;
+  height: 76%;
+  opacity: 0.94;
+}
+
+@media (max-width: 640px) {
+  .tree-stage-germination {
+    width: 142px;
+    height: 168px;
+    bottom: 142px;
+  }
+
+  .tree-stage-sprout {
+    width: 146px;
+    height: 190px;
+    bottom: 132px;
+  }
+
+  .tree-stage-seedling {
+    width: 162px;
+    height: 214px;
+    bottom: 124px;
+  }
+
+  .tree-stage-leafy-seedling {
+    width: 176px;
+    height: 234px;
+    bottom: 116px;
+  }
+
+  .tree-stage-sapling {
+    width: 194px;
+    height: 258px;
+    bottom: 108px;
+  }
+
+  .tree-stage-branching-sapling {
+    width: 210px;
+    height: 278px;
+    bottom: 100px;
+  }
+
+  .tree-stage-early-tree {
+    width: 228px;
+    height: 298px;
+    bottom: 92px;
+  }
+
+  .tree-stage-young-canopy {
+    width: 248px;
+    height: 322px;
+    bottom: 84px;
+  }
+
+  .tree-stage-young {
+    width: 268px;
+    height: 348px;
+    bottom: 76px;
+  }
+
+  .tree-stage-hero {
+    width: 288px;
+    height: 372px;
+    bottom: 68px;
+  }
+}

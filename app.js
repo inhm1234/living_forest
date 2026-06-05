@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.8.3 test
+// 살아있는 숲 V1.9 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.8.3 test
-// 목적: 내 정원 시간대 연동 1차 테스트판
+// 버전명: V1.9 test
+// 목적: 나무 성장 이미지 실제 적용 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.8.3 test",
+  version: "V1.9 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -60,13 +60,29 @@ const moodRules = {
 };
 
 const growthStageRules = [
-  { minDays: 0, maxDays: 0, name: "첫 기록을 기다리는 씨앗" },
-  { minDays: 1, maxDays: 2, name: "작은 새싹" },
-  { minDays: 3, maxDays: 6, name: "빛을 찾는 새싹" },
-  { minDays: 7, maxDays: 13, name: "숲에 자리 잡은 어린 나무" },
-  { minDays: 14, maxDays: 20, name: "자라는 나무" },
-  { minDays: 21, maxDays: 29, name: "깊어지는 나무" },
-  { minDays: 30, maxDays: Infinity, name: "작은 숲의 중심나무" }
+  { minDays: 0, maxDays: 0, name: "씨앗이 깨어나는 날" },
+  { minDays: 1, maxDays: 2, name: "막 올라온 새싹" },
+  { minDays: 3, maxDays: 4, name: "어린 새싹" },
+  { minDays: 5, maxDays: 6, name: "잎이 퍼지는 새싹" },
+  { minDays: 7, maxDays: 9, name: "작은 묘목" },
+  { minDays: 10, maxDays: 13, name: "가지가 생긴 묘목" },
+  { minDays: 14, maxDays: 20, name: "어린 나무의 시작" },
+  { minDays: 21, maxDays: 29, name: "잎이 풍성한 어린 나무" },
+  { minDays: 30, maxDays: 59, name: "어린 나무" },
+  { minDays: 60, maxDays: Infinity, name: "대표 나무" }
+];
+
+const treeImageStageRules = [
+  { minDays: 0, maxDays: 0, className: "tree-stage-germination", src: "assets/garden/tree-germination-v1.png", alt: "씨앗이 발아하며 깨어나는 나무" },
+  { minDays: 1, maxDays: 2, className: "tree-stage-sprout", src: "assets/garden/tree-sprout-v1.png", alt: "흙 위로 막 올라온 새싹" },
+  { minDays: 3, maxDays: 4, className: "tree-stage-seedling", src: "assets/garden/tree-seedling-v1.png", alt: "줄기와 잎이 보이기 시작한 어린 새싹" },
+  { minDays: 5, maxDays: 6, className: "tree-stage-leafy-seedling", src: "assets/garden/tree-leafy-seedling-v1.png", alt: "잎이 퍼지기 시작한 새싹" },
+  { minDays: 7, maxDays: 9, className: "tree-stage-sapling", src: "assets/garden/tree-sapling-v1.png", alt: "작은 묘목으로 자라난 나무" },
+  { minDays: 10, maxDays: 13, className: "tree-stage-branching-sapling", src: "assets/garden/tree-branching-sapling-v1.png", alt: "작은 가지가 생기기 시작한 묘목" },
+  { minDays: 14, maxDays: 20, className: "tree-stage-early-tree", src: "assets/garden/tree-early-tree-v1.png", alt: "어린 나무로 넘어가는 중간 단계" },
+  { minDays: 21, maxDays: 29, className: "tree-stage-young-canopy", src: "assets/garden/tree-young-canopy-v1.png", alt: "잎이 풍성해진 어린 나무" },
+  { minDays: 30, maxDays: 59, className: "tree-stage-young", src: "assets/garden/tree-young-v1.png", alt: "안정적으로 자란 어린 나무" },
+  { minDays: 60, maxDays: Infinity, className: "tree-stage-hero", src: "assets/garden/tree-hero-v1.png", alt: "오래 돌본 대표 나무" }
 ];
 
 const growthMilestoneRules = [
@@ -1098,36 +1114,9 @@ function getDailyLoopInfo() {
 
 function getTreeImageInfo() {
   const totalDays = treeData.history.length;
-
-  if (totalDays === 0) {
-    return {
-      className: "tree-stage-seed",
-      src: "assets/garden/tree-seed.svg",
-      alt: "첫 기록을 기다리는 씨앗"
-    };
-  }
-
-  if (totalDays <= 3) {
-    return {
-      className: "tree-stage-sprout",
-      src: "assets/garden/tree-sprout.svg",
-      alt: "밤 정원에서 자라는 작은 새싹"
-    };
-  }
-
-  if (totalDays <= 14) {
-    return {
-      className: "tree-stage-young",
-      src: "assets/garden/tree-young.svg",
-      alt: "밤 정원에 자리 잡은 어린 나무"
-    };
-  }
-
-  return {
-    className: "tree-stage-grown",
-    src: "assets/garden/tree-grown.svg",
-    alt: "밤 정원 안에서 깊어진 나무"
-  };
+  return treeImageStageRules.find((stage) => {
+    return totalDays >= stage.minDays && totalDays <= stage.maxDays;
+  }) || treeImageStageRules[treeImageStageRules.length - 1];
 }
 
 function getTreeState() {
@@ -1640,6 +1629,23 @@ function renderCompleteCard() {
   completeMessageElement.textContent = `오늘의 ${todayRecord.label} 기운이 내 나무와 월드 숲의 내 자리에 조용히 스며들었어요. 오늘의 마음은 숲에 남았어요. 이제 그만 쉬어도 괜찮아요. ${getNextGoalMessage()}`;
 }
 
+function renderVersionLabels() {
+  const versionElements = document.querySelectorAll(".version");
+  const demoPillElement = document.querySelector(".demo-pill");
+
+  if (versionElements[0]) {
+    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 체험판`;
+  }
+
+  if (versionElements[1]) {
+    versionElements[1].textContent = `오늘 내 나무 돌보기 · ${APP_CONFIG.version}`;
+  }
+
+  if (demoPillElement) {
+    demoPillElement.textContent = `${APP_CONFIG.version} · 나무 성장 이미지 실제 적용`;
+  }
+}
+
 function renderGardenAtmosphere() {
   const atmosphere = getWorldAtmosphereInfo();
 
@@ -1850,14 +1856,14 @@ function createTestPresetData(preset) {
 
   if (preset === "grown") {
     const moods = ["good", "normal", "tired"];
-    const history = Array.from({ length: 30 }, (_, index) => {
+    const history = Array.from({ length: 60 }, (_, index) => {
       return createHistoryRecord(index, moods[index % moods.length]);
     });
 
     return createNewTreeData({
-      leaf: 31,
-      trunk: 31,
-      root: 31,
+      leaf: 61,
+      trunk: 61,
+      root: 61,
       lastCheckDate: getTodayKey(),
       history,
       treeName: "깊어진 테스트 나무"
@@ -1865,6 +1871,32 @@ function createTestPresetData(preset) {
   }
 
   return createNewTreeData();
+}
+
+function createGrowthDaysTestData(totalDays) {
+  const safeDays = Math.max(0, Math.min(120, Number(totalDays) || 0));
+  const moods = ["good", "normal", "tired"];
+  const history = Array.from({ length: safeDays }, (_, index) => {
+    return createHistoryRecord(index, moods[index % moods.length]);
+  });
+
+  return createNewTreeData({
+    leaf: Math.max(1, safeDays + 1),
+    trunk: Math.max(1, safeDays + 1),
+    root: Math.max(1, safeDays + 1),
+    lastCheckDate: safeDays > 0 ? getTodayKey() : null,
+    history,
+    treeName: safeDays > 0 ? `성장 ${safeDays}일 테스트 나무` : "성장 0일 테스트 나무"
+  });
+}
+
+function applyGrowthDaysFromUrlForTest() {
+  if (!isTestMode || !urlParams.has("growthDays")) {
+    return;
+  }
+
+  treeData = normalizeTreeData(createGrowthDaysTestData(urlParams.get("growthDays")));
+  saveTreeData();
 }
 
 function applyTestPreset(preset) {
@@ -2059,6 +2091,7 @@ function showGardenScreen() {
 }
 
 function renderAll() {
+  renderVersionLabels();
   renderTestModeStatus();
   renderWorld();
   renderDailyLoop();
@@ -2093,6 +2126,7 @@ if (focusMyTreeBtnElement) {
 backToWorldBtnTopElement.addEventListener("click", showWorldScreen);
 backToWorldBtnBottomElement.addEventListener("click", showWorldScreen);
 
+applyGrowthDaysFromUrlForTest();
 saveTreeData();
 setupTestMode();
 renderAll();
