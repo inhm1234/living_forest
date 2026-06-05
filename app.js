@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.8 test
+// 살아있는 숲 V1.8.1 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.8 test
-// 목적: 낮·노을·밤 분위기 강화판 테스트판
+// 버전명: V1.8.1 test
+// 목적: 낮·노을·밤 대비 강화판 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.8 test",
+  version: "V1.8.1 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -1276,19 +1276,19 @@ function createWorldAtmosphere(key, forced = false) {
       key: "day",
       label: "낮 숲",
       shortLabel: "낮",
-      description: forced ? "테스트 모드에서 낮 분위기를 확인하고 있어요." : "햇빛이 숲길 사이로 들어오는 시간이에요.",
-      hint: "숲길 사이로 햇빛이 들어오고, 새와 나비가 조금 더 활발하게 움직여요.",
-      particleCount: 9,
-      quietChance: 0.08
+      description: forced ? "테스트 모드에서 밝은 낮 분위기를 확인하고 있어요." : "햇빛이 숲길과 빈터까지 환하게 비추는 시간이에요.",
+      hint: "낮 숲은 확실히 밝게 보여요. 숲길, 빈터, 내 자리까지 햇빛이 들어와 생명력이 살아나요.",
+      particleCount: 11,
+      quietChance: 0.06
     },
     sunset: {
       key: "sunset",
       label: "노을 숲",
       shortLabel: "노을",
-      description: forced ? "테스트 모드에서 노을 분위기를 확인하고 있어요." : "따뜻한 노을빛이 긴 그림자와 함께 내려앉는 시간이에요.",
-      hint: "따뜻한 노을빛이 길게 내려앉고, 숲은 하루를 마무리하듯 천천히 숨 쉬어요.",
+      description: forced ? "테스트 모드에서 노을 분위기를 확인하고 있어요." : "밝은 낮에서 밤으로 넘어가기 전, 따뜻한 빛과 그림자가 함께 내려앉는 시간이에요.",
+      hint: "노을 숲은 낮보다 차분하지만 어둡지 않게, 따뜻한 빛과 긴 그림자로 하루의 마무리 느낌을 줘요.",
       particleCount: 12,
-      quietChance: 0.14
+      quietChance: 0.13
     },
     night: {
       key: "night",
@@ -1332,6 +1332,10 @@ function renderWorldAtmosphere() {
     worldStageElement.classList.add(`world-time-${atmosphere.key}`);
     worldStageElement.dataset.worldTime = atmosphere.key;
     worldStageElement.setAttribute("aria-label", `전체 월드 숲, 현재 ${atmosphere.label}`);
+  }
+
+  if (document.body) {
+    document.body.dataset.worldTime = atmosphere.key;
   }
 
   if (worldTimeBadgeElement) {

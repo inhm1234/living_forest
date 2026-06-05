@@ -2338,7 +2338,7 @@ body.dev-test-mode .test-preset-buttons button[data-test-preset="visitor-history
 }
 
 
-/* V1.8 test: 낮·노을·밤 분위기 강화 */
+/* V1.8.1 test: 낮·노을·밤 대비 강화 */
 .world-stage {
   height: min(76vh, 640px);
   min-height: 540px;
@@ -2556,7 +2556,7 @@ body.dev-test-mode .test-preset-buttons button[data-test-preset="visitor-history
 }
 
 
-/* V1.8 test: 낮·노을·밤 월드 숲 분위기 강화 */
+/* V1.8.1 test: 낮·노을·밤 월드 숲 분위기 강화 */
 .world-atmosphere-hint {
   margin: 8px 0 0;
   color: rgba(226, 248, 216, 0.66);
@@ -2763,5 +2763,297 @@ body.dev-test-mode .test-preset-buttons button[data-test-preset="visitor-history
   .world-time-sunset .world-sky-glow::before,
   .world-time-night .world-sky-glow::before {
     transform: scale(0.78);
+  }
+}
+
+/* V1.8.1 test: 시간대 대비 강화 — 낮은 확실히 밝게, 노을은 따뜻하게, 밤은 몽환적으로 */
+body[data-world-time="day"] {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(224, 255, 187, 0.34), transparent 38%),
+    radial-gradient(circle at 50% 26%, rgba(134, 196, 130, 0.18), transparent 48%),
+    linear-gradient(180deg, #18362e 0%, #143126 48%, #07100f 100%);
+}
+
+body[data-world-time="sunset"] {
+  background:
+    radial-gradient(circle at 52% 0%, rgba(255, 180, 111, 0.24), transparent 38%),
+    linear-gradient(180deg, #211d1b 0%, #1a241d 48%, #07100f 100%);
+}
+
+body[data-world-time="night"] {
+  background:
+    radial-gradient(circle at 54% 0%, rgba(142, 186, 255, 0.16), transparent 36%),
+    linear-gradient(180deg, #071324 0%, #0b181c 48%, #05090e 100%);
+}
+
+.world-stage.world-time-day {
+  background-color: #6f9c74;
+  background-image:
+    radial-gradient(circle at 42% 8%, rgba(255, 255, 224, 0.96), rgba(255, 255, 206, 0.44) 16%, transparent 38%),
+    linear-gradient(180deg, rgba(183, 231, 182, 0.42), rgba(104, 174, 104, 0.22) 48%, rgba(62, 116, 61, 0.16)),
+    url("assets/world/world-bg-preview.png"),
+    linear-gradient(180deg, #9dc994 0%, #4f8f5f 55%, #16371f 100%);
+  background-blend-mode: screen, screen, normal, normal;
+}
+
+.world-stage.world-time-day::before {
+  background:
+    radial-gradient(circle at 44% 14%, rgba(255, 255, 222, 0.54), transparent 35%),
+    radial-gradient(ellipse at 50% 60%, rgba(230, 255, 190, 0.18) 0 26%, transparent 54%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.045) 44%, rgba(7, 22, 12, 0.08) 100%);
+  mix-blend-mode: screen;
+  opacity: 0.92;
+}
+
+.world-stage.world-time-day::after {
+  background: radial-gradient(ellipse at 50% 72%, transparent 0 58%, rgba(7, 24, 10, 0.08) 82%, rgba(4, 13, 7, 0.18) 100%);
+  mix-blend-mode: normal;
+}
+
+.world-time-day .world-backdrop {
+  opacity: 1;
+  background:
+    radial-gradient(circle at 42% 8%, rgba(255, 255, 225, 0.8), transparent 28%),
+    radial-gradient(ellipse at 52% 58%, rgba(165, 230, 128, 0.34), transparent 62%),
+    linear-gradient(180deg, rgba(123, 190, 128, 0.42), rgba(54, 124, 67, 0.12));
+  mix-blend-mode: screen;
+}
+
+.world-time-day .world-dim {
+  background:
+    radial-gradient(circle at 50% 58%, rgba(250, 255, 196, 0.28), transparent 27%),
+    radial-gradient(circle at 50% 37%, transparent 0 42%, rgba(255, 255, 255, 0.04) 63%, rgba(5, 22, 9, 0.12) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(193, 235, 168, 0.05) 58%, rgba(12, 52, 23, 0.16) 100%);
+}
+
+.world-time-day .world-sky-glow {
+  top: -19%;
+  width: 92%;
+  height: 66%;
+  opacity: 1;
+  background: radial-gradient(ellipse, rgba(255, 255, 213, 0.62), rgba(243, 255, 184, 0.18) 45%, transparent 72%);
+  filter: blur(12px);
+}
+
+.world-time-day .world-sky-glow::before {
+  width: 148px;
+  height: 148px;
+  background: radial-gradient(circle, rgba(255, 255, 227, 0.98), rgba(255, 251, 185, 0.48) 42%, transparent 74%);
+  box-shadow: 0 0 80px rgba(255, 255, 205, 0.42), 0 0 140px rgba(199, 255, 148, 0.24);
+}
+
+.world-time-day .world-sunbeam {
+  opacity: 0.88;
+  width: 20%;
+  background: linear-gradient(180deg, rgba(255, 255, 218, 0.58), rgba(255, 255, 218, 0.14) 62%, transparent 100%);
+  filter: blur(8px);
+  mix-blend-mode: screen;
+}
+
+.world-time-day .world-depth-back {
+  opacity: 0.34;
+  background:
+    radial-gradient(ellipse at 50% 62%, rgba(202, 255, 180, 0.12) 0 28%, transparent 58%),
+    linear-gradient(180deg, rgba(82, 143, 102, 0.08), rgba(11, 44, 23, 0.16));
+}
+
+.world-time-day .world-canopy-shadow {
+  opacity: 0.2;
+  filter: blur(5px);
+}
+
+.world-time-day .world-far-trees {
+  opacity: 0.45;
+  filter: blur(2px) brightness(1.75) saturate(1.18);
+}
+
+.world-time-day .far-trees-b {
+  opacity: 0.28;
+  filter: blur(3.4px) brightness(1.95) saturate(1.05);
+}
+
+.world-time-day .world-mid-trees {
+  opacity: 0.58;
+  filter: blur(1px) brightness(1.42) saturate(1.22);
+}
+
+.world-time-day .world-forest-trail {
+  opacity: 0.95;
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(255, 255, 196, 0.36), transparent 42%),
+    linear-gradient(180deg, rgba(225, 242, 158, 0.2), rgba(132, 175, 88, 0.36) 44%, rgba(76, 105, 55, 0.34) 100%);
+  filter: brightness(1.35) saturate(1.16);
+}
+
+.world-time-day .world-clearing {
+  opacity: 1;
+  background:
+    radial-gradient(ellipse at 50% 74%, rgba(244, 255, 185, 0.32) 0 22%, rgba(142, 199, 96, 0.16) 39%, transparent 66%),
+    radial-gradient(ellipse at 50% 45%, rgba(255, 255, 212, 0.08), transparent 70%);
+  backdrop-filter: blur(0.6px) brightness(1.16) saturate(1.14);
+  -webkit-backdrop-filter: blur(0.6px) brightness(1.16) saturate(1.14);
+}
+
+.world-time-day .world-spot-ground {
+  opacity: 1;
+  background:
+    radial-gradient(ellipse at 50% 39%, rgba(255, 255, 196, 0.42), transparent 38%),
+    radial-gradient(ellipse at 48% 50%, rgba(120, 170, 85, 0.82), rgba(67, 113, 61, 0.72) 52%, rgba(38, 76, 37, 0.16) 74%, transparent 80%);
+  filter: brightness(1.26) saturate(1.18);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.18), 0 0 58px rgba(245, 255, 178, 0.2);
+}
+
+.world-time-day .world-foreground {
+  opacity: 0.88;
+  filter: brightness(1.18) saturate(1.18);
+}
+
+.world-time-day .world-front-leaves {
+  opacity: 0.48;
+  filter: blur(0.8px) brightness(1.32) saturate(1.18);
+}
+
+.world-time-day .world-fog {
+  opacity: 0.2;
+  background: radial-gradient(ellipse, rgba(255, 255, 230, 0.22), transparent 70%);
+  filter: blur(16px);
+}
+
+.world-time-day .world-particle-layer span,
+.world-time-day .world-life-light {
+  opacity: 0.32;
+  background: rgba(255, 255, 202, 0.9);
+  box-shadow: 0 0 12px rgba(255, 255, 202, 0.62), 0 0 28px rgba(170, 232, 126, 0.28);
+}
+
+.world-time-day .world-life-bird,
+.world-time-day .world-life-butterfly {
+  opacity: 0.82;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.2)) brightness(1.16) saturate(1.14);
+}
+
+.world-time-day .world-life-squirrel {
+  opacity: 0.68;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.22)) brightness(1.12) saturate(1.08);
+}
+
+.world-time-day .neighbor-spot {
+  opacity: 0.78;
+  filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.22)) brightness(1.14) saturate(1.12);
+}
+
+.world-time-day .neighbor-spot small {
+  background: rgba(20, 48, 30, 0.48);
+  color: rgba(250, 255, 238, 0.9);
+}
+
+.world-time-day .my-world-spot {
+  border-color: rgba(255, 255, 222, 0.28);
+  background:
+    radial-gradient(ellipse at 50% 10%, rgba(255, 255, 208, 0.2), transparent 52%),
+    rgba(16, 44, 27, 0.48);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 18px 40px rgba(0, 0, 0, 0.2),
+    0 0 62px rgba(255, 255, 180, 0.22);
+}
+
+.world-time-day .my-spot-ring {
+  border-color: rgba(255, 255, 214, 0.36);
+  background: radial-gradient(circle, rgba(255, 255, 197, 0.22), transparent 68%);
+  box-shadow: 0 0 36px rgba(255, 255, 188, 0.26);
+}
+
+.world-time-day .my-spot-name,
+.world-time-day .my-spot-status {
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+
+body[data-world-time="day"] .world-summary,
+body[data-world-time="day"] .daily-loop-card {
+  background: rgba(18, 45, 28, 0.58);
+  border-color: rgba(238, 255, 207, 0.2);
+}
+
+body[data-world-time="day"] .world-atmosphere-hint {
+  color: rgba(234, 255, 211, 0.82);
+}
+
+.world-stage.world-time-sunset {
+  background-color: #4f3b2c;
+  background-image:
+    radial-gradient(circle at 68% 14%, rgba(255, 183, 113, 0.64), rgba(255, 143, 90, 0.22) 20%, transparent 42%),
+    linear-gradient(180deg, rgba(255, 155, 96, 0.18), rgba(108, 66, 40, 0.18) 52%, rgba(30, 28, 19, 0.18)),
+    url("assets/world/world-bg-preview.png"),
+    linear-gradient(180deg, #674a35 0%, #34503a 55%, #07100f 100%);
+  background-blend-mode: screen, soft-light, normal, normal;
+}
+
+.world-stage.world-time-sunset::before {
+  background:
+    radial-gradient(circle at 68% 16%, rgba(255, 188, 116, 0.28), transparent 38%),
+    linear-gradient(180deg, rgba(255, 178, 105, 0.08), transparent 48%, rgba(9, 8, 6, 0.25));
+}
+
+.world-stage.world-time-sunset::after {
+  background:
+    linear-gradient(105deg, rgba(255, 155, 84, 0.08), transparent 48%, rgba(0, 0, 0, 0.26)),
+    radial-gradient(ellipse at 50% 74%, transparent 0 45%, rgba(0, 0, 0, 0.2) 76%, rgba(0, 0, 0, 0.43) 100%);
+}
+
+.world-time-sunset .world-sunbeam {
+  opacity: 0.72;
+  background: linear-gradient(180deg, rgba(255, 192, 126, 0.42), rgba(255, 156, 91, 0.11) 64%, transparent 100%);
+  filter: blur(9px);
+}
+
+.world-time-sunset .world-far-trees,
+.world-time-sunset .world-mid-trees {
+  filter: brightness(1.08) saturate(1.04) sepia(0.08);
+}
+
+.world-time-sunset .world-forest-trail,
+.world-time-sunset .world-clearing,
+.world-time-sunset .world-spot-ground {
+  filter: brightness(1.08) saturate(1.12) sepia(0.16);
+}
+
+.world-time-sunset .world-fog {
+  opacity: 0.36;
+  background: radial-gradient(ellipse, rgba(255, 211, 160, 0.2), transparent 70%);
+}
+
+body[data-world-time="sunset"] .world-summary,
+body[data-world-time="sunset"] .daily-loop-card {
+  background: rgba(29, 26, 18, 0.62);
+  border-color: rgba(255, 208, 151, 0.17);
+}
+
+.world-stage.world-time-night::after {
+  background: radial-gradient(ellipse at 50% 72%, transparent 0 34%, rgba(0, 0, 0, 0.3) 72%, rgba(0, 0, 0, 0.58) 100%);
+}
+
+.world-time-night .world-fog {
+  opacity: 0.68;
+}
+
+.world-time-night .world-particle-layer span,
+.world-time-night .world-life-firefly,
+.world-time-night .world-life-light {
+  opacity: 0.88;
+}
+
+@media (max-width: 560px) {
+  .world-time-day .world-sky-glow::before {
+    width: 116px;
+    height: 116px;
+  }
+
+  .world-time-day .world-far-trees {
+    opacity: 0.38;
+  }
+
+  .world-time-day .world-mid-trees {
+    opacity: 0.52;
   }
 }
