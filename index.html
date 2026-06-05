@@ -35,7 +35,7 @@
 
   <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.6.1-test" />
+  <link rel="stylesheet" href="style.css?v=1.7-test" />
 </head>
 <body>
   <noscript>
@@ -44,33 +44,37 @@
   <main class="app">
     <section id="worldScreen" class="screen screen-active">
       <header class="hero world-hero">
-        <p class="version">살아있는 숲 V1.6.1 test · 체험판</p>
+        <p class="version">살아있는 숲 V1.7 test · 체험판</p>
         <h1>살아있는 숲</h1>
         <p class="subtitle">하루에 한 번, 지금의 마음을 내 나무에게 남겨요.</p>
-        <p class="demo-pill">V1.6.1 test · 방문자가 남긴 흔적을 볼 수 있어요</p>
+        <p class="demo-pill">V1.7 test · 2.5D 월드 숲 비주얼 1차</p>
       </header>
 
       <section class="world-card visual-card">
-        <div class="world-stage visual-stage" aria-label="전체 월드 숲">
+        <div id="worldStage" class="world-stage visual-stage world-time-day" aria-label="전체 월드 숲">
+          <div id="worldTimeBadge" class="world-time-badge">낮 숲</div>
+          <div class="world-layer world-backdrop" aria-hidden="true"></div>
           <div class="stage-dim world-dim"></div>
+          <div class="world-layer world-sky-glow" aria-hidden="true"></div>
+          <div class="world-layer world-sunbeam sunbeam-a" aria-hidden="true"></div>
+          <div class="world-layer world-sunbeam sunbeam-b" aria-hidden="true"></div>
           <div class="world-depth world-depth-back" aria-hidden="true"></div>
           <div class="world-canopy-shadow" aria-hidden="true"></div>
+          <div class="world-layer world-far-trees far-trees-a" aria-hidden="true"></div>
+          <div class="world-layer world-far-trees far-trees-b" aria-hidden="true"></div>
+          <div class="world-layer world-mid-trees" aria-hidden="true"></div>
+          <div class="world-layer world-forest-trail" aria-hidden="true"></div>
           <div class="world-clearing" aria-hidden="true"></div>
           <div class="world-spot-ground" aria-hidden="true"></div>
-          <div class="world-foreground" aria-hidden="true"></div>
-
-          <div class="world-fog world-fog-a"></div>
-          <div class="world-fog world-fog-b"></div>
-          <div class="world-light-orb orb-a"></div>
-          <div class="world-light-orb orb-b"></div>
-          <div class="world-light-orb orb-c"></div>
-          <div class="world-light-orb orb-d"></div>
-          <div class="world-soft-leaf leaf-a"></div>
-          <div class="world-soft-leaf leaf-b"></div>
-          <div class="world-animal bird-a"><img src="assets/garden/bird-silhouette.svg" alt="" /></div>
-          <div class="world-animal squirrel-a"><img src="assets/garden/squirrel-silhouette.svg" alt="" /></div>
-
           <div id="worldNeighborSpots" class="world-neighbor-spots" aria-label="숲의 다른 자리들"></div>
+          <div id="worldParticleLayer" class="world-particle-layer" aria-hidden="true"></div>
+          <div id="worldLifeLayer" class="world-life-layer" aria-hidden="true"></div>
+          <div class="world-fog world-fog-a" aria-hidden="true"></div>
+          <div class="world-fog world-fog-b" aria-hidden="true"></div>
+          <div class="world-fog world-fog-c" aria-hidden="true"></div>
+          <div class="world-foreground" aria-hidden="true"></div>
+          <div class="world-front-leaves leaves-a" aria-hidden="true"></div>
+          <div class="world-front-leaves leaves-b" aria-hidden="true"></div>
 
           <div id="myWorldSpot" class="my-world-spot world-seed" aria-label="내 자리">
             <div class="my-spot-ring" aria-hidden="true"></div>
@@ -96,14 +100,17 @@
           <p id="dailyLoopText" class="daily-loop-text">숲을 둘러보고, 내 나무가 자랄 작은 자리를 시작해요.</p>
         </div>
 
-        <button id="goGardenBtn" class="primary-btn" type="button">내 나무 심으러 가기</button>
+        <div class="world-action-row">
+          <button id="focusMyTreeBtn" class="ghost-btn world-focus-btn" type="button">내 나무 보기</button>
+          <button id="goGardenBtn" class="primary-btn" type="button">내 나무 심으러 가기</button>
+        </div>
       </section>
     </section>
 
     <section id="gardenScreen" class="screen">
       <header class="hero garden-hero">
         <button id="backToWorldBtnTop" class="ghost-btn small-btn" type="button">← 전체 숲</button>
-        <p class="version">오늘 내 나무 돌보기 · V1.6.1 test</p>
+        <p class="version">오늘 내 나무 돌보기 · V1.7 test</p>
         <h2 class="garden-title">밤 정원</h2>
         <p class="subtitle">좋음도, 보통도, 피곤함도 모두 성장으로 남아요.</p>
       </header>
@@ -248,6 +255,6 @@
   </aside>
 
 
-  <script src="app.js?v=1.6.1-test"></script>
+  <script src="app.js?v=1.7-test"></script>
 </body>
 </html>

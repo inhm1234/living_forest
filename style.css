@@ -1848,3 +1848,491 @@ body.dev-test-mode .test-preset-buttons button[data-test-preset="visitor-history
   font-size: 11px;
   font-weight: 850;
 }
+
+
+/* V1.7 test: 2.5D 월드 숲 비주얼 1차 */
+.world-card {
+  width: min(calc(100vw - 28px), 1040px);
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+
+.world-stage {
+  height: min(78vh, 660px);
+  min-height: 560px;
+  perspective: 900px;
+  background-image:
+    radial-gradient(circle at 50% 12%, rgba(234, 255, 202, 0.16), transparent 30%),
+    url("assets/world/world-bg-preview.png"),
+    linear-gradient(180deg, #233a33 0%, #10241e 48%, #07100f 100%);
+  background-size: cover;
+  background-position: center;
+  transform-style: preserve-3d;
+}
+
+.world-stage::before,
+.world-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.world-stage::before {
+  z-index: 2;
+  background:
+    radial-gradient(ellipse at 50% 34%, transparent 0 32%, rgba(4, 10, 11, 0.22) 62%, rgba(2, 7, 8, 0.64) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 46%, rgba(0, 0, 0, 0.42));
+}
+
+.world-stage::after {
+  z-index: 14;
+  background: radial-gradient(ellipse at 50% 70%, transparent 0 38%, rgba(0, 0, 0, 0.24) 72%, rgba(0, 0, 0, 0.5) 100%);
+  mix-blend-mode: multiply;
+}
+
+.world-layer {
+  position: absolute;
+  pointer-events: none;
+}
+
+.world-time-badge {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  z-index: 18;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 8px 12px;
+  border: 1px solid rgba(237, 255, 221, 0.18);
+  border-radius: 999px;
+  background: rgba(8, 18, 16, 0.46);
+  color: rgba(245, 255, 233, 0.82);
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+  backdrop-filter: blur(14px);
+}
+
+.world-backdrop {
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(circle at 50% 8%, rgba(250, 255, 221, 0.18), transparent 28%),
+    radial-gradient(ellipse at 50% 52%, rgba(31, 73, 54, 0.24), transparent 56%),
+    linear-gradient(180deg, rgba(44, 78, 67, 0.2), rgba(4, 14, 12, 0.3));
+}
+
+.world-sky-glow {
+  left: 50%;
+  top: -18%;
+  z-index: 3;
+  width: 80%;
+  height: 52%;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(252, 255, 211, 0.22), transparent 68%);
+  filter: blur(18px);
+  animation: worldSkyBreath 7s ease-in-out infinite;
+}
+
+.world-sunbeam {
+  top: -12%;
+  z-index: 4;
+  width: 18%;
+  height: 75%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 212, 0.22), rgba(255, 255, 212, 0.03) 72%, transparent);
+  filter: blur(10px);
+  opacity: 0.62;
+  transform-origin: top center;
+  animation: sunbeamFloat 11s ease-in-out infinite;
+}
+
+.sunbeam-a {
+  left: 28%;
+  transform: rotate(14deg);
+}
+
+.sunbeam-b {
+  right: 24%;
+  width: 15%;
+  transform: rotate(-12deg);
+  animation-delay: -3s;
+}
+
+.world-far-trees {
+  left: -8%;
+  right: -8%;
+  z-index: 4;
+  height: 42%;
+  background:
+    radial-gradient(ellipse at 12% 62%, rgba(5, 18, 14, 0.82) 0 12%, transparent 14%),
+    radial-gradient(ellipse at 25% 55%, rgba(5, 18, 14, 0.86) 0 16%, transparent 18%),
+    radial-gradient(ellipse at 42% 50%, rgba(5, 18, 14, 0.78) 0 18%, transparent 20%),
+    radial-gradient(ellipse at 60% 56%, rgba(5, 18, 14, 0.84) 0 15%, transparent 17%),
+    radial-gradient(ellipse at 78% 52%, rgba(5, 18, 14, 0.82) 0 18%, transparent 20%),
+    radial-gradient(ellipse at 94% 62%, rgba(5, 18, 14, 0.76) 0 13%, transparent 15%),
+    linear-gradient(180deg, transparent 0 48%, rgba(4, 14, 11, 0.86) 49% 100%);
+  filter: blur(1.2px);
+  opacity: 0.78;
+}
+
+.far-trees-a {
+  top: 15%;
+  transform: translateZ(-120px) scale(1.08);
+}
+
+.far-trees-b {
+  top: 24%;
+  height: 38%;
+  opacity: 0.5;
+  filter: blur(2.2px);
+  transform: translateZ(-180px) scale(1.16);
+}
+
+.world-mid-trees {
+  left: -4%;
+  right: -4%;
+  bottom: 17%;
+  z-index: 5;
+  height: 42%;
+  background:
+    radial-gradient(ellipse at 8% 78%, rgba(8, 25, 17, 0.88) 0 14%, transparent 16%),
+    radial-gradient(ellipse at 18% 72%, rgba(8, 25, 17, 0.84) 0 18%, transparent 20%),
+    radial-gradient(ellipse at 82% 72%, rgba(8, 25, 17, 0.84) 0 18%, transparent 20%),
+    radial-gradient(ellipse at 94% 78%, rgba(8, 25, 17, 0.88) 0 14%, transparent 16%);
+  filter: blur(0.6px);
+  opacity: 0.92;
+}
+
+.world-forest-trail {
+  left: 50%;
+  bottom: 2%;
+  z-index: 5;
+  width: min(58%, 520px);
+  height: 58%;
+  border-radius: 12% 12% 48% 48%;
+  transform: translateX(-50%) perspective(260px) rotateX(58deg);
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(222, 255, 186, 0.1), transparent 38%),
+    linear-gradient(180deg, rgba(169, 200, 130, 0.04), rgba(83, 99, 62, 0.22) 40%, rgba(42, 48, 35, 0.5) 100%);
+  filter: blur(0.3px);
+  mask-image: radial-gradient(ellipse at 50% 60%, #000 0 38%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 60%, #000 0 38%, transparent 78%);
+}
+
+.world-foreground {
+  z-index: 13;
+  height: 148px;
+  background:
+    url("assets/world/world-foreground-grass.svg") center bottom / cover no-repeat,
+    radial-gradient(ellipse at 8% 92%, rgba(14, 35, 21, 0.92), transparent 42%),
+    radial-gradient(ellipse at 88% 90%, rgba(12, 32, 21, 0.92), transparent 42%),
+    linear-gradient(180deg, transparent 0%, rgba(4, 13, 10, 0.78) 56%, rgba(3, 8, 8, 0.98) 100%);
+}
+
+.world-front-leaves {
+  position: absolute;
+  z-index: 16;
+  pointer-events: none;
+  width: 190px;
+  height: 160px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 20% 22%, rgba(111, 167, 91, 0.58) 0 7%, transparent 8%),
+    radial-gradient(circle at 42% 30%, rgba(92, 144, 79, 0.56) 0 9%, transparent 10%),
+    radial-gradient(circle at 68% 18%, rgba(104, 160, 91, 0.56) 0 7%, transparent 8%),
+    radial-gradient(circle at 75% 50%, rgba(73, 122, 68, 0.48) 0 10%, transparent 11%);
+  filter: blur(1px);
+  opacity: 0.68;
+  animation: frontLeafSway 7s ease-in-out infinite;
+}
+
+.leaves-a {
+  left: -44px;
+  top: -18px;
+}
+
+.leaves-b {
+  right: -52px;
+  top: 22px;
+  transform: scaleX(-1);
+  animation-delay: -2.5s;
+}
+
+.world-fog-c {
+  z-index: 12;
+  bottom: 34%;
+  animation-duration: 34s;
+  animation-delay: -6s;
+  opacity: 0.42;
+}
+
+.world-neighbor-spots {
+  z-index: 7;
+}
+
+.my-world-spot {
+  bottom: 82px;
+  z-index: 11;
+  transition: transform 0.7s ease, box-shadow 0.7s ease, background 0.7s ease, border-color 0.7s ease;
+}
+
+.world-focus-active .my-world-spot {
+  border-color: rgba(245, 255, 206, 0.42);
+  background:
+    radial-gradient(ellipse at 50% 8%, rgba(240, 255, 190, 0.22), transparent 52%),
+    rgba(8, 18, 16, 0.58);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 24px 54px rgba(0, 0, 0, 0.32),
+    0 0 0 14px rgba(232, 255, 185, 0.08),
+    0 0 92px rgba(225, 255, 178, 0.36);
+}
+
+.world-focus-active .world-clearing,
+.world-focus-active .world-spot-ground {
+  filter: brightness(1.18) saturate(1.08);
+}
+
+.world-particle-layer,
+.world-life-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.world-particle-layer {
+  z-index: 9;
+}
+
+.world-particle-layer span {
+  position: absolute;
+  left: var(--particle-x, 50%);
+  top: var(--particle-y, 50%);
+  width: var(--particle-size, 5px);
+  height: var(--particle-size, 5px);
+  border-radius: 50%;
+  background: rgba(246, 255, 198, 0.82);
+  box-shadow: 0 0 18px rgba(246, 255, 198, 0.72), 0 0 36px rgba(148, 221, 156, 0.34);
+  opacity: 0.52;
+  animation: worldParticleDrift var(--particle-duration, 12s) ease-in-out infinite;
+  animation-delay: var(--particle-delay, 0s);
+}
+
+.world-life-item {
+  position: absolute;
+  left: var(--life-x, 50%);
+  top: var(--life-y, 40%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 30px;
+  color: rgba(248, 255, 212, 0.88);
+  font-size: 22px;
+  opacity: 0.78;
+  transform: translate(-50%, -50%) scale(var(--life-scale, 1));
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.34));
+  animation-duration: var(--life-duration, 9s);
+  animation-delay: var(--life-delay, 0s);
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+.world-life-item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.world-life-bird {
+  width: 54px;
+  height: 38px;
+  animation-name: worldBirdGlide;
+}
+
+.world-life-squirrel {
+  width: 48px;
+  height: 38px;
+  animation-name: worldSquirrelMove;
+}
+
+.world-life-butterfly {
+  animation-name: worldButterflyFloat;
+  color: rgba(229, 255, 190, 0.76);
+}
+
+.world-life-firefly,
+.world-life-light {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  color: transparent;
+  background: rgba(250, 255, 176, 0.92);
+  box-shadow: 0 0 16px rgba(250, 255, 176, 0.86), 0 0 34px rgba(130, 217, 146, 0.42);
+  animation-name: worldFireflyFloat;
+}
+
+.world-life-light {
+  width: 10px;
+  height: 10px;
+  opacity: 0.5;
+}
+
+.world-action-row {
+  display: grid;
+  grid-template-columns: minmax(132px, 0.46fr) 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.world-action-row #goGardenBtn,
+.world-action-row .world-focus-btn {
+  margin-top: 0;
+  min-height: 56px;
+}
+
+.world-focus-btn {
+  padding: 14px 16px;
+  font-weight: 950;
+}
+
+.world-time-day {
+  --world-time-tone: rgba(218, 255, 186, 0.18);
+}
+
+.world-time-day .world-backdrop {
+  background:
+    radial-gradient(circle at 48% 6%, rgba(255, 255, 219, 0.26), transparent 30%),
+    radial-gradient(ellipse at 50% 52%, rgba(64, 128, 80, 0.2), transparent 58%),
+    linear-gradient(180deg, rgba(53, 92, 78, 0.26), rgba(7, 21, 16, 0.24));
+}
+
+.world-time-sunset .world-backdrop {
+  background:
+    radial-gradient(circle at 65% 14%, rgba(255, 186, 128, 0.28), transparent 30%),
+    radial-gradient(ellipse at 50% 56%, rgba(180, 103, 67, 0.13), transparent 58%),
+    linear-gradient(180deg, rgba(83, 57, 53, 0.3), rgba(12, 22, 18, 0.28));
+}
+
+.world-time-sunset .world-sunbeam {
+  background: linear-gradient(180deg, rgba(255, 204, 147, 0.3), rgba(255, 177, 115, 0.08) 70%, transparent);
+}
+
+.world-time-sunset .world-particle-layer span,
+.world-time-sunset .world-life-light {
+  background: rgba(255, 210, 150, 0.86);
+  box-shadow: 0 0 18px rgba(255, 205, 146, 0.72), 0 0 38px rgba(225, 134, 94, 0.38);
+}
+
+.world-time-night .world-backdrop {
+  background:
+    radial-gradient(circle at 68% 12%, rgba(186, 218, 255, 0.18), transparent 28%),
+    radial-gradient(ellipse at 50% 54%, rgba(67, 103, 122, 0.14), transparent 58%),
+    linear-gradient(180deg, rgba(18, 31, 48, 0.34), rgba(3, 10, 14, 0.34));
+}
+
+.world-time-night .world-sky-glow {
+  background: radial-gradient(ellipse, rgba(190, 221, 255, 0.2), transparent 68%);
+}
+
+.world-time-night .world-sunbeam {
+  opacity: 0.2;
+  background: linear-gradient(180deg, rgba(190, 221, 255, 0.18), rgba(190, 221, 255, 0.04) 72%, transparent);
+}
+
+.world-time-night .world-fog {
+  opacity: 0.72;
+}
+
+.world-time-night .world-particle-layer span,
+.world-time-night .world-life-firefly,
+.world-time-night .world-life-light {
+  background: rgba(224, 255, 180, 0.96);
+  box-shadow: 0 0 20px rgba(224, 255, 180, 0.9), 0 0 44px rgba(101, 219, 145, 0.46);
+}
+
+@keyframes worldSkyBreath {
+  0%, 100% { opacity: 0.58; transform: translateX(-50%) scale(0.98); }
+  50% { opacity: 0.98; transform: translateX(-50%) scale(1.06); }
+}
+
+@keyframes sunbeamFloat {
+  0%, 100% { opacity: 0.42; filter: blur(12px); }
+  50% { opacity: 0.74; filter: blur(8px); }
+}
+
+@keyframes frontLeafSway {
+  0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.56; }
+  50% { transform: translateY(10px) rotate(2deg); opacity: 0.76; }
+}
+
+@keyframes worldParticleDrift {
+  0%, 100% { transform: translate(0, 0) scale(0.72); opacity: 0.26; }
+  32% { transform: translate(12px, -18px) scale(1.08); opacity: 0.82; }
+  68% { transform: translate(-10px, 10px) scale(0.94); opacity: 0.52; }
+}
+
+@keyframes worldBirdGlide {
+  0%, 100% { opacity: 0; transform: translate(-70px, 16px) scale(var(--life-scale, 1)) rotate(-7deg); }
+  20% { opacity: 0.76; }
+  50% { opacity: 0.92; transform: translate(36px, -12px) scale(var(--life-scale, 1)) rotate(4deg); }
+  82% { opacity: 0.62; }
+}
+
+@keyframes worldSquirrelMove {
+  0%, 100% { opacity: 0; transform: translate(42px, 12px) scale(var(--life-scale, 1)); }
+  28% { opacity: 0.74; }
+  58% { opacity: 0.88; transform: translate(-22px, 0) scale(var(--life-scale, 1)); }
+  80% { opacity: 0.46; }
+}
+
+@keyframes worldButterflyFloat {
+  0%, 100% { opacity: 0.22; transform: translate(-12px, 8px) scale(var(--life-scale, 1)) rotate(-8deg); }
+  45% { opacity: 0.86; transform: translate(14px, -18px) scale(var(--life-scale, 1)) rotate(10deg); }
+}
+
+@keyframes worldFireflyFloat {
+  0%, 100% { opacity: 0.24; transform: translate(0, 0) scale(calc(var(--life-scale, 1) * 0.8)); }
+  36% { opacity: 0.96; transform: translate(11px, -15px) scale(var(--life-scale, 1)); }
+  72% { opacity: 0.5; transform: translate(-9px, 9px) scale(calc(var(--life-scale, 1) * 0.9)); }
+}
+
+@media (max-width: 720px) {
+  .world-card {
+    width: 100%;
+    margin-left: 0;
+    transform: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .world-stage {
+    height: 580px;
+    min-height: 580px;
+  }
+
+  .world-time-badge {
+    left: 12px;
+    top: 12px;
+  }
+
+  .world-action-row {
+    grid-template-columns: 1fr;
+  }
+
+  .world-front-leaves {
+    width: 140px;
+    height: 130px;
+  }
+
+  .my-world-spot {
+    bottom: 82px;
+  }
+}

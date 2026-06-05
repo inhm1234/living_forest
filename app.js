@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.6.1 test
+// 살아있는 숲 V1.7 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.6.1 test
-// 목적: 방문자 흔적 확장 테스트판
+// 버전명: V1.7 test
+// 목적: 2.5D 월드 숲 비주얼 1차 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.6.1 test",
+  version: "V1.7 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -218,6 +218,11 @@ const backToWorldBtnTopElement = document.querySelector("#backToWorldBtnTop");
 const backToWorldBtnBottomElement = document.querySelector("#backToWorldBtnBottom");
 const myWorldSpotElement = document.querySelector("#myWorldSpot");
 const worldNeighborSpotsElement = document.querySelector("#worldNeighborSpots");
+const worldStageElement = document.querySelector("#worldStage");
+const worldTimeBadgeElement = document.querySelector("#worldTimeBadge");
+const worldLifeLayerElement = document.querySelector("#worldLifeLayer");
+const worldParticleLayerElement = document.querySelector("#worldParticleLayer");
+const focusMyTreeBtnElement = document.querySelector("#focusMyTreeBtn");
 const mySpotAuraElement = document.querySelector("#mySpotAura");
 const mySpotVisualElement = document.querySelector("#mySpotVisual");
 const mySpotNameElement = document.querySelector("#mySpotName");
@@ -1264,6 +1269,159 @@ function getWorldSlotStateLabel(state) {
   return "고른 기운";
 }
 
+function getWorldAtmosphereInfo() {
+  const hour = new Date().getHours();
+
+  if (hour >= 6 && hour < 17) {
+    return {
+      key: "day",
+      label: "낮 숲",
+      description: "햇빛이 숲길 사이로 들어오는 시간이에요."
+    };
+  }
+
+  if (hour >= 17 && hour < 20) {
+    return {
+      key: "sunset",
+      label: "노을 숲",
+      description: "따뜻한 노을빛이 긴 그림자와 함께 내려앉는 시간이에요."
+    };
+  }
+
+  return {
+    key: "night",
+    label: "밤 숲",
+    description: "달빛과 반딧불이가 숲을 은은하게 밝혀주는 시간이에요."
+  };
+}
+
+function renderWorldAtmosphere() {
+  const atmosphere = getWorldAtmosphereInfo();
+
+  if (worldStageElement) {
+    worldStageElement.classList.remove("world-time-day", "world-time-sunset", "world-time-night", "world-focus-active");
+    worldStageElement.classList.add(`world-time-${atmosphere.key}`);
+    worldStageElement.dataset.worldTime = atmosphere.key;
+  }
+
+  if (worldTimeBadgeElement) {
+    worldTimeBadgeElement.textContent = atmosphere.label;
+    worldTimeBadgeElement.setAttribute("aria-label", atmosphere.description);
+  }
+
+  return atmosphere;
+}
+
+function getWorldLifeCount(seed, maxCount, chance) {
+  let count = 0;
+
+  for (let index = 0; index < maxCount; index += 1) {
+    if (hashStringToUnitInterval(`${seed}-${index}`) < chance) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
+function getWorldLifeStyle(seed, index, zone = "air") {
+  const x = 12 + hashStringToUnitInterval(`${seed}-x-${index}`) * 76;
+  const baseY = zone === "ground" ? 60 : zone === "high" ? 18 : 26;
+  const ySpread = zone === "ground" ? 18 : zone === "high" ? 20 : 34;
+  const y = baseY + hashStringToUnitInterval(`${seed}-y-${index}`) * ySpread;
+  const scale = 0.72 + hashStringToUnitInterval(`${seed}-scale-${index}`) * 0.72;
+  const delay = hashStringToUnitInterval(`${seed}-delay-${index}`) * -7;
+  const duration = 6 + hashStringToUnitInterval(`${seed}-duration-${index}`) * 8;
+
+  return `--life-x: ${x.toFixed(1)}%; --life-y: ${y.toFixed(1)}%; --life-scale: ${scale.toFixed(2)}; --life-delay: ${delay.toFixed(2)}s; --life-duration: ${duration.toFixed(2)}s;`;
+}
+
+function createWorldLifeMarkup(type, index, seed) {
+  const labels = {
+    bird: "새가 숲 위를 지나가요",
+    squirrel: "다람쥐가 숲길 근처를 지나가요",
+    butterfly: "나비가 빛 사이를 지나가요",
+    firefly: "반딧불이가 숲 안에서 빛나요",
+    light: "빛 입자가 숲 안에 떠 있어요"
+  };
+  const zone = type === "squirrel" ? "ground" : type === "bird" ? "high" : "air";
+  const style = getWorldLifeStyle(`${seed}-${type}`, index, zone);
+
+  if (type === "bird") {
+    return `<span class="world-life-item world-life-bird" style="${style}" aria-label="${labels[type]}"><img src="assets/garden/bird-silhouette.svg" alt="" /></span>`;
+  }
+
+  if (type === "squirrel") {
+    return `<span class="world-life-item world-life-squirrel" style="${style}" aria-label="${labels[type]}"><img src="assets/garden/squirrel-silhouette.svg" alt="" /></span>`;
+  }
+
+  const symbol = type === "butterfly" ? "✧" : type === "firefly" ? "•" : "✦";
+  return `<span class="world-life-item world-life-${type}" style="${style}" aria-label="${labels[type]}">${symbol}</span>`;
+}
+
+function renderWorldLife(atmosphere = getWorldAtmosphereInfo()) {
+  if (!worldLifeLayerElement) {
+    return;
+  }
+
+  const dateKey = getTodayKey();
+  const hourKey = new Date().getHours();
+  const seed = `${treeData.treeId}-${dateKey}-${hourKey}-${atmosphere.key}-world-life`;
+  const lifeConfigs = [
+    { type: "bird", max: atmosphere.key === "night" ? 1 : 4, chance: atmosphere.key === "night" ? 0.18 : 0.62 },
+    { type: "squirrel", max: 2, chance: atmosphere.key === "night" ? 0.12 : 0.34 },
+    { type: "butterfly", max: atmosphere.key === "day" ? 4 : 2, chance: atmosphere.key === "day" ? 0.44 : 0.18 },
+    { type: "firefly", max: atmosphere.key === "night" ? 8 : 2, chance: atmosphere.key === "night" ? 0.76 : 0.12 },
+    { type: "light", max: 7, chance: atmosphere.key === "night" ? 0.46 : 0.64 }
+  ];
+
+  worldLifeLayerElement.innerHTML = lifeConfigs
+    .flatMap((config) => {
+      const count = getWorldLifeCount(`${seed}-${config.type}`, config.max, config.chance);
+      return Array.from({ length: count }, (_, index) => createWorldLifeMarkup(config.type, index, seed));
+    })
+    .join("");
+}
+
+function renderWorldParticles(atmosphere = getWorldAtmosphereInfo()) {
+  if (!worldParticleLayerElement) {
+    return;
+  }
+
+  const dateKey = getTodayKey();
+  const seed = `${treeData.treeId}-${dateKey}-${new Date().getHours()}-${atmosphere.key}-world-particles`;
+  const particleCount = atmosphere.key === "night" ? 14 : atmosphere.key === "sunset" ? 10 : 8;
+
+  worldParticleLayerElement.innerHTML = Array.from({ length: particleCount }, (_, index) => {
+    const x = 6 + hashStringToUnitInterval(`${seed}-x-${index}`) * 88;
+    const y = 10 + hashStringToUnitInterval(`${seed}-y-${index}`) * 70;
+    const size = 3 + hashStringToUnitInterval(`${seed}-size-${index}`) * 5;
+    const delay = hashStringToUnitInterval(`${seed}-delay-${index}`) * -9;
+    const duration = 8 + hashStringToUnitInterval(`${seed}-duration-${index}`) * 8;
+    return `<span style="--particle-x: ${x.toFixed(1)}%; --particle-y: ${y.toFixed(1)}%; --particle-size: ${size.toFixed(1)}px; --particle-delay: ${delay.toFixed(2)}s; --particle-duration: ${duration.toFixed(2)}s;"></span>`;
+  }).join("");
+}
+
+function renderWorldVisualLayers() {
+  const atmosphere = renderWorldAtmosphere();
+  renderWorldLife(atmosphere);
+  renderWorldParticles(atmosphere);
+}
+
+function focusMyWorldSpot() {
+  if (!worldStageElement || !myWorldSpotElement) {
+    highlightWorldSpot();
+    return;
+  }
+
+  worldStageElement.classList.add("world-focus-active");
+  highlightWorldSpot();
+
+  window.setTimeout(() => {
+    worldStageElement.classList.remove("world-focus-active");
+  }, 2600);
+}
+
 function renderWorldNeighbors() {
   if (!worldNeighborSpotsElement) {
     return;
@@ -1310,6 +1468,8 @@ function renderWorldCommunityHint(todayRecord) {
 }
 
 function renderWorld() {
+  renderWorldVisualLayers();
+
   const name = treeData.treeName?.trim() || "이름 없는 나무";
   const todayRecord = getTodayRecord();
   const spotInfo = getWorldSpotInfo();
@@ -1844,6 +2004,9 @@ moodButtons.forEach((button) => {
 });
 
 goGardenBtnElement.addEventListener("click", showGardenScreen);
+if (focusMyTreeBtnElement) {
+  focusMyTreeBtnElement.addEventListener("click", focusMyWorldSpot);
+}
 backToWorldBtnTopElement.addEventListener("click", showWorldScreen);
 backToWorldBtnBottomElement.addEventListener("click", showWorldScreen);
 
