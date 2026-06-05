@@ -1,4 +1,4 @@
-살아있는 숲 V1.8.1 test 업로드 안내
+살아있는 숲 V1.8.2 test 업로드 안내
 
 이 ZIP은 전체 프로젝트가 아니라, GitHub에 덮어쓸 파일 묶음입니다.
 
@@ -15,9 +15,9 @@
 중요:
 - assets 폴더는 삭제하지 마세요.
 - assets/garden, assets/world, assets/share 폴더는 그대로 유지해야 이미지가 깨지지 않습니다.
+- 기존 저장키 livingForestV012와 테스트 저장키 livingForestV012_TEST는 그대로 유지됩니다.
 - 서버 저장, 로그인, Google 계정 기능은 아직 들어 있지 않습니다.
-- 일반 저장키 livingForestV012와 테스트 저장키 livingForestV012_TEST는 그대로 유지됩니다.
-- 이번 버전은 낮 밝기와 낮·노을·밤 시간대 대비 강화 테스트판입니다.
+- 이번 버전은 낮 숲 밝기 확실 강화 테스트판입니다.
 
 GitHub 적용 순서:
 1. GitHub 저장소 inhm1234/living_forest로 이동합니다.
@@ -25,23 +25,13 @@ GitHub 적용 순서:
 3. Commit changes를 누릅니다.
 4. 1~3분 정도 기다린 뒤 아래 주소를 새로고침합니다.
    https://inhm1234.github.io/living_forest/
-5. 일반 화면에서 V1.8.1 test가 보이는지 확인합니다.
+5. 일반 화면에서 V1.8.2 test가 보이는지 확인합니다.
 6. 테스트는 아래 주소에서 진행합니다.
    https://inhm1234.github.io/living_forest/?test=1
 
-시간대 강제 확인:
-- 낮: https://inhm1234.github.io/living_forest/?test=1&worldTime=day
-- 노을: https://inhm1234.github.io/living_forest/?test=1&worldTime=sunset
-- 밤: https://inhm1234.github.io/living_forest/?test=1&worldTime=night
-
-V1.8.1 test 확인 포인트:
-- 홈페이지 첫 화면에 V1.8.1 test가 보이는지
-- 테스트 모드 데이터 표시에 V1.8.1 test · schema 3 · local-only가 보이는지
-- 낮 숲이 확실히 밝고 노을/밤과 다르게 보이는지
-- 내 나무 보기 버튼이 정상 작동하는지
-- 개인 정원, 감정 기록, 방문자 흔적, 방문 기록이 유지되는지
+V1.8.2 test 확인 포인트:
+- 홈페이지 첫 화면에 V1.8.2 test가 보이는지
+- 테스트 모드 데이터 표시에 V1.8.2 test · schema 3 · local-only가 보이는지
+- 낮 숲이 확실히 밝고 낮처럼 보이는지
+- 노을 / 밤과 구분감이 커졌는지
 - 기존 나무 이름과 성장 기록이 이어지는지
-
-통과 후 다음 단계:
-- V1.8 stable 정리
-- 이후 매일 다시 들어오고 싶게 만드는 재미 요소 강화

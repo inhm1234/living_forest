@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.8.1 test
+// 살아있는 숲 V1.8.2 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.8.1 test
-// 목적: 낮·노을·밤 대비 강화판 테스트판
+// 버전명: V1.8.2 test
+// 목적: 낮 숲 밝기 확실 강화판 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.8.1 test",
+  version: "V1.8.2 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
