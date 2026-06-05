@@ -4448,3 +4448,226 @@ body[data-world-time="day"] .daily-loop-card {
     font-size: 9.5px;
   }
 }
+
+
+/* V1.10.5 test: 월드 숲 무대감 완화 보정 */
+.world-stage::before {
+  bottom: 98px;
+  height: 94px;
+  background:
+    radial-gradient(ellipse at 48% 48%, rgba(221, 239, 192, 0.08) 0 22%, transparent 58%),
+    linear-gradient(180deg, rgba(224, 236, 209, 0.02), rgba(82, 104, 80, 0.08) 46%, rgba(8, 16, 13, 0.03) 100%);
+  filter: blur(12px);
+  opacity: 0.42;
+}
+
+.world-neighbor-spots::before {
+  bottom: 64px;
+  height: 132px;
+  background:
+    radial-gradient(ellipse at 52% 28%, rgba(235, 245, 219, 0.08), transparent 44%),
+    linear-gradient(180deg, rgba(239, 250, 227, 0.02), rgba(131, 158, 121, 0.05) 26%, rgba(30, 50, 36, 0.08) 72%, rgba(8, 16, 13, 0.03));
+  filter: blur(12px);
+  opacity: 0.44;
+}
+
+.world-neighbor-spots::after {
+  bottom: 42px;
+  height: 120px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(244, 255, 227, 0.05), transparent 34%),
+    linear-gradient(180deg, rgba(71, 99, 68, 0.08), rgba(18, 31, 22, 0.24) 72%, rgba(4, 10, 9, 0.02));
+  opacity: 0.62;
+}
+
+.world-clearing {
+  width: min(78%, 540px);
+  height: 344px;
+  background:
+    radial-gradient(ellipse at 50% 72%, rgba(184, 222, 155, 0.08) 0 16%, rgba(86, 129, 93, 0.05) 36%, transparent 66%),
+    radial-gradient(ellipse at 46% 46%, rgba(5, 13, 12, 0.16), transparent 70%);
+  -webkit-backdrop-filter: blur(2.2px) brightness(0.76) saturate(0.82);
+  backdrop-filter: blur(2.2px) brightness(0.76) saturate(0.82);
+  mask-image: radial-gradient(ellipse at 50% 66%, #000 0 52%, transparent 79%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 66%, #000 0 52%, transparent 79%);
+}
+
+.world-spot-ground {
+  bottom: 56px;
+  width: min(64%, 390px);
+  height: 82px;
+  background:
+    radial-gradient(ellipse at 42% 40%, rgba(208, 233, 173, 0.1), transparent 28%),
+    radial-gradient(ellipse at 58% 48%, rgba(207, 230, 176, 0.06), transparent 24%),
+    radial-gradient(ellipse at 48% 50%, rgba(48, 71, 49, 0.5), rgba(17, 30, 24, 0.62) 56%, rgba(5, 13, 11, 0.14) 72%, transparent 78%);
+  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.2), 0 0 22px rgba(205, 255, 172, 0.04);
+}
+
+.neighbor-spot {
+  width: 94px;
+  height: 118px;
+  transform: translate(-50%, -50%) translateY(var(--slot-lift, 0px)) rotate(var(--slot-tilt, 0deg)) scale(var(--slot-scale, 1));
+  overflow: hidden;
+}
+
+.neighbor-ground {
+  width: 62px;
+  height: 18px;
+  bottom: 9px;
+  background: radial-gradient(ellipse, rgba(194, 226, 163, 0.1), rgba(25, 44, 29, 0.15) 56%, transparent 76%);
+}
+
+.neighbor-tree-wrap {
+  width: 78px;
+  height: 94px;
+  bottom: 7px;
+}
+
+.neighbor-tree-image {
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, var(--slot-shadow, 0.22))) blur(var(--slot-blur, 0px)) brightness(var(--slot-brightness, 1)) saturate(var(--slot-sat, 1));
+  opacity: calc(var(--slot-opacity, 0.72));
+}
+
+.neighbor-spot::after {
+  height: 52px;
+  background:
+    radial-gradient(ellipse at 50% 90%, rgba(22, 40, 26, 0.16), transparent 60%),
+    linear-gradient(180deg, transparent, rgba(56, 85, 52, 0.16) 44%, rgba(8, 15, 12, 0.1));
+  filter: blur(4px);
+  opacity: 0.64;
+}
+
+.neighbor-spot small {
+  opacity: 0;
+}
+
+.world-focus-active .neighbor-spot small,
+.neighbor-spot:hover small {
+  opacity: 0.58;
+}
+
+.my-world-spot {
+  width: 170px;
+  bottom: 92px;
+}
+
+.my-spot-ring {
+  width: 76px;
+  height: 76px;
+  top: 50px;
+  opacity: 0.28;
+  border-color: rgba(229, 255, 204, 0.12);
+  box-shadow: 0 0 22px rgba(212, 255, 174, 0.05);
+}
+
+.my-spot-visual {
+  width: 136px;
+  height: 144px;
+}
+
+.my-spot-ground-shadow {
+  width: 118px;
+  height: 24px;
+  bottom: 14px;
+  background: radial-gradient(ellipse, rgba(220, 237, 180, 0.1), rgba(35, 61, 38, 0.14) 54%, transparent 76%);
+}
+
+.my-spot-tree-wrap {
+  bottom: 8px;
+}
+
+.my-spot-tree-image {
+  filter: drop-shadow(0 8px 13px rgba(0, 0, 0, 0.22)) brightness(0.985) saturate(1);
+}
+
+.my-world-spot .my-spot-name {
+  padding: 3px 8px;
+  background: rgba(8, 18, 16, 0.1);
+  opacity: 0.56;
+}
+
+.my-world-spot .my-spot-status {
+  max-width: 140px;
+  opacity: 0.12;
+}
+
+.world-focus-active .my-spot-name,
+.world-focus-active .my-spot-status {
+  opacity: 0.82;
+}
+
+.world-focus-active .my-spot-ring {
+  opacity: 0.58;
+}
+
+.world-foreground {
+  height: 168px;
+  background:
+    url("assets/world/world-foreground-grass.svg") center bottom / cover no-repeat,
+    radial-gradient(ellipse at 10% 86%, rgba(14, 35, 21, 0.98), transparent 44%),
+    radial-gradient(ellipse at 88% 88%, rgba(12, 32, 21, 0.98), transparent 44%),
+    linear-gradient(180deg, transparent 0%, rgba(25, 44, 29, 0.2) 26%, rgba(4, 13, 10, 0.86) 56%, rgba(3, 8, 8, 0.99) 100%);
+}
+
+.world-time-day .world-stage::before,
+.world-time-day .world-neighbor-spots::before,
+.world-time-day .world-neighbor-spots::after {
+  opacity: 0.4;
+}
+
+.world-time-day .neighbor-tree-image {
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, var(--slot-shadow, 0.18))) blur(var(--slot-blur, 0px)) brightness(calc(var(--slot-brightness, 1) * 0.99)) saturate(calc(var(--slot-sat, 1) * 1.0));
+}
+
+.world-time-sunset .world-stage::before,
+.world-time-sunset .world-neighbor-spots::before,
+.world-time-sunset .world-neighbor-spots::after {
+  opacity: 0.46;
+}
+
+.world-time-night .world-stage::before,
+.world-time-night .world-neighbor-spots::before,
+.world-time-night .world-neighbor-spots::after {
+  opacity: 0.34;
+}
+
+@media (max-width: 560px) {
+  .world-stage::before {
+    bottom: 94px;
+    height: 78px;
+  }
+
+  .world-neighbor-spots::before {
+    bottom: 60px;
+    height: 118px;
+  }
+
+  .world-neighbor-spots::after {
+    height: 104px;
+  }
+
+  .neighbor-spot {
+    width: 76px;
+    height: 96px;
+  }
+
+  .neighbor-tree-wrap {
+    width: 62px;
+    height: 76px;
+  }
+
+  .my-world-spot {
+    width: 156px;
+    bottom: 88px;
+  }
+
+  .my-spot-visual {
+    width: 122px;
+    height: 130px;
+  }
+
+  .my-world-spot .my-spot-status {
+    max-width: 128px;
+    font-size: 9.5px;
+  }
+}
