@@ -1,22 +1,24 @@
-살아있는 숲 V1.9 test 업로드 가이드
+살아있는 숲 V1.10 test 업로드 가이드
 
 1. GitHub 저장소로 이동
    inhm1234/living_forest
 
 2. ZIP 안의 파일을 저장소 루트에 업로드
    - app.js
+   - index.html
    - style.css
    - README.md
    - VERSION.txt
    - UPLOAD_GUIDE.txt
    - LAUNCH_CHECKLIST.txt
+   - PUBLIC_SHARE_COPY.txt
 
 3. 주의
    assets 폴더는 이번 ZIP에 포함되어 있지 않습니다.
    이미 업로드한 assets/garden/의 나무 이미지 파일 10개를 삭제하면 안 됩니다.
 
 4. 커밋 메시지 추천
-   Apply V1.9 test tree growth image assets
+   Apply V1.10 test world tree image display
 
 5. 업로드 후 확인 주소
    일반 화면:
@@ -27,9 +29,13 @@
 
    성장 단계 강제 확인 예시:
    https://inhm1234.github.io/living_forest/?test=1&growthDays=0
+   https://inhm1234.github.io/living_forest/?test=1&growthDays=7
    https://inhm1234.github.io/living_forest/?test=1&growthDays=14
    https://inhm1234.github.io/living_forest/?test=1&growthDays=30
    https://inhm1234.github.io/living_forest/?test=1&growthDays=60
+
+   시간대와 함께 확인 예시:
+   https://inhm1234.github.io/living_forest/?test=1&worldTime=day&growthDays=14
 
 6. 캐시 주의
    업로드 직후 화면이 바로 안 바뀌면 브라우저 새로고침을 한 번 더 하거나 Ctrl+F5로 강력 새로고침하세요.

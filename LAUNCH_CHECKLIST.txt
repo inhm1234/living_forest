@@ -1,22 +1,28 @@
-살아있는 숲 V1.9 test 확인 체크리스트
+살아있는 숲 V1.10 test 확인 체크리스트
 
 [기본]
 - 첫 화면이 정상적으로 열린다.
-- 화면 상단 버전이 V1.9 test로 표시된다.
+- 화면 상단 버전이 V1.10 test로 표시된다.
 - 월드 숲에서 개인 정원으로 이동된다.
 - 기존 이름/기록 데이터가 유지된다.
 
-[나무 성장 이미지]
+[내 정원 나무 성장 이미지]
 - 0일 테스트에서 tree-germination-v1.png가 보인다.
-- 1~2일 테스트에서 tree-sprout-v1.png가 보인다.
-- 3~4일 테스트에서 tree-seedling-v1.png가 보인다.
-- 5~6일 테스트에서 tree-leafy-seedling-v1.png가 보인다.
-- 7~9일 테스트에서 tree-sapling-v1.png가 보인다.
-- 10~13일 테스트에서 tree-branching-sapling-v1.png가 보인다.
-- 14~20일 테스트에서 tree-early-tree-v1.png가 보인다.
-- 21~29일 테스트에서 tree-young-canopy-v1.png가 보인다.
-- 30~59일 테스트에서 tree-young-v1.png가 보인다.
-- 60일 이상 테스트에서 tree-hero-v1.png가 보인다.
+- 7일 테스트에서 tree-sapling-v1.png가 보인다.
+- 14일 테스트에서 tree-early-tree-v1.png가 보인다.
+- 30일 테스트에서 tree-young-v1.png가 보인다.
+- 60일 테스트에서 tree-hero-v1.png가 보인다.
+- 흰 배경 없이 투명 PNG로 자연스럽게 보인다.
+
+[월드 숲 내 나무 이미지]
+- 월드 숲의 내 자리에서 기존 기호 대신 미니 나무 이미지가 보인다.
+- growthDays=0에서 작은 발아 이미지가 월드 숲 내 자리에 보인다.
+- growthDays=7에서 묘목 이미지가 월드 숲 내 자리에 보인다.
+- growthDays=14에서 어린 나무 이미지가 월드 숲 내 자리에 보인다.
+- growthDays=30에서 어린 나무 이미지가 월드 숲 내 자리에 보인다.
+- growthDays=60에서 대표 나무 이미지가 월드 숲 내 자리에 보인다.
+- 내 나무 보기 버튼을 누르면 월드 숲의 내 나무가 은은하게 강조된다.
+- 월드 숲의 깊이감과 내 자리 카드가 크게 깨지지 않는다.
 
 [시간대]
 - ?test=1&worldTime=day 에서 낮 숲/낮 정원이 밝게 보인다.

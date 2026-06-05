@@ -3495,3 +3495,200 @@ body[data-world-time="day"] .daily-loop-card {
     bottom: 68px;
   }
 }
+
+/* V1.10 test: 월드 숲 내 자리에도 실제 성장 나무 이미지 반영 */
+.world-image-spot {
+  --world-tree-size: 72px;
+  --world-tree-visual-height: 88px;
+  --world-tree-lift: 0px;
+}
+
+.world-image-spot .my-spot-ring {
+  top: 44px;
+  width: calc(var(--world-tree-size) * 1.24);
+  height: calc(var(--world-tree-size) * 1.02);
+  border-radius: 48% 52% 50% 50%;
+}
+
+.world-image-spot .my-spot-aura {
+  min-height: 10px;
+  margin-bottom: 0;
+}
+
+.world-image-spot .my-spot-visual {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  height: var(--world-tree-visual-height);
+  margin: 0 auto 3px;
+  font-size: 0;
+  line-height: 0;
+  filter: none;
+  transform: none;
+}
+
+.world-image-spot .my-spot-visual::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  z-index: 0;
+  width: calc(var(--world-tree-size) * 0.9);
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(4, 9, 6, 0.46), rgba(16, 45, 23, 0.22) 54%, transparent 76%);
+  filter: blur(3px);
+  transform: translateX(-50%);
+}
+
+.my-world-tree-image {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: var(--world-tree-size);
+  max-width: 100%;
+  max-height: var(--world-tree-visual-height);
+  object-fit: contain;
+  object-position: center bottom;
+  transform: translateY(var(--world-tree-lift));
+  filter:
+    drop-shadow(0 10px 12px rgba(0, 0, 0, 0.34))
+    drop-shadow(0 0 12px rgba(218, 255, 181, 0.1));
+  transition: width 0.45s ease, filter 0.45s ease, transform 0.45s ease;
+}
+
+.world-tree-stage-germination {
+  --world-tree-size: 48px;
+  --world-tree-visual-height: 58px;
+  --world-tree-lift: 1px;
+}
+
+.world-tree-stage-sprout {
+  --world-tree-size: 54px;
+  --world-tree-visual-height: 66px;
+  --world-tree-lift: 1px;
+}
+
+.world-tree-stage-seedling {
+  --world-tree-size: 60px;
+  --world-tree-visual-height: 72px;
+}
+
+.world-tree-stage-leafy-seedling {
+  --world-tree-size: 66px;
+  --world-tree-visual-height: 80px;
+}
+
+.world-tree-stage-sapling {
+  --world-tree-size: 74px;
+  --world-tree-visual-height: 88px;
+}
+
+.world-tree-stage-branching-sapling {
+  --world-tree-size: 82px;
+  --world-tree-visual-height: 96px;
+}
+
+.world-tree-stage-early-tree {
+  --world-tree-size: 92px;
+  --world-tree-visual-height: 106px;
+}
+
+.world-tree-stage-young-canopy {
+  --world-tree-size: 102px;
+  --world-tree-visual-height: 116px;
+}
+
+.world-tree-stage-young {
+  --world-tree-size: 112px;
+  --world-tree-visual-height: 126px;
+}
+
+.world-tree-stage-hero {
+  --world-tree-size: 124px;
+  --world-tree-visual-height: 138px;
+}
+
+.world-tree-stage-hero .my-world-tree-image,
+.world-tree-stage-young .my-world-tree-image,
+.world-tree-stage-young-canopy .my-world-tree-image {
+  filter:
+    drop-shadow(0 12px 14px rgba(0, 0, 0, 0.36))
+    drop-shadow(0 0 18px rgba(222, 255, 179, 0.18));
+}
+
+.world-focus-active .my-world-tree-image {
+  transform: translateY(calc(var(--world-tree-lift) - 4px)) scale(1.06);
+  filter:
+    drop-shadow(0 14px 18px rgba(0, 0, 0, 0.38))
+    drop-shadow(0 0 28px rgba(236, 255, 188, 0.34));
+}
+
+.world-focus-active .world-image-spot .my-spot-visual::after {
+  background: radial-gradient(ellipse, rgba(238, 255, 186, 0.38), rgba(22, 58, 28, 0.24) 54%, transparent 78%);
+}
+
+.world-image-spot.world-seed .my-spot-visual,
+.world-image-spot.world-sprout .my-spot-visual,
+.world-image-spot.world-tree .my-spot-visual {
+  transform: none;
+}
+
+@media (max-width: 560px) {
+  .world-image-spot {
+    --world-tree-size: 64px;
+    --world-tree-visual-height: 78px;
+  }
+
+  .world-tree-stage-germination {
+    --world-tree-size: 42px;
+    --world-tree-visual-height: 52px;
+  }
+
+  .world-tree-stage-sprout {
+    --world-tree-size: 48px;
+    --world-tree-visual-height: 58px;
+  }
+
+  .world-tree-stage-seedling {
+    --world-tree-size: 54px;
+    --world-tree-visual-height: 64px;
+  }
+
+  .world-tree-stage-leafy-seedling {
+    --world-tree-size: 58px;
+    --world-tree-visual-height: 70px;
+  }
+
+  .world-tree-stage-sapling {
+    --world-tree-size: 64px;
+    --world-tree-visual-height: 76px;
+  }
+
+  .world-tree-stage-branching-sapling {
+    --world-tree-size: 70px;
+    --world-tree-visual-height: 84px;
+  }
+
+  .world-tree-stage-early-tree {
+    --world-tree-size: 78px;
+    --world-tree-visual-height: 92px;
+  }
+
+  .world-tree-stage-young-canopy {
+    --world-tree-size: 86px;
+    --world-tree-visual-height: 100px;
+  }
+
+  .world-tree-stage-young {
+    --world-tree-size: 94px;
+    --world-tree-visual-height: 110px;
+  }
+
+  .world-tree-stage-hero {
+    --world-tree-size: 102px;
+    --world-tree-visual-height: 120px;
+  }
+}

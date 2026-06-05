@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.9 test
+// 살아있는 숲 V1.10 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.9 test
-// 목적: 나무 성장 이미지 실제 적용 테스트판
+// 버전명: V1.10 test
+// 목적: 월드 숲 내 나무 성장 이미지 반영 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.9 test",
+  version: "V1.10 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -1119,6 +1119,15 @@ function getTreeImageInfo() {
   }) || treeImageStageRules[treeImageStageRules.length - 1];
 }
 
+function getWorldTreeImageInfo() {
+  const imageInfo = getTreeImageInfo();
+
+  return {
+    ...imageInfo,
+    worldClassName: imageInfo.className.replace("tree-stage-", "world-tree-stage-")
+  };
+}
+
 function getTreeState() {
   const todayMoodState = getTodayMoodState();
 
@@ -1148,45 +1157,46 @@ function getTreeState() {
 function getWorldSpotInfo() {
   const days = treeData.history.length;
   const hasName = Boolean(treeData.treeName?.trim());
+  const imageInfo = getWorldTreeImageInfo();
 
   if (days === 0) {
     return {
-      className: "world-seed",
-      visual: "•",
+      className: `world-seed ${imageInfo.worldClassName}`,
+      imageInfo,
       status: hasName
-        ? "이름을 얻은 작은 자리가 오늘의 마음을 기다리고 있어요."
-        : "숲 한가운데, 아직 이름 없는 작은 자리가 기다리고 있어요."
+        ? "이름을 얻은 작은 나무가 오늘의 마음을 기다리고 있어요."
+        : "숲 한가운데, 아직 이름 없는 작은 나무 자리가 기다리고 있어요."
     };
   }
 
   if (days <= 2) {
     return {
-      className: "world-sprout",
-      visual: "✦",
-      status: "월드 숲에 들어갈 준비를 하고 있어요. 3일차에는 작은 빛이 생겨요."
+      className: `world-sprout ${imageInfo.worldClassName}`,
+      imageInfo,
+      status: "작은 새싹이 월드 숲에 들어갈 준비를 하고 있어요. 3일차에는 주변에 작은 빛이 생겨요."
     };
   }
 
   if (days <= 6) {
     return {
-      className: "world-sprout world-preview",
-      visual: "✦",
-      status: "월드 숲의 내 자리 주변에 작은 빛이 생겼어요. 7일차에는 정식으로 자리 잡아요."
+      className: `world-sprout world-preview ${imageInfo.worldClassName}`,
+      imageInfo,
+      status: "내 나무의 작은 모습이 월드 숲에 비치기 시작했어요. 7일차에는 정식으로 자리 잡아요."
     };
   }
 
   if (days < 30) {
     return {
-      className: "world-tree",
-      visual: "✧",
-      status: "내 나무가 월드 숲에 정식으로 자리 잡았어요."
+      className: `world-tree ${imageInfo.worldClassName}`,
+      imageInfo,
+      status: "내 나무의 성장 모습이 월드 숲의 내 자리에 함께 보이고 있어요."
     };
   }
 
   return {
-    className: "world-tree world-mature",
-    visual: "✺",
-    status: "작은 숲의 중심나무로 깊게 뿌리내렸어요."
+    className: `world-tree world-mature ${imageInfo.worldClassName}`,
+    imageInfo,
+    status: "오래 돌본 내 나무가 작은 숲의 중심나무처럼 깊게 뿌리내렸어요."
   };
 }
 
@@ -1531,8 +1541,8 @@ function renderWorld() {
   renderWorldNeighbors();
   renderWorldCommunityHint(todayRecord);
 
-  myWorldSpotElement.className = `my-world-spot ${spotInfo.className}`;
-  mySpotVisualElement.textContent = spotInfo.visual;
+  myWorldSpotElement.className = `my-world-spot world-image-spot ${spotInfo.className}`;
+  mySpotVisualElement.innerHTML = `<img class="my-world-tree-image" src="${spotInfo.imageInfo.src}" alt="${spotInfo.imageInfo.alt}" />`;
   mySpotNameElement.textContent = name;
   mySpotStatusElement.textContent = spotInfo.status;
 
@@ -1642,7 +1652,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 나무 성장 이미지 실제 적용`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 월드 숲 내 나무 이미지 반영`;
   }
 }
 
