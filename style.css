@@ -4837,3 +4837,446 @@ body[data-world-time="day"] .daily-loop-card {
     height: 124px;
   }
 }
+
+
+/* V1.10.7 test: 월드 숲 스케일/원근감 재설계 1차 */
+.world-stage {
+  overflow: hidden;
+}
+
+.world-stage::before {
+  bottom: 110px;
+  height: 82px;
+  background:
+    radial-gradient(ellipse at 50% 54%, rgba(208, 228, 179, 0.05) 0 18%, transparent 58%),
+    linear-gradient(180deg, rgba(224, 236, 209, 0.01), rgba(52, 72, 56, 0.06) 52%, rgba(8, 16, 13, 0.02) 100%);
+  filter: blur(14px);
+}
+
+.world-neighbor-spots {
+  perspective: 900px;
+}
+
+.world-neighbor-spots::before {
+  bottom: 62px;
+  height: 110px;
+  background:
+    radial-gradient(ellipse at 50% 35%, rgba(241, 247, 219, 0.07), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(102, 130, 95, 0.05) 30%, rgba(18, 30, 21, 0.09) 100%);
+  opacity: 0.3;
+  filter: blur(10px);
+}
+
+.world-neighbor-spots::after {
+  bottom: 34px;
+  height: 150px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(240, 255, 220, 0.04), transparent 30%),
+    linear-gradient(180deg, rgba(22, 42, 28, 0.04), rgba(8, 16, 13, 0.26) 74%, rgba(3, 8, 8, 0.08));
+  opacity: 0.76;
+}
+
+.world-clearing {
+  width: min(54%, 332px);
+  height: 230px;
+  bottom: 34px;
+  opacity: 0.72;
+  background:
+    radial-gradient(ellipse at 44% 72%, rgba(170, 208, 144, 0.05) 0 16%, transparent 56%),
+    radial-gradient(ellipse at 50% 48%, rgba(5, 13, 12, 0.18), transparent 70%);
+  -webkit-backdrop-filter: blur(1.3px) brightness(0.76) saturate(0.84);
+  backdrop-filter: blur(1.3px) brightness(0.76) saturate(0.84);
+  mask-image: radial-gradient(ellipse at 50% 66%, #000 0 45%, transparent 79%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 66%, #000 0 45%, transparent 79%);
+}
+
+.world-spot-ground {
+  bottom: 56px;
+  width: min(33%, 210px);
+  height: 34px;
+  transform: translateX(-50%) rotate(-3deg);
+  background:
+    radial-gradient(ellipse at 46% 44%, rgba(184, 214, 154, 0.08), transparent 30%),
+    radial-gradient(ellipse at 48% 50%, rgba(40, 64, 42, 0.42), rgba(16, 29, 23, 0.58) 58%, rgba(5, 13, 11, 0.12) 72%, transparent 78%);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.18), 0 0 10px rgba(205,255,172,0.02);
+}
+
+.neighbor-spot {
+  z-index: var(--slot-z, 4);
+  width: 92px;
+  height: 118px;
+  transform: translate(-50%, -50%) translateY(var(--slot-lift, 0px)) rotate(var(--slot-tilt, 0deg)) scale(var(--slot-scale, 1));
+  transform-origin: center bottom;
+  filter: drop-shadow(0 10px 14px rgba(0,0,0,0.18));
+}
+
+.neighbor-tree-wrap {
+  width: 76px;
+  height: 92px;
+  bottom: 4px;
+}
+
+.neighbor-tree-shadow {
+  opacity: 0.12;
+}
+
+.neighbor-ground {
+  width: 50px;
+  height: 13px;
+  bottom: 8px;
+  background: radial-gradient(ellipse, rgba(179, 209, 153, 0.05), rgba(23, 40, 27, 0.08) 56%, transparent 76%);
+  opacity: var(--slot-ground-opacity, 0.08);
+}
+
+.neighbor-tree-image {
+  filter: drop-shadow(0 5px 8px rgba(0,0,0,var(--slot-shadow,0.18))) blur(var(--slot-blur,0px)) brightness(var(--slot-brightness,1)) saturate(var(--slot-sat,1));
+  opacity: calc(var(--slot-opacity, 0.68));
+}
+
+.neighbor-spot::after {
+  height: 62px;
+  background:
+    radial-gradient(ellipse at 50% 94%, rgba(16, 30, 19, 0.18), transparent 56%),
+    linear-gradient(180deg, transparent, rgba(45, 72, 45, 0.12) 44%, rgba(7, 14, 11, 0.10));
+  opacity: 0.82;
+}
+
+.neighbor-spot small {
+  opacity: 0;
+}
+
+/* big trees to create forest walls */
+.neighbor-spot.edge-giant {
+  width: 180px;
+  height: 230px;
+}
+
+.neighbor-spot.edge-giant .neighbor-tree-wrap {
+  width: 164px;
+  height: 214px;
+  bottom: -4px;
+}
+
+.neighbor-spot.edge-giant .neighbor-tree-image {
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,0.22)) brightness(0.9) saturate(0.92);
+}
+
+.neighbor-spot.edge-giant::after {
+  height: 104px;
+  opacity: 0.88;
+}
+
+.neighbor-spot.edge-giant .neighbor-ground {
+  width: 80px;
+  height: 16px;
+  opacity: 0.02;
+}
+
+.neighbor-spot.left-giant { margin-left: -18px; }
+.neighbor-spot.right-giant { margin-left: 18px; }
+
+.neighbor-spot.back-giant {
+  width: 134px;
+  height: 170px;
+}
+
+.neighbor-spot.back-giant .neighbor-tree-wrap {
+  width: 116px;
+  height: 154px;
+}
+
+.neighbor-spot.back-giant .neighbor-tree-image {
+  filter: blur(0.4px) brightness(0.84) saturate(0.88);
+}
+
+.neighbor-spot.back-giant::after {
+  height: 88px;
+  opacity: 0.9;
+}
+
+.neighbor-spot.mid-large {
+  width: 120px;
+  height: 154px;
+}
+
+.neighbor-spot.mid-large .neighbor-tree-wrap {
+  width: 102px;
+  height: 136px;
+}
+
+.neighbor-spot.front-large {
+  width: 134px;
+  height: 168px;
+}
+
+.neighbor-spot.front-large .neighbor-tree-wrap {
+  width: 114px;
+  height: 148px;
+}
+
+.neighbor-spot.front-large::after {
+  height: 90px;
+  opacity: 0.88;
+}
+
+.neighbor-spot.tiny-near {
+  width: 72px;
+  height: 86px;
+}
+
+.neighbor-spot.tiny-near .neighbor-tree-wrap {
+  width: 50px;
+  height: 58px;
+}
+
+.neighbor-spot.tiny-near .neighbor-ground {
+  width: 34px;
+  height: 10px;
+  opacity: 0.03;
+}
+
+.neighbor-spot.rear-hide { opacity: calc(var(--slot-opacity, 0.5) * 0.9); }
+.neighbor-spot.partial-hide::after { height: 96px; }
+
+.my-world-spot {
+  z-index: 12;
+  width: 132px;
+  bottom: 70px;
+}
+
+.my-spot-ring {
+  width: 48px;
+  height: 48px;
+  top: 56px;
+  opacity: 0.12;
+  border-color: rgba(229,255,204,0.08);
+  box-shadow: 0 0 14px rgba(212,255,174,0.04);
+}
+
+.my-spot-visual {
+  width: 92px;
+  height: 88px;
+}
+
+.my-spot-ground-shadow {
+  width: 72px;
+  height: 14px;
+  bottom: 8px;
+  background: radial-gradient(ellipse, rgba(225,242,184,0.08), rgba(28,54,32,0.14) 54%, transparent 76%);
+}
+
+.my-spot-tree-wrap {
+  bottom: 2px;
+}
+
+.my-spot-tree-shadow {
+  opacity: 0.10;
+}
+
+.my-spot-tree-image {
+  filter: drop-shadow(0 4px 7px rgba(0,0,0,0.18)) brightness(0.98);
+}
+
+.my-world-spot .my-spot-name {
+  margin-top: 3px;
+  padding: 2px 7px;
+  font-size: 14px;
+  background: rgba(8,18,16,0.06);
+  opacity: 0.42;
+}
+
+.my-world-spot .my-spot-status {
+  max-width: 116px;
+  font-size: 9.5px;
+  line-height: 1.34;
+  opacity: 0.05;
+}
+
+.my-world-spot.world-tree-seed {
+  width: 110px;
+  bottom: 60px;
+}
+
+.my-world-spot.world-tree-seed .my-spot-visual {
+  width: 66px;
+  height: 56px;
+}
+
+.my-world-spot.world-tree-seed .my-spot-tree-wrap {
+  width: 28px;
+  height: 28px;
+  bottom: 0;
+}
+
+.my-world-spot.world-tree-seed .my-spot-ground-shadow {
+  width: 48px;
+  height: 10px;
+}
+
+.my-world-spot.world-tree-seed .my-spot-ring {
+  width: 34px;
+  height: 34px;
+  top: 48px;
+}
+
+.my-world-spot.world-tree-sprout {
+  width: 116px;
+  bottom: 62px;
+}
+
+.my-world-spot.world-tree-sprout .my-spot-visual {
+  width: 72px;
+  height: 62px;
+}
+
+.my-world-spot.world-tree-sprout .my-spot-tree-wrap {
+  width: 34px;
+  height: 34px;
+}
+
+.my-world-spot.world-tree-sapling {
+  width: 126px;
+  bottom: 68px;
+}
+
+.my-world-spot.world-tree-sapling .my-spot-visual {
+  width: 88px;
+  height: 82px;
+}
+
+.my-world-spot.world-tree-young {
+  width: 142px;
+  bottom: 74px;
+}
+
+.my-world-spot.world-tree-young .my-spot-visual {
+  width: 102px;
+  height: 104px;
+}
+
+.my-world-spot.world-tree-hero {
+  width: 156px;
+  bottom: 76px;
+}
+
+.my-world-spot.world-tree-hero .my-spot-visual {
+  width: 114px;
+  height: 122px;
+}
+
+.world-focus-active .my-spot-ring {
+  opacity: 0.34;
+}
+
+.world-focus-active .my-spot-name,
+.world-focus-active .my-spot-status {
+  opacity: 0.72;
+}
+
+.world-time-day .neighbor-tree-image {
+  filter: drop-shadow(0 5px 7px rgba(0,0,0,var(--slot-shadow,0.16))) blur(var(--slot-blur,0px)) brightness(calc(var(--slot-brightness,1) * 0.98)) saturate(calc(var(--slot-sat,1) * 0.96));
+}
+
+.world-time-day .edge-giant .neighbor-tree-image,
+.world-time-day .back-giant .neighbor-tree-image {
+  filter: brightness(0.84) saturate(0.84);
+}
+
+.world-time-day .world-stage::before,
+.world-time-day .world-neighbor-spots::before,
+.world-time-day .world-neighbor-spots::after {
+  opacity: 0.44;
+}
+
+.world-time-day .world-spot-ground {
+  filter: brightness(1.08) saturate(1.02);
+}
+
+.world-time-sunset .edge-giant .neighbor-tree-image,
+.world-time-sunset .back-giant .neighbor-tree-image {
+  filter: brightness(0.84) saturate(0.82) sepia(0.10);
+}
+
+.world-time-night .edge-giant .neighbor-tree-image,
+.world-time-night .back-giant .neighbor-tree-image {
+  filter: blur(0.6px) brightness(0.70) saturate(0.76);
+}
+
+.world-foreground {
+  height: 190px;
+  background:
+    url("assets/world/world-foreground-grass.svg") center bottom / cover no-repeat,
+    radial-gradient(ellipse at 0% 82%, rgba(9, 24, 15, 1), transparent 42%),
+    radial-gradient(ellipse at 100% 82%, rgba(9, 24, 15, 1), transparent 42%),
+    linear-gradient(180deg, transparent 0%, rgba(21, 40, 26, 0.18) 22%, rgba(4, 13, 10, 0.88) 60%, rgba(3, 8, 8, 1) 100%);
+}
+
+.world-front-leaves {
+  opacity: 0.68;
+}
+
+@media (max-width: 560px) {
+  .world-clearing {
+    width: min(62%, 260px);
+    height: 190px;
+  }
+
+  .world-spot-ground {
+    width: min(40%, 160px);
+    height: 30px;
+  }
+
+  .neighbor-spot.edge-giant {
+    width: 128px;
+    height: 168px;
+  }
+
+  .neighbor-spot.edge-giant .neighbor-tree-wrap {
+    width: 116px;
+    height: 154px;
+  }
+
+  .neighbor-spot.back-giant {
+    width: 100px;
+    height: 132px;
+  }
+
+  .neighbor-spot.back-giant .neighbor-tree-wrap {
+    width: 86px;
+    height: 118px;
+  }
+
+  .neighbor-spot.mid-large,
+  .neighbor-spot.front-large {
+    width: 100px;
+    height: 126px;
+  }
+
+  .neighbor-spot.mid-large .neighbor-tree-wrap,
+  .neighbor-spot.front-large .neighbor-tree-wrap {
+    width: 84px;
+    height: 108px;
+  }
+
+  .my-world-spot {
+    width: 118px;
+    bottom: 64px;
+  }
+
+  .my-spot-visual {
+    width: 80px;
+    height: 74px;
+  }
+
+  .my-world-spot.world-tree-seed,
+  .my-world-spot.world-tree-sprout {
+    width: 102px;
+    bottom: 58px;
+  }
+
+  .my-world-spot.world-tree-seed .my-spot-visual,
+  .my-world-spot.world-tree-sprout .my-spot-visual {
+    width: 60px;
+    height: 52px;
+  }
+}

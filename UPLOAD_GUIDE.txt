@@ -1,4 +1,4 @@
-살아있는 숲 V1.10.6 test 업로드 가이드
+살아있는 숲 V1.10.7 test 업로드 가이드
 
 1. GitHub 저장소로 이동
    inhm1234/living_forest
@@ -17,7 +17,7 @@
    이미 업로드한 assets/garden/의 나무 이미지 파일 10개를 삭제하면 안 됩니다.
 
 4. 커밋 메시지 추천
-   Apply V1.10.6 test world forest natural irregularity update
+   Apply V1.10.7 test world forest scale perspective redesign update
 
 5. 업로드 후 확인 주소
    일반 화면:
@@ -28,10 +28,3 @@
 
 6. 캐시 주의
    업로드 직후 화면이 바로 안 바뀌면 브라우저 새로고침을 한 번 더 하거나 Ctrl+F5로 강력 새로고침하세요.
-
-
-[중요: fixed 재배포용]
-- 이전 redeploy ZIP은 잘못된 구버전 파일이 들어갔습니다.
-- 이 ZIP은 living_forest_v1_10_6_test.zip에서 다시 추출해 만든 정상 재배포용입니다.
-- 화면에 'V1.10.6 test · 월드 숲 자연 불규칙성 보정 · fixed'가 보이면 정상입니다.
-- index.html의 app.js/style.css 캐시 방지값은 1.10.6-fixed-redeploy-2 입니다.
