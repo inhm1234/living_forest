@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.10 test
+// 살아있는 숲 V1.9 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.10 test
-// 목적: 월드 숲 내 나무 성장 이미지 반영 테스트판
+// 버전명: V1.9 test
+// 목적: 나무 성장 이미지 실제 적용 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10 test",
+  version: "V1.10.1 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -1112,20 +1112,34 @@ function getDailyLoopInfo() {
   };
 }
 
-function getTreeImageInfo() {
-  const totalDays = treeData.history.length;
+function getTreeImageInfoByDays(totalDays = 0) {
   return treeImageStageRules.find((stage) => {
     return totalDays >= stage.minDays && totalDays <= stage.maxDays;
   }) || treeImageStageRules[treeImageStageRules.length - 1];
 }
 
-function getWorldTreeImageInfo() {
-  const imageInfo = getTreeImageInfo();
+function getTreeImageInfo() {
+  return getTreeImageInfoByDays(treeData.history.length);
+}
 
-  return {
-    ...imageInfo,
-    worldClassName: imageInfo.className.replace("tree-stage-", "world-tree-stage-")
-  };
+function getWorldTreeSizeClass(days) {
+  if (days <= 0) {
+    return "world-tree-seed";
+  }
+
+  if (days <= 6) {
+    return "world-tree-sprout";
+  }
+
+  if (days <= 20) {
+    return "world-tree-sapling";
+  }
+
+  if (days <= 59) {
+    return "world-tree-young";
+  }
+
+  return "world-tree-hero";
 }
 
 function getTreeState() {
@@ -1157,46 +1171,45 @@ function getTreeState() {
 function getWorldSpotInfo() {
   const days = treeData.history.length;
   const hasName = Boolean(treeData.treeName?.trim());
-  const imageInfo = getWorldTreeImageInfo();
 
   if (days === 0) {
     return {
-      className: `world-seed ${imageInfo.worldClassName}`,
-      imageInfo,
+      className: "world-seed",
+      visual: "•",
       status: hasName
-        ? "이름을 얻은 작은 나무가 오늘의 마음을 기다리고 있어요."
-        : "숲 한가운데, 아직 이름 없는 작은 나무 자리가 기다리고 있어요."
+        ? "이름을 얻은 작은 자리가 오늘의 마음을 기다리고 있어요."
+        : "숲 한가운데, 아직 이름 없는 작은 자리가 기다리고 있어요."
     };
   }
 
   if (days <= 2) {
     return {
-      className: `world-sprout ${imageInfo.worldClassName}`,
-      imageInfo,
-      status: "작은 새싹이 월드 숲에 들어갈 준비를 하고 있어요. 3일차에는 주변에 작은 빛이 생겨요."
+      className: "world-sprout",
+      visual: "✦",
+      status: "월드 숲에 들어갈 준비를 하고 있어요. 3일차에는 작은 빛이 생겨요."
     };
   }
 
   if (days <= 6) {
     return {
-      className: `world-sprout world-preview ${imageInfo.worldClassName}`,
-      imageInfo,
-      status: "내 나무의 작은 모습이 월드 숲에 비치기 시작했어요. 7일차에는 정식으로 자리 잡아요."
+      className: "world-sprout world-preview",
+      visual: "✦",
+      status: "월드 숲의 내 자리 주변에 작은 빛이 생겼어요. 7일차에는 정식으로 자리 잡아요."
     };
   }
 
   if (days < 30) {
     return {
-      className: `world-tree ${imageInfo.worldClassName}`,
-      imageInfo,
-      status: "내 나무의 성장 모습이 월드 숲의 내 자리에 함께 보이고 있어요."
+      className: "world-tree",
+      visual: "✧",
+      status: "내 나무가 월드 숲에 정식으로 자리 잡았어요."
     };
   }
 
   return {
-    className: `world-tree world-mature ${imageInfo.worldClassName}`,
-    imageInfo,
-    status: "오래 돌본 내 나무가 작은 숲의 중심나무처럼 깊게 뿌리내렸어요."
+    className: "world-tree world-mature",
+    visual: "✺",
+    status: "작은 숲의 중심나무로 깊게 뿌리내렸어요."
   };
 }
 
@@ -1493,17 +1506,21 @@ function renderWorldNeighbors() {
 
   worldNeighborSpotsElement.innerHTML = worldForestSlots
     .map((slot) => {
-      const visual = getWorldSlotVisual(slot);
       const stateLabel = getWorldSlotStateLabel(slot.state);
+      const imageInfo = getTreeImageInfoByDays(slot.days);
+      const sizeClass = getWorldTreeSizeClass(slot.days);
 
       return `
         <article
-          class="neighbor-spot slot-${slot.state}"
+          class="neighbor-spot slot-${slot.state} ${sizeClass}"
           style="--slot-x: ${slot.x}%; --slot-y: ${slot.y}%; --slot-scale: ${slot.scale}; --slot-opacity: ${slot.opacity}; --slot-mobile-x: ${slot.mobileX}%; --slot-mobile-y: ${slot.mobileY}%; --slot-mobile-scale: ${slot.mobileScale};"
           aria-label="${slot.name}, ${slot.days}일째 자라는 자리, ${stateLabel}"
         >
-          <span aria-hidden="true"></span>
-          <em aria-hidden="true">${visual}</em>
+          <span class="neighbor-ground" aria-hidden="true"></span>
+          <div class="neighbor-tree-wrap" aria-hidden="true">
+            <img class="neighbor-tree-shadow" src="assets/garden/tree-shadow.svg" alt="" />
+            <img class="neighbor-tree-image" src="${imageInfo.src}" alt="" />
+          </div>
           <small>${slot.name}</small>
         </article>
       `;
@@ -1537,12 +1554,20 @@ function renderWorld() {
   const name = treeData.treeName?.trim() || "이름 없는 나무";
   const todayRecord = getTodayRecord();
   const spotInfo = getWorldSpotInfo();
+  const myTreeImageInfo = getTreeImageInfo();
+  const myWorldTreeSizeClass = getWorldTreeSizeClass(treeData.history.length);
 
   renderWorldNeighbors();
   renderWorldCommunityHint(todayRecord);
 
-  myWorldSpotElement.className = `my-world-spot world-image-spot ${spotInfo.className}`;
-  mySpotVisualElement.innerHTML = `<img class="my-world-tree-image" src="${spotInfo.imageInfo.src}" alt="${spotInfo.imageInfo.alt}" />`;
+  myWorldSpotElement.className = `my-world-spot ${spotInfo.className} ${myWorldTreeSizeClass}`;
+  mySpotVisualElement.innerHTML = `
+    <div class="my-spot-ground-shadow" aria-hidden="true"></div>
+    <div class="my-spot-tree-wrap" aria-hidden="true">
+      <img class="my-spot-tree-shadow" src="assets/garden/tree-shadow.svg" alt="" />
+      <img class="my-spot-tree-image" src="${myTreeImageInfo.src}" alt="" />
+    </div>
+  `;
   mySpotNameElement.textContent = name;
   mySpotStatusElement.textContent = spotInfo.status;
 
@@ -1652,7 +1677,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 월드 숲 내 나무 이미지 반영`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 월드 숲 나무 배치 자연화 1차`;
   }
 }
 

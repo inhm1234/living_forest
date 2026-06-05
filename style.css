@@ -3496,199 +3496,331 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.10 test: 월드 숲 내 자리에도 실제 성장 나무 이미지 반영 */
-.world-image-spot {
-  --world-tree-size: 72px;
-  --world-tree-visual-height: 88px;
-  --world-tree-lift: 0px;
+
+/* V1.10.1 test: 월드 숲 나무 배치 자연화 1차 */
+.neighbor-spot::before,
+.neighbor-spot::after {
+  display: none;
 }
 
-.world-image-spot .my-spot-ring {
-  top: 44px;
-  width: calc(var(--world-tree-size) * 1.24);
-  height: calc(var(--world-tree-size) * 1.02);
-  border-radius: 48% 52% 50% 50%;
+.neighbor-spot em {
+  display: none;
 }
 
-.world-image-spot .my-spot-aura {
-  min-height: 10px;
-  margin-bottom: 0;
+.neighbor-spot {
+  width: 84px;
+  height: 104px;
+  overflow: visible;
 }
 
-.world-image-spot .my-spot-visual {
-  position: relative;
+.neighbor-ground {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  width: 68px;
+  height: 22px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(215, 255, 180, 0.18), rgba(34, 55, 34, 0.24) 54%, transparent 74%);
+  filter: blur(0.2px);
+}
+
+.neighbor-tree-wrap {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  width: 74px;
+  height: 84px;
+  transform: translateX(-50%);
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  width: 100%;
-  height: var(--world-tree-visual-height);
-  margin: 0 auto 3px;
-  font-size: 0;
-  line-height: 0;
-  filter: none;
-  transform: none;
 }
 
-.world-image-spot .my-spot-visual::after {
-  content: "";
+.neighbor-tree-shadow {
   position: absolute;
   left: 50%;
-  bottom: 4px;
-  z-index: 0;
-  width: calc(var(--world-tree-size) * 0.9);
-  height: 14px;
-  border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(4, 9, 6, 0.46), rgba(16, 45, 23, 0.22) 54%, transparent 76%);
-  filter: blur(3px);
+  bottom: -10px;
+  width: 112%;
+  max-width: none;
+  transform: translateX(-50%);
+  opacity: 0.34;
+}
+
+.neighbor-tree-image {
+  position: relative;
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.32));
+}
+
+.neighbor-spot.world-tree-seed .neighbor-tree-wrap {
+  width: 46px;
+  height: 54px;
+}
+
+.neighbor-spot.world-tree-sprout .neighbor-tree-wrap {
+  width: 56px;
+  height: 64px;
+}
+
+.neighbor-spot.world-tree-sapling .neighbor-tree-wrap {
+  width: 68px;
+  height: 78px;
+}
+
+.neighbor-spot.world-tree-young .neighbor-tree-wrap {
+  width: 78px;
+  height: 90px;
+}
+
+.neighbor-spot.world-tree-hero .neighbor-tree-wrap {
+  width: 84px;
+  height: 96px;
+}
+
+.neighbor-spot small {
+  top: auto;
+  bottom: -8px;
+  padding: 2px 7px;
+  border-color: rgba(231, 255, 222, 0.1);
+  background: rgba(6, 16, 13, 0.42);
+  color: rgba(242, 255, 233, 0.72);
+  font-size: 9px;
+}
+
+.my-world-spot,
+.world-time-day .my-world-spot,
+.world-time-sunset .my-world-spot,
+.world-time-night .my-world-spot {
+  width: 196px;
+  bottom: 84px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  text-align: center;
+}
+
+.my-world-spot::before,
+.world-time-day .my-world-spot::before,
+.world-time-sunset .my-world-spot::before,
+.world-time-night .my-world-spot::before {
+  display: none;
+}
+
+.my-spot-ring {
+  top: 48px;
+  width: 98px;
+  height: 98px;
+  border-color: rgba(225, 255, 198, 0.2);
+  background: radial-gradient(circle, rgba(220, 255, 184, 0.08), transparent 68%);
+  box-shadow: 0 0 26px rgba(205, 255, 171, 0.12);
+}
+
+.my-spot-aura {
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  z-index: 4;
+  min-height: 18px;
+  margin: 0;
   transform: translateX(-50%);
 }
 
-.my-world-tree-image {
+.my-spot-visual {
   position: relative;
-  z-index: 1;
+  width: 148px;
+  height: 154px;
+  margin: 0 auto;
+  font-size: 0;
+}
+
+.my-spot-ground-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  width: 124px;
+  height: 30px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(227, 255, 183, 0.18), rgba(30, 54, 35, 0.22) 52%, transparent 76%);
+}
+
+.my-spot-tree-wrap {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  width: 118px;
+  height: 126px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.my-spot-tree-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -12px;
+  width: 116%;
+  max-width: none;
+  transform: translateX(-50%);
+  opacity: 0.42;
+}
+
+.my-spot-tree-image {
+  position: relative;
   display: block;
-  width: var(--world-tree-size);
   max-width: 100%;
-  max-height: var(--world-tree-visual-height);
+  max-height: 100%;
   object-fit: contain;
-  object-position: center bottom;
-  transform: translateY(var(--world-tree-lift));
-  filter:
-    drop-shadow(0 10px 12px rgba(0, 0, 0, 0.34))
-    drop-shadow(0 0 12px rgba(218, 255, 181, 0.1));
-  transition: width 0.45s ease, filter 0.45s ease, transform 0.45s ease;
+  filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.34));
 }
 
-.world-tree-stage-germination {
-  --world-tree-size: 48px;
-  --world-tree-visual-height: 58px;
-  --world-tree-lift: 1px;
+.my-world-spot.world-tree-seed .my-spot-tree-wrap {
+  width: 66px;
+  height: 74px;
+  bottom: 18px;
 }
 
-.world-tree-stage-sprout {
-  --world-tree-size: 54px;
-  --world-tree-visual-height: 66px;
-  --world-tree-lift: 1px;
+.my-world-spot.world-tree-sprout .my-spot-tree-wrap {
+  width: 84px;
+  height: 92px;
+  bottom: 16px;
 }
 
-.world-tree-stage-seedling {
-  --world-tree-size: 60px;
-  --world-tree-visual-height: 72px;
+.my-world-spot.world-tree-sapling .my-spot-tree-wrap {
+  width: 104px;
+  height: 112px;
 }
 
-.world-tree-stage-leafy-seedling {
-  --world-tree-size: 66px;
-  --world-tree-visual-height: 80px;
+.my-world-spot.world-tree-young .my-spot-tree-wrap {
+  width: 122px;
+  height: 130px;
 }
 
-.world-tree-stage-sapling {
-  --world-tree-size: 74px;
-  --world-tree-visual-height: 88px;
+.my-world-spot.world-tree-hero .my-spot-tree-wrap {
+  width: 136px;
+  height: 146px;
 }
 
-.world-tree-stage-branching-sapling {
-  --world-tree-size: 82px;
-  --world-tree-visual-height: 96px;
+.my-spot-name {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 4px 10px;
+  border: 1px solid rgba(231, 255, 222, 0.12);
+  border-radius: 999px;
+  background: rgba(8, 18, 16, 0.42);
+  color: #f2ffe7;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.2;
+  backdrop-filter: blur(8px);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.38);
 }
 
-.world-tree-stage-early-tree {
-  --world-tree-size: 92px;
-  --world-tree-visual-height: 106px;
+.my-spot-status {
+  max-width: 180px;
+  margin: 6px auto 0;
+  color: rgba(242, 255, 233, 0.72);
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.38);
 }
 
-.world-tree-stage-young-canopy {
-  --world-tree-size: 102px;
-  --world-tree-visual-height: 116px;
+.world-focus-active .my-world-spot {
+  transform: translateX(-50%) translateY(-4px) scale(1.03);
+  animation: none;
 }
 
-.world-tree-stage-young {
-  --world-tree-size: 112px;
-  --world-tree-visual-height: 126px;
+.world-focus-active .my-spot-ring {
+  border-color: rgba(245, 255, 206, 0.36);
+  box-shadow: 0 0 0 10px rgba(232, 255, 185, 0.06), 0 0 52px rgba(225, 255, 178, 0.28);
 }
 
-.world-tree-stage-hero {
-  --world-tree-size: 124px;
-  --world-tree-visual-height: 138px;
+.world-focus-active .my-spot-tree-image {
+  filter: drop-shadow(0 16px 22px rgba(0, 0, 0, 0.36)) drop-shadow(0 0 20px rgba(224, 255, 181, 0.26));
 }
 
-.world-tree-stage-hero .my-world-tree-image,
-.world-tree-stage-young .my-world-tree-image,
-.world-tree-stage-young-canopy .my-world-tree-image {
-  filter:
-    drop-shadow(0 12px 14px rgba(0, 0, 0, 0.36))
-    drop-shadow(0 0 18px rgba(222, 255, 179, 0.18));
+.world-focus-active .world-clearing,
+.world-focus-active .world-spot-ground {
+  filter: brightness(1.18) saturate(1.06);
 }
 
-.world-focus-active .my-world-tree-image {
-  transform: translateY(calc(var(--world-tree-lift) - 4px)) scale(1.06);
-  filter:
-    drop-shadow(0 14px 18px rgba(0, 0, 0, 0.38))
-    drop-shadow(0 0 28px rgba(236, 255, 188, 0.34));
+.world-time-day .neighbor-ground,
+.world-time-day .my-spot-ground-shadow {
+  background: radial-gradient(ellipse, rgba(245, 255, 194, 0.22), rgba(53, 100, 53, 0.22) 52%, transparent 76%);
 }
 
-.world-focus-active .world-image-spot .my-spot-visual::after {
-  background: radial-gradient(ellipse, rgba(238, 255, 186, 0.38), rgba(22, 58, 28, 0.24) 54%, transparent 78%);
+.world-time-night .neighbor-ground,
+.world-time-night .my-spot-ground-shadow {
+  background: radial-gradient(ellipse, rgba(203, 233, 255, 0.12), rgba(26, 42, 52, 0.22) 52%, transparent 76%);
 }
 
-.world-image-spot.world-seed .my-spot-visual,
-.world-image-spot.world-sprout .my-spot-visual,
-.world-image-spot.world-tree .my-spot-visual {
-  transform: none;
+.world-time-night .neighbor-tree-image,
+.world-time-night .my-spot-tree-image {
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.42)) brightness(0.94) saturate(0.96);
 }
 
 @media (max-width: 560px) {
-  .world-image-spot {
-    --world-tree-size: 64px;
-    --world-tree-visual-height: 78px;
+  .neighbor-spot {
+    width: 72px;
+    height: 90px;
   }
 
-  .world-tree-stage-germination {
-    --world-tree-size: 42px;
-    --world-tree-visual-height: 52px;
+  .neighbor-ground {
+    width: 56px;
+    bottom: 16px;
   }
 
-  .world-tree-stage-sprout {
-    --world-tree-size: 48px;
-    --world-tree-visual-height: 58px;
+  .my-world-spot,
+  .world-time-day .my-world-spot,
+  .world-time-sunset .my-world-spot,
+  .world-time-night .my-world-spot {
+    width: 170px;
+    bottom: 80px;
   }
 
-  .world-tree-stage-seedling {
-    --world-tree-size: 54px;
-    --world-tree-visual-height: 64px;
+  .my-spot-visual {
+    width: 128px;
+    height: 136px;
   }
 
-  .world-tree-stage-leafy-seedling {
-    --world-tree-size: 58px;
-    --world-tree-visual-height: 70px;
+  .my-world-spot.world-tree-seed .my-spot-tree-wrap {
+    width: 58px;
+    height: 66px;
   }
 
-  .world-tree-stage-sapling {
-    --world-tree-size: 64px;
-    --world-tree-visual-height: 76px;
+  .my-world-spot.world-tree-sprout .my-spot-tree-wrap {
+    width: 74px;
+    height: 82px;
   }
 
-  .world-tree-stage-branching-sapling {
-    --world-tree-size: 70px;
-    --world-tree-visual-height: 84px;
+  .my-world-spot.world-tree-sapling .my-spot-tree-wrap {
+    width: 92px;
+    height: 100px;
   }
 
-  .world-tree-stage-early-tree {
-    --world-tree-size: 78px;
-    --world-tree-visual-height: 92px;
+  .my-world-spot.world-tree-young .my-spot-tree-wrap {
+    width: 108px;
+    height: 116px;
   }
 
-  .world-tree-stage-young-canopy {
-    --world-tree-size: 86px;
-    --world-tree-visual-height: 100px;
+  .my-world-spot.world-tree-hero .my-spot-tree-wrap {
+    width: 118px;
+    height: 128px;
   }
 
-  .world-tree-stage-young {
-    --world-tree-size: 94px;
-    --world-tree-visual-height: 110px;
-  }
-
-  .world-tree-stage-hero {
-    --world-tree-size: 102px;
-    --world-tree-visual-height: 120px;
+  .my-spot-status {
+    max-width: 150px;
+    font-size: 11px;
   }
 }
