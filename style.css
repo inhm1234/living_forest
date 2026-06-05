@@ -2338,7 +2338,7 @@ body.dev-test-mode .test-preset-buttons button[data-test-preset="visitor-history
 }
 
 
-/* V1.7.1 test: 월드 숲 2.5D 세부 보정 */
+/* V1.8 test: 낮·노을·밤 분위기 강화 */
 .world-stage {
   height: min(76vh, 640px);
   min-height: 540px;
@@ -2552,5 +2552,216 @@ body.dev-test-mode .test-preset-buttons button[data-test-preset="visitor-history
 
   .my-spot-status {
     font-size: 12px;
+  }
+}
+
+
+/* V1.8 test: 낮·노을·밤 월드 숲 분위기 강화 */
+.world-atmosphere-hint {
+  margin: 8px 0 0;
+  color: rgba(226, 248, 216, 0.66);
+  font-size: 12.5px;
+  font-weight: 720;
+  line-height: 1.55;
+}
+
+.world-time-badge::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  border-radius: 999px;
+  background: rgba(246, 255, 198, 0.88);
+  box-shadow: 0 0 13px rgba(246, 255, 198, 0.72);
+}
+
+.world-time-day {
+  background-image:
+    radial-gradient(circle at 46% 12%, rgba(255, 255, 216, 0.22), transparent 32%),
+    url("assets/world/world-bg-preview.png"),
+    linear-gradient(180deg, #334b3f 0%, #17352a 48%, #07100f 100%);
+}
+
+.world-time-day .world-backdrop {
+  background:
+    radial-gradient(circle at 46% 7%, rgba(255, 255, 218, 0.34), transparent 30%),
+    radial-gradient(ellipse at 50% 56%, rgba(92, 160, 94, 0.24), transparent 60%),
+    linear-gradient(180deg, rgba(72, 122, 96, 0.28), rgba(9, 31, 20, 0.22));
+}
+
+.world-time-day .world-sky-glow::before {
+  content: "";
+  position: absolute;
+  left: 48%;
+  top: 22%;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 218, 0.64), rgba(255, 252, 190, 0.2) 46%, transparent 72%);
+  filter: blur(2px);
+  transform: translate(-50%, -50%);
+}
+
+.world-time-day .world-dim {
+  background:
+    radial-gradient(circle at 50% 58%, rgba(235, 255, 194, 0.18), transparent 24%),
+    radial-gradient(circle at 50% 36%, transparent 0 32%, rgba(5, 12, 13, 0.13) 62%, rgba(3, 8, 9, 0.42) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(5, 12, 14, 0.16) 58%, rgba(2, 7, 8, 0.52) 100%);
+}
+
+.world-time-day .world-fog {
+  opacity: 0.42;
+}
+
+.world-time-day .world-life-bird,
+.world-time-day .world-life-butterfly {
+  opacity: 0.74;
+}
+
+.world-time-sunset {
+  background-image:
+    radial-gradient(circle at 68% 16%, rgba(255, 179, 112, 0.24), transparent 32%),
+    url("assets/world/world-bg-preview.png"),
+    linear-gradient(180deg, #3e332f 0%, #233226 48%, #07100f 100%);
+}
+
+.world-time-sunset .world-backdrop {
+  background:
+    radial-gradient(circle at 68% 12%, rgba(255, 176, 116, 0.38), transparent 31%),
+    radial-gradient(ellipse at 48% 58%, rgba(189, 112, 68, 0.17), transparent 60%),
+    linear-gradient(180deg, rgba(102, 69, 56, 0.34), rgba(15, 27, 21, 0.3));
+}
+
+.world-time-sunset .world-sky-glow {
+  left: 64%;
+  top: -11%;
+  width: 76%;
+  background: radial-gradient(ellipse, rgba(255, 190, 126, 0.3), transparent 68%);
+}
+
+.world-time-sunset .world-sky-glow::before {
+  content: "";
+  position: absolute;
+  right: 28%;
+  top: 33%;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 184, 112, 0.54), rgba(255, 151, 92, 0.2) 48%, transparent 72%);
+  filter: blur(2px);
+}
+
+.world-time-sunset .world-dim {
+  background:
+    radial-gradient(circle at 57% 58%, rgba(255, 201, 144, 0.13), transparent 24%),
+    radial-gradient(circle at 50% 36%, transparent 0 30%, rgba(12, 9, 9, 0.19) 60%, rgba(3, 8, 9, 0.5) 100%),
+    linear-gradient(180deg, rgba(64, 31, 25, 0.08) 0%, rgba(30, 19, 17, 0.22) 58%, rgba(2, 7, 8, 0.6) 100%);
+}
+
+.world-time-sunset .world-forest-trail,
+.world-time-sunset .world-spot-ground {
+  filter: saturate(1.12) sepia(0.12);
+}
+
+.world-time-sunset .world-time-badge::before {
+  background: rgba(255, 195, 130, 0.92);
+  box-shadow: 0 0 14px rgba(255, 181, 107, 0.8);
+}
+
+.world-time-night {
+  background-image:
+    radial-gradient(circle at 68% 13%, rgba(186, 218, 255, 0.16), transparent 28%),
+    url("assets/world/world-bg-preview.png"),
+    linear-gradient(180deg, #111f35 0%, #0c1d22 48%, #05090e 100%);
+}
+
+.world-time-night .world-backdrop {
+  background:
+    radial-gradient(circle at 70% 11%, rgba(192, 222, 255, 0.22), transparent 28%),
+    radial-gradient(ellipse at 48% 58%, rgba(82, 116, 146, 0.17), transparent 60%),
+    linear-gradient(180deg, rgba(15, 28, 50, 0.4), rgba(3, 10, 14, 0.38));
+}
+
+.world-time-night .world-sky-glow {
+  left: 67%;
+  width: 68%;
+  background: radial-gradient(ellipse, rgba(189, 221, 255, 0.24), transparent 68%);
+}
+
+.world-time-night .world-sky-glow::before {
+  content: "";
+  position: absolute;
+  right: 30%;
+  top: 28%;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 42% 40%, rgba(238, 250, 255, 0.78), rgba(191, 224, 255, 0.34) 45%, transparent 70%);
+  box-shadow: 0 0 30px rgba(187, 222, 255, 0.24);
+  filter: blur(1px);
+}
+
+.world-time-night .world-dim {
+  background:
+    radial-gradient(circle at 52% 58%, rgba(190, 232, 255, 0.1), transparent 24%),
+    radial-gradient(circle at 50% 36%, transparent 0 28%, rgba(2, 7, 14, 0.24) 58%, rgba(1, 5, 9, 0.6) 100%),
+    linear-gradient(180deg, rgba(4, 12, 24, 0.08) 0%, rgba(3, 10, 17, 0.28) 58%, rgba(1, 5, 8, 0.68) 100%);
+}
+
+.world-time-night .world-far-trees,
+.world-time-night .world-mid-trees {
+  filter: blur(1.5px) brightness(0.78) saturate(0.86);
+}
+
+.world-time-night .world-forest-trail,
+.world-time-night .world-clearing,
+.world-time-night .world-spot-ground {
+  filter: brightness(0.78) saturate(0.82);
+}
+
+.world-time-night .world-time-badge::before {
+  background: rgba(205, 233, 255, 0.92);
+  box-shadow: 0 0 15px rgba(173, 217, 255, 0.84);
+}
+
+.world-time-night .world-life-firefly,
+.world-time-night .world-life-light,
+.world-time-night .world-particle-layer span {
+  opacity: 0.76;
+}
+
+.world-time-night .world-life-bird,
+.world-time-night .world-life-squirrel {
+  opacity: 0.46;
+}
+
+.test-time-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  border: 1px solid rgba(255, 236, 183, 0.2);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.09);
+  color: #fff6d8;
+  font-size: 12px;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.test-time-link:hover {
+  background: rgba(255, 240, 180, 0.15);
+}
+
+@media (max-width: 560px) {
+  .world-atmosphere-hint {
+    font-size: 12px;
+  }
+
+  .world-time-day .world-sky-glow::before,
+  .world-time-sunset .world-sky-glow::before,
+  .world-time-night .world-sky-glow::before {
+    transform: scale(0.78);
   }
 }

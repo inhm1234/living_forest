@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.7.1 test
+// 살아있는 숲 V1.8 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.7.1 test
-// 목적: 2.5D 월드 숲 세부 보정판 테스트판
+// 버전명: V1.8 test
+// 목적: 낮·노을·밤 분위기 강화판 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.7.1 test",
+  version: "V1.8 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -220,6 +220,7 @@ const myWorldSpotElement = document.querySelector("#myWorldSpot");
 const worldNeighborSpotsElement = document.querySelector("#worldNeighborSpots");
 const worldStageElement = document.querySelector("#worldStage");
 const worldTimeBadgeElement = document.querySelector("#worldTimeBadge");
+const worldAtmosphereHintElement = document.querySelector("#worldAtmosphereHint");
 const worldLifeLayerElement = document.querySelector("#worldLifeLayer");
 const worldParticleLayerElement = document.querySelector("#worldParticleLayer");
 const focusMyTreeBtnElement = document.querySelector("#focusMyTreeBtn");
@@ -1269,54 +1270,58 @@ function getWorldSlotStateLabel(state) {
   return "고른 기운";
 }
 
+function createWorldAtmosphere(key, forced = false) {
+  const atmosphereMap = {
+    day: {
+      key: "day",
+      label: "낮 숲",
+      shortLabel: "낮",
+      description: forced ? "테스트 모드에서 낮 분위기를 확인하고 있어요." : "햇빛이 숲길 사이로 들어오는 시간이에요.",
+      hint: "숲길 사이로 햇빛이 들어오고, 새와 나비가 조금 더 활발하게 움직여요.",
+      particleCount: 9,
+      quietChance: 0.08
+    },
+    sunset: {
+      key: "sunset",
+      label: "노을 숲",
+      shortLabel: "노을",
+      description: forced ? "테스트 모드에서 노을 분위기를 확인하고 있어요." : "따뜻한 노을빛이 긴 그림자와 함께 내려앉는 시간이에요.",
+      hint: "따뜻한 노을빛이 길게 내려앉고, 숲은 하루를 마무리하듯 천천히 숨 쉬어요.",
+      particleCount: 12,
+      quietChance: 0.14
+    },
+    night: {
+      key: "night",
+      label: "밤 숲",
+      shortLabel: "밤",
+      description: forced ? "테스트 모드에서 밤 분위기를 확인하고 있어요." : "달빛과 반딧불이가 숲을 은은하게 밝혀주는 시간이에요.",
+      hint: "달빛과 안개가 깊어지고, 반딧불이와 작은 빛 입자가 숲 안에서 더 선명하게 보여요.",
+      particleCount: 16,
+      quietChance: 0.18
+    }
+  };
+
+  return atmosphereMap[key] || atmosphereMap.day;
+}
+
 function getWorldAtmosphereInfo() {
   const forcedWorldTime = urlParams.get("worldTime");
 
   if (isTestMode && ["day", "sunset", "night"].includes(forcedWorldTime)) {
-    const forcedAtmospheres = {
-      day: {
-        key: "day",
-        label: "낮 숲",
-        description: "테스트 모드에서 낮 분위기를 확인하고 있어요."
-      },
-      sunset: {
-        key: "sunset",
-        label: "노을 숲",
-        description: "테스트 모드에서 노을 분위기를 확인하고 있어요."
-      },
-      night: {
-        key: "night",
-        label: "밤 숲",
-        description: "테스트 모드에서 밤 분위기를 확인하고 있어요."
-      }
-    };
-
-    return forcedAtmospheres[forcedWorldTime];
+    return createWorldAtmosphere(forcedWorldTime, true);
   }
 
   const hour = new Date().getHours();
 
   if (hour >= 6 && hour < 17) {
-    return {
-      key: "day",
-      label: "낮 숲",
-      description: "햇빛이 숲길 사이로 들어오는 시간이에요."
-    };
+    return createWorldAtmosphere("day");
   }
 
   if (hour >= 17 && hour < 20) {
-    return {
-      key: "sunset",
-      label: "노을 숲",
-      description: "따뜻한 노을빛이 긴 그림자와 함께 내려앉는 시간이에요."
-    };
+    return createWorldAtmosphere("sunset");
   }
 
-  return {
-    key: "night",
-    label: "밤 숲",
-    description: "달빛과 반딧불이가 숲을 은은하게 밝혀주는 시간이에요."
-  };
+  return createWorldAtmosphere("night");
 }
 
 function renderWorldAtmosphere() {
@@ -1326,11 +1331,16 @@ function renderWorldAtmosphere() {
     worldStageElement.classList.remove("world-time-day", "world-time-sunset", "world-time-night", "world-focus-active");
     worldStageElement.classList.add(`world-time-${atmosphere.key}`);
     worldStageElement.dataset.worldTime = atmosphere.key;
+    worldStageElement.setAttribute("aria-label", `전체 월드 숲, 현재 ${atmosphere.label}`);
   }
 
   if (worldTimeBadgeElement) {
     worldTimeBadgeElement.textContent = atmosphere.label;
     worldTimeBadgeElement.setAttribute("aria-label", atmosphere.description);
+  }
+
+  if (worldAtmosphereHintElement) {
+    worldAtmosphereHintElement.textContent = atmosphere.hint;
   }
 
   return atmosphere;
@@ -1383,27 +1393,51 @@ function createWorldLifeMarkup(type, index, seed) {
   return `<span class="world-life-item world-life-${type}" style="${style}" aria-label="${labels[type]}">${symbol}</span>`;
 }
 
+function getWorldTimeCycleKey() {
+  const now = new Date();
+  const minutes = now.getHours() * 60 + now.getMinutes();
+  return Math.floor(minutes / 20);
+}
+
 function renderWorldLife(atmosphere = getWorldAtmosphereInfo()) {
   if (!worldLifeLayerElement) {
     return;
   }
 
   const dateKey = getTodayKey();
-  const hourKey = new Date().getHours();
-  const seed = `${treeData.treeId}-${dateKey}-${hourKey}-${atmosphere.key}-world-life`;
-  const quietMoment = hashStringToUnitInterval(`${seed}-quiet-moment`) < 0.1;
-  const calmFactor = quietMoment ? 0.45 : 1;
-  const lifeConfigs = [
-    { type: "bird", max: atmosphere.key === "night" ? 1 : atmosphere.key === "sunset" ? 2 : 3, chance: (atmosphere.key === "night" ? 0.1 : atmosphere.key === "sunset" ? 0.38 : 0.52) * calmFactor },
-    { type: "squirrel", max: 2, chance: (atmosphere.key === "night" ? 0.08 : atmosphere.key === "sunset" ? 0.24 : 0.28) * calmFactor },
-    { type: "butterfly", max: atmosphere.key === "day" ? 4 : atmosphere.key === "sunset" ? 2 : 0, chance: (atmosphere.key === "day" ? 0.36 : atmosphere.key === "sunset" ? 0.16 : 0) * calmFactor },
-    { type: "firefly", max: atmosphere.key === "night" ? 10 : atmosphere.key === "sunset" ? 3 : 0, chance: (atmosphere.key === "night" ? 0.7 : atmosphere.key === "sunset" ? 0.22 : 0) * calmFactor },
-    { type: "light", max: 8, chance: (atmosphere.key === "night" ? 0.5 : atmosphere.key === "sunset" ? 0.58 : 0.52) * calmFactor }
-  ];
+  const cycleKey = getWorldTimeCycleKey();
+  const seed = `${treeData.treeId}-${dateKey}-${cycleKey}-${atmosphere.key}-world-life`;
+  const quietMoment = hashStringToUnitInterval(`${seed}-quiet-moment`) < atmosphere.quietChance;
+  const calmFactor = quietMoment ? 0.42 : 1;
+  const lifeConfigsByTime = {
+    day: [
+      { type: "bird", max: 4, chance: 0.56 },
+      { type: "squirrel", max: 2, chance: 0.3 },
+      { type: "butterfly", max: 5, chance: 0.42 },
+      { type: "firefly", max: 0, chance: 0 },
+      { type: "light", max: 8, chance: 0.44 }
+    ],
+    sunset: [
+      { type: "bird", max: 3, chance: 0.38 },
+      { type: "squirrel", max: 2, chance: 0.25 },
+      { type: "butterfly", max: 2, chance: 0.16 },
+      { type: "firefly", max: 4, chance: 0.26 },
+      { type: "light", max: 10, chance: 0.6 }
+    ],
+    night: [
+      { type: "bird", max: 1, chance: 0.08 },
+      { type: "squirrel", max: 1, chance: 0.08 },
+      { type: "butterfly", max: 0, chance: 0 },
+      { type: "firefly", max: 12, chance: 0.74 },
+      { type: "light", max: 10, chance: 0.58 }
+    ]
+  };
+
+  const lifeConfigs = lifeConfigsByTime[atmosphere.key] || lifeConfigsByTime.day;
 
   worldLifeLayerElement.innerHTML = lifeConfigs
     .flatMap((config) => {
-      const count = getWorldLifeCount(`${seed}-${config.type}`, config.max, config.chance);
+      const count = getWorldLifeCount(`${seed}-${config.type}`, config.max, config.chance * calmFactor);
       return Array.from({ length: count }, (_, index) => createWorldLifeMarkup(config.type, index, seed));
     })
     .join("");
@@ -1415,15 +1449,15 @@ function renderWorldParticles(atmosphere = getWorldAtmosphereInfo()) {
   }
 
   const dateKey = getTodayKey();
-  const seed = `${treeData.treeId}-${dateKey}-${new Date().getHours()}-${atmosphere.key}-world-particles`;
-  const particleCount = atmosphere.key === "night" ? 14 : atmosphere.key === "sunset" ? 10 : 8;
+  const seed = `${treeData.treeId}-${dateKey}-${getWorldTimeCycleKey()}-${atmosphere.key}-world-particles`;
+  const particleCount = atmosphere.particleCount;
 
   worldParticleLayerElement.innerHTML = Array.from({ length: particleCount }, (_, index) => {
     const x = 6 + hashStringToUnitInterval(`${seed}-x-${index}`) * 88;
     const y = 10 + hashStringToUnitInterval(`${seed}-y-${index}`) * 70;
-    const size = 3 + hashStringToUnitInterval(`${seed}-size-${index}`) * 5;
+    const size = 3 + hashStringToUnitInterval(`${seed}-size-${index}`) * (atmosphere.key === "night" ? 6 : 5);
     const delay = hashStringToUnitInterval(`${seed}-delay-${index}`) * -9;
-    const duration = 8 + hashStringToUnitInterval(`${seed}-duration-${index}`) * 8;
+    const duration = 8 + hashStringToUnitInterval(`${seed}-duration-${index}`) * (atmosphere.key === "night" ? 10 : 8);
     return `<span style="--particle-x: ${x.toFixed(1)}%; --particle-y: ${y.toFixed(1)}%; --particle-size: ${size.toFixed(1)}px; --particle-delay: ${delay.toFixed(2)}s; --particle-duration: ${duration.toFixed(2)}s;"></span>`;
   }).join("");
 }
