@@ -2338,7 +2338,7 @@ body.dev-test-mode .test-preset-buttons button[data-test-preset="visitor-history
 }
 
 
-/* V1.8.2 test: 낮·노을·밤 대비 강화 */
+/* V1.8.3 test: 낮·노을·밤 대비 강화 */
 .world-stage {
   height: min(76vh, 640px);
   min-height: 540px;
@@ -2556,7 +2556,7 @@ body.dev-test-mode .test-preset-buttons button[data-test-preset="visitor-history
 }
 
 
-/* V1.8.2 test: 낮·노을·밤 월드 숲 분위기 강화 */
+/* V1.8.3 test: 낮·노을·밤 월드 숲 분위기 강화 */
 .world-atmosphere-hint {
   margin: 8px 0 0;
   color: rgba(226, 248, 216, 0.66);
@@ -2766,7 +2766,7 @@ body.dev-test-mode .test-preset-buttons button[data-test-preset="visitor-history
   }
 }
 
-/* V1.8.2 test: 시간대 대비 강화 — 낮은 확실히 밝게, 노을은 따뜻하게, 밤은 몽환적으로 */
+/* V1.8.3 test: 시간대 대비 강화 — 낮은 확실히 밝게, 노을은 따뜻하게, 밤은 몽환적으로 */
 body[data-world-time="day"] {
   background:
     radial-gradient(circle at 50% 0%, rgba(224, 255, 187, 0.34), transparent 38%),
@@ -3059,7 +3059,7 @@ body[data-world-time="sunset"] .daily-loop-card {
 }
 
 
-/* V1.8.2 test: 낮 숲 진짜 낮처럼 보이도록 밝기와 시인성 강한 보정 */
+/* V1.8.3 test: 낮 숲 진짜 낮처럼 보이도록 밝기와 시인성 강한 보정 */
 body[data-world-time="day"] {
   background:
     radial-gradient(circle at 50% -6%, rgba(255, 252, 211, 0.62), transparent 34%),
@@ -3209,4 +3209,132 @@ body[data-world-time="day"] .world-summary,
 body[data-world-time="day"] .daily-loop-card {
   background: rgba(26, 70, 37, 0.52);
   border-color: rgba(238,255,207,0.22);
+}
+
+
+/* V1.8.3 test: 내 정원 시간대 연동 1차 */
+.garden-stage {
+  background-repeat: no-repeat;
+}
+
+.garden-stage.garden-time-day {
+  background-color: #b9d4b1;
+  background-image:
+    radial-gradient(circle at 50% 8%, rgba(255,255,235,0.92), rgba(255,251,212,0.52) 18%, transparent 40%),
+    linear-gradient(180deg, rgba(242,255,226,0.36), rgba(193,232,180,0.18) 36%, rgba(78,132,84,0.06) 100%),
+    url("assets/garden/garden-night-bg.png"),
+    linear-gradient(180deg, #dbead0 0%, #98bf92 58%, #36513a 100%);
+  background-blend-mode: screen, screen, normal, normal;
+}
+
+.garden-stage.garden-time-sunset {
+  background-color: #735743;
+  background-image:
+    radial-gradient(circle at 52% 12%, rgba(255,201,135,0.60), rgba(255,168,111,0.22) 20%, transparent 42%),
+    linear-gradient(180deg, rgba(255,198,145,0.16), rgba(124,76,49,0.10) 44%, rgba(34,31,24,0.06) 100%),
+    url("assets/garden/garden-night-bg.png"),
+    linear-gradient(180deg, #896348 0%, #4d5c46 58%, #1a221d 100%);
+  background-blend-mode: screen, soft-light, normal, normal;
+}
+
+.garden-stage.garden-time-night {
+  background-color: #14231e;
+}
+
+.garden-stage.garden-time-day .garden-dim {
+  background:
+    radial-gradient(circle at 50% 54%, rgba(252,255,210,0.22), transparent 24%),
+    linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(212,238,196,0.00) 52%, rgba(26,62,30,0.12) 100%);
+}
+
+.garden-stage.garden-time-day .garden-depth {
+  opacity: 0.16;
+  background:
+    radial-gradient(ellipse at 50% 65%, rgba(10,24,15,0.08) 0 24%, transparent 56%),
+    radial-gradient(circle at 50% 60%, transparent 0 18%, rgba(24,58,30,0.10) 62%, rgba(10,20,14,0.18) 100%);
+}
+
+.garden-stage.garden-time-day .garden-moon-glow {
+  opacity: 0.78;
+  width: 190px;
+  height: 190px;
+  background: radial-gradient(circle, rgba(255,255,228,0.82), rgba(255,247,184,0.28) 48%, transparent 72%);
+  filter: blur(6px);
+}
+
+.garden-stage.garden-time-day .garden-fog {
+  opacity: 0.12;
+  background: radial-gradient(ellipse, rgba(255,255,238,0.18), transparent 70%);
+  filter: blur(12px);
+}
+
+.garden-stage.garden-time-day .garden-focus-clearing {
+  background:
+    radial-gradient(ellipse at 50% 68%, rgba(235,255,204,0.18) 0 26%, rgba(139,192,112,0.08) 46%, transparent 74%),
+    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(26,58,28,0.16));
+  backdrop-filter: blur(1.2px) brightness(1.18) saturate(1.06);
+  -webkit-backdrop-filter: blur(1.2px) brightness(1.18) saturate(1.06);
+}
+
+.garden-stage.garden-time-day .tree-planting-ground {
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(255,255,206,0.26), transparent 38%),
+    radial-gradient(ellipse at 45% 48%, rgba(103,141,82,0.76), rgba(53,84,56,0.74) 50%, rgba(15,34,18,0.12) 72%, transparent 76%),
+    radial-gradient(ellipse at 50% 72%, rgba(6,18,10,0.46), transparent 70%);
+  box-shadow:
+    inset 0 10px 22px rgba(240,255,210,0.08),
+    0 16px 28px rgba(0,0,0,0.18),
+    0 0 46px rgba(224,255,172,0.12);
+}
+
+.garden-stage.garden-time-day .garden-foreground {
+  filter: brightness(1.32) saturate(1.12);
+  opacity: 0.72;
+}
+
+.garden-stage.garden-time-day .firefly {
+  opacity: 0.12;
+  box-shadow: 0 0 8px rgba(248,255,181,0.36), 0 0 16px rgba(134,218,151,0.20);
+}
+
+.garden-stage.garden-time-day .stage-message {
+  background: rgba(20, 52, 30, 0.56);
+  border-color: rgba(240,255,216,0.18);
+}
+
+.garden-stage.garden-time-day .message-main,
+.garden-stage.garden-time-day .message-sub {
+  color: #f6fff0;
+}
+
+.garden-stage.garden-time-day .tree-glow {
+  background: radial-gradient(circle, rgba(236,255,195,0.22), transparent 66%);
+  box-shadow: 0 0 64px rgba(214,247,168,0.22);
+}
+
+.garden-stage.garden-time-sunset .garden-dim {
+  background:
+    radial-gradient(circle at 50% 56%, rgba(255,230,176,0.16), transparent 24%),
+    linear-gradient(180deg, rgba(255,188,129,0.05) 0%, rgba(110,63,44,0.12) 56%, rgba(19,18,14,0.26) 100%);
+}
+
+.garden-stage.garden-time-sunset .garden-moon-glow {
+  background: radial-gradient(circle, rgba(255,206,142,0.32), rgba(255,158,104,0.14) 45%, transparent 70%);
+}
+
+.garden-stage.garden-time-sunset .garden-fog {
+  opacity: 0.24;
+}
+
+.garden-stage.garden-time-sunset .stage-message {
+  background: rgba(40, 28, 18, 0.56);
+}
+
+.garden-stage.garden-time-sunset .tree-glow {
+  background: radial-gradient(circle, rgba(255,214,153,0.16), transparent 66%);
+  box-shadow: 0 0 62px rgba(255,188,122,0.16);
+}
+
+.garden-stage.garden-time-night .stage-message {
+  background: rgba(6, 18, 16, 0.56);
 }

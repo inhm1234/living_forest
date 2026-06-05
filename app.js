@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.8.2 test
+// 살아있는 숲 V1.8.3 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.8.2 test
-// 목적: 낮 숲 밝기 확실 강화판 테스트판
+// 버전명: V1.8.3 test
+// 목적: 내 정원 시간대 연동 1차 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.8.2 test",
+  version: "V1.8.3 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -243,6 +243,7 @@ const flowStepMoodElement = document.querySelector("#flowStepMood");
 const flowStepReturnElement = document.querySelector("#flowStepReturn");
 
 const skyElement = document.querySelector("#sky");
+const gardenTitleElement = document.querySelector("#gardenTitle");
 const effectLayerElement = document.querySelector("#effectLayer");
 const treeElement = document.querySelector("#tree");
 const treeImageElement = document.querySelector("#treeImage");
@@ -1639,6 +1640,23 @@ function renderCompleteCard() {
   completeMessageElement.textContent = `오늘의 ${todayRecord.label} 기운이 내 나무와 월드 숲의 내 자리에 조용히 스며들었어요. 오늘의 마음은 숲에 남았어요. 이제 그만 쉬어도 괜찮아요. ${getNextGoalMessage()}`;
 }
 
+function renderGardenAtmosphere() {
+  const atmosphere = getWorldAtmosphereInfo();
+
+  if (skyElement) {
+    skyElement.classList.remove("garden-time-day", "garden-time-sunset", "garden-time-night");
+    skyElement.classList.add(`garden-time-${atmosphere.key}`);
+    skyElement.dataset.gardenTime = atmosphere.key;
+    skyElement.setAttribute("aria-label", `내 ${atmosphere.label.replace("숲", "정원")}`);
+  }
+
+  if (gardenTitleElement) {
+    gardenTitleElement.textContent = atmosphere.label.replace("숲", "정원");
+  }
+
+  return atmosphere;
+}
+
 function renderHeader() {
   const name = treeData.treeName?.trim() || "이름 없는 나무";
   const stage = getGrowthStage();
@@ -2045,6 +2063,7 @@ function renderAll() {
   renderWorld();
   renderDailyLoop();
   renderServiceFlow();
+  renderGardenAtmosphere();
   renderHeader();
   renderTreeName();
   renderTree();
