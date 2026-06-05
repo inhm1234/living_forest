@@ -3824,3 +3824,166 @@ body[data-world-time="day"] .daily-loop-card {
     font-size: 11px;
   }
 }
+
+
+/* V1.10.2 test: 월드 숲 군집감 보정 1차 */
+.world-neighbor-spots {
+  z-index: 8;
+}
+
+.neighbor-spot {
+  z-index: var(--slot-z, 10);
+  width: 92px;
+  height: 112px;
+}
+
+.neighbor-ground {
+  width: 74px;
+  height: 24px;
+  bottom: 12px;
+  background: radial-gradient(ellipse, rgba(214, 255, 181, 0.16), rgba(26, 49, 31, 0.22) 54%, transparent 76%);
+}
+
+.neighbor-tree-wrap {
+  width: 80px;
+  height: 96px;
+  bottom: 10px;
+}
+
+.neighbor-tree-shadow {
+  opacity: 0.28;
+}
+
+.neighbor-tree-image {
+  filter: drop-shadow(0 9px 14px rgba(0, 0, 0, 0.28)) blur(var(--slot-blur, 0px));
+}
+
+.neighbor-spot small {
+  bottom: -6px;
+  opacity: 0.28;
+  transform: translateX(-50%) scale(0.94);
+  transition: opacity 0.25s ease, transform 0.25s ease, background 0.25s ease;
+}
+
+.world-focus-active .neighbor-spot small,
+.neighbor-spot:hover small {
+  opacity: 0.82;
+  transform: translateX(-50%) scale(1);
+}
+
+.neighbor-spot.world-tree-seed .neighbor-tree-wrap {
+  width: 40px;
+  height: 48px;
+}
+
+.neighbor-spot.world-tree-sprout .neighbor-tree-wrap {
+  width: 50px;
+  height: 58px;
+}
+
+.neighbor-spot.world-tree-sapling .neighbor-tree-wrap {
+  width: 62px;
+  height: 72px;
+}
+
+.neighbor-spot.world-tree-young .neighbor-tree-wrap {
+  width: 74px;
+  height: 86px;
+}
+
+.neighbor-spot.world-tree-hero .neighbor-tree-wrap {
+  width: 82px;
+  height: 94px;
+}
+
+.my-world-spot {
+  bottom: 88px;
+}
+
+.my-spot-ring {
+  width: 110px;
+  height: 110px;
+  opacity: 0.82;
+}
+
+.my-spot-visual {
+  width: 156px;
+  height: 164px;
+}
+
+.my-spot-ground-shadow {
+  width: 136px;
+  height: 34px;
+  bottom: 18px;
+  background: radial-gradient(ellipse, rgba(236, 255, 188, 0.2), rgba(39, 71, 42, 0.22) 54%, transparent 76%);
+}
+
+.my-world-spot .my-spot-name {
+  background: rgba(8, 18, 16, 0.3);
+  opacity: 0.9;
+}
+
+.my-world-spot .my-spot-status {
+  max-width: 168px;
+  font-size: 11px;
+  opacity: 0.58;
+}
+
+.world-focus-active .neighbor-tree-image {
+  filter: drop-shadow(0 11px 16px rgba(0, 0, 0, 0.32)) blur(var(--slot-blur, 0px)) brightness(1.05);
+}
+
+.world-time-day .neighbor-spot {
+  opacity: calc(var(--slot-opacity, 0.7) + 0.05);
+}
+
+.world-time-day .neighbor-tree-image {
+  filter: drop-shadow(0 9px 14px rgba(0, 0, 0, 0.24)) blur(var(--slot-blur, 0px)) brightness(1.04) saturate(1.06);
+}
+
+.world-time-day .neighbor-ground {
+  background: radial-gradient(ellipse, rgba(244, 255, 194, 0.2), rgba(59, 104, 59, 0.22) 52%, transparent 76%);
+}
+
+.world-time-sunset .neighbor-tree-image {
+  filter: drop-shadow(0 9px 15px rgba(0, 0, 0, 0.28)) blur(var(--slot-blur, 0px)) saturate(1.03) sepia(0.06);
+}
+
+.world-time-night .neighbor-tree-image {
+  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.38)) blur(calc(var(--slot-blur, 0px) + 0.1px)) brightness(0.9);
+}
+
+.world-time-night .neighbor-ground {
+  background: radial-gradient(ellipse, rgba(198, 233, 255, 0.1), rgba(22, 38, 49, 0.22) 52%, transparent 76%);
+}
+
+@media (max-width: 560px) {
+  .neighbor-spot {
+    width: 78px;
+    height: 98px;
+  }
+
+  .neighbor-ground {
+    width: 58px;
+    bottom: 14px;
+  }
+
+  .neighbor-spot small {
+    bottom: -4px;
+    font-size: 8.5px;
+    opacity: 0.2;
+  }
+
+  .my-world-spot {
+    bottom: 84px;
+  }
+
+  .my-spot-visual {
+    width: 136px;
+    height: 144px;
+  }
+
+  .my-spot-ground-shadow {
+    width: 118px;
+  }
+}
