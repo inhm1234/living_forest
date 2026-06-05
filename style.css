@@ -1850,7 +1850,7 @@ body.dev-test-mode .test-preset-buttons button[data-test-preset="visitor-history
 }
 
 
-/* V1.7 test: 2.5D 월드 숲 비주얼 1차 */
+/* V1.7 test: 2.5D 월드 숲 비주얼 1차 기준 */
 .world-card {
   width: min(calc(100vw - 28px), 1040px);
   margin-left: 50%;
@@ -2334,5 +2334,223 @@ body.dev-test-mode .test-preset-buttons button[data-test-preset="visitor-history
 
   .my-world-spot {
     bottom: 82px;
+  }
+}
+
+
+/* V1.7.1 test: 월드 숲 2.5D 세부 보정 */
+.world-stage {
+  height: min(76vh, 640px);
+  min-height: 540px;
+  background-position: center 44%;
+}
+
+.world-stage::before {
+  background:
+    radial-gradient(ellipse at 50% 36%, rgba(244, 255, 214, 0.06) 0 18%, transparent 38%, rgba(4, 10, 11, 0.18) 66%, rgba(2, 7, 8, 0.56) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent 48%, rgba(0, 0, 0, 0.34));
+}
+
+.world-stage::after {
+  background: radial-gradient(ellipse at 50% 72%, transparent 0 42%, rgba(0, 0, 0, 0.18) 74%, rgba(0, 0, 0, 0.42) 100%);
+}
+
+.world-dim {
+  background:
+    radial-gradient(circle at 50% 58%, rgba(230, 255, 196, 0.16), transparent 22%),
+    radial-gradient(circle at 50% 38%, transparent 0 30%, rgba(5, 12, 13, 0.16) 58%, rgba(3, 8, 9, 0.48) 100%),
+    linear-gradient(180deg, rgba(4, 10, 14, 0.06) 0%, rgba(5, 12, 14, 0.2) 58%, rgba(2, 7, 8, 0.58) 100%);
+}
+
+.world-backdrop {
+  opacity: 0.88;
+}
+
+.world-sky-glow {
+  top: -15%;
+  height: 56%;
+  opacity: 0.88;
+}
+
+.world-sunbeam {
+  opacity: 0.5;
+}
+
+.world-far-trees {
+  opacity: 0.64;
+  filter: blur(1.8px);
+}
+
+.far-trees-b {
+  opacity: 0.38;
+  filter: blur(2.8px);
+}
+
+.world-mid-trees {
+  opacity: 0.76;
+  filter: blur(0.9px);
+}
+
+.world-forest-trail {
+  width: min(62%, 560px);
+  opacity: 0.82;
+  background:
+    radial-gradient(ellipse at 50% 20%, rgba(235, 255, 198, 0.14), transparent 40%),
+    linear-gradient(180deg, rgba(190, 216, 145, 0.055), rgba(97, 114, 72, 0.25) 42%, rgba(43, 52, 36, 0.48) 100%);
+}
+
+.world-clearing {
+  bottom: 42px;
+  opacity: 0.9;
+}
+
+.world-spot-ground {
+  bottom: 55px;
+  width: min(56%, 340px);
+  opacity: 0.86;
+}
+
+.world-foreground {
+  height: 132px;
+  opacity: 0.94;
+}
+
+.world-front-leaves {
+  opacity: 0.54;
+}
+
+.world-time-badge {
+  background: rgba(8, 18, 16, 0.58);
+  color: rgba(245, 255, 233, 0.92);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
+}
+
+.neighbor-spot {
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.34));
+}
+
+.neighbor-spot small {
+  background: rgba(6, 15, 13, 0.58);
+  color: rgba(242, 255, 233, 0.76);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.42);
+}
+
+.my-world-spot {
+  width: 192px;
+  bottom: 78px;
+  padding: 14px 13px 13px;
+  border-color: rgba(242, 255, 224, 0.16);
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(217, 255, 184, 0.08), transparent 50%),
+    rgba(7, 17, 15, 0.44);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    0 18px 42px rgba(0, 0, 0, 0.28),
+    0 0 42px rgba(209, 247, 183, 0.1);
+}
+
+.my-world-spot::before {
+  width: 132px;
+  opacity: 0.78;
+}
+
+.my-spot-ring {
+  top: 34px;
+  width: 70px;
+  height: 70px;
+}
+
+.my-spot-aura {
+  min-height: 14px;
+  margin-bottom: 0;
+}
+
+.my-spot-visual {
+  font-size: 46px;
+}
+
+.my-spot-name {
+  margin: 6px 0 4px;
+  font-size: 17px;
+}
+
+.my-spot-status {
+  color: rgba(242, 255, 233, 0.78);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.world-focus-active .my-world-spot {
+  transform: translateX(-50%) translateY(-7px) scale(1.04);
+  animation: none;
+  background:
+    radial-gradient(ellipse at 50% 8%, rgba(240, 255, 190, 0.24), transparent 52%),
+    rgba(8, 18, 16, 0.64);
+}
+
+.world-focus-active .world-forest-trail,
+.world-focus-active .world-clearing,
+.world-focus-active .world-spot-ground {
+  filter: brightness(1.22) saturate(1.08);
+}
+
+.world-particle-layer span {
+  opacity: 0.42;
+}
+
+.world-life-item {
+  opacity: 0.68;
+}
+
+.world-life-bird {
+  width: 48px;
+  height: 34px;
+  opacity: 0.62;
+}
+
+.world-life-squirrel {
+  width: 42px;
+  height: 34px;
+  opacity: 0.58;
+}
+
+.world-life-butterfly {
+  opacity: 0.56;
+}
+
+.world-life-firefly,
+.world-life-light {
+  opacity: 0.58;
+}
+
+.world-summary,
+.daily-loop-card {
+  background: rgba(7, 18, 16, 0.6);
+}
+
+.world-summary-text,
+.world-community-hint,
+.daily-loop-text {
+  color: rgba(242, 255, 233, 0.76);
+}
+
+@media (max-width: 560px) {
+  .world-stage {
+    height: 560px;
+    min-height: 560px;
+  }
+
+  .my-world-spot {
+    width: 178px;
+    bottom: 76px;
+    padding: 13px 12px 12px;
+  }
+
+  .my-spot-visual {
+    font-size: 42px;
+  }
+
+  .my-spot-status {
+    font-size: 12px;
   }
 }

@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.7 test
+// 살아있는 숲 V1.7.1 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.7 test
-// 목적: 2.5D 월드 숲 비주얼 1차 테스트판
+// 버전명: V1.7.1 test
+// 목적: 2.5D 월드 숲 세부 보정판 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.7 test",
+  version: "V1.7.1 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -1270,6 +1270,30 @@ function getWorldSlotStateLabel(state) {
 }
 
 function getWorldAtmosphereInfo() {
+  const forcedWorldTime = urlParams.get("worldTime");
+
+  if (isTestMode && ["day", "sunset", "night"].includes(forcedWorldTime)) {
+    const forcedAtmospheres = {
+      day: {
+        key: "day",
+        label: "낮 숲",
+        description: "테스트 모드에서 낮 분위기를 확인하고 있어요."
+      },
+      sunset: {
+        key: "sunset",
+        label: "노을 숲",
+        description: "테스트 모드에서 노을 분위기를 확인하고 있어요."
+      },
+      night: {
+        key: "night",
+        label: "밤 숲",
+        description: "테스트 모드에서 밤 분위기를 확인하고 있어요."
+      }
+    };
+
+    return forcedAtmospheres[forcedWorldTime];
+  }
+
   const hour = new Date().getHours();
 
   if (hour >= 6 && hour < 17) {
@@ -1367,12 +1391,14 @@ function renderWorldLife(atmosphere = getWorldAtmosphereInfo()) {
   const dateKey = getTodayKey();
   const hourKey = new Date().getHours();
   const seed = `${treeData.treeId}-${dateKey}-${hourKey}-${atmosphere.key}-world-life`;
+  const quietMoment = hashStringToUnitInterval(`${seed}-quiet-moment`) < 0.1;
+  const calmFactor = quietMoment ? 0.45 : 1;
   const lifeConfigs = [
-    { type: "bird", max: atmosphere.key === "night" ? 1 : 4, chance: atmosphere.key === "night" ? 0.18 : 0.62 },
-    { type: "squirrel", max: 2, chance: atmosphere.key === "night" ? 0.12 : 0.34 },
-    { type: "butterfly", max: atmosphere.key === "day" ? 4 : 2, chance: atmosphere.key === "day" ? 0.44 : 0.18 },
-    { type: "firefly", max: atmosphere.key === "night" ? 8 : 2, chance: atmosphere.key === "night" ? 0.76 : 0.12 },
-    { type: "light", max: 7, chance: atmosphere.key === "night" ? 0.46 : 0.64 }
+    { type: "bird", max: atmosphere.key === "night" ? 1 : atmosphere.key === "sunset" ? 2 : 3, chance: (atmosphere.key === "night" ? 0.1 : atmosphere.key === "sunset" ? 0.38 : 0.52) * calmFactor },
+    { type: "squirrel", max: 2, chance: (atmosphere.key === "night" ? 0.08 : atmosphere.key === "sunset" ? 0.24 : 0.28) * calmFactor },
+    { type: "butterfly", max: atmosphere.key === "day" ? 4 : atmosphere.key === "sunset" ? 2 : 0, chance: (atmosphere.key === "day" ? 0.36 : atmosphere.key === "sunset" ? 0.16 : 0) * calmFactor },
+    { type: "firefly", max: atmosphere.key === "night" ? 10 : atmosphere.key === "sunset" ? 3 : 0, chance: (atmosphere.key === "night" ? 0.7 : atmosphere.key === "sunset" ? 0.22 : 0) * calmFactor },
+    { type: "light", max: 8, chance: (atmosphere.key === "night" ? 0.5 : atmosphere.key === "sunset" ? 0.58 : 0.52) * calmFactor }
   ];
 
   worldLifeLayerElement.innerHTML = lifeConfigs
