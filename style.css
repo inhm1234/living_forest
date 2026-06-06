@@ -5612,3 +5612,348 @@ body[data-world-time="day"] .daily-loop-card {
     bottom: 56px;
   }
 }
+
+/* V1.10.8 final override: 내 나무는 카드가 아니라 숲 속 한 그루로 유지 */
+.world-time-day .my-world-spot,
+.world-time-sunset .my-world-spot,
+.world-time-night .my-world-spot,
+.world-focus-active .my-world-spot {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+
+/* V1.10.9 test: 배경 숲 축소 / 사용자 나무 중심 월드 구조 재설계 1차
+   목표: 이미 완성된 거대한 배경 숲 위에 작은 나무를 얹는 방식이 아니라,
+   빈 숲자리와 채워진 나무들이 모여 숲을 만들어가는 구조를 먼저 보이게 합니다. */
+.world-stage,
+.world-stage.world-time-day,
+.world-stage.world-time-sunset,
+.world-stage.world-time-night {
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: normal;
+}
+
+.world-stage.world-time-day {
+  background-color: #9dbd89;
+  background-image:
+    radial-gradient(circle at 46% 9%, rgba(255, 255, 227, 0.96), rgba(255, 250, 196, 0.48) 15%, transparent 38%),
+    linear-gradient(180deg, rgba(235, 250, 212, 0.80) 0%, rgba(166, 207, 142, 0.58) 34%, rgba(91, 142, 80, 0.54) 66%, rgba(31, 73, 42, 0.88) 100%);
+}
+
+.world-stage.world-time-sunset {
+  background-color: #8b6b4a;
+  background-image:
+    radial-gradient(circle at 66% 15%, rgba(255, 191, 119, 0.76), rgba(255, 152, 92, 0.30) 19%, transparent 42%),
+    linear-gradient(180deg, rgba(157, 116, 78, 0.78) 0%, rgba(111, 130, 86, 0.54) 38%, rgba(75, 92, 57, 0.60) 70%, rgba(26, 45, 32, 0.92) 100%);
+}
+
+.world-stage.world-time-night {
+  background-color: #142337;
+  background-image:
+    radial-gradient(circle at 68% 11%, rgba(206, 232, 255, 0.46), rgba(157, 201, 255, 0.15) 16%, transparent 34%),
+    linear-gradient(180deg, rgba(31, 50, 75, 0.90) 0%, rgba(24, 55, 61, 0.68) 40%, rgba(16, 43, 39, 0.70) 70%, rgba(5, 14, 16, 0.96) 100%);
+}
+
+.world-stage::before {
+  background:
+    radial-gradient(ellipse at 50% 28%, rgba(255, 255, 235, 0.20), transparent 40%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 42%, rgba(7, 21, 12, 0.14));
+  mix-blend-mode: normal;
+  opacity: 0.74;
+}
+
+.world-stage::after {
+  background:
+    radial-gradient(ellipse at 50% 78%, transparent 0 58%, rgba(3, 12, 7, 0.18) 86%, rgba(3, 8, 8, 0.34) 100%);
+  mix-blend-mode: normal;
+  opacity: 0.78;
+}
+
+.world-backdrop,
+.world-far-trees,
+.world-mid-trees,
+.world-canopy-shadow {
+  opacity: 0.04 !important;
+  filter: blur(8px) brightness(1.3) saturate(0.7) !important;
+}
+
+.world-sky-glow {
+  opacity: 0.52 !important;
+}
+
+.world-sunbeam {
+  opacity: 0.32 !important;
+}
+
+.world-forest-trail {
+  left: 50%;
+  bottom: -2%;
+  z-index: 5;
+  width: min(92%, 760px);
+  height: 70%;
+  border-radius: 42% 42% 12% 12%;
+  transform: translateX(-50%) perspective(340px) rotateX(58deg);
+  background:
+    linear-gradient(180deg,
+      transparent 0 13%, rgba(244,255,206,0.12) 14% 15%, transparent 16% 27%,
+      rgba(244,255,206,0.13) 28% 29%, transparent 30% 42%,
+      rgba(244,255,206,0.14) 43% 44%, transparent 45% 57%,
+      rgba(244,255,206,0.16) 58% 59%, transparent 60% 72%,
+      rgba(244,255,206,0.17) 73% 74%, transparent 75% 100%),
+    radial-gradient(ellipse at 50% 58%, rgba(220, 255, 178, 0.22), rgba(98, 146, 78, 0.20) 42%, rgba(21, 58, 35, 0.20) 78%, transparent 100%);
+  filter: none;
+  opacity: 1;
+  mask-image: radial-gradient(ellipse at 50% 58%, #000 0 62%, transparent 90%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 58%, #000 0 62%, transparent 90%);
+}
+
+.world-clearing {
+  left: 50%;
+  bottom: 20px;
+  z-index: 4;
+  width: min(98%, 820px);
+  height: 420px;
+  border-radius: 48% 48% 18% 18%;
+  background:
+    radial-gradient(ellipse at 50% 68%, rgba(236, 255, 196, 0.18) 0 20%, rgba(133, 184, 95, 0.16) 42%, transparent 76%),
+    linear-gradient(180deg, rgba(255,255,255,0.03), rgba(35, 77, 42, 0.18));
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  mask-image: radial-gradient(ellipse at 50% 64%, #000 0 68%, transparent 92%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 64%, #000 0 68%, transparent 92%);
+}
+
+.world-spot-ground {
+  display: none;
+}
+
+.world-foreground {
+  height: 96px;
+  opacity: 0.72;
+  filter: brightness(0.98) saturate(1.02);
+}
+
+.world-front-leaves {
+  opacity: 0.12 !important;
+}
+
+.world-neighbor-spots {
+  z-index: 8;
+}
+
+.world-neighbor-spots::before {
+  left: 50%;
+  bottom: 36px;
+  width: min(96%, 800px);
+  height: 396px;
+  transform: translateX(-50%);
+  background:
+    linear-gradient(180deg,
+      transparent 0 7%, rgba(241, 255, 202, 0.18) 8% 9%, transparent 10% 22%,
+      rgba(241, 255, 202, 0.20) 23% 24%, transparent 25% 37%,
+      rgba(241, 255, 202, 0.21) 38% 39%, transparent 40% 53%,
+      rgba(241, 255, 202, 0.22) 54% 55%, transparent 56% 70%,
+      rgba(241, 255, 202, 0.24) 71% 72%, transparent 73% 100%),
+    radial-gradient(ellipse at 50% 66%, rgba(235, 255, 205, 0.14), transparent 72%);
+  opacity: 0.95;
+  filter: blur(2.8px);
+  mask-image: radial-gradient(ellipse at 50% 62%, #000 0 66%, transparent 92%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 62%, #000 0 66%, transparent 92%);
+}
+
+.world-neighbor-spots::after {
+  left: 50%;
+  bottom: 26px;
+  width: min(94%, 780px);
+  height: 330px;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(ellipse at 50% 83%, rgba(7, 25, 13, 0.26), transparent 65%),
+    radial-gradient(ellipse at 50% 54%, rgba(224, 255, 185, 0.06), transparent 70%);
+  opacity: 0.86;
+}
+
+.neighbor-spot.community-seat {
+  width: 92px;
+  height: 112px;
+  opacity: var(--slot-opacity, 0.72);
+  transform: translate(-50%, -50%) translateY(var(--slot-lift, 0px)) scale(var(--slot-scale, 1)) rotate(var(--slot-tilt, 0deg));
+  filter:
+    drop-shadow(0 10px 14px rgba(0, 0, 0, var(--slot-shadow, 0.2)))
+    blur(var(--slot-blur, 0px))
+    brightness(var(--slot-brightness, 1))
+    saturate(var(--slot-sat, 1));
+  animation-duration: 8.2s;
+}
+
+.neighbor-spot.community-seat .neighbor-tree-wrap {
+  width: 82px;
+  height: 96px;
+  bottom: 9px;
+}
+
+.neighbor-spot.community-seat .neighbor-ground {
+  width: 74px;
+  height: 18px;
+  bottom: 10px;
+  opacity: var(--slot-ground-opacity, 0.12);
+  background: radial-gradient(ellipse, rgba(235, 255, 194, 0.56), rgba(54, 88, 45, 0.42) 52%, transparent 76%);
+}
+
+.neighbor-spot.community-seat .neighbor-tree-shadow {
+  opacity: 0.14;
+}
+
+.neighbor-spot.community-seat .neighbor-tree-image {
+  filter: drop-shadow(0 9px 12px rgba(0, 0, 0, 0.20));
+}
+
+.neighbor-spot.community-row-back-ridge .neighbor-tree-image,
+.neighbor-spot.community-row-upper-ridge .neighbor-tree-image {
+  filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.15)) blur(0.34px) brightness(0.98) saturate(0.94);
+}
+
+.neighbor-spot.community-row-middle-ridge .neighbor-tree-image {
+  filter: drop-shadow(0 7px 10px rgba(0, 0, 0, 0.18)) blur(0.12px) brightness(1.02) saturate(1.0);
+}
+
+.neighbor-spot.community-row-lower-ridge .neighbor-tree-image,
+.neighbor-spot.community-row-front-ridge .neighbor-tree-image {
+  filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.22)) brightness(1.04) saturate(1.04);
+}
+
+.empty-forest-seat {
+  height: 46px;
+}
+
+.neighbor-seat-empty {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  width: 72px;
+  height: 18px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(ellipse at 50% 44%, rgba(235, 255, 196, 0.18), rgba(67, 100, 55, 0.20) 52%, rgba(14, 42, 24, 0.12) 72%, transparent 80%);
+  box-shadow: inset 0 3px 8px rgba(255,255,220,0.08), 0 6px 14px rgba(0,0,0,0.12);
+}
+
+.empty-forest-seat .neighbor-seat-empty::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 26px;
+  height: 7px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(11, 37, 22, 0.20);
+}
+
+.empty-forest-seat small {
+  display: none;
+}
+
+.my-world-spot,
+.my-world-spot.world-tree-seed,
+.my-world-spot.world-tree-sprout,
+.my-world-spot.world-tree-sapling,
+.my-world-spot.world-tree-young,
+.my-world-spot.world-tree-hero {
+  left: 50%;
+  bottom: 80px;
+  z-index: 11;
+  width: 104px;
+  height: 110px;
+}
+
+.my-spot-visual {
+  width: 88px;
+  height: 96px;
+}
+
+.my-world-spot.world-tree-seed .my-spot-tree-wrap,
+.my-world-spot.world-tree-sprout .my-spot-tree-wrap {
+  width: 42px;
+  height: 48px;
+  bottom: 10px;
+}
+
+.my-world-spot.world-tree-sapling .my-spot-tree-wrap {
+  width: 58px;
+  height: 72px;
+  bottom: 10px;
+}
+
+.my-world-spot.world-tree-young .my-spot-tree-wrap {
+  width: 82px;
+  height: 104px;
+  bottom: 8px;
+}
+
+.my-world-spot.world-tree-hero .my-spot-tree-wrap {
+  width: 98px;
+  height: 128px;
+  bottom: 8px;
+}
+
+.my-spot-ground-shadow {
+  bottom: 10px;
+  width: 78px;
+  height: 17px;
+  background: radial-gradient(ellipse, rgba(248, 255, 196, 0.28), rgba(45, 83, 39, 0.30) 56%, transparent 78%);
+}
+
+.my-spot-tree-image {
+  filter: drop-shadow(0 10px 14px rgba(0,0,0,0.22)) brightness(1.07) saturate(1.06);
+}
+
+.world-focus-active .my-world-spot {
+  transform: translateX(-50%) translateY(-13px) scale(1.14);
+}
+
+.world-summary-text,
+.world-community-hint {
+  font-weight: 760;
+}
+
+@media (max-width: 560px) {
+  .world-clearing {
+    height: 382px;
+    bottom: 26px;
+  }
+
+  .world-neighbor-spots::before {
+    height: 352px;
+    bottom: 42px;
+  }
+
+  .neighbor-spot.community-seat {
+    width: 76px;
+    height: 94px;
+  }
+
+  .neighbor-spot.community-seat .neighbor-tree-wrap {
+    width: 66px;
+    height: 78px;
+  }
+
+  .neighbor-seat-empty {
+    width: 58px;
+  }
+
+  .my-world-spot,
+  .my-world-spot.world-tree-seed,
+  .my-world-spot.world-tree-sprout,
+  .my-world-spot.world-tree-sapling,
+  .my-world-spot.world-tree-young,
+  .my-world-spot.world-tree-hero {
+    bottom: 82px;
+  }
+}
