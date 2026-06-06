@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.10.7 test
+// 살아있는 숲 V1.10.8 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.10.7 test
-// 목적: 월드 숲 스케일/원근감 재설계 1차 테스트판
+// 버전명: V1.10.8 test
+// 목적: 월드 숲 관중석/공동 숲 구조 1차 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10.7 test",
+  version: "V1.10.8 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -395,6 +395,63 @@ const worldForestSlots = [
     mobileScale: 0.94
   }
 ];
+
+
+function createCommunityForestSlots() {
+  const rowConfigs = [
+    { row: "far-1", count: 11, startX: 14, endX: 86, y: 46, scale: 0.38, opacity: 0.24, depth: 2, days: [3, 7, 14, 21, 30, 45], lift: -10, groundOpacity: 0.018 },
+    { row: "far-2", count: 10, startX: 10, endX: 90, y: 52, scale: 0.46, opacity: 0.30, depth: 3, days: [5, 9, 18, 25, 34, 60], lift: -6, groundOpacity: 0.022 },
+    { row: "middle-1", count: 9, startX: 16, endX: 84, y: 60, scale: 0.58, opacity: 0.40, depth: 4, days: [7, 12, 20, 28, 35, 48, 70], lift: -2, groundOpacity: 0.032 },
+    { row: "middle-2", count: 8, startX: 20, endX: 80, y: 68, scale: 0.70, opacity: 0.48, depth: 5, days: [9, 16, 24, 31, 43, 55, 82], lift: 2, groundOpacity: 0.042 },
+    { row: "near-1", count: 7, startX: 24, endX: 76, y: 76, scale: 0.82, opacity: 0.56, depth: 6, days: [12, 19, 27, 38, 52, 74], lift: 6, groundOpacity: 0.052 }
+  ];
+
+  return rowConfigs.flatMap((config, rowIndex) => {
+    return Array.from({ length: config.count }, (_, index) => {
+      const ratio = config.count === 1 ? 0.5 : index / (config.count - 1);
+      const stagger = (hashStringToUnitInterval(`${config.row}-stagger-${index}`) - 0.5) * 4.4;
+      const x = config.startX + (config.endX - config.startX) * ratio + stagger;
+      const y = config.y + (hashStringToUnitInterval(`${config.row}-y-${index}`) - 0.5) * 3.8;
+      const days = config.days[(index + rowIndex * 2) % config.days.length];
+      const stateKeys = ["balanced", "leaf-strong", "root-strong"];
+      const state = stateKeys[(index + rowIndex) % stateKeys.length];
+      const sideLean = ratio < 0.5 ? -1 : 1;
+      const scaleNoise = (hashStringToUnitInterval(`${config.row}-scale-${index}`) - 0.5) * 0.08;
+      const mobileCompression = 0.68 + rowIndex * 0.035;
+
+      return {
+        id: `community-${config.row}-${index + 1}`,
+        name: `숲의 나무 ${rowIndex + 1}-${index + 1}`,
+        className: `community-tree community-row-${config.row}`,
+        state,
+        days,
+        x: Number(Math.max(5, Math.min(95, x)).toFixed(1)),
+        y: Number(y.toFixed(1)),
+        scale: Number((config.scale + scaleNoise).toFixed(2)),
+        opacity: config.opacity,
+        depth: config.depth,
+        tilt: Number((sideLean * (2 + hashStringToUnitInterval(`${config.row}-tilt-${index}`) * 5)).toFixed(1)),
+        lift: config.lift,
+        groundOpacity: config.groundOpacity,
+        mobileX: Number((50 + (x - 50) * mobileCompression).toFixed(1)),
+        mobileY: Number((config.y + rowIndex * 0.5).toFixed(1)),
+        mobileScale: Number((config.scale * (0.68 + rowIndex * 0.025)).toFixed(2))
+      };
+    });
+  });
+}
+
+function getWorldForestDisplaySlots() {
+  return [...worldForestSlots, ...createCommunityForestSlots()]
+    .sort((a, b) => {
+      const depthA = Number(a.depth || 4);
+      const depthB = Number(b.depth || 4);
+      if (depthA !== depthB) {
+        return depthA - depthB;
+      }
+      return Number(a.y || 0) - Number(b.y || 0);
+    });
+}
 
 const worldScreenElement = document.querySelector("#worldScreen");
 const gardenScreenElement = document.querySelector("#gardenScreen");
@@ -1346,8 +1403,8 @@ function getWorldSpotInfo() {
       className: "world-seed",
       visual: "•",
       status: hasName
-        ? "이름을 얻은 작은 자리가 오늘의 마음을 기다리고 있어요."
-        : "숲 한가운데, 아직 이름 없는 작은 자리가 기다리고 있어요."
+        ? "이름을 얻은 한 자리가 오늘의 마음을 기다리고 있어요."
+        : "수많은 숲자리 중 아직 이름 없는 한 자리가 조용히 기다리고 있어요."
     };
   }
 
@@ -1355,7 +1412,7 @@ function getWorldSpotInfo() {
     return {
       className: "world-sprout",
       visual: "✦",
-      status: "월드 숲에 들어갈 준비를 하고 있어요. 3일차에는 작은 빛이 생겨요."
+      status: "내 정원에서 자란 작은 변화가 월드 숲의 한 자리를 채울 준비를 하고 있어요."
     };
   }
 
@@ -1363,7 +1420,7 @@ function getWorldSpotInfo() {
     return {
       className: "world-sprout world-preview",
       visual: "✦",
-      status: "월드 숲의 내 자리 주변에 작은 빛이 생겼어요. 7일차에는 정식으로 자리 잡아요."
+      status: "수많은 숲자리 중 내 나무의 자리에 작은 빛이 생겼어요. 7일차에는 더 분명히 자리 잡아요."
     };
   }
 
@@ -1371,14 +1428,14 @@ function getWorldSpotInfo() {
     return {
       className: "world-tree",
       visual: "✧",
-      status: "내 나무가 아직 낮은 자리에서, 훨씬 큰 숲 사이로 천천히 자라고 있어요."
+      status: "내 나무가 많은 나무들 사이에서 한 그루의 역할로 천천히 자라고 있어요."
     };
   }
 
   return {
     className: "world-tree world-mature",
     visual: "✺",
-    status: "오래 돌본 대표 나무가 숲의 큰 흐름 속에서도 분명한 존재감을 가지게 되었어요."
+    status: "오래 돌본 대표 나무가 큰 숲을 이루는 한 그루로 분명히 자리 잡았어요."
   };
 }
 
@@ -1673,7 +1730,9 @@ function renderWorldNeighbors() {
     return;
   }
 
-  worldNeighborSpotsElement.innerHTML = worldForestSlots
+  const displaySlots = getWorldForestDisplaySlots();
+
+  worldNeighborSpotsElement.innerHTML = displaySlots
     .map((slot) => {
       const stateLabel = getWorldSlotStateLabel(slot.state);
       const imageInfo = getTreeImageInfoByDays(slot.days);
@@ -1704,19 +1763,19 @@ function renderWorldCommunityHint(todayRecord) {
     return;
   }
 
-  const slotCount = worldForestSlots.length;
+  const slotCount = getWorldForestDisplaySlots().length;
 
   if (todayRecord) {
-    worldCommunityHintElement.textContent = `주변의 ${slotCount}그루 나무와 함께 오늘의 ${todayRecord.label} 기운이 숲 안에 천천히 스며들고 있어요.`;
+    worldCommunityHintElement.textContent = `가까이서는 각각 다른 ${slotCount}그루의 나무가, 멀리서는 하나의 숲처럼 오늘의 ${todayRecord.label} 기운을 함께 받아들이고 있어요.`;
     return;
   }
 
   if (treeData.history.length === 0) {
-    worldCommunityHintElement.textContent = `이미 ${slotCount}그루의 작은 나무가 숲의 무리를 이루며 함께 자라고 있어요.`;
+    worldCommunityHintElement.textContent = `비어 있던 자리들이 ${slotCount}그루의 나무로 조금씩 채워지고 있어요. 내 나무도 이 숲의 한 자리가 될 준비를 하고 있어요.`;
     return;
   }
 
-  worldCommunityHintElement.textContent = `주변의 ${slotCount}그루 나무와 함께, 내 나무도 오늘의 기운을 조용히 기다리고 있어요.`;
+  worldCommunityHintElement.textContent = `가까이서는 내 나무 한 그루, 멀리서는 ${slotCount}그루가 함께 만드는 큰 숲이에요. 오늘의 기록을 기다리고 있어요.`;
 }
 
 function renderWorld() {
@@ -1746,15 +1805,15 @@ function renderWorld() {
     const moodClass = `mood-${todayRecord.mood}`;
     mySpotAuraElement.innerHTML = `<span class="${moodClass}"></span><span class="${moodClass}"></span><span class="${moodClass}"></span>`;
     worldSummaryTodayElement.textContent = `오늘 ${todayRecord.label}`;
-    worldSummaryTextElement.textContent = `오늘의 ${todayRecord.label} 기운이 내 자리 주변에 조용히 머물고 있어요.`;
+    worldSummaryTextElement.textContent = `오늘의 ${todayRecord.label} 기운이 내 나무를 통해 월드 숲의 한 자리에 조용히 더해졌어요.`;
   } else {
     mySpotAuraElement.innerHTML = "";
     worldSummaryTodayElement.textContent = "오늘 기록 전";
 
     if (treeData.history.length === 0) {
       worldSummaryTextElement.textContent = treeData.treeName?.trim()
-        ? "이름을 얻은 작은 자리가 오늘의 마음을 기다리고 있어요."
-        : "숲 한가운데, 아직 이름 없는 작은 자리가 기다리고 있어요.";
+        ? "이름을 얻은 한 자리가 오늘의 마음을 기다리고 있어요."
+        : "수많은 숲자리 중 아직 이름 없는 한 자리가 조용히 기다리고 있어요.";
     } else {
       worldSummaryTextElement.textContent = getWorldProgressMessage();
     }
@@ -1832,7 +1891,7 @@ function renderCompleteCard() {
   }
 
   completeCardElement.classList.remove("hidden");
-  completeMessageElement.textContent = `오늘의 ${todayRecord.label} 기운이 내 나무와 월드 숲의 내 자리에 조용히 스며들었어요. 오늘의 마음은 숲에 남았어요. 이제 그만 쉬어도 괜찮아요. ${getNextGoalMessage()}`;
+  completeMessageElement.textContent = `오늘의 ${todayRecord.label} 기운이 내 나무를 통해 월드 숲의 한 자리에 조용히 더해졌어요. 오늘의 마음은 숲에 남았어요. 이제 그만 쉬어도 괜찮아요. ${getNextGoalMessage()}`;
 }
 
 function renderVersionLabels() {
@@ -1848,7 +1907,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 월드 숲 스케일/원근감 재설계 1차`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 월드 숲 관중석/공동 숲 구조 1차`;
   }
 }
 
