@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.10.9 test
+// 살아있는 숲 V1.10.10 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.10.9 test
-// 목적: 배경 숲 축소 / 사용자 나무 중심 월드 구조 재설계 1차 테스트판
+// 버전명: V1.10.10 test
+// 목적: 관중석형 월드 숲 자리 구조 강화 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10.9 test",
+  version: "V1.10.10 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -398,31 +398,31 @@ const worldForestSlots = [
 
 
 function createCommunityForestSlots() {
-  // V1.10.9: 야구장 관중석 비유를 월드 숲으로 옮긴 구조입니다.
-  // 배경이 이미 완성된 숲이 아니라, 여러 줄의 "숲자리"가 채워지며 숲이 되어가는 느낌을 우선합니다.
+  // V1.10.10: “야구장 관중석처럼 자리가 하나씩 채워지는 숲” 감각을 더 분명하게 만듭니다.
+  // 거대한 배경 숲보다, 여러 줄의 숲자리와 그 자리를 채운 나무들이 월드 숲의 중심이 되도록 조정합니다.
   const rowConfigs = [
-    { row: "back-ridge", count: 18, startX: 9, endX: 91, y: 43, scale: 0.36, opacity: 0.42, depth: 2, occupancy: 0.58, days: [1, 3, 5, 7, 10, 14, 21], lift: -8, groundOpacity: 0.052, curve: 4.2 },
-    { row: "upper-ridge", count: 17, startX: 8, endX: 92, y: 51, scale: 0.46, opacity: 0.52, depth: 3, occupancy: 0.64, days: [3, 5, 7, 12, 18, 24, 30], lift: -4, groundOpacity: 0.064, curve: 3.4 },
-    { row: "middle-ridge", count: 15, startX: 11, endX: 89, y: 60, scale: 0.60, opacity: 0.66, depth: 4, occupancy: 0.70, days: [5, 9, 14, 20, 28, 36, 48], lift: 0, groundOpacity: 0.082, curve: 2.8 },
-    { row: "lower-ridge", count: 13, startX: 15, endX: 85, y: 70, scale: 0.76, opacity: 0.78, depth: 5, occupancy: 0.62, days: [7, 12, 19, 27, 38, 52, 74], lift: 5, groundOpacity: 0.10, curve: 2.0 },
-    { row: "front-ridge", count: 11, startX: 20, endX: 80, y: 80, scale: 0.92, opacity: 0.86, depth: 6, occupancy: 0.52, days: [9, 16, 24, 31, 43, 60, 90], lift: 9, groundOpacity: 0.13, curve: 1.4 }
+    { row: "ridge-1", count: 21, startX: 14, endX: 86, y: 38, scale: 0.28, opacity: 0.28, depth: 2, occupancy: 0.38, days: [1, 2, 3, 4, 5, 7], lift: -12, groundOpacity: 0.028, curve: 6.2, mobileCompression: 0.72 },
+    { row: "ridge-2", count: 20, startX: 12, endX: 88, y: 46, scale: 0.36, opacity: 0.36, depth: 3, occupancy: 0.44, days: [2, 3, 5, 7, 9, 12, 14], lift: -8, groundOpacity: 0.035, curve: 5.4, mobileCompression: 0.74 },
+    { row: "ridge-3", count: 19, startX: 10, endX: 90, y: 55, scale: 0.46, opacity: 0.48, depth: 4, occupancy: 0.52, days: [3, 5, 7, 10, 14, 18, 24, 30], lift: -2, groundOpacity: 0.046, curve: 4.6, mobileCompression: 0.78 },
+    { row: "ridge-4", count: 17, startX: 12, endX: 88, y: 66, scale: 0.58, opacity: 0.62, depth: 5, occupancy: 0.58, days: [5, 7, 10, 14, 21, 28, 36, 48], lift: 4, groundOpacity: 0.064, curve: 3.5, mobileCompression: 0.82 },
+    { row: "ridge-5", count: 15, startX: 16, endX: 84, y: 77, scale: 0.72, opacity: 0.76, depth: 6, occupancy: 0.62, days: [7, 10, 14, 21, 30, 45, 60, 90], lift: 8, groundOpacity: 0.082, curve: 2.4, mobileCompression: 0.86 }
   ];
 
   return rowConfigs.flatMap((config, rowIndex) => {
     return Array.from({ length: config.count }, (_, index) => {
       const ratio = config.count === 1 ? 0.5 : index / (config.count - 1);
       const centered = ratio - 0.5;
-      const stagger = (hashStringToUnitInterval(`${config.row}-stagger-${index}`) - 0.5) * 2.8;
-      const rowCurve = Math.abs(centered) * config.curve;
+      const stagger = (hashStringToUnitInterval(`${config.row}-stagger-${index}`) - 0.5) * 1.8;
+      const rowCurve = Math.pow(Math.abs(centered), 1.15) * config.curve;
       const x = config.startX + (config.endX - config.startX) * ratio + stagger;
-      const y = config.y + rowCurve + (hashStringToUnitInterval(`${config.row}-y-${index}`) - 0.5) * 2.1;
+      const y = config.y + rowCurve + (hashStringToUnitInterval(`${config.row}-y-${index}`) - 0.5) * 1.4;
       const occupiedRoll = hashStringToUnitInterval(`${treeData.treeId}-${config.row}-${index}-occupied`);
       const isEmpty = occupiedRoll > config.occupancy;
-      const days = config.days[(index + rowIndex * 2) % config.days.length];
+      const days = config.days[(index + rowIndex * 3) % config.days.length];
       const stateKeys = ["balanced", "leaf-strong", "root-strong"];
       const state = stateKeys[(index + rowIndex) % stateKeys.length];
-      const scaleNoise = (hashStringToUnitInterval(`${config.row}-scale-${index}`) - 0.5) * 0.07;
-      const mobileCompression = 0.64 + rowIndex * 0.04;
+      const scaleNoise = (hashStringToUnitInterval(`${config.row}-scale-${index}`) - 0.5) * 0.04;
+      const mobileCompression = config.mobileCompression || (0.74 + rowIndex * 0.03);
       const sideLean = centered < 0 ? -1 : 1;
 
       return {
@@ -435,14 +435,14 @@ function createCommunityForestSlots() {
         x: Number(Math.max(4, Math.min(96, x)).toFixed(1)),
         y: Number(y.toFixed(1)),
         scale: Number((config.scale + scaleNoise).toFixed(2)),
-        opacity: isEmpty ? Number(Math.max(0.24, config.opacity - 0.22).toFixed(2)) : config.opacity,
+        opacity: isEmpty ? Number(Math.max(0.18, config.opacity - 0.16).toFixed(2)) : config.opacity,
         depth: config.depth,
-        tilt: Number((sideLean * (1.4 + hashStringToUnitInterval(`${config.row}-tilt-${index}`) * 3.4)).toFixed(1)),
+        tilt: Number((sideLean * (0.6 + hashStringToUnitInterval(`${config.row}-tilt-${index}`) * 1.8)).toFixed(1)),
         lift: config.lift,
-        groundOpacity: isEmpty ? Number((config.groundOpacity * 0.72).toFixed(3)) : config.groundOpacity,
+        groundOpacity: isEmpty ? Number((config.groundOpacity * 0.9).toFixed(3)) : config.groundOpacity,
         mobileX: Number((50 + (x - 50) * mobileCompression).toFixed(1)),
-        mobileY: Number((config.y + rowIndex * 0.65).toFixed(1)),
-        mobileScale: Number(((config.scale + scaleNoise) * (0.66 + rowIndex * 0.03)).toFixed(2))
+        mobileY: Number((config.y + rowIndex * 0.4).toFixed(1)),
+        mobileScale: Number(((config.scale + scaleNoise) * (0.70 + rowIndex * 0.03)).toFixed(2))
       };
     });
   });
@@ -1792,16 +1792,16 @@ function renderWorldCommunityHint(todayRecord) {
   const visibleFilledCount = myTreeJoined ? filledCount + 1 : filledCount;
 
   if (todayRecord) {
-    worldCommunityHintElement.textContent = `오늘의 ${todayRecord.label} 기운이 내 나무 한 그루를 통해 숲의 ${visibleFilledCount}번째 자리에도 조용히 더해졌어요.`;
+    worldCommunityHintElement.textContent = `총 ${totalCount}개의 숲자리 중 ${visibleFilledCount}자리가 오늘까지 조용히 채워졌어요. 내 나무의 ${todayRecord.label} 기운도 그중 한 자리에 더해졌어요.`;
     return;
   }
 
   if (treeData.history.length === 0) {
-    worldCommunityHintElement.textContent = `${totalCount}개의 숲자리 중 일부가 먼저 채워져 있어요. 내 나무도 첫 기록을 남기면 이 공동 숲의 한 자리를 채우게 돼요.`;
+    worldCommunityHintElement.textContent = `총 ${totalCount}개의 숲자리 중 ${filledCount}자리가 먼저 채워져 있어요. 내 나무도 첫 기록을 남기면 이 공동 숲의 한 자리를 채우게 돼요.`;
     return;
   }
 
-  worldCommunityHintElement.textContent = `가까이서는 각자의 나무, 멀리서는 ${visibleFilledCount}그루가 함께 만드는 하나의 숲이에요. 오늘의 기록을 기다리고 있어요.`;
+  worldCommunityHintElement.textContent = `가까이서는 각자의 나무, 멀리서는 ${visibleFilledCount}개의 자리가 모여 하나의 큰 숲처럼 보이는 구조예요.`;
 }
 
 function renderWorld() {

@@ -1,4 +1,4 @@
-살아있는 숲 V1.10.9 test 업로드 가이드
+살아있는 숲 V1.10.10 test 업로드 가이드
 
 1. GitHub 저장소로 이동
    inhm1234/living_forest
@@ -18,7 +18,7 @@
    이미 업로드한 assets/garden/의 나무 이미지 파일 10개와 기존 assets 폴더를 삭제하면 안 됩니다.
 
 4. 커밋 메시지 추천
-   Apply V1.10.9 test user-tree-centered world forest redesign
+   Apply V1.10.10 test grandstand world forest structure refinement
 
 5. 업로드 후 확인 주소
    일반 화면:

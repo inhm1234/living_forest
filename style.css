@@ -5957,3 +5957,416 @@ body[data-world-time="day"] .daily-loop-card {
     bottom: 82px;
   }
 }
+
+
+/* V1.10.10 test: 관중석형 월드 숲 자리 구조 강화판 */
+.world-stage {
+  overflow: hidden;
+}
+
+.world-backdrop {
+  opacity: 0.78;
+  filter: saturate(0.9) brightness(1.01) blur(0.4px);
+}
+
+.world-canopy-shadow {
+  opacity: 0.14;
+}
+
+.world-far-trees,
+.world-mid-trees {
+  opacity: 0.12;
+  filter: blur(1.8px) saturate(0.78);
+}
+
+.world-forest-trail {
+  opacity: 0.16;
+  filter: blur(1px);
+}
+
+.world-clearing {
+  width: min(68%, 460px);
+  height: 238px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 72%, rgba(194, 221, 163, 0.08) 0 18%, rgba(112, 146, 103, 0.05) 34%, transparent 64%);
+  -webkit-backdrop-filter: blur(1px) brightness(0.96) saturate(0.92);
+  backdrop-filter: blur(1px) brightness(0.96) saturate(0.92);
+  mask-image: none;
+  -webkit-mask-image: none;
+  opacity: 0.34;
+}
+
+.world-spot-ground {
+  bottom: 48px;
+  width: min(44%, 276px);
+  height: 42px;
+  background: radial-gradient(ellipse at 50% 50%, rgba(145, 185, 124, 0.18), rgba(48, 70, 44, 0.16) 56%, transparent 76%);
+  box-shadow: none;
+  opacity: 0.32;
+}
+
+.world-stage::before {
+  bottom: 92px;
+  height: 72px;
+  background: linear-gradient(180deg, rgba(226, 242, 205, 0.02), rgba(110, 140, 104, 0.06) 52%, rgba(9, 18, 13, 0.02));
+  filter: blur(8px);
+  opacity: 0.18;
+}
+
+.world-neighbor-spots {
+  z-index: 8;
+}
+
+.world-neighbor-spots::before {
+  content: "";
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 22%;
+  bottom: 54px;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 52% 10% at 50% 16%, transparent 0 58%, rgba(180, 204, 156, 0.16) 59%, rgba(180, 204, 156, 0.16) 61%, transparent 63%),
+    radial-gradient(ellipse 58% 11% at 50% 31%, transparent 0 58%, rgba(171, 197, 149, 0.16) 59%, rgba(171, 197, 149, 0.16) 61%, transparent 63%),
+    radial-gradient(ellipse 66% 12% at 50% 48%, transparent 0 58%, rgba(159, 188, 139, 0.18) 59%, rgba(159, 188, 139, 0.18) 61%, transparent 63%),
+    radial-gradient(ellipse 74% 13% at 50% 66%, transparent 0 58%, rgba(144, 176, 126, 0.20) 59%, rgba(144, 176, 126, 0.20) 61%, transparent 63%),
+    radial-gradient(ellipse 82% 15% at 50% 86%, transparent 0 58%, rgba(126, 158, 112, 0.22) 59%, rgba(126, 158, 112, 0.22) 61%, transparent 63%);
+  opacity: 0.72;
+}
+
+.world-neighbor-spots::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 38px;
+  height: 146px;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(171, 197, 149, 0.03), rgba(55, 84, 50, 0.10) 48%, rgba(9, 16, 13, 0.02));
+  mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 82%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 82%, transparent 100%);
+  opacity: 0.34;
+}
+
+.neighbor-spot {
+  z-index: var(--slot-depth, 4);
+  width: 76px;
+  height: 92px;
+  overflow: visible;
+  transform: translate(-50%, -50%) translateY(var(--slot-lift, 0px)) rotate(var(--slot-tilt, 0deg)) scale(var(--slot-scale, 1));
+}
+
+.neighbor-spot::after {
+  display: none;
+}
+
+.neighbor-ground {
+  width: 44px;
+  height: 12px;
+  bottom: 8px;
+  background: radial-gradient(ellipse, rgba(162, 198, 135, 0.14), rgba(46, 71, 43, 0.16) 58%, transparent 76%);
+}
+
+.neighbor-tree-wrap {
+  width: 60px;
+  height: 74px;
+  bottom: 6px;
+}
+
+.neighbor-tree-shadow {
+  width: 104%;
+  bottom: -7px;
+  opacity: 0.2;
+}
+
+.neighbor-tree-image {
+  opacity: calc(var(--slot-opacity, 0.72) + 0.04);
+  filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.22)) blur(var(--slot-blur, 0px)) brightness(var(--slot-brightness, 1)) saturate(var(--slot-sat, 1));
+}
+
+.neighbor-spot small {
+  display: none;
+}
+
+.neighbor-spot.world-tree-seed .neighbor-tree-wrap {
+  width: 20px;
+  height: 26px;
+}
+
+.neighbor-spot.world-tree-sprout .neighbor-tree-wrap {
+  width: 28px;
+  height: 36px;
+}
+
+.neighbor-spot.world-tree-sapling .neighbor-tree-wrap {
+  width: 40px;
+  height: 50px;
+}
+
+.neighbor-spot.world-tree-young .neighbor-tree-wrap {
+  width: 50px;
+  height: 62px;
+}
+
+.neighbor-spot.world-tree-hero .neighbor-tree-wrap {
+  width: 58px;
+  height: 70px;
+}
+
+.empty-forest-seat {
+  opacity: calc(var(--slot-opacity, 0.22) + 0.08);
+}
+
+.empty-forest-seat .neighbor-seat-empty {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  width: 24px;
+  height: 8px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  border: 1px dashed rgba(235, 255, 223, 0.16);
+  background: radial-gradient(ellipse, rgba(104, 78, 52, 0.2), rgba(44, 30, 20, 0.12) 62%, transparent 78%);
+  box-shadow: 0 0 0 4px rgba(218, 242, 177, 0.03);
+}
+
+.my-world-spot {
+  z-index: 10;
+  width: 134px;
+  bottom: 62px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  animation: quietBreath 5.6s ease-in-out infinite;
+}
+
+.my-world-spot::before {
+  display: none;
+}
+
+.my-spot-ring {
+  width: 64px;
+  height: 64px;
+  top: 48px;
+  opacity: 0.18;
+  border-color: rgba(229, 255, 204, 0.12);
+  box-shadow: 0 0 18px rgba(212, 255, 174, 0.05);
+}
+
+.my-spot-visual {
+  width: 102px;
+  height: 116px;
+}
+
+.my-spot-ground-shadow {
+  width: 80px;
+  height: 16px;
+  bottom: 10px;
+  background: radial-gradient(ellipse, rgba(214, 234, 180, 0.14), rgba(38, 62, 39, 0.14) 54%, transparent 76%);
+}
+
+.my-spot-tree-wrap {
+  bottom: 8px;
+  width: 74px;
+  height: 90px;
+}
+
+.my-spot-tree-shadow {
+  bottom: -8px;
+  opacity: 0.22;
+}
+
+.my-spot-tree-image {
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.22));
+}
+
+.my-world-spot.world-tree-seed .my-spot-tree-wrap {
+  width: 26px;
+  height: 34px;
+  bottom: 12px;
+}
+
+.my-world-spot.world-tree-sprout .my-spot-tree-wrap {
+  width: 34px;
+  height: 44px;
+  bottom: 12px;
+}
+
+.my-world-spot.world-tree-sapling .my-spot-tree-wrap {
+  width: 48px;
+  height: 60px;
+  bottom: 10px;
+}
+
+.my-world-spot.world-tree-young .my-spot-tree-wrap {
+  width: 58px;
+  height: 72px;
+  bottom: 8px;
+}
+
+.my-world-spot.world-tree-hero .my-spot-tree-wrap {
+  width: 68px;
+  height: 82px;
+  bottom: 7px;
+}
+
+.my-spot-name {
+  margin-top: -2px;
+  padding: 2px 8px;
+  font-size: 12px;
+  border-color: rgba(231, 255, 222, 0.08);
+  background: rgba(8, 18, 16, 0.24);
+  opacity: 0;
+  transition: opacity 0.24s ease, transform 0.24s ease;
+  transform: translateY(3px);
+  pointer-events: none;
+}
+
+.my-spot-status {
+  max-width: 136px;
+  margin-top: 4px;
+  font-size: 9.5px;
+  line-height: 1.35;
+  color: rgba(242, 255, 233, 0.66);
+  opacity: 0;
+  transition: opacity 0.24s ease, transform 0.24s ease;
+  transform: translateY(3px);
+  pointer-events: none;
+}
+
+.world-focus-active .my-world-spot,
+.my-world-spot.world-spot-highlight {
+  transform: translateX(-50%) translateY(-2px) scale(1.06);
+}
+
+.world-focus-active .my-spot-name,
+.world-focus-active .my-spot-status,
+.my-world-spot.world-spot-highlight .my-spot-name,
+.my-world-spot.world-spot-highlight .my-spot-status {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.world-focus-active .my-spot-ring,
+.my-world-spot.world-spot-highlight .my-spot-ring {
+  opacity: 0.84;
+  box-shadow: 0 0 0 8px rgba(232, 255, 185, 0.04), 0 0 28px rgba(225, 255, 178, 0.16);
+}
+
+.world-focus-active .my-spot-tree-image,
+.my-world-spot.world-spot-highlight .my-spot-tree-image {
+  filter: drop-shadow(0 9px 13px rgba(0, 0, 0, 0.26)) drop-shadow(0 0 12px rgba(224, 255, 181, 0.12));
+}
+
+.world-time-day .world-backdrop,
+.world-time-day .world-far-trees,
+.world-time-day .world-mid-trees,
+.world-time-day .world-forest-trail {
+  opacity: 0.12;
+}
+
+.world-time-day .world-clearing {
+  opacity: 0.28;
+}
+
+.world-time-day .world-neighbor-spots::before {
+  opacity: 0.76;
+}
+
+.world-time-night .world-far-trees,
+.world-time-night .world-mid-trees,
+.world-time-night .world-forest-trail {
+  opacity: 0.1;
+}
+
+.world-time-night .world-neighbor-spots::before {
+  opacity: 0.44;
+}
+
+.world-time-night .neighbor-tree-image {
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.28)) blur(calc(var(--slot-blur, 0px) + 0.08px)) brightness(0.88) saturate(0.92);
+}
+
+@media (max-width: 560px) {
+  .world-clearing {
+    width: min(76%, 360px);
+    height: 206px;
+  }
+
+  .world-spot-ground {
+    width: min(52%, 220px);
+    height: 34px;
+  }
+
+  .world-neighbor-spots::before {
+    left: 4%;
+    right: 4%;
+    top: 26%;
+    bottom: 48px;
+  }
+
+  .neighbor-spot {
+    width: 62px;
+    height: 78px;
+  }
+
+  .neighbor-ground {
+    width: 34px;
+    height: 10px;
+  }
+
+  .neighbor-tree-wrap {
+    width: 48px;
+    height: 60px;
+  }
+
+  .neighbor-spot.world-tree-seed .neighbor-tree-wrap {
+    width: 16px;
+    height: 22px;
+  }
+
+  .neighbor-spot.world-tree-sprout .neighbor-tree-wrap {
+    width: 22px;
+    height: 30px;
+  }
+
+  .neighbor-spot.world-tree-sapling .neighbor-tree-wrap {
+    width: 32px;
+    height: 42px;
+  }
+
+  .neighbor-spot.world-tree-young .neighbor-tree-wrap {
+    width: 42px;
+    height: 52px;
+  }
+
+  .neighbor-spot.world-tree-hero .neighbor-tree-wrap {
+    width: 48px;
+    height: 58px;
+  }
+
+  .my-world-spot {
+    width: 120px;
+    bottom: 58px;
+  }
+
+  .my-spot-visual {
+    width: 92px;
+    height: 104px;
+  }
+
+  .my-spot-name {
+    font-size: 11px;
+  }
+
+  .my-spot-status {
+    max-width: 118px;
+    font-size: 9px;
+  }
+}
