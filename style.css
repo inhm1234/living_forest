@@ -7331,3 +7331,111 @@ body[data-world-time="day"] .daily-loop-card {
     opacity: 0.06;
   }
 }
+
+
+/* V1.10.22 test: 오버레이 완전 제거 기준판
+   목표:
+   - 화면을 뿌옇게 만드는 효과를 우선 0으로 설정
+   - 배경 이미지 원본 + 내 나무 PNG + 최소 UI만 있는 기준 화면 확인
+*/
+
+/* ===== 월드 첫 화면: 오버레이 / 분위기 효과 완전 제거 ===== */
+.world-stage::before,
+.world-stage::after,
+.world-dim,
+.world-fog,
+.world-fog-b,
+.world-fog-c,
+.world-front-leaves,
+.world-foreground {
+  opacity: 0 !important;
+  display: none !important;
+}
+
+.world-stage,
+.world-stage.world-time-day,
+.world-stage.world-time-sunset,
+.world-stage.world-time-night {
+  filter: none !important;
+}
+
+/* 내 나무 주변 강조 효과도 일단 제거 */
+.my-spot-ring,
+.my-spot-aura {
+  opacity: 0 !important;
+  display: none !important;
+}
+
+.my-world-spot::before,
+.world-time-day .my-world-spot::before,
+.world-time-sunset .my-world-spot::before,
+.world-time-night .my-world-spot::before,
+.my-spot-ground-shadow,
+.my-spot-tree-shadow {
+  opacity: 0 !important;
+  filter: none !important;
+}
+
+.my-world-spot .my-spot-name {
+  background: rgba(5, 17, 10, 0.18) !important;
+  opacity: 0.72;
+  backdrop-filter: none !important;
+}
+
+/* ===== 개인 정원: 오버레이 / 분위기 효과 완전 제거 ===== */
+.garden-dim,
+.garden-fog,
+.garden-foreground,
+.tree-glow {
+  opacity: 0 !important;
+  display: none !important;
+}
+
+.garden-stage,
+.garden-stage.garden-time-day,
+.garden-stage.garden-time-sunset,
+.garden-stage.garden-time-night {
+  filter: none !important;
+}
+
+/* 접지감도 기준 화면 확인을 위해 최소한만 남김 */
+.tree-planting-ground {
+  opacity: 0 !important;
+  filter: none !important;
+  display: none !important;
+}
+
+.tree-shadow-image {
+  opacity: 0.08 !important;
+  filter: none !important;
+}
+
+.tree-image,
+.garden-time-night .tree-image {
+  filter: none !important;
+}
+
+/* 메시지 카드 blur 제거 */
+.stage-message {
+  background: rgba(5, 17, 10, 0.28) !important;
+  border-color: rgba(231, 255, 222, 0.08) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* 혹시 남아 있는 기타 blur 계열 제거 */
+.world-life-layer,
+.world-particle-layer,
+.effect-layer {
+  filter: none !important;
+}
+
+/* 모바일도 동일 기준 */
+@media (max-width: 620px) {
+  .world-stage::before,
+  .world-stage::after,
+  .world-dim,
+  .garden-dim {
+    opacity: 0 !important;
+  }
+}
