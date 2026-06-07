@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.10.18 test
+// 살아있는 숲 V1.10.19 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.10.18 test
-// 목적: 월드 숲 밀도 / 숲길 존재감 / 나무 군락감 보정 테스트판
+// 버전명: V1.10.19 test
+// 목적: 이미지 무대 구조 전환 1차 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10.18 test",
+  version: "V1.10.19 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -1516,16 +1516,16 @@ function renderWorldCommunityHint(todayRecord) {
   const slotCount = worldForestSlots.length;
 
   if (todayRecord) {
-    worldCommunityHintElement.textContent = `짙어진 월드 숲 안에서 ${slotCount}그루의 나무가 길 주변을 채우고 있고, 오늘의 ${todayRecord.label} 기운도 그 안의 내 자리로 스며들었어요.`;
+    worldCommunityHintElement.textContent = `큰 월드 숲 배경 안에서 오늘의 ${todayRecord.label} 기운이 내 나무 자리로 조용히 스며들었어요.`;
     return;
   }
 
   if (treeData.history.length === 0) {
-    worldCommunityHintElement.textContent = `멀리 보이는 숲 안에는 이미 ${slotCount}그루의 나무가 길과 숲 가장자리를 따라 군락을 이루고 있어요. 내 나무도 곧 그 숲의 한 자리에 들어갈 수 있어요.`;
+    worldCommunityHintElement.textContent = `멀리 보이는 큰 숲 안에 내 나무가 들어갈 작은 자리가 기다리고 있어요.`;
     return;
   }
 
-  worldCommunityHintElement.textContent = `큰 숲 전체가 먼저 보이고, 그 안쪽 숲길 주변으로 ${slotCount}그루의 나무가 더 촘촘한 군락을 이루며 자라고 있어요.`;
+  worldCommunityHintElement.textContent = `처음에는 큰 숲 전체가 먼저 보이고, 내 나무는 그 숲 안의 한 자리로 자연스럽게 들어가요.`;
 }
 
 function renderWorld() {
@@ -1555,7 +1555,7 @@ function renderWorld() {
     const moodClass = `mood-${todayRecord.mood}`;
     mySpotAuraElement.innerHTML = `<span class="${moodClass}"></span><span class="${moodClass}"></span><span class="${moodClass}"></span>`;
     worldSummaryTodayElement.textContent = `오늘 ${todayRecord.label}`;
-    worldSummaryTextElement.textContent = `오늘의 ${todayRecord.label} 기운이 큰 숲 안의 내 자리에도 조용히 스며들었어요.`;
+    worldSummaryTextElement.textContent = `오늘의 ${todayRecord.label} 기운이 큰 숲 안의 내 나무 자리에도 조용히 스며들었어요.`;
   } else {
     mySpotAuraElement.innerHTML = "";
     worldSummaryTodayElement.textContent = "오늘 기록 전";
@@ -1657,7 +1657,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 숲 밀도 / 길 존재감 / 나무 군락감 보정 1차`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 이미지 무대 구조 전환 1차`;
   }
 }
 
