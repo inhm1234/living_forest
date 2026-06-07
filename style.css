@@ -5346,3 +5346,176 @@ body[data-world-time="day"] .daily-loop-card {
 .world-stage.world-time-night .world-neighbor-spots::before { opacity:.74; filter:brightness(.76) saturate(.82); }
 .world-stage.world-time-night .neighbor-tree-image, .world-stage.world-time-night .my-spot-tree-image { filter:drop-shadow(0 5px 8px rgba(0,0,0,.24)) brightness(.88) saturate(.9); }
 @media (max-width:560px){ .world-view-row{gap:8px}.world-view-btn{min-height:40px;font-size:13px}.neighbor-spot{width:58px;height:72px}.neighbor-tree-wrap{width:42px;height:52px}.neighbor-spot.world-tree-seed .neighbor-tree-wrap{width:14px;height:18px}.neighbor-spot.world-tree-sprout .neighbor-tree-wrap{width:19px;height:25px}.neighbor-spot.world-tree-sapling .neighbor-tree-wrap{width:28px;height:36px}.neighbor-spot.world-tree-young .neighbor-tree-wrap{width:36px;height:46px}.neighbor-spot.world-tree-hero .neighbor-tree-wrap{width:42px;height:54px}.my-world-spot{width:108px;bottom:56px}.my-spot-visual{width:78px;height:90px}.world-stage.view-near .world-neighbor-spots{transform:scale(1.08) translateY(14px)}.world-stage.view-near .my-world-spot{transform:translateX(-50%) scale(1.08) translateY(10px)} }
+
+
+/* V1.10.14 test: 길/잔디/풀 기반 월드 무대 보정 */
+.world-stage,
+.world-stage.world-time-day,
+.world-stage.world-time-sunset,
+.world-stage.world-time-night {
+  background-color: #a6c192;
+  background-image:
+    radial-gradient(circle at 50% 8%, rgba(255, 252, 216, 0.70), rgba(255, 251, 213, 0.24) 22%, transparent 44%),
+    linear-gradient(180deg, #dbe7c6 0%, #bcd29f 30%, #8eb07a 58%, #56795a 80%, #274638 100%);
+}
+
+.world-sky-glow {
+  top: -14%;
+  width: 84%;
+  height: 40%;
+  background: radial-gradient(ellipse, rgba(255, 255, 224, 0.30), transparent 72%);
+  opacity: 0.58;
+}
+
+.world-neighbor-spots::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 82% 18% at 50% 40%, rgba(201, 220, 168, 0.34) 0 40%, rgba(158, 197, 132, 0.20) 60%, transparent 76%),
+    radial-gradient(ellipse 92% 20% at 50% 58%, rgba(175, 208, 144, 0.34) 0 44%, rgba(123, 176, 107, 0.22) 64%, transparent 80%),
+    radial-gradient(ellipse 98% 20% at 50% 78%, rgba(113, 164, 93, 0.38) 0 48%, rgba(70, 126, 76, 0.24) 68%, transparent 84%),
+    radial-gradient(ellipse 18% 7% at 50% 86%, rgba(162, 140, 101, 0.34), rgba(155, 134, 98, 0.18) 54%, transparent 76%),
+    radial-gradient(ellipse 14% 6% at 52% 72%, rgba(176, 154, 114, 0.30), rgba(162, 142, 104, 0.16) 52%, transparent 74%),
+    radial-gradient(ellipse 11% 5% at 51% 60%, rgba(184, 163, 122, 0.24), rgba(166, 147, 107, 0.12) 50%, transparent 72%),
+    radial-gradient(ellipse 9% 4% at 50% 48%, rgba(192, 170, 129, 0.18), rgba(174, 154, 114, 0.08) 48%, transparent 70%),
+    radial-gradient(ellipse 5% 3% at 50% 38%, rgba(200, 180, 140, 0.14), rgba(180, 160, 120, 0.06) 44%, transparent 70%);
+  opacity: 1;
+}
+
+.world-neighbor-spots::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  height: 38%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 15% 88%, rgba(91, 147, 89, 0.20) 0 6px, transparent 7px),
+    radial-gradient(circle at 25% 83%, rgba(95, 152, 93, 0.18) 0 5px, transparent 6px),
+    radial-gradient(circle at 36% 90%, rgba(87, 144, 86, 0.18) 0 7px, transparent 8px),
+    radial-gradient(circle at 61% 86%, rgba(96, 155, 95, 0.18) 0 6px, transparent 7px),
+    radial-gradient(circle at 72% 91%, rgba(88, 145, 84, 0.18) 0 7px, transparent 8px),
+    radial-gradient(circle at 82% 84%, rgba(96, 153, 92, 0.18) 0 5px, transparent 6px),
+    linear-gradient(180deg, transparent 0%, rgba(87, 143, 89, 0.12) 36%, rgba(28, 65, 42, 0.42) 82%, rgba(8, 25, 16, 0.76) 100%);
+  opacity: 0.96;
+}
+
+.world-foreground {
+  display: block !important;
+  z-index: 13;
+  height: 122px;
+  background:
+    url("assets/world/world-foreground-grass.svg") center bottom / cover no-repeat,
+    linear-gradient(180deg, transparent 0%, rgba(46, 96, 57, 0.18) 32%, rgba(18, 50, 31, 0.56) 78%, rgba(6, 20, 12, 0.92) 100%);
+  opacity: 0.92;
+}
+
+.neighbor-ground {
+  width: 38px;
+  height: 12px;
+  bottom: 7px;
+  background:
+    radial-gradient(ellipse, rgba(93, 74, 48, 0.22), rgba(60, 48, 32, 0.10) 56%, transparent 76%),
+    radial-gradient(ellipse, rgba(88, 134, 72, 0.10), transparent 74%);
+  opacity: calc(var(--slot-ground-opacity, 0.04) * 7.6);
+}
+
+.empty-forest-seat .neighbor-seat-empty {
+  width: 18px;
+  height: 7px;
+  background: radial-gradient(ellipse, rgba(102, 80, 49, 0.18), rgba(63, 47, 30, 0.08) 62%, transparent 80%);
+}
+
+.neighbor-tree-shadow {
+  opacity: 0.16;
+}
+
+.neighbor-tree-image {
+  filter: drop-shadow(0 4px 7px rgba(0, 0, 0, 0.18)) blur(var(--slot-blur, 0px)) brightness(var(--slot-brightness, 1)) saturate(calc(var(--slot-sat, 1) * 1.02));
+}
+
+.community-row-near-hill .neighbor-tree-wrap,
+.community-row-front-hill .neighbor-tree-wrap {
+  filter: saturate(1.04);
+}
+
+.my-world-spot {
+  bottom: 60px;
+}
+
+.my-spot-ground-shadow {
+  width: 68px;
+  height: 13px;
+  background:
+    radial-gradient(ellipse, rgba(79, 64, 40, 0.22), rgba(52, 44, 28, 0.10) 54%, transparent 76%),
+    radial-gradient(ellipse, rgba(88, 137, 71, 0.08), transparent 74%);
+}
+
+.my-spot-name,
+.my-spot-status {
+  opacity: 0;
+}
+
+.world-focus-active .my-spot-name,
+.world-focus-active .my-spot-status,
+.my-world-spot.world-spot-highlight .my-spot-name,
+.my-world-spot.world-spot-highlight .my-spot-status {
+  opacity: 1;
+}
+
+.world-stage.view-near .world-neighbor-spots {
+  transform: scale(1.14) translateY(18px);
+}
+
+.world-stage.view-near .my-world-spot {
+  transform: translateX(-50%) scale(1.12) translateY(14px);
+}
+
+.world-stage.view-near .community-row-middle-hill {
+  transform: translate(-50%, -50%) translateY(calc(var(--slot-lift, 0px) + 6px)) rotate(var(--slot-tilt, 0deg)) scale(calc(var(--slot-scale, 1) * 1.08));
+}
+
+.world-stage.view-near .community-row-near-hill {
+  transform: translate(-50%, -50%) translateY(calc(var(--slot-lift, 0px) + 12px)) rotate(var(--slot-tilt, 0deg)) scale(calc(var(--slot-scale, 1) * 1.16));
+}
+
+.world-stage.view-near .community-row-front-hill {
+  transform: translate(-50%, -50%) translateY(calc(var(--slot-lift, 0px) + 18px)) rotate(var(--slot-tilt, 0deg)) scale(calc(var(--slot-scale, 1) * 1.24));
+}
+
+.world-stage.world-time-sunset,
+.world-time-sunset.world-stage {
+  background-image:
+    radial-gradient(circle at 64% 12%, rgba(255, 201, 132, 0.52), rgba(255, 179, 107, 0.14) 24%, transparent 46%),
+    linear-gradient(180deg, #e4d6ae 0%, #c8c48e 30%, #9dae78 58%, #637556 80%, #394639 100%);
+}
+
+.world-stage.world-time-night,
+.world-time-night.world-stage {
+  background-image:
+    radial-gradient(circle at 66% 12%, rgba(201, 225, 255, 0.26), rgba(157, 195, 225, 0.08) 22%, transparent 44%),
+    linear-gradient(180deg, #7d98a0 0%, #67867f 30%, #58745f 58%, #38503f 80%, #1a2b22 100%);
+}
+
+.world-stage.world-time-night .world-neighbor-spots::before {
+  filter: brightness(0.82) saturate(0.88);
+}
+
+@media (max-width: 560px) {
+  .world-foreground {
+    height: 104px;
+  }
+
+  .world-stage.view-near .world-neighbor-spots {
+    transform: scale(1.08) translateY(12px);
+  }
+
+  .world-stage.view-near .my-world-spot {
+    transform: translateX(-50%) scale(1.08) translateY(8px);
+  }
+}

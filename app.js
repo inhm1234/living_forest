@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.10.13 test
+// 살아있는 숲 V1.10.14 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.10.13 test
-// 목적: 월드 숲 무대 재설계 1차 테스트판
+// 버전명: V1.10.14 test
+// 목적: 길/잔디/풀 기반 월드 무대 보정 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10.13 test",
+  version: "V1.10.14 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -1813,23 +1813,23 @@ function renderWorldCommunityHint(todayRecord) {
     return;
   }
 
-  const slots = createCommunityForestSlots();
+  const slots = getWorldForestDisplaySlots();
   const filledCount = slots.filter((slot) => !slot.isEmpty).length;
   const totalCount = slots.length;
   const myTreeJoined = treeData.history.length > 0 || Boolean(treeData.treeName?.trim());
   const visibleFilledCount = myTreeJoined ? filledCount + 1 : filledCount;
 
   if (todayRecord) {
-    worldCommunityHintElement.textContent = `오늘 내 나무의 ${todayRecord.label} 기운이 ${totalCount}개의 숲자리 중 한 자리에 더해졌어요. 지금은 ${visibleFilledCount}자리가 천천히 숲이 되어가는 중이에요.`;
+    worldCommunityHintElement.textContent = `오늘 내 나무의 ${todayRecord.label} 기운이 길 옆 언덕의 한 자리에 더해졌어요. 지금은 ${visibleFilledCount}자리가 잔디와 풀 사이에서 천천히 숲이 되어가고 있어요.`;
     return;
   }
 
   if (treeData.history.length === 0) {
-    worldCommunityHintElement.textContent = `${totalCount}개의 숲자리 중 ${filledCount}자리가 먼저 자라고 있어요. 비어 있는 언덕은 앞으로 채워질 숲의 자리예요.`;
+    worldCommunityHintElement.textContent = `${totalCount}개의 숲자리 중 ${filledCount}자리가 먼저 자라고 있어요. 비어 있는 길 옆 언덕은 앞으로 더 많은 나무가 심길 공간이에요.`;
     return;
   }
 
-  worldCommunityHintElement.textContent = `지금은 ${visibleFilledCount}개의 자리가 자라고 있어요. 멀리서는 넓은 언덕, 가까이서는 각자의 나무가 보이는 구조예요.`;
+  worldCommunityHintElement.textContent = `지금은 ${visibleFilledCount}개의 자리가 자라고 있어요. 길과 잔디 사이로 각자의 나무가 조금씩 숲을 만들어 가는 구조예요.`;
 }
 
 function renderWorld() {
