@@ -7147,3 +7147,187 @@ body[data-world-time="day"] .daily-loop-card {
     width: 34%;
   }
 }
+
+
+/* V1.10.21 test: 오버레이 강력 축소판
+   목표:
+   - 낮 화면은 거의 원본 이미지 그대로 보이게
+   - 노을은 아주 약한 분위기만 유지
+   - 밤만 분위기용으로 조금 더 남김
+*/
+
+/* ===== 월드 첫 화면 ===== */
+.world-stage::before {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.00) 0%, rgba(0, 0, 0, 0.00) 56%, rgba(0, 0, 0, 0.04) 100%),
+    radial-gradient(ellipse at 50% 84%, rgba(0, 0, 0, 0.025), transparent 66%);
+  opacity: 0.10;
+}
+
+.world-stage::after {
+  background:
+    radial-gradient(ellipse at 50% 76%, transparent 0 72%, rgba(0, 0, 0, 0.05) 88%, rgba(0, 0, 0, 0.12) 100%);
+  opacity: 0.12;
+}
+
+.world-dim {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.00) 0%, rgba(0, 0, 0, 0.00) 64%, rgba(0, 0, 0, 0.05) 100%);
+  opacity: 0.10;
+}
+
+.world-time-day .world-dim {
+  opacity: 0.01;
+}
+
+.world-time-sunset .world-dim {
+  opacity: 0.05;
+}
+
+.world-time-night .world-dim {
+  opacity: 0.12;
+}
+
+.world-stage.world-time-sunset::before {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.00) 0%, rgba(0, 0, 0, 0.00) 54%, rgba(0, 0, 0, 0.06) 100%),
+    radial-gradient(ellipse at 50% 84%, rgba(0, 0, 0, 0.04), transparent 66%);
+  opacity: 0.16;
+}
+
+.world-stage.world-time-sunset::after {
+  opacity: 0.18;
+}
+
+.world-stage.world-time-night::before {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.00) 52%, rgba(0, 0, 0, 0.10) 100%),
+    radial-gradient(ellipse at 50% 82%, rgba(0, 0, 0, 0.06), transparent 64%);
+  opacity: 0.24;
+}
+
+.world-stage.world-time-night::after {
+  opacity: 0.26;
+}
+
+/* 배경 이미지 자체를 조금 더 선명하게 */
+.world-stage {
+  filter: none;
+}
+
+.world-stage.world-time-day {
+  filter: contrast(1.04) brightness(1.00) saturate(1.02);
+}
+
+.world-stage.world-time-sunset {
+  filter: contrast(1.03) brightness(0.98) saturate(1.03);
+}
+
+.world-stage.world-time-night {
+  filter: contrast(1.05) brightness(0.95) saturate(1.00);
+}
+
+/* 월드 내 나무 강조도 조금 더 억제 */
+.my-spot-ring {
+  opacity: 0.40;
+  border-color: rgba(244, 255, 197, 0.14);
+  box-shadow: 0 0 12px rgba(238, 255, 177, 0.07);
+}
+
+.my-world-spot .my-spot-name {
+  background: rgba(5, 17, 10, 0.24);
+  opacity: 0.72;
+}
+
+/* ===== 개인 정원 ===== */
+.garden-dim {
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0.00) 0%, rgba(0,0,0,0.00) 64%, rgba(0,0,0,0.04) 100%);
+  opacity: 0.08;
+}
+
+.garden-time-day .garden-dim {
+  opacity: 0.01;
+}
+
+.garden-time-sunset .garden-dim {
+  opacity: 0.04;
+}
+
+.garden-time-night .garden-dim {
+  opacity: 0.12;
+}
+
+/* 개인 정원 배경도 더 선명하게 */
+.garden-stage.world-time-day,
+.garden-stage.garden-time-day {
+  filter: contrast(1.05) brightness(1.00) saturate(1.02);
+}
+
+.garden-stage.world-time-sunset,
+.garden-stage.garden-time-sunset {
+  filter: contrast(1.03) brightness(0.99) saturate(1.03);
+}
+
+.garden-stage.world-time-night,
+.garden-stage.garden-time-night {
+  filter: contrast(1.05) brightness(0.95) saturate(1.00);
+}
+
+/* 내 나무 접지감은 유지하되 추가 강조는 더 약하게 */
+.tree-planting-ground {
+  opacity: 0.28;
+  filter: blur(1.4px);
+  background:
+    radial-gradient(ellipse at 46% 52%, rgba(13, 16, 8, 0.22), rgba(24, 54, 22, 0.07) 48%, transparent 80%);
+}
+
+.tree-shadow-image {
+  opacity: 0.18;
+}
+
+.tree-glow {
+  opacity: 0.18;
+}
+
+.garden-time-day .tree-glow {
+  opacity: 0.10;
+}
+
+.garden-time-sunset .tree-glow {
+  opacity: 0.14;
+}
+
+.garden-time-night .tree-glow {
+  opacity: 0.22;
+}
+
+/* 메시지 카드도 배경을 덜 가리게 */
+.stage-message {
+  background: rgba(5, 17, 10, 0.34);
+  border-color: rgba(231, 255, 222, 0.10);
+  backdrop-filter: blur(8px);
+}
+
+/* 모바일 */
+@media (max-width: 620px) {
+  .world-stage::before {
+    opacity: 0.08;
+  }
+
+  .world-stage::after {
+    opacity: 0.10;
+  }
+
+  .world-stage.world-time-night::before {
+    opacity: 0.20;
+  }
+
+  .world-stage.world-time-night::after {
+    opacity: 0.22;
+  }
+
+  .garden-dim {
+    opacity: 0.06;
+  }
+}
