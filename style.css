@@ -6914,3 +6914,236 @@ body[data-world-time="day"] .daily-loop-card {
     left: 45%;
   }
 }
+
+
+/* V1.10.20 test: 이미지 무대 보정 1차
+   - V1.10.19 방향은 유지
+   - 뿌연 초록/흰 오버레이 감소
+   - 남아 보이던 하단 풀 곡선 레이어 제거
+   - 내 나무 아래 원형 그림자를 자연스럽게 축소
+*/
+
+/* 월드 숲: 새 배경 이미지 디테일이 더 보이도록 오버레이 약화 */
+.world-stage::before {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.00) 0%, rgba(0, 0, 0, 0.00) 48%, rgba(0, 0, 0, 0.08) 100%),
+    radial-gradient(ellipse at 50% 82%, rgba(0, 0, 0, 0.05), transparent 62%);
+  opacity: 0.58;
+}
+
+.world-stage::after {
+  background:
+    radial-gradient(ellipse at 50% 74%, transparent 0 64%, rgba(0, 0, 0, 0.10) 84%, rgba(0, 0, 0, 0.22) 100%);
+  opacity: 0.46;
+}
+
+.world-stage.world-time-night::before {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0.00) 46%, rgba(0, 0, 0, 0.14) 100%),
+    radial-gradient(ellipse at 50% 82%, rgba(0, 0, 0, 0.08), transparent 62%);
+  opacity: 0.62;
+}
+
+.world-stage.world-time-night::after {
+  opacity: 0.54;
+}
+
+.world-dim {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.00) 0%, rgba(0, 0, 0, 0.00) 58%, rgba(0, 0, 0, 0.10) 100%);
+  opacity: 0.32;
+}
+
+.world-time-day .world-dim {
+  opacity: 0.12;
+}
+
+.world-time-sunset .world-dim {
+  opacity: 0.18;
+}
+
+.world-time-night .world-dim {
+  opacity: 0.26;
+}
+
+/* 새 배경과 겹쳐 어색했던 기존 하단 풀/곡선 레이어 완전 제거 */
+.world-front-leaves,
+.world-foreground {
+  display: none !important;
+}
+
+/* 월드 첫 화면의 내 나무는 배경을 더 가리지 않도록 살짝 작고 자연스럽게 */
+.my-world-spot,
+.world-time-day .my-world-spot,
+.world-time-sunset .my-world-spot,
+.world-time-night .my-world-spot {
+  left: 47%;
+  bottom: 116px;
+  width: 116px;
+  min-height: 142px;
+}
+
+.my-world-spot::before,
+.world-time-day .my-world-spot::before,
+.world-time-sunset .my-world-spot::before,
+.world-time-night .my-world-spot::before {
+  bottom: 18px;
+  width: 64px;
+  height: 13px;
+  background: radial-gradient(ellipse, rgba(12, 18, 8, 0.26), rgba(21, 50, 18, 0.10) 48%, transparent 76%);
+  opacity: 0.58;
+  filter: blur(3px);
+}
+
+.my-spot-ground-shadow {
+  bottom: 22px;
+  width: 62px;
+  height: 13px;
+  background: radial-gradient(ellipse, rgba(12, 18, 8, 0.28), rgba(17, 51, 17, 0.10) 48%, transparent 76%);
+  opacity: 0.66;
+}
+
+.my-spot-ring {
+  bottom: 39px;
+  width: 52px;
+  height: 24px;
+  border-color: rgba(244, 255, 197, 0.18);
+  background: radial-gradient(ellipse, rgba(245, 255, 189, 0.10), transparent 72%);
+  box-shadow: 0 0 18px rgba(238, 255, 177, 0.10);
+  opacity: 0.58;
+}
+
+.my-spot-tree-wrap {
+  bottom: 22px;
+}
+
+.my-world-spot.world-tree-seed .my-spot-tree-wrap { width: 44px; height: 60px; bottom: 30px; }
+.my-world-spot.world-tree-sprout .my-spot-tree-wrap { width: 58px; height: 78px; bottom: 28px; }
+.my-world-spot.world-tree-sapling .my-spot-tree-wrap { width: 72px; height: 98px; bottom: 26px; }
+.my-world-spot.world-tree-young .my-spot-tree-wrap { width: 88px; height: 118px; bottom: 24px; }
+.my-world-spot.world-tree-hero .my-spot-tree-wrap { width: 104px; height: 140px; bottom: 22px; }
+
+.my-spot-tree-shadow {
+  opacity: 0.16;
+}
+
+.my-world-spot .my-spot-name {
+  bottom: 0;
+  background: rgba(5, 17, 10, 0.36);
+  opacity: 0.78;
+}
+
+/* 내 나무 화면: 배경 이미지가 더 선명하게 보이도록 오버레이 감소 */
+.garden-dim {
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0.00) 0%, rgba(0,0,0,0.00) 58%, rgba(0,0,0,0.08) 100%),
+    radial-gradient(ellipse at 45% 72%, rgba(255, 255, 210, 0.025), transparent 36%);
+  opacity: 0.26;
+}
+
+.garden-time-day .garden-dim {
+  opacity: 0.10;
+}
+
+.garden-time-sunset .garden-dim {
+  opacity: 0.16;
+}
+
+.garden-time-night .garden-dim {
+  opacity: 0.28;
+}
+
+/* 배경 이미지 안에 이미 숲 바닥이 있으므로 추가 전경/안개는 거의 제거 */
+.garden-foreground {
+  display: none !important;
+}
+
+.garden-fog {
+  display: none !important;
+}
+
+/* 내 나무 밑의 인위적인 원판 그림자 축소 */
+.tree-planting-ground {
+  left: 44%;
+  bottom: 108px;
+  width: min(28%, 180px);
+  height: 42px;
+  background:
+    radial-gradient(ellipse at 46% 52%, rgba(13, 16, 8, 0.30), rgba(24, 54, 22, 0.10) 48%, transparent 78%);
+  opacity: 0.46;
+  filter: blur(1.2px);
+}
+
+.tree {
+  left: 44%;
+  bottom: 96px;
+}
+
+.tree-shadow-image {
+  width: 86%;
+  bottom: -12px;
+  opacity: 0.28;
+  filter: blur(1.2px);
+}
+
+.tree-glow {
+  opacity: 0.30;
+}
+
+.garden-time-day .tree-glow {
+  opacity: 0.22;
+}
+
+.garden-time-sunset .tree-glow {
+  opacity: 0.26;
+}
+
+.garden-time-night .tree-glow {
+  opacity: 0.34;
+}
+
+.tree-image {
+  filter:
+    drop-shadow(0 20px 22px rgba(0, 0, 0, 0.36))
+    drop-shadow(0 0 8px rgba(235, 255, 180, 0.06));
+}
+
+.garden-time-night .tree-image {
+  filter:
+    drop-shadow(0 22px 24px rgba(0, 0, 0, 0.50))
+    brightness(0.90)
+    drop-shadow(0 0 10px rgba(170, 215, 255, 0.08));
+}
+
+.stage-message {
+  background: rgba(5, 17, 10, 0.50);
+  border-color: rgba(231, 255, 222, 0.12);
+  backdrop-filter: blur(12px);
+}
+
+/* 모바일 보정 */
+@media (max-width: 620px) {
+  .my-world-spot,
+  .world-time-day .my-world-spot,
+  .world-time-sunset .my-world-spot,
+  .world-time-night .my-world-spot {
+    left: 48%;
+    bottom: 118px;
+    width: 98px;
+  }
+
+  .my-world-spot.world-tree-seed .my-spot-tree-wrap { width: 40px; height: 54px; }
+  .my-world-spot.world-tree-sprout .my-spot-tree-wrap { width: 50px; height: 68px; }
+  .my-world-spot.world-tree-sapling .my-spot-tree-wrap { width: 62px; height: 84px; }
+  .my-world-spot.world-tree-young .my-spot-tree-wrap { width: 76px; height: 102px; }
+  .my-world-spot.world-tree-hero .my-spot-tree-wrap { width: 88px; height: 120px; }
+
+  .tree,
+  .tree-planting-ground {
+    left: 44%;
+  }
+
+  .tree-planting-ground {
+    width: 34%;
+  }
+}

@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.10.19 test
+// 살아있는 숲 V1.10.20 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.10.19 test
-// 목적: 이미지 무대 구조 전환 1차 테스트판
+// 버전명: V1.10.20 test
+// 목적: 이미지 무대 밝기 / 잔여 레이어 / 내 나무 접지감 보정 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10.19 test",
+  version: "V1.10.20 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -1657,7 +1657,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 이미지 무대 구조 전환 1차`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 이미지 무대 보정 1차`;
   }
 }
 
