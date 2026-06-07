@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.10.14 test
+// 살아있는 숲 V1.10.15 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.10.14 test
-// 목적: 길/잔디/풀 기반 월드 무대 보정 테스트판
+// 버전명: V1.10.15 test
+// 목적: 사람의 길 중심 월드 숲 구조 보정 1차 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10.14 test",
+  version: "V1.10.15 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -160,240 +160,31 @@ const forestEffectRules = {
 };
 
 const worldForestSlots = [
-  {
-    id: "giant-left-canopy",
-    name: "오래된 왼숲",
-    className: "edge-giant left-giant",
-    state: "root-strong",
-    days: 120,
-    x: 6,
-    y: 68,
-    scale: 1.86,
-    opacity: 0.68,
-    depth: 10,
-    tilt: -8,
-    lift: 14,
-    groundOpacity: 0.03,
-    mobileX: 4,
-    mobileY: 72,
-    mobileScale: 1.18
-  },
-  {
-    id: "giant-right-canopy",
-    name: "오래된 오른숲",
-    className: "edge-giant right-giant",
-    state: "leaf-strong",
-    days: 118,
-    x: 94,
-    y: 67,
-    scale: 1.82,
-    opacity: 0.66,
-    depth: 10,
-    tilt: 8,
-    lift: 14,
-    groundOpacity: 0.03,
-    mobileX: 97,
-    mobileY: 71,
-    mobileScale: 1.18
-  },
-  {
-    id: "back-old-left",
-    name: "먼 큰 나무",
-    className: "back-giant",
-    state: "root-strong",
-    days: 88,
-    x: 28,
-    y: 42,
-    scale: 1.22,
-    opacity: 0.34,
-    depth: 2,
-    tilt: -5,
-    lift: -8,
-    groundOpacity: 0.02,
-    mobileX: 25,
-    mobileY: 44,
-    mobileScale: 0.82
-  },
-  {
-    id: "back-old-right",
-    name: "깊은 숲그늘",
-    className: "back-giant",
-    state: "leaf-strong",
-    days: 92,
-    x: 73,
-    y: 41,
-    scale: 1.18,
-    opacity: 0.32,
-    depth: 2,
-    tilt: 4,
-    lift: -8,
-    groundOpacity: 0.02,
-    mobileX: 78,
-    mobileY: 43,
-    mobileScale: 0.8
-  },
-  {
-    id: "mid-left-1",
-    name: "햇살 어린나무",
-    className: "mid-large",
-    state: "balanced",
-    days: 33,
-    x: 24,
-    y: 63,
-    scale: 1.06,
-    opacity: 0.54,
-    depth: 5,
-    tilt: -7,
-    lift: 4,
-    groundOpacity: 0.08,
-    mobileX: 20,
-    mobileY: 65,
-    mobileScale: 0.74
-  },
-  {
-    id: "mid-left-2",
-    name: "조용한 어린숲",
-    className: "mid-tree",
-    state: "balanced",
-    days: 19,
-    x: 38,
-    y: 69,
-    scale: 0.86,
-    opacity: 0.58,
-    depth: 6,
-    tilt: -5,
-    lift: 5,
-    groundOpacity: 0.07,
-    mobileX: 34,
-    mobileY: 71,
-    mobileScale: 0.66
-  },
-  {
-    id: "mid-center-rear",
-    name: "뒤편 가지",
-    className: "mid-tree rear-hide",
-    state: "leaf-strong",
-    days: 27,
-    x: 52,
-    y: 58,
-    scale: 0.92,
-    opacity: 0.48,
-    depth: 4,
-    tilt: 2,
-    lift: 1,
-    groundOpacity: 0.05,
-    mobileX: 54,
-    mobileY: 60,
-    mobileScale: 0.68
-  },
-  {
-    id: "mid-right-1",
-    name: "바람의 나무",
-    className: "mid-large",
-    state: "leaf-strong",
-    days: 46,
-    x: 78,
-    y: 64,
-    scale: 1.12,
-    opacity: 0.56,
-    depth: 6,
-    tilt: 6,
-    lift: 6,
-    groundOpacity: 0.08,
-    mobileX: 82,
-    mobileY: 66,
-    mobileScale: 0.78
-  },
-  {
-    id: "mid-right-2",
-    name: "깊은 결",
-    className: "mid-tree",
-    state: "root-strong",
-    days: 24,
-    x: 68,
-    y: 72,
-    scale: 0.94,
-    opacity: 0.62,
-    depth: 7,
-    tilt: 5,
-    lift: 7,
-    groundOpacity: 0.06,
-    mobileX: 72,
-    mobileY: 74,
-    mobileScale: 0.7
-  },
-  {
-    id: "small-left-near",
-    name: "작은 새싹",
-    className: "tiny-near",
-    state: "balanced",
-    days: 6,
-    x: 42,
-    y: 77,
-    scale: 0.68,
-    opacity: 0.56,
-    depth: 8,
-    tilt: -8,
-    lift: 7,
-    groundOpacity: 0.04,
-    mobileX: 38,
-    mobileY: 78,
-    mobileScale: 0.56
-  },
-  {
-    id: "small-right-near",
-    name: "어린 잎",
-    className: "tiny-near",
-    state: "leaf-strong",
-    days: 8,
-    x: 60,
-    y: 79,
-    scale: 0.72,
-    opacity: 0.58,
-    depth: 8,
-    tilt: 6,
-    lift: 8,
-    groundOpacity: 0.04,
-    mobileX: 63,
-    mobileY: 80,
-    mobileScale: 0.58
-  },
-  {
-    id: "front-left-mid",
-    name: "숲 가장자리",
-    className: "front-large partial-hide",
-    state: "balanced",
-    days: 54,
-    x: 14,
-    y: 83,
-    scale: 1.28,
-    opacity: 0.62,
-    depth: 9,
-    tilt: 8,
-    lift: 13,
-    groundOpacity: 0.04,
-    mobileX: 11,
-    mobileY: 84,
-    mobileScale: 0.92
-  },
-  {
-    id: "front-right-mid",
-    name: "숲결의 나무",
-    className: "front-large partial-hide",
-    state: "leaf-strong",
-    days: 61,
-    x: 86,
-    y: 84,
-    scale: 1.34,
-    opacity: 0.64,
-    depth: 9,
-    tilt: -8,
-    lift: 14,
-    groundOpacity: 0.04,
-    mobileX: 89,
-    mobileY: 85,
-    mobileScale: 0.94
-  }
+  { id: "far-left-1", name: "먼 왼언덕", className: "row-far row-left", state: "balanced", days: 6, x: 28, y: 41, scale: 0.28, opacity: 0.22, depth: 2, tilt: -4, lift: -10, groundOpacity: 0.025, mobileX: 25, mobileY: 43, mobileScale: 0.24 },
+  { id: "far-left-2", name: "먼 잎자리", className: "row-far row-left", state: "leaf-strong", days: 9, x: 39, y: 42, scale: 0.30, opacity: 0.24, depth: 2, tilt: -2, lift: -10, groundOpacity: 0.026, mobileX: 37, mobileY: 43, mobileScale: 0.25 },
+  { id: "far-right-1", name: "먼 오른언덕", className: "row-far row-right", state: "root-strong", days: 8, x: 61, y: 42, scale: 0.30, opacity: 0.24, depth: 2, tilt: 2, lift: -10, groundOpacity: 0.026, mobileX: 63, mobileY: 43, mobileScale: 0.25 },
+  { id: "far-right-2", name: "먼 숲자리", className: "row-far row-right", state: "balanced", days: 12, x: 72, y: 41, scale: 0.32, opacity: 0.25, depth: 2, tilt: 4, lift: -10, groundOpacity: 0.027, mobileX: 75, mobileY: 43, mobileScale: 0.26 },
+
+  { id: "mid-left-1", name: "왼 둘레나무", className: "row-mid row-left", state: "leaf-strong", days: 14, x: 22, y: 55, scale: 0.42, opacity: 0.34, depth: 4, tilt: -6, lift: -4, groundOpacity: 0.04, mobileX: 18, mobileY: 56, mobileScale: 0.34 },
+  { id: "mid-left-2", name: "잔디 가장자리", className: "row-mid row-left", state: "balanced", days: 18, x: 33, y: 56, scale: 0.45, opacity: 0.38, depth: 4, tilt: -4, lift: -4, groundOpacity: 0.042, mobileX: 30, mobileY: 57, mobileScale: 0.36 },
+  { id: "mid-left-3", name: "길옆 어린나무", className: "row-mid row-left", state: "root-strong", days: 11, x: 43, y: 58, scale: 0.40, opacity: 0.36, depth: 4, tilt: -2, lift: -3, groundOpacity: 0.04, mobileX: 42, mobileY: 58, mobileScale: 0.34 },
+  { id: "mid-right-1", name: "길옆 어린잎", className: "row-mid row-right", state: "balanced", days: 12, x: 57, y: 58, scale: 0.40, opacity: 0.36, depth: 4, tilt: 2, lift: -3, groundOpacity: 0.04, mobileX: 58, mobileY: 58, mobileScale: 0.34 },
+  { id: "mid-right-2", name: "오른 잔디자리", className: "row-mid row-right", state: "leaf-strong", days: 21, x: 67, y: 56, scale: 0.46, opacity: 0.38, depth: 4, tilt: 4, lift: -4, groundOpacity: 0.042, mobileX: 70, mobileY: 57, mobileScale: 0.36 },
+  { id: "mid-right-3", name: "오른 둘레나무", className: "row-mid row-right", state: "root-strong", days: 17, x: 78, y: 55, scale: 0.44, opacity: 0.34, depth: 4, tilt: 6, lift: -4, groundOpacity: 0.04, mobileX: 82, mobileY: 56, mobileScale: 0.34 },
+
+  { id: "near-left-1", name: "왼숲 첫자리", className: "row-near row-left", state: "balanced", days: 24, x: 18, y: 70, scale: 0.62, opacity: 0.52, depth: 6, tilt: -7, lift: 5, groundOpacity: 0.058, mobileX: 14, mobileY: 71, mobileScale: 0.48 },
+  { id: "near-left-2", name: "풀옆 나무", className: "row-near row-left", state: "leaf-strong", days: 30, x: 30, y: 72, scale: 0.68, opacity: 0.58, depth: 6, tilt: -5, lift: 6, groundOpacity: 0.062, mobileX: 28, mobileY: 72, mobileScale: 0.50 },
+  { id: "near-left-3", name: "길 가까운 나무", className: "row-near row-left", state: "root-strong", days: 15, x: 42, y: 73, scale: 0.58, opacity: 0.54, depth: 6, tilt: -3, lift: 6, groundOpacity: 0.06, mobileX: 41, mobileY: 73, mobileScale: 0.46 },
+  { id: "near-right-1", name: "길 가까운 잎", className: "row-near row-right", state: "balanced", days: 16, x: 58, y: 73, scale: 0.58, opacity: 0.54, depth: 6, tilt: 3, lift: 6, groundOpacity: 0.06, mobileX: 59, mobileY: 73, mobileScale: 0.46 },
+  { id: "near-right-2", name: "풀옆 어린숲", className: "row-near row-right", state: "leaf-strong", days: 27, x: 70, y: 72, scale: 0.68, opacity: 0.58, depth: 6, tilt: 5, lift: 6, groundOpacity: 0.062, mobileX: 72, mobileY: 72, mobileScale: 0.50 },
+  { id: "near-right-3", name: "오른숲 첫자리", className: "row-near row-right", state: "root-strong", days: 22, x: 82, y: 70, scale: 0.62, opacity: 0.52, depth: 6, tilt: 7, lift: 5, groundOpacity: 0.058, mobileX: 86, mobileY: 71, mobileScale: 0.48 },
+
+  { id: "front-left-1", name: "왼 앞숲", className: "row-front row-left", state: "balanced", days: 44, x: 16, y: 82, scale: 0.92, opacity: 0.68, depth: 8, tilt: -8, lift: 12, groundOpacity: 0.075, mobileX: 12, mobileY: 82, mobileScale: 0.66 },
+  { id: "front-left-2", name: "앞 잔디나무", className: "row-front row-left", state: "leaf-strong", days: 35, x: 29, y: 83, scale: 0.86, opacity: 0.66, depth: 8, tilt: -6, lift: 12, groundOpacity: 0.072, mobileX: 26, mobileY: 83, mobileScale: 0.62 },
+  { id: "front-left-3", name: "길옆 큰나무", className: "row-front row-left", state: "root-strong", days: 28, x: 41, y: 84, scale: 0.80, opacity: 0.64, depth: 8, tilt: -3, lift: 12, groundOpacity: 0.07, mobileX: 40, mobileY: 84, mobileScale: 0.58 },
+  { id: "front-right-1", name: "길옆 큰잎", className: "row-front row-right", state: "balanced", days: 29, x: 59, y: 84, scale: 0.80, opacity: 0.64, depth: 8, tilt: 3, lift: 12, groundOpacity: 0.07, mobileX: 60, mobileY: 84, mobileScale: 0.58 },
+  { id: "front-right-2", name: "앞 잔디숲", className: "row-front row-right", state: "leaf-strong", days: 38, x: 71, y: 83, scale: 0.86, opacity: 0.66, depth: 8, tilt: 6, lift: 12, groundOpacity: 0.072, mobileX: 74, mobileY: 83, mobileScale: 0.62 },
+  { id: "front-right-3", name: "오른 앞숲", className: "row-front row-right", state: "root-strong", days: 48, x: 84, y: 82, scale: 0.92, opacity: 0.68, depth: 8, tilt: 8, lift: 12, groundOpacity: 0.075, mobileX: 88, mobileY: 82, mobileScale: 0.66 }
 ];
 
 const worldScreenElement = document.querySelector("#worldScreen");
@@ -409,8 +200,6 @@ const worldAtmosphereHintElement = document.querySelector("#worldAtmosphereHint"
 const worldLifeLayerElement = document.querySelector("#worldLifeLayer");
 const worldParticleLayerElement = document.querySelector("#worldParticleLayer");
 const focusMyTreeBtnElement = document.querySelector("#focusMyTreeBtn");
-const worldViewFarBtnElement = document.querySelector("#worldViewFarBtn");
-const worldViewNearBtnElement = document.querySelector("#worldViewNearBtn");
 const mySpotAuraElement = document.querySelector("#mySpotAura");
 const mySpotVisualElement = document.querySelector("#mySpotVisual");
 const mySpotNameElement = document.querySelector("#mySpotName");
@@ -469,7 +258,6 @@ const testPresetButtons = document.querySelectorAll("[data-test-preset]");
 
 let treeData = loadTreeData();
 let shouldHighlightWorldSpot = false;
-let worldViewMode = "far";
 let todayVisitorEvent = null;
 let visitorAnimationTimer = null;
 let visitorPlayedSessionDate = null;
@@ -1657,39 +1445,6 @@ function renderWorldVisualLayers() {
   renderWorldParticles(atmosphere);
 }
 
-function renderWorldViewMode() {
-  if (!worldStageElement) {
-    return;
-  }
-
-  const normalizedMode = worldViewMode === "near" ? "near" : "far";
-  worldStageElement.classList.remove("view-far", "view-near");
-  worldStageElement.classList.add(`view-${normalizedMode}`);
-
-  if (worldViewFarBtnElement) {
-    const isActive = normalizedMode === "far";
-    worldViewFarBtnElement.classList.toggle("is-active", isActive);
-    worldViewFarBtnElement.setAttribute("aria-pressed", String(isActive));
-  }
-
-  if (worldViewNearBtnElement) {
-    const isActive = normalizedMode === "near";
-    worldViewNearBtnElement.classList.toggle("is-active", isActive);
-    worldViewNearBtnElement.setAttribute("aria-pressed", String(isActive));
-  }
-
-  if (worldAtmosphereHintElement) {
-    worldAtmosphereHintElement.textContent = normalizedMode === "near"
-      ? "가까이 보기에서는 앞쪽 언덕과 내 나무 주변 자리를 조금 더 크게 살펴볼 수 있어요."
-      : "멀리 보기에서는 비어 있는 언덕과 앞으로 채워질 숲자리의 전체 흐름을 볼 수 있어요.";
-  }
-}
-
-function setWorldViewMode(mode = "far") {
-  worldViewMode = mode === "near" ? "near" : "far";
-  renderWorldViewMode();
-}
-
 function focusMyWorldSpot() {
   if (!worldStageElement || !myWorldSpotElement) {
     highlightWorldSpot();
@@ -1704,97 +1459,23 @@ function focusMyWorldSpot() {
   }, 2600);
 }
 
-function createCommunityForestSlots() {
-  // V1.10.13: 과한 배경을 걷어내고, “앞으로 채워질 언덕형 월드 무대” 위에 나무 자리만 남기는 구조입니다.
-  const rowConfigs = [
-    { row: "far-hill", count: 16, startX: 18, endX: 82, y: 37, scale: 0.24, opacity: 0.22, depth: 2, occupancy: 0.24, days: [1, 2, 3, 5, 7], lift: -12, groundOpacity: 0.018, curve: 4.2, xJitter: 2.2, yJitter: 1.1, mobileCompression: 0.72 },
-    { row: "back-hill", count: 15, startX: 16, endX: 84, y: 49, scale: 0.34, opacity: 0.34, depth: 3, occupancy: 0.34, days: [2, 3, 5, 7, 10, 14], lift: -7, groundOpacity: 0.026, curve: 3.4, xJitter: 2.5, yJitter: 1.2, mobileCompression: 0.75 },
-    { row: "middle-hill", count: 13, startX: 18, endX: 82, y: 61, scale: 0.48, opacity: 0.50, depth: 4, occupancy: 0.46, days: [3, 5, 7, 12, 18, 24, 30], lift: -1, groundOpacity: 0.04, curve: 2.6, xJitter: 2.8, yJitter: 1.3, mobileCompression: 0.80 },
-    { row: "near-hill", count: 11, startX: 22, endX: 78, y: 73, scale: 0.64, opacity: 0.66, depth: 5, occupancy: 0.54, days: [7, 10, 14, 21, 30, 45, 60], lift: 5, groundOpacity: 0.058, curve: 1.8, xJitter: 3.0, yJitter: 1.4, mobileCompression: 0.85 },
-    { row: "front-hill", count: 9, startX: 26, endX: 74, y: 83, scale: 0.78, opacity: 0.78, depth: 6, occupancy: 0.58, days: [10, 14, 21, 30, 45, 60, 90], lift: 10, groundOpacity: 0.074, curve: 1.2, xJitter: 3.2, yJitter: 1.5, mobileCompression: 0.90 }
-  ];
-
-  return rowConfigs.flatMap((config, rowIndex) => {
-    return Array.from({ length: config.count }, (_, index) => {
-      const ratio = config.count === 1 ? 0.5 : index / (config.count - 1);
-      const centered = ratio - 0.5;
-      const xNoise = (hashStringToUnitInterval(`${config.row}-x-${index}`) - 0.5) * (config.xJitter || 2);
-      const yNoise = (hashStringToUnitInterval(`${config.row}-y-${index}`) - 0.5) * (config.yJitter || 1);
-      const rowCurve = Math.pow(Math.abs(centered), 1.18) * config.curve;
-      const x = config.startX + (config.endX - config.startX) * ratio + xNoise;
-      const y = config.y + rowCurve + yNoise;
-      const occupiedRoll = hashStringToUnitInterval(`${treeData.treeId}-${config.row}-${index}-occupied`);
-      const isEmpty = occupiedRoll > config.occupancy;
-      const days = config.days[(index + rowIndex * 2) % config.days.length];
-      const stateKeys = ["balanced", "leaf-strong", "root-strong"];
-      const state = stateKeys[(index + rowIndex) % stateKeys.length];
-      const scaleNoise = (hashStringToUnitInterval(`${config.row}-scale-${index}`) - 0.5) * 0.04;
-      const mobileCompression = config.mobileCompression || 0.8;
-      const sideLean = centered < 0 ? -1 : 1;
-
-      return {
-        id: `community-seat-${config.row}-${index + 1}`,
-        name: isEmpty ? `비어 있는 숲자리 ${rowIndex + 1}-${index + 1}` : `숲의 나무 ${rowIndex + 1}-${index + 1}`,
-        className: `community-tree community-seat community-row-${config.row}`,
-        state,
-        days: isEmpty ? 0 : days,
-        isEmpty,
-        x: Number(Math.max(6, Math.min(94, x)).toFixed(1)),
-        y: Number(Math.max(28, Math.min(88, y)).toFixed(1)),
-        scale: Number((config.scale + scaleNoise).toFixed(2)),
-        opacity: isEmpty ? Number(Math.max(0.11, config.opacity - 0.11).toFixed(2)) : config.opacity,
-        depth: config.depth,
-        tilt: Number((sideLean * (0.3 + hashStringToUnitInterval(`${config.row}-tilt-${index}`) * 1.2)).toFixed(1)),
-        lift: config.lift,
-        groundOpacity: isEmpty ? Number((config.groundOpacity * 0.9).toFixed(3)) : config.groundOpacity,
-        mobileX: Number((50 + (x - 50) * mobileCompression).toFixed(1)),
-        mobileY: Number((config.y + rowIndex * 0.4).toFixed(1)),
-        mobileScale: Number(((config.scale + scaleNoise) * (0.75 + rowIndex * 0.03)).toFixed(2))
-      };
-    });
-  });
-}
-
 function renderWorldNeighbors() {
   if (!worldNeighborSpotsElement) {
     return;
   }
 
-  const displaySlots = createCommunityForestSlots()
-    .sort((a, b) => {
-      const depthA = Number(a.depth || 4);
-      const depthB = Number(b.depth || 4);
-      if (depthA !== depthB) {
-        return depthA - depthB;
-      }
-      return Number(a.y || 0) - Number(b.y || 0);
-    });
-
-  worldNeighborSpotsElement.innerHTML = displaySlots
+  worldNeighborSpotsElement.innerHTML = worldForestSlots
     .map((slot) => {
       const stateLabel = getWorldSlotStateLabel(slot.state);
-      const sizeClass = slot.isEmpty ? "world-seat-empty" : getWorldTreeSizeClass(slot.days);
-      const extraClass = slot.className || "";
-      const slotStyle = `--slot-x: ${slot.x}%; --slot-y: ${slot.y}%; --slot-scale: ${slot.scale}; --slot-opacity: ${slot.opacity}; --slot-mobile-x: ${slot.mobileX}%; --slot-mobile-y: ${slot.mobileY}%; --slot-mobile-scale: ${slot.mobileScale}; --slot-depth: ${slot.depth || 4}; --slot-z: ${slot.depth || 4}; --slot-tilt: ${slot.tilt || 0}deg; --slot-lift: ${slot.lift || 0}px; --slot-ground-opacity: ${slot.groundOpacity || 0.1}; --slot-blur: ${(slot.scale < 0.3 ? 0.72 : slot.scale < 0.45 ? 0.42 : slot.scale < 0.62 ? 0.18 : 0.02).toFixed(2)}px; --slot-brightness: ${(slot.depth <= 2 ? 0.94 : slot.depth <= 4 ? 1.0 : 1.03).toFixed(2)}; --slot-sat: ${(slot.depth <= 2 ? 0.9 : slot.depth <= 4 ? 0.98 : 1.04).toFixed(2)}; --slot-shadow: ${(slot.depth <= 2 ? 0.10 : slot.depth <= 4 ? 0.15 : 0.20).toFixed(2)};`;
-
-      if (slot.isEmpty) {
-        return `
-          <article
-            class="neighbor-spot empty-forest-seat ${extraClass} ${sizeClass}"
-            style="${slotStyle}"
-            aria-label="${slot.name}, 아직 비어 있는 숲자리"
-          >
-            <span class="neighbor-seat-empty" aria-hidden="true"></span>
-          </article>
-        `;
-      }
-
       const imageInfo = getTreeImageInfoByDays(slot.days);
+      const sizeClass = getWorldTreeSizeClass(slot.days);
+
+      const extraClass = slot.className || "";
 
       return `
         <article
           class="neighbor-spot slot-${slot.state} ${sizeClass} ${extraClass}"
-          style="${slotStyle}"
+          style="--slot-x: ${slot.x}%; --slot-y: ${slot.y}%; --slot-scale: ${slot.scale}; --slot-opacity: ${slot.opacity}; --slot-mobile-x: ${slot.mobileX}%; --slot-mobile-y: ${slot.mobileY}%; --slot-mobile-scale: ${slot.mobileScale}; --slot-depth: ${slot.depth || 4}; --slot-z: ${slot.depth || 4}; --slot-tilt: ${slot.tilt || 0}deg; --slot-lift: ${slot.lift || 0}px; --slot-ground-opacity: ${slot.groundOpacity || 0.1}; --slot-blur: ${(slot.scale < 0.7 ? 1.0 : slot.scale < 0.9 ? 0.55 : slot.scale > 1.2 ? 0.08 : 0.24).toFixed(2)}px; --slot-brightness: ${(slot.depth <= 2 ? 0.88 : slot.depth <= 4 ? 0.95 : slot.depth >= 8 ? 0.99 : 1).toFixed(2)}; --slot-sat: ${(slot.depth <= 2 ? 0.88 : slot.depth <= 4 ? 0.94 : 1).toFixed(2)}; --slot-shadow: ${(slot.depth <= 2 ? 0.16 : slot.depth <= 4 ? 0.2 : slot.depth >= 8 ? 0.24 : 0.22).toFixed(2)};"
           aria-label="${slot.name}, ${slot.days}일째 자라는 자리, ${stateLabel}"
         >
           <span class="neighbor-ground" aria-hidden="true"></span>
@@ -1802,6 +1483,7 @@ function renderWorldNeighbors() {
             <img class="neighbor-tree-shadow" src="assets/garden/tree-shadow.svg" alt="" />
             <img class="neighbor-tree-image" src="${imageInfo.src}" alt="" />
           </div>
+          <small>${slot.name}</small>
         </article>
       `;
     })
@@ -1813,23 +1495,19 @@ function renderWorldCommunityHint(todayRecord) {
     return;
   }
 
-  const slots = getWorldForestDisplaySlots();
-  const filledCount = slots.filter((slot) => !slot.isEmpty).length;
-  const totalCount = slots.length;
-  const myTreeJoined = treeData.history.length > 0 || Boolean(treeData.treeName?.trim());
-  const visibleFilledCount = myTreeJoined ? filledCount + 1 : filledCount;
+  const slotCount = worldForestSlots.length;
 
   if (todayRecord) {
-    worldCommunityHintElement.textContent = `오늘 내 나무의 ${todayRecord.label} 기운이 길 옆 언덕의 한 자리에 더해졌어요. 지금은 ${visibleFilledCount}자리가 잔디와 풀 사이에서 천천히 숲이 되어가고 있어요.`;
+    worldCommunityHintElement.textContent = `사람이 지나갈 수 있는 길 양옆으로 ${slotCount}그루의 나무가 자라고 있고, 오늘의 ${todayRecord.label} 기운도 그 숲길 옆 한 자리에 더해졌어요.`;
     return;
   }
 
   if (treeData.history.length === 0) {
-    worldCommunityHintElement.textContent = `${totalCount}개의 숲자리 중 ${filledCount}자리가 먼저 자라고 있어요. 비어 있는 길 옆 언덕은 앞으로 더 많은 나무가 심길 공간이에요.`;
+    worldCommunityHintElement.textContent = `숲길 양옆에는 이미 ${slotCount}그루의 나무가 작은 무리를 이루고 있어요. 내 나무도 곧 그 길가의 한 자리에 심길 수 있어요.`;
     return;
   }
 
-  worldCommunityHintElement.textContent = `지금은 ${visibleFilledCount}개의 자리가 자라고 있어요. 길과 잔디 사이로 각자의 나무가 조금씩 숲을 만들어 가는 구조예요.`;
+  worldCommunityHintElement.textContent = `사람이 걸을 수 있는 길 양옆으로 ${slotCount}그루의 나무가 자라고 있고, 내 나무도 그중 한 그루로 함께 서 있어요.`;
 }
 
 function renderWorld() {
@@ -1843,7 +1521,6 @@ function renderWorld() {
 
   renderWorldNeighbors();
   renderWorldCommunityHint(todayRecord);
-  renderWorldViewMode();
 
   myWorldSpotElement.className = `my-world-spot ${spotInfo.className} ${myWorldTreeSizeClass}`;
   mySpotVisualElement.innerHTML = `
@@ -2442,12 +2119,6 @@ moodButtons.forEach((button) => {
 goGardenBtnElement.addEventListener("click", showGardenScreen);
 if (focusMyTreeBtnElement) {
   focusMyTreeBtnElement.addEventListener("click", focusMyWorldSpot);
-}
-if (worldViewFarBtnElement) {
-  worldViewFarBtnElement.addEventListener("click", () => setWorldViewMode("far"));
-}
-if (worldViewNearBtnElement) {
-  worldViewNearBtnElement.addEventListener("click", () => setWorldViewMode("near"));
 }
 backToWorldBtnTopElement.addEventListener("click", showWorldScreen);
 backToWorldBtnBottomElement.addEventListener("click", showWorldScreen);
