@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.10.17 test
+// 살아있는 숲 V1.10.18 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.10.17 test
-// 목적: 첫 화면 전체 숲 / 내 나무 화면 숲속 자리 구조 전환 테스트판
+// 버전명: V1.10.18 test
+// 목적: 월드 숲 밀도 / 숲길 존재감 / 나무 군락감 보정 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10.17 test",
+  version: "V1.10.18 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -185,6 +185,24 @@ const worldForestSlots = [
   { id: "front-right-1", name: "길옆 큰잎", className: "row-front row-right", state: "balanced", days: 29, x: 61, y: 84, scale: 0.84, opacity: 0.66, depth: 8, tilt: 3, lift: 12, groundOpacity: 0.076, mobileX: 62, mobileY: 84, mobileScale: 0.60 },
   { id: "front-right-2", name: "앞 잔디숲", className: "row-front row-right", state: "leaf-strong", days: 38, x: 74, y: 83, scale: 0.90, opacity: 0.68, depth: 8, tilt: 6, lift: 12, groundOpacity: 0.078, mobileX: 76, mobileY: 83, mobileScale: 0.64 },
   { id: "front-right-3", name: "오른 앞숲", className: "row-front row-right", state: "root-strong", days: 48, x: 88, y: 82, scale: 0.98, opacity: 0.72, depth: 8, tilt: 9, lift: 12, groundOpacity: 0.082, mobileX: 90, mobileY: 82, mobileScale: 0.70 }
+,
+
+  { id: "canopy-left-1", name: "왼 숲그늘", className: "row-canopy row-left cluster-fill", state: "balanced", days: 34, x: 8, y: 58, scale: 0.54, opacity: 0.50, depth: 5, tilt: -8, lift: 2, groundOpacity: 0.04, mobileX: 7, mobileY: 59, mobileScale: 0.42 },
+  { id: "canopy-left-2", name: "왼 깊은숲", className: "row-canopy row-left cluster-fill", state: "leaf-strong", days: 43, x: 12, y: 63, scale: 0.64, opacity: 0.58, depth: 5, tilt: -6, lift: 3, groundOpacity: 0.048, mobileX: 10, mobileY: 64, mobileScale: 0.46 },
+  { id: "canopy-left-3", name: "왼 숲벽", className: "row-canopy row-left cluster-fill", state: "root-strong", days: 28, x: 20, y: 64, scale: 0.60, opacity: 0.54, depth: 5, tilt: -4, lift: 4, groundOpacity: 0.046, mobileX: 20, mobileY: 65, mobileScale: 0.44 },
+  { id: "canopy-right-1", name: "오른 숲그늘", className: "row-canopy row-right cluster-fill", state: "balanced", days: 36, x: 92, y: 58, scale: 0.54, opacity: 0.50, depth: 5, tilt: 8, lift: 2, groundOpacity: 0.04, mobileX: 93, mobileY: 59, mobileScale: 0.42 },
+  { id: "canopy-right-2", name: "오른 깊은숲", className: "row-canopy row-right cluster-fill", state: "leaf-strong", days: 46, x: 88, y: 63, scale: 0.64, opacity: 0.58, depth: 5, tilt: 6, lift: 3, groundOpacity: 0.048, mobileX: 90, mobileY: 64, mobileScale: 0.46 },
+  { id: "canopy-right-3", name: "오른 숲벽", className: "row-canopy row-right cluster-fill", state: "root-strong", days: 31, x: 80, y: 64, scale: 0.60, opacity: 0.54, depth: 5, tilt: 4, lift: 4, groundOpacity: 0.046, mobileX: 80, mobileY: 65, mobileScale: 0.44 },
+
+  { id: "trail-left-fill-1", name: "길왼 풀숲", className: "row-trail row-left cluster-fill", state: "leaf-strong", days: 18, x: 34, y: 66, scale: 0.48, opacity: 0.54, depth: 6, tilt: -5, lift: 6, groundOpacity: 0.062, mobileX: 33, mobileY: 67, mobileScale: 0.38 },
+  { id: "trail-left-fill-2", name: "길왼 어린숲", className: "row-trail row-left cluster-fill", state: "balanced", days: 24, x: 43, y: 68, scale: 0.44, opacity: 0.52, depth: 6, tilt: -2, lift: 6, groundOpacity: 0.058, mobileX: 42, mobileY: 69, mobileScale: 0.36 },
+  { id: "trail-right-fill-1", name: "길오른 풀숲", className: "row-trail row-right cluster-fill", state: "leaf-strong", days: 19, x: 66, y: 66, scale: 0.48, opacity: 0.54, depth: 6, tilt: 5, lift: 6, groundOpacity: 0.062, mobileX: 67, mobileY: 67, mobileScale: 0.38 },
+  { id: "trail-right-fill-2", name: "길오른 어린숲", className: "row-trail row-right cluster-fill", state: "balanced", days: 25, x: 57, y: 68, scale: 0.44, opacity: 0.52, depth: 6, tilt: 2, lift: 6, groundOpacity: 0.058, mobileX: 58, mobileY: 69, mobileScale: 0.36 },
+
+  { id: "front-bush-left-1", name: "앞왼 숲덩이", className: "row-front row-left cluster-fill front-bush", state: "leaf-strong", days: 52, x: 5, y: 79, scale: 1.08, opacity: 0.72, depth: 9, tilt: -10, lift: 14, groundOpacity: 0.09, mobileX: 4, mobileY: 80, mobileScale: 0.76 },
+  { id: "front-bush-left-2", name: "앞왼 나무무리", className: "row-front row-left cluster-fill front-bush", state: "balanced", days: 41, x: 19, y: 80, scale: 0.98, opacity: 0.70, depth: 9, tilt: -7, lift: 13, groundOpacity: 0.086, mobileX: 18, mobileY: 81, mobileScale: 0.68 },
+  { id: "front-bush-right-1", name: "앞오른 숲덩이", className: "row-front row-right cluster-fill front-bush", state: "leaf-strong", days: 55, x: 95, y: 79, scale: 1.08, opacity: 0.72, depth: 9, tilt: 10, lift: 14, groundOpacity: 0.09, mobileX: 96, mobileY: 80, mobileScale: 0.76 },
+  { id: "front-bush-right-2", name: "앞오른 나무무리", className: "row-front row-right cluster-fill front-bush", state: "balanced", days: 40, x: 81, y: 80, scale: 0.98, opacity: 0.70, depth: 9, tilt: 7, lift: 13, groundOpacity: 0.086, mobileX: 82, mobileY: 81, mobileScale: 0.68 },
 ];
 
 const worldScreenElement = document.querySelector("#worldScreen");
@@ -1498,16 +1516,16 @@ function renderWorldCommunityHint(todayRecord) {
   const slotCount = worldForestSlots.length;
 
   if (todayRecord) {
-    worldCommunityHintElement.textContent = `넓은 월드 숲 안에서 ${slotCount}그루의 나무가 큰 숲을 이루고 있고, 오늘의 ${todayRecord.label} 기운도 그 안의 내 자리로 스며들었어요.`;
+    worldCommunityHintElement.textContent = `짙어진 월드 숲 안에서 ${slotCount}그루의 나무가 길 주변을 채우고 있고, 오늘의 ${todayRecord.label} 기운도 그 안의 내 자리로 스며들었어요.`;
     return;
   }
 
   if (treeData.history.length === 0) {
-    worldCommunityHintElement.textContent = `멀리 보이는 숲 안에는 이미 ${slotCount}그루의 나무가 작은 군락을 이루고 있어요. 내 나무도 곧 그 숲의 한 자리에 들어갈 수 있어요.`;
+    worldCommunityHintElement.textContent = `멀리 보이는 숲 안에는 이미 ${slotCount}그루의 나무가 길과 숲 가장자리를 따라 군락을 이루고 있어요. 내 나무도 곧 그 숲의 한 자리에 들어갈 수 있어요.`;
     return;
   }
 
-  worldCommunityHintElement.textContent = `큰 숲 전체가 먼저 보이고, 그 안쪽 숲길 주변으로 ${slotCount}그루의 나무가 함께 자라고 있어요.`;
+  worldCommunityHintElement.textContent = `큰 숲 전체가 먼저 보이고, 그 안쪽 숲길 주변으로 ${slotCount}그루의 나무가 더 촘촘한 군락을 이루며 자라고 있어요.`;
 }
 
 function renderWorld() {
@@ -1639,7 +1657,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 첫 화면 전체 숲 / 숲속 내 자리 구조 전환 1차`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 숲 밀도 / 길 존재감 / 나무 군락감 보정 1차`;
   }
 }
 

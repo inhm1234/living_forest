@@ -6203,3 +6203,314 @@ body[data-world-time="day"] .daily-loop-card {
     left: 45%;
   }
 }
+
+
+/* V1.10.18 test: 안개 낀 들판 느낌 축소 / 숲 밀도와 숲길 존재감 강화 */
+.world-stage {
+  background-color: #1f4932;
+  background-image:
+    radial-gradient(circle at 50% 8%, rgba(255, 249, 208, 0.46), rgba(234, 255, 188, 0.14) 20%, transparent 40%),
+    linear-gradient(180deg, rgba(108, 157, 132, 0.16) 0%, rgba(38, 93, 50, 0.12) 42%, rgba(6, 23, 11, 0.20) 100%),
+    url("assets/world/world-bg-preview.png"),
+    radial-gradient(ellipse at 50% 34%, #557a50 0%, #235032 38%, #0d2415 72%, #06100b 100%);
+  background-position: center 36%;
+}
+
+.world-stage::before {
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(225, 240, 204, 0.20) 0 13%, transparent 28%),
+    radial-gradient(ellipse at 50% 32%, rgba(48, 108, 48, 0.34) 0 24%, transparent 46%),
+    radial-gradient(ellipse at 15% 54%, rgba(2, 34, 14, 0.72) 0 34%, transparent 58%),
+    radial-gradient(ellipse at 85% 54%, rgba(2, 34, 14, 0.74) 0 34%, transparent 58%),
+    radial-gradient(ellipse at 50% 68%, rgba(13, 58, 22, 0.40) 0 34%, transparent 62%),
+    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(3, 21, 9, 0.12) 56%, rgba(0,0,0,0.26) 100%);
+  opacity: 1;
+}
+
+.world-stage::after {
+  background:
+    radial-gradient(ellipse at 50% 53%, transparent 0 42%, rgba(0, 0, 0, 0.24) 74%, rgba(0, 0, 0, 0.44) 100%),
+    linear-gradient(180deg, transparent 0 54%, rgba(2, 15, 5, 0.20) 82%, rgba(1, 7, 3, 0.44) 100%);
+}
+
+.world-backdrop {
+  opacity: 0.74;
+}
+
+.world-depth-back {
+  opacity: 0.96;
+  background:
+    radial-gradient(ellipse at 50% 16%, rgba(125, 162, 116, 0.24) 0 18%, transparent 34%),
+    radial-gradient(ellipse at 28% 47%, rgba(11, 57, 24, 0.52) 0 30%, transparent 58%),
+    radial-gradient(ellipse at 72% 47%, rgba(11, 57, 24, 0.52) 0 30%, transparent 58%),
+    linear-gradient(180deg, rgba(38, 82, 50, 0.12), rgba(4, 20, 8, 0.40));
+}
+
+.world-far-trees {
+  opacity: 0.98;
+  filter: blur(1.0px) brightness(0.82) saturate(1.18);
+  background:
+    radial-gradient(ellipse at 6% 64%, rgba(4, 27, 12, 0.92) 0 15%, transparent 17%),
+    radial-gradient(ellipse at 16% 58%, rgba(4, 31, 14, 0.95) 0 19%, transparent 21%),
+    radial-gradient(ellipse at 28% 52%, rgba(7, 42, 19, 0.86) 0 18%, transparent 20%),
+    radial-gradient(ellipse at 42% 50%, rgba(7, 42, 19, 0.82) 0 18%, transparent 21%),
+    radial-gradient(ellipse at 58% 50%, rgba(7, 42, 19, 0.82) 0 18%, transparent 21%),
+    radial-gradient(ellipse at 72% 52%, rgba(7, 42, 19, 0.86) 0 18%, transparent 20%),
+    radial-gradient(ellipse at 84% 58%, rgba(4, 31, 14, 0.95) 0 19%, transparent 21%),
+    radial-gradient(ellipse at 96% 64%, rgba(4, 27, 12, 0.92) 0 15%, transparent 17%),
+    linear-gradient(180deg, transparent 0 42%, rgba(4, 22, 10, 0.94) 44% 100%);
+}
+
+.far-trees-a {
+  top: 12%;
+  height: 50%;
+}
+
+.far-trees-b {
+  top: 22%;
+  height: 46%;
+  opacity: 0.78;
+  filter: blur(1.8px) brightness(0.86) saturate(1.14);
+}
+
+.world-mid-trees {
+  bottom: 21%;
+  height: 52%;
+  opacity: 1;
+  filter: blur(0.35px) brightness(0.78) saturate(1.22);
+  background:
+    radial-gradient(ellipse at 2% 82%, rgba(2, 20, 8, 0.98) 0 21%, transparent 23%),
+    radial-gradient(ellipse at 12% 76%, rgba(3, 25, 10, 0.98) 0 24%, transparent 26%),
+    radial-gradient(ellipse at 24% 72%, rgba(4, 35, 14, 0.92) 0 23%, transparent 25%),
+    radial-gradient(ellipse at 37% 72%, rgba(7, 48, 18, 0.78) 0 18%, transparent 21%),
+    radial-gradient(ellipse at 63% 72%, rgba(7, 48, 18, 0.78) 0 18%, transparent 21%),
+    radial-gradient(ellipse at 76% 72%, rgba(4, 35, 14, 0.92) 0 23%, transparent 25%),
+    radial-gradient(ellipse at 88% 76%, rgba(3, 25, 10, 0.98) 0 24%, transparent 26%),
+    radial-gradient(ellipse at 98% 82%, rgba(2, 20, 8, 0.98) 0 21%, transparent 23%);
+}
+
+.world-forest-trail {
+  width: min(38%, 390px);
+  height: 72%;
+  bottom: -3%;
+  opacity: 1;
+  background:
+    radial-gradient(ellipse at 50% 6%, rgba(238, 220, 154, 0.58), transparent 24%),
+    radial-gradient(ellipse at 50% 34%, rgba(186, 140, 74, 0.50), transparent 46%),
+    linear-gradient(180deg, rgba(198, 154, 78, 0.52), rgba(138, 94, 49, 0.74) 50%, rgba(91, 61, 35, 0.88) 100%);
+  box-shadow:
+    inset 0 0 30px rgba(255, 237, 170, 0.14),
+    0 -14px 30px rgba(38, 76, 30, 0.28),
+    0 28px 48px rgba(0, 0, 0, 0.28);
+  filter: saturate(1.14) brightness(1.02);
+}
+
+.world-forest-trail::before,
+.world-forest-trail::after {
+  opacity: 0.72;
+  background: linear-gradient(180deg, rgba(15, 65, 22, 0.12), rgba(7, 43, 14, 0.80));
+}
+
+.world-clearing {
+  bottom: 40px;
+  opacity: 1;
+  background:
+    radial-gradient(ellipse at 50% 72%, rgba(84, 129, 54, 0.28) 0 30%, rgba(19, 68, 25, 0.32) 50%, transparent 76%),
+    radial-gradient(ellipse at 18% 72%, rgba(4, 53, 17, 0.62), transparent 48%),
+    radial-gradient(ellipse at 82% 72%, rgba(4, 53, 17, 0.64), transparent 48%),
+    radial-gradient(ellipse at 50% 48%, rgba(6, 42, 16, 0.28), transparent 64%);
+  backdrop-filter: blur(0.1px) brightness(0.88) saturate(1.16);
+  -webkit-backdrop-filter: blur(0.1px) brightness(0.88) saturate(1.16);
+}
+
+.world-fog {
+  opacity: 0.10;
+  filter: blur(18px);
+}
+
+.world-fog-b,
+.world-fog-c {
+  opacity: 0.08;
+}
+
+.world-front-leaves {
+  opacity: 0.58;
+  filter: blur(0.8px) brightness(0.78) saturate(1.24);
+}
+
+.world-foreground {
+  height: 190px;
+  opacity: 1;
+  filter: brightness(0.84) saturate(1.20);
+  background:
+    url("assets/world/world-foreground-grass.svg") center bottom / cover no-repeat,
+    radial-gradient(ellipse at 2% 88%, rgba(2, 28, 10, 0.98), transparent 42%),
+    radial-gradient(ellipse at 18% 88%, rgba(3, 48, 16, 0.86), transparent 38%),
+    radial-gradient(ellipse at 36% 94%, rgba(8, 63, 19, 0.78), transparent 36%),
+    radial-gradient(ellipse at 64% 94%, rgba(8, 63, 19, 0.78), transparent 36%),
+    radial-gradient(ellipse at 82% 88%, rgba(3, 48, 16, 0.86), transparent 38%),
+    radial-gradient(ellipse at 98% 88%, rgba(2, 28, 10, 0.98), transparent 42%),
+    linear-gradient(180deg, transparent 0%, rgba(3, 26, 9, 0.82) 58%, rgba(1, 7, 3, 0.98) 100%);
+}
+
+/* 군락 나무는 라벨을 숨기고 숲 덩어리처럼 보이게 */
+.neighbor-spot.cluster-fill {
+  opacity: var(--slot-opacity, 0.58);
+  mix-blend-mode: normal;
+}
+
+.neighbor-spot.cluster-fill .neighbor-tree-image {
+  opacity: 0.78;
+  filter: saturate(1.04) brightness(0.86);
+}
+
+.neighbor-spot.front-bush .neighbor-tree-image {
+  opacity: 0.82;
+  filter: saturate(1.10) brightness(0.78);
+}
+
+.neighbor-spot.row-front .neighbor-tree-wrap {
+  width: 128px;
+  height: 194px;
+}
+
+.neighbor-spot.row-near .neighbor-tree-wrap {
+  width: 110px;
+  height: 166px;
+}
+
+.neighbor-spot.row-mid .neighbor-tree-wrap {
+  width: 96px;
+  height: 142px;
+}
+
+.neighbor-spot.row-far .neighbor-tree-wrap {
+  width: 78px;
+  height: 112px;
+}
+
+.neighbor-spot.row-canopy .neighbor-tree-wrap {
+  width: 108px;
+  height: 162px;
+}
+
+.neighbor-spot.row-trail .neighbor-tree-wrap {
+  width: 86px;
+  height: 128px;
+}
+
+.neighbor-ground {
+  background: radial-gradient(ellipse, rgba(210, 178, 103, var(--slot-ground-opacity, 0.08)), rgba(13, 60, 18, 0.28) 48%, transparent 75%);
+}
+
+/* 내 나무는 숲에 섞이되, 너무 흐려지지 않게 */
+.my-world-spot,
+.world-time-day .my-world-spot,
+.world-time-sunset .my-world-spot,
+.world-time-night .my-world-spot {
+  bottom: 126px;
+}
+
+.my-spot-tree-image {
+  filter:
+    drop-shadow(0 12px 14px rgba(0,0,0,0.42))
+    drop-shadow(0 0 10px rgba(235,255,180,0.10));
+}
+
+.my-world-spot .my-spot-name {
+  background: rgba(3, 15, 7, 0.58);
+  color: rgba(247, 255, 238, 0.88);
+}
+
+.my-world-spot .my-spot-status {
+  opacity: 0.52;
+}
+
+/* 시간대별 과한 낮 안개 보정 */
+.world-stage.world-time-day::before {
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(255, 255, 216, 0.28) 0 12%, transparent 30%),
+    radial-gradient(ellipse at 50% 34%, rgba(71, 141, 58, 0.28) 0 25%, transparent 48%),
+    radial-gradient(ellipse at 15% 55%, rgba(5, 50, 16, 0.54) 0 34%, transparent 58%),
+    radial-gradient(ellipse at 85% 55%, rgba(5, 50, 16, 0.56) 0 34%, transparent 58%),
+    linear-gradient(180deg, rgba(255,255,255,0.10), rgba(12, 47, 18, 0.08) 56%, rgba(1, 14, 5, 0.20) 100%);
+}
+
+.world-time-day .world-far-trees,
+.world-time-day .world-mid-trees {
+  filter: blur(0.8px) brightness(0.98) saturate(1.25);
+  opacity: 0.88;
+}
+
+.world-time-day .world-forest-trail {
+  filter: brightness(1.24) saturate(1.12);
+}
+
+.world-time-day .world-clearing {
+  backdrop-filter: blur(0.1px) brightness(1.02) saturate(1.18);
+  -webkit-backdrop-filter: blur(0.1px) brightness(1.02) saturate(1.18);
+}
+
+.world-time-day .neighbor-spot.cluster-fill .neighbor-tree-image {
+  opacity: 0.82;
+  filter: saturate(1.15) brightness(0.98);
+}
+
+.world-time-night .world-far-trees,
+.world-time-night .world-mid-trees {
+  filter: blur(1.1px) brightness(0.54) saturate(0.94);
+}
+
+.world-time-night .world-forest-trail {
+  filter: brightness(0.70) saturate(0.90);
+}
+
+/* 내 나무 화면도 숲속 밀도를 조금 더 올림 */
+.garden-stage::after {
+  background:
+    linear-gradient(90deg, rgba(34, 22, 13, 0.78) 0 2.6%, transparent 3.2% 9%, rgba(48, 31, 16, 0.60) 9.5% 11.8%, transparent 12.5% 22%, rgba(28, 20, 12, 0.34) 22.5% 24%, transparent 25% 76%, rgba(32, 22, 12, 0.36) 76.5% 78%, transparent 79% 88%, rgba(48, 31, 16, 0.62) 88.5% 90.8%, transparent 91.5% 97%, rgba(34, 22, 13, 0.78) 97.5% 100%),
+    radial-gradient(ellipse at 15% 62%, rgba(4, 46, 17, 0.58), transparent 43%),
+    radial-gradient(ellipse at 86% 64%, rgba(4, 46, 17, 0.60), transparent 44%),
+    radial-gradient(ellipse at 50% 18%, rgba(41, 82, 36, 0.48), transparent 52%);
+  opacity: 0.86;
+}
+
+.garden-stage::before {
+  opacity: 0.84;
+  background:
+    radial-gradient(ellipse at 50% 8%, rgba(236, 214, 150, 0.40), transparent 30%),
+    radial-gradient(ellipse at 50% 44%, rgba(170, 124, 67, 0.38), transparent 48%),
+    linear-gradient(180deg, rgba(176, 140, 83, 0.34), rgba(119, 89, 52, 0.60) 58%, rgba(78, 55, 34, 0.84) 100%);
+}
+
+.garden-foreground {
+  filter: brightness(0.88) saturate(1.24);
+}
+
+@media (max-width: 620px) {
+  .world-forest-trail {
+    width: 49%;
+  }
+
+  .world-far-trees {
+    opacity: 0.88;
+  }
+
+  .world-mid-trees {
+    opacity: 0.94;
+  }
+
+  .neighbor-spot.row-front .neighbor-tree-wrap { width: 96px; height: 148px; }
+  .neighbor-spot.row-near .neighbor-tree-wrap { width: 86px; height: 132px; }
+  .neighbor-spot.row-mid .neighbor-tree-wrap { width: 74px; height: 114px; }
+  .neighbor-spot.row-far .neighbor-tree-wrap { width: 60px; height: 90px; }
+  .neighbor-spot.row-canopy .neighbor-tree-wrap { width: 82px; height: 124px; }
+  .neighbor-spot.row-trail .neighbor-tree-wrap { width: 70px; height: 106px; }
+
+  .my-world-spot,
+  .world-time-day .my-world-spot,
+  .world-time-sunset .my-world-spot,
+  .world-time-night .my-world-spot {
+    bottom: 124px;
+  }
+}
