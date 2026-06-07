@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.10.7 test
+// 살아있는 숲 V1.10.13 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.10.7 test
-// 목적: 월드 숲 스케일/원근감 재설계 1차 테스트판
+// 버전명: V1.10.13 test
+// 목적: 월드 숲 무대 재설계 1차 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10.7 test",
+  version: "V1.10.13 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -1680,8 +1680,8 @@ function renderWorldViewMode() {
 
   if (worldAtmosphereHintElement) {
     worldAtmosphereHintElement.textContent = normalizedMode === "near"
-      ? "가까이 보기에서는 내 나무 주변 자리와 앞쪽 숲결이 조금 더 선명하게 보여요."
-      : "멀리 보기에서는 넓은 월드 숲의 흐름과 전체 자리 배치를 더 넓게 볼 수 있어요.";
+      ? "가까이 보기에서는 앞쪽 언덕과 내 나무 주변 자리를 조금 더 크게 살펴볼 수 있어요."
+      : "멀리 보기에서는 비어 있는 언덕과 앞으로 채워질 숲자리의 전체 흐름을 볼 수 있어요.";
   }
 }
 
@@ -1704,23 +1704,97 @@ function focusMyWorldSpot() {
   }, 2600);
 }
 
+function createCommunityForestSlots() {
+  // V1.10.13: 과한 배경을 걷어내고, “앞으로 채워질 언덕형 월드 무대” 위에 나무 자리만 남기는 구조입니다.
+  const rowConfigs = [
+    { row: "far-hill", count: 16, startX: 18, endX: 82, y: 37, scale: 0.24, opacity: 0.22, depth: 2, occupancy: 0.24, days: [1, 2, 3, 5, 7], lift: -12, groundOpacity: 0.018, curve: 4.2, xJitter: 2.2, yJitter: 1.1, mobileCompression: 0.72 },
+    { row: "back-hill", count: 15, startX: 16, endX: 84, y: 49, scale: 0.34, opacity: 0.34, depth: 3, occupancy: 0.34, days: [2, 3, 5, 7, 10, 14], lift: -7, groundOpacity: 0.026, curve: 3.4, xJitter: 2.5, yJitter: 1.2, mobileCompression: 0.75 },
+    { row: "middle-hill", count: 13, startX: 18, endX: 82, y: 61, scale: 0.48, opacity: 0.50, depth: 4, occupancy: 0.46, days: [3, 5, 7, 12, 18, 24, 30], lift: -1, groundOpacity: 0.04, curve: 2.6, xJitter: 2.8, yJitter: 1.3, mobileCompression: 0.80 },
+    { row: "near-hill", count: 11, startX: 22, endX: 78, y: 73, scale: 0.64, opacity: 0.66, depth: 5, occupancy: 0.54, days: [7, 10, 14, 21, 30, 45, 60], lift: 5, groundOpacity: 0.058, curve: 1.8, xJitter: 3.0, yJitter: 1.4, mobileCompression: 0.85 },
+    { row: "front-hill", count: 9, startX: 26, endX: 74, y: 83, scale: 0.78, opacity: 0.78, depth: 6, occupancy: 0.58, days: [10, 14, 21, 30, 45, 60, 90], lift: 10, groundOpacity: 0.074, curve: 1.2, xJitter: 3.2, yJitter: 1.5, mobileCompression: 0.90 }
+  ];
+
+  return rowConfigs.flatMap((config, rowIndex) => {
+    return Array.from({ length: config.count }, (_, index) => {
+      const ratio = config.count === 1 ? 0.5 : index / (config.count - 1);
+      const centered = ratio - 0.5;
+      const xNoise = (hashStringToUnitInterval(`${config.row}-x-${index}`) - 0.5) * (config.xJitter || 2);
+      const yNoise = (hashStringToUnitInterval(`${config.row}-y-${index}`) - 0.5) * (config.yJitter || 1);
+      const rowCurve = Math.pow(Math.abs(centered), 1.18) * config.curve;
+      const x = config.startX + (config.endX - config.startX) * ratio + xNoise;
+      const y = config.y + rowCurve + yNoise;
+      const occupiedRoll = hashStringToUnitInterval(`${treeData.treeId}-${config.row}-${index}-occupied`);
+      const isEmpty = occupiedRoll > config.occupancy;
+      const days = config.days[(index + rowIndex * 2) % config.days.length];
+      const stateKeys = ["balanced", "leaf-strong", "root-strong"];
+      const state = stateKeys[(index + rowIndex) % stateKeys.length];
+      const scaleNoise = (hashStringToUnitInterval(`${config.row}-scale-${index}`) - 0.5) * 0.04;
+      const mobileCompression = config.mobileCompression || 0.8;
+      const sideLean = centered < 0 ? -1 : 1;
+
+      return {
+        id: `community-seat-${config.row}-${index + 1}`,
+        name: isEmpty ? `비어 있는 숲자리 ${rowIndex + 1}-${index + 1}` : `숲의 나무 ${rowIndex + 1}-${index + 1}`,
+        className: `community-tree community-seat community-row-${config.row}`,
+        state,
+        days: isEmpty ? 0 : days,
+        isEmpty,
+        x: Number(Math.max(6, Math.min(94, x)).toFixed(1)),
+        y: Number(Math.max(28, Math.min(88, y)).toFixed(1)),
+        scale: Number((config.scale + scaleNoise).toFixed(2)),
+        opacity: isEmpty ? Number(Math.max(0.11, config.opacity - 0.11).toFixed(2)) : config.opacity,
+        depth: config.depth,
+        tilt: Number((sideLean * (0.3 + hashStringToUnitInterval(`${config.row}-tilt-${index}`) * 1.2)).toFixed(1)),
+        lift: config.lift,
+        groundOpacity: isEmpty ? Number((config.groundOpacity * 0.9).toFixed(3)) : config.groundOpacity,
+        mobileX: Number((50 + (x - 50) * mobileCompression).toFixed(1)),
+        mobileY: Number((config.y + rowIndex * 0.4).toFixed(1)),
+        mobileScale: Number(((config.scale + scaleNoise) * (0.75 + rowIndex * 0.03)).toFixed(2))
+      };
+    });
+  });
+}
+
 function renderWorldNeighbors() {
   if (!worldNeighborSpotsElement) {
     return;
   }
 
-  worldNeighborSpotsElement.innerHTML = worldForestSlots
+  const displaySlots = createCommunityForestSlots()
+    .sort((a, b) => {
+      const depthA = Number(a.depth || 4);
+      const depthB = Number(b.depth || 4);
+      if (depthA !== depthB) {
+        return depthA - depthB;
+      }
+      return Number(a.y || 0) - Number(b.y || 0);
+    });
+
+  worldNeighborSpotsElement.innerHTML = displaySlots
     .map((slot) => {
       const stateLabel = getWorldSlotStateLabel(slot.state);
-      const imageInfo = getTreeImageInfoByDays(slot.days);
-      const sizeClass = getWorldTreeSizeClass(slot.days);
-
+      const sizeClass = slot.isEmpty ? "world-seat-empty" : getWorldTreeSizeClass(slot.days);
       const extraClass = slot.className || "";
+      const slotStyle = `--slot-x: ${slot.x}%; --slot-y: ${slot.y}%; --slot-scale: ${slot.scale}; --slot-opacity: ${slot.opacity}; --slot-mobile-x: ${slot.mobileX}%; --slot-mobile-y: ${slot.mobileY}%; --slot-mobile-scale: ${slot.mobileScale}; --slot-depth: ${slot.depth || 4}; --slot-z: ${slot.depth || 4}; --slot-tilt: ${slot.tilt || 0}deg; --slot-lift: ${slot.lift || 0}px; --slot-ground-opacity: ${slot.groundOpacity || 0.1}; --slot-blur: ${(slot.scale < 0.3 ? 0.72 : slot.scale < 0.45 ? 0.42 : slot.scale < 0.62 ? 0.18 : 0.02).toFixed(2)}px; --slot-brightness: ${(slot.depth <= 2 ? 0.94 : slot.depth <= 4 ? 1.0 : 1.03).toFixed(2)}; --slot-sat: ${(slot.depth <= 2 ? 0.9 : slot.depth <= 4 ? 0.98 : 1.04).toFixed(2)}; --slot-shadow: ${(slot.depth <= 2 ? 0.10 : slot.depth <= 4 ? 0.15 : 0.20).toFixed(2)};`;
+
+      if (slot.isEmpty) {
+        return `
+          <article
+            class="neighbor-spot empty-forest-seat ${extraClass} ${sizeClass}"
+            style="${slotStyle}"
+            aria-label="${slot.name}, 아직 비어 있는 숲자리"
+          >
+            <span class="neighbor-seat-empty" aria-hidden="true"></span>
+          </article>
+        `;
+      }
+
+      const imageInfo = getTreeImageInfoByDays(slot.days);
 
       return `
         <article
           class="neighbor-spot slot-${slot.state} ${sizeClass} ${extraClass}"
-          style="--slot-x: ${slot.x}%; --slot-y: ${slot.y}%; --slot-scale: ${slot.scale}; --slot-opacity: ${slot.opacity}; --slot-mobile-x: ${slot.mobileX}%; --slot-mobile-y: ${slot.mobileY}%; --slot-mobile-scale: ${slot.mobileScale}; --slot-depth: ${slot.depth || 4}; --slot-z: ${slot.depth || 4}; --slot-tilt: ${slot.tilt || 0}deg; --slot-lift: ${slot.lift || 0}px; --slot-ground-opacity: ${slot.groundOpacity || 0.1}; --slot-blur: ${(slot.scale < 0.7 ? 1.0 : slot.scale < 0.9 ? 0.55 : slot.scale > 1.2 ? 0.08 : 0.24).toFixed(2)}px; --slot-brightness: ${(slot.depth <= 2 ? 0.88 : slot.depth <= 4 ? 0.95 : slot.depth >= 8 ? 0.99 : 1).toFixed(2)}; --slot-sat: ${(slot.depth <= 2 ? 0.88 : slot.depth <= 4 ? 0.94 : 1).toFixed(2)}; --slot-shadow: ${(slot.depth <= 2 ? 0.16 : slot.depth <= 4 ? 0.2 : slot.depth >= 8 ? 0.24 : 0.22).toFixed(2)};"
+          style="${slotStyle}"
           aria-label="${slot.name}, ${slot.days}일째 자라는 자리, ${stateLabel}"
         >
           <span class="neighbor-ground" aria-hidden="true"></span>
@@ -1728,7 +1802,6 @@ function renderWorldNeighbors() {
             <img class="neighbor-tree-shadow" src="assets/garden/tree-shadow.svg" alt="" />
             <img class="neighbor-tree-image" src="${imageInfo.src}" alt="" />
           </div>
-          <small>${slot.name}</small>
         </article>
       `;
     })
@@ -1740,19 +1813,23 @@ function renderWorldCommunityHint(todayRecord) {
     return;
   }
 
-  const slotCount = worldForestSlots.length;
+  const slots = createCommunityForestSlots();
+  const filledCount = slots.filter((slot) => !slot.isEmpty).length;
+  const totalCount = slots.length;
+  const myTreeJoined = treeData.history.length > 0 || Boolean(treeData.treeName?.trim());
+  const visibleFilledCount = myTreeJoined ? filledCount + 1 : filledCount;
 
   if (todayRecord) {
-    worldCommunityHintElement.textContent = `주변의 ${slotCount}그루 나무와 함께 오늘의 ${todayRecord.label} 기운이 숲 안에 천천히 스며들고 있어요.`;
+    worldCommunityHintElement.textContent = `오늘 내 나무의 ${todayRecord.label} 기운이 ${totalCount}개의 숲자리 중 한 자리에 더해졌어요. 지금은 ${visibleFilledCount}자리가 천천히 숲이 되어가는 중이에요.`;
     return;
   }
 
   if (treeData.history.length === 0) {
-    worldCommunityHintElement.textContent = `이미 ${slotCount}그루의 작은 나무가 숲의 무리를 이루며 함께 자라고 있어요.`;
+    worldCommunityHintElement.textContent = `${totalCount}개의 숲자리 중 ${filledCount}자리가 먼저 자라고 있어요. 비어 있는 언덕은 앞으로 채워질 숲의 자리예요.`;
     return;
   }
 
-  worldCommunityHintElement.textContent = `주변의 ${slotCount}그루 나무와 함께, 내 나무도 오늘의 기운을 조용히 기다리고 있어요.`;
+  worldCommunityHintElement.textContent = `지금은 ${visibleFilledCount}개의 자리가 자라고 있어요. 멀리서는 넓은 언덕, 가까이서는 각자의 나무가 보이는 구조예요.`;
 }
 
 function renderWorld() {
