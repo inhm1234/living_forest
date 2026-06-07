@@ -1,15 +1,14 @@
-살아있는 숲 V1.10.22 test
+살아있는 숲 V1.10.23 test
 
-기준 버전: V1.10.21 test
-작업 내용: 오버레이 완전 제거 기준 화면
+기준 버전: V1.10.22 test
+작업 내용: 배경 합성 완전 초기화
 저장 방식: localStorage 유지
 데이터 구조: schema 3 유지
 
 변경 요약:
-- 월드 숲 오버레이 효과 대부분 0 처리
-- 개인 정원 오버레이 / glow / blur 대부분 0 처리
-- 메시지 카드 backdrop-filter 제거
-- 내 나무 주변 강조 효과 대부분 제거
+- world-stage / garden-stage의 배경을 background shorthand로 통째로 재선언
+- background-blend-mode / mix-blend-mode / 배경색 영향 제거
+- 기존 숲 레이어, dim, fog, glow, blur 대부분 제거 유지
 - 배경 이미지 원본 기준 화면 확인용 테스트판
 - 기존 기능과 저장 구조는 유지
-- CSS/JS 캐시 쿼리를 V1.10.22 test로 정리
+- CSS/JS 캐시 쿼리를 V1.10.23 test로 정리

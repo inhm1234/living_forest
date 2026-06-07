@@ -7439,3 +7439,171 @@ body[data-world-time="day"] .daily-loop-card {
     opacity: 0 !important;
   }
 }
+
+
+/* V1.10.23 test: 배경 합성 완전 초기화판
+   목표:
+   - 오버레이 0 상태는 유지
+   - background-blend-mode / 다중 배경 / 배경색 영향 자체를 제거
+   - 새 배경 이미지를 background shorthand로 강제 지정
+   - 이미지가 "원본 그대로" 보이는지 확인
+*/
+
+/* ===== 월드 첫 화면: 배경을 통째로 재선언 ===== */
+.world-stage,
+.world-stage.world-time-day,
+.world-stage.world-time-sunset,
+.world-stage.world-time-night {
+  background-color: transparent !important;
+  background-image: none !important;
+  background: none !important;
+  background-blend-mode: normal !important;
+  mix-blend-mode: normal !important;
+  filter: none !important;
+}
+
+.world-stage.world-time-day {
+  background: url("assets/world/world-overview-day-v1.png") center center / cover no-repeat !important;
+}
+
+.world-stage.world-time-sunset {
+  background: url("assets/world/world-overview-sunset-v1.png") center center / cover no-repeat !important;
+}
+
+.world-stage.world-time-night {
+  background: url("assets/world/world-overview-night-v1.png") center center / cover no-repeat !important;
+}
+
+/* 혹시 남아 있는 합성/필터 요소 완전 차단 */
+.world-stage *,
+.world-stage *::before,
+.world-stage *::after {
+  mix-blend-mode: normal;
+}
+
+.world-backdrop,
+.world-depth-back,
+.world-canopy-shadow,
+.world-far-trees,
+.world-mid-trees,
+.world-forest-trail,
+.world-clearing,
+.world-spot-ground,
+.world-dim,
+.world-fog,
+.world-fog-b,
+.world-fog-c,
+.world-front-leaves,
+.world-foreground {
+  display: none !important;
+  opacity: 0 !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  background: none !important;
+}
+
+/* 월드 화면의 내 나무만 최소한으로 유지 */
+.my-world-spot,
+.world-time-day .my-world-spot,
+.world-time-sunset .my-world-spot,
+.world-time-night .my-world-spot {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.my-spot-ring,
+.my-spot-aura,
+.my-world-spot::before,
+.my-spot-ground-shadow,
+.my-spot-tree-shadow {
+  display: none !important;
+  opacity: 0 !important;
+  filter: none !important;
+  background: none !important;
+}
+
+.my-spot-tree-image {
+  filter: none !important;
+}
+
+.my-world-spot .my-spot-name {
+  background: rgba(5, 17, 10, 0.12) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  backdrop-filter: none !important;
+}
+
+/* ===== 개인 정원: 배경을 통째로 재선언 ===== */
+.garden-stage,
+.garden-stage.garden-time-day,
+.garden-stage.garden-time-sunset,
+.garden-stage.garden-time-night {
+  background-color: transparent !important;
+  background-image: none !important;
+  background: none !important;
+  background-blend-mode: normal !important;
+  mix-blend-mode: normal !important;
+  filter: none !important;
+}
+
+.garden-stage.garden-time-day {
+  background: url("assets/garden/garden-inner-day-v1.png") center center / cover no-repeat !important;
+}
+
+.garden-stage.garden-time-sunset {
+  background: url("assets/garden/garden-inner-sunset-v1.png") center center / cover no-repeat !important;
+}
+
+.garden-stage.garden-time-night {
+  background: url("assets/garden/garden-inner-night-v1.png") center center / cover no-repeat !important;
+}
+
+.garden-stage *,
+.garden-stage *::before,
+.garden-stage *::after {
+  mix-blend-mode: normal;
+}
+
+.garden-depth,
+.garden-focus-clearing,
+.garden-moon-glow,
+.garden-dim,
+.garden-fog,
+.garden-foreground,
+.tree-glow,
+.tree-planting-ground {
+  display: none !important;
+  opacity: 0 !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  background: none !important;
+}
+
+.tree-image,
+.garden-time-night .tree-image {
+  filter: none !important;
+}
+
+.tree-shadow-image {
+  opacity: 0.06 !important;
+  filter: none !important;
+}
+
+.stage-message {
+  background: rgba(5, 17, 10, 0.22) !important;
+  border-color: rgba(255,255,255,0.06) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* body 배경은 카드 밖 영역만 담당. 카드 내부 시야에는 영향 없도록 유지 */
+
+/* 모바일 */
+@media (max-width: 620px) {
+  .world-stage,
+  .garden-stage {
+    filter: none !important;
+  }
+}

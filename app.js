@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.10.22 test
+// 살아있는 숲 V1.10.23 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.10.22 test
-// 목적: 오버레이 완전 제거 기준 화면 테스트판
+// 버전명: V1.10.23 test
+// 목적: 배경 합성 완전 초기화 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10.22 test",
+  version: "V1.10.23 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -1657,7 +1657,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 오버레이 완전 제거 기준판`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 배경 합성 완전 초기화판`;
   }
 }
 
