@@ -1,4 +1,4 @@
-살아있는 숲 V1.10.16 test 업로드 가이드
+살아있는 숲 V1.10.17 test 업로드 가이드
 
 1. GitHub 저장소로 이동
    inhm1234/living_forest
@@ -18,7 +18,7 @@
    기존 assets 폴더와 업로드된 나무 이미지 파일들은 삭제하지 마세요.
 
 4. 커밋 메시지 추천
-   Apply V1.10.16 test clearer forest path and side trees
+   Apply V1.10.17 test whole forest and inner forest spot structure
 
 5. 업로드 후 확인 주소
    일반 화면:
@@ -26,3 +26,12 @@
 
    테스트 화면:
    https://inhm1234.github.io/living_forest/?test=1
+
+   낮 테스트:
+   https://inhm1234.github.io/living_forest/?test=1&worldTime=day
+
+   노을 테스트:
+   https://inhm1234.github.io/living_forest/?test=1&worldTime=sunset
+
+   밤 테스트:
+   https://inhm1234.github.io/living_forest/?test=1&worldTime=night

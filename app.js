@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.10.16 test
+// 살아있는 숲 V1.10.17 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.10.16 test
-// 목적: 사람의 숲길 명확화 / 길 양옆 나무 배치 테스트판
+// 버전명: V1.10.17 test
+// 목적: 첫 화면 전체 숲 / 내 나무 화면 숲속 자리 구조 전환 테스트판
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10.16 test",
+  version: "V1.10.17 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -1001,7 +1001,7 @@ function getServiceFlowInfo() {
   if (!hasName && !hasHistory) {
     return {
       title: "내 자리에서 시작하기",
-      description: "숲 한가운데 기다리는 내 자리를 보고, 개인 정원으로 들어가요.",
+      description: "멀리 보이는 월드 숲을 보고, 그 안의 내 숲속 자리로 들어가요.",
       activeStep: "world",
       doneSteps: ["world"]
     };
@@ -1052,8 +1052,8 @@ function getDailyLoopInfo() {
   if (!hasName && totalDays === 0) {
     return {
       state: "start",
-      title: "숲 한가운데 내 자리가 기다려요",
-      text: "이름을 정하고 첫 마음을 남기면 나무가 바로 반응해요. 3일차에는 월드 숲에 작은 빛이 생겨요."
+      title: "큰 숲 안에 내 자리가 기다려요",
+      text: "이름을 정하고 첫 마음을 남기면 내 나무가 숲속 자리에서 바로 반응해요. 3일차에는 월드 숲에 작은 빛이 생겨요."
     };
   }
 
@@ -1498,16 +1498,16 @@ function renderWorldCommunityHint(todayRecord) {
   const slotCount = worldForestSlots.length;
 
   if (todayRecord) {
-    worldCommunityHintElement.textContent = `사람이 걸을 수 있는 숲길 양옆으로 ${slotCount}그루의 나무가 자라고 있고, 오늘의 ${todayRecord.label} 기운도 그 길가의 한 자리에 더해졌어요.`;
+    worldCommunityHintElement.textContent = `넓은 월드 숲 안에서 ${slotCount}그루의 나무가 큰 숲을 이루고 있고, 오늘의 ${todayRecord.label} 기운도 그 안의 내 자리로 스며들었어요.`;
     return;
   }
 
   if (treeData.history.length === 0) {
-    worldCommunityHintElement.textContent = `숲길 양옆에는 이미 ${slotCount}그루의 나무가 작은 무리를 이루고 있어요. 내 나무도 곧 그 길가의 한 자리에 심길 수 있어요.`;
+    worldCommunityHintElement.textContent = `멀리 보이는 숲 안에는 이미 ${slotCount}그루의 나무가 작은 군락을 이루고 있어요. 내 나무도 곧 그 숲의 한 자리에 들어갈 수 있어요.`;
     return;
   }
 
-  worldCommunityHintElement.textContent = `사람이 지나갈 수 있는 숲길이 가운데 있고, 그 양옆으로 ${slotCount}그루의 나무가 함께 자라고 있어요.`;
+  worldCommunityHintElement.textContent = `큰 숲 전체가 먼저 보이고, 그 안쪽 숲길 주변으로 ${slotCount}그루의 나무가 함께 자라고 있어요.`;
 }
 
 function renderWorld() {
@@ -1537,15 +1537,15 @@ function renderWorld() {
     const moodClass = `mood-${todayRecord.mood}`;
     mySpotAuraElement.innerHTML = `<span class="${moodClass}"></span><span class="${moodClass}"></span><span class="${moodClass}"></span>`;
     worldSummaryTodayElement.textContent = `오늘 ${todayRecord.label}`;
-    worldSummaryTextElement.textContent = `오늘의 ${todayRecord.label} 기운이 내 자리 주변에 조용히 머물고 있어요.`;
+    worldSummaryTextElement.textContent = `오늘의 ${todayRecord.label} 기운이 큰 숲 안의 내 자리에도 조용히 스며들었어요.`;
   } else {
     mySpotAuraElement.innerHTML = "";
     worldSummaryTodayElement.textContent = "오늘 기록 전";
 
     if (treeData.history.length === 0) {
       worldSummaryTextElement.textContent = treeData.treeName?.trim()
-        ? "이름을 얻은 작은 자리가 오늘의 마음을 기다리고 있어요."
-        : "숲 한가운데, 아직 이름 없는 작은 자리가 기다리고 있어요.";
+        ? "큰 숲 안의 작은 자리가 오늘의 마음을 기다리고 있어요."
+        : "넓은 월드 숲 안에, 아직 이름 없는 작은 자리가 기다리고 있어요.";
     } else {
       worldSummaryTextElement.textContent = getWorldProgressMessage();
     }
@@ -1639,22 +1639,23 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 월드 숲 스케일/원근감 재설계 1차`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 첫 화면 전체 숲 / 숲속 내 자리 구조 전환 1차`;
   }
 }
 
 function renderGardenAtmosphere() {
   const atmosphere = getWorldAtmosphereInfo();
+  const gardenPlaceLabel = `${atmosphere.shortLabel} 숲속 자리`;
 
   if (skyElement) {
     skyElement.classList.remove("garden-time-day", "garden-time-sunset", "garden-time-night");
     skyElement.classList.add(`garden-time-${atmosphere.key}`);
     skyElement.dataset.gardenTime = atmosphere.key;
-    skyElement.setAttribute("aria-label", `내 ${atmosphere.label.replace("숲", "정원")}`);
+    skyElement.setAttribute("aria-label", `내 ${gardenPlaceLabel}`);
   }
 
   if (gardenTitleElement) {
-    gardenTitleElement.textContent = atmosphere.label.replace("숲", "정원");
+    gardenTitleElement.textContent = gardenPlaceLabel;
   }
 
   return atmosphere;

@@ -5617,3 +5617,589 @@ body[data-world-time="day"] .daily-loop-card {
     left: 42.5%;
   }
 }
+
+
+/* V1.10.17 test: 첫 화면은 전체 숲, 내 나무 화면은 숲속 가까운 자리 */
+.world-card {
+  width: min(calc(100vw - 24px), 1120px);
+}
+
+.world-stage {
+  height: min(78vh, 680px);
+  min-height: 560px;
+  background-color: #254a38;
+  background-image:
+    radial-gradient(circle at 54% 5%, rgba(255, 255, 214, 0.54), rgba(255, 246, 180, 0.18) 18%, transparent 38%),
+    linear-gradient(180deg, rgba(155, 205, 196, 0.28) 0%, rgba(83, 135, 105, 0.18) 26%, rgba(32, 74, 47, 0.08) 62%, rgba(7, 16, 14, 0.18) 100%),
+    url("assets/world/world-bg-preview.png"),
+    radial-gradient(ellipse at 48% 38%, #7aa56e 0%, #315c3d 42%, #102619 72%, #07100f 100%);
+  background-size: cover, cover, cover, cover;
+  background-position: center 35%;
+}
+
+.world-stage::before {
+  z-index: 2;
+  background:
+    radial-gradient(ellipse at 50% 7%, rgba(222, 238, 224, 0.30) 0 12%, transparent 26%),
+    radial-gradient(ellipse at 52% 35%, rgba(91, 141, 91, 0.34) 0 24%, transparent 52%),
+    radial-gradient(ellipse at 18% 44%, rgba(9, 42, 22, 0.48) 0 26%, transparent 48%),
+    radial-gradient(ellipse at 82% 43%, rgba(9, 42, 22, 0.50) 0 27%, transparent 50%),
+    linear-gradient(180deg, rgba(255,255,255,0.08), transparent 36%, rgba(0,0,0,0.18) 100%);
+  opacity: 1;
+  mix-blend-mode: normal;
+}
+
+.world-stage::after {
+  z-index: 14;
+  background:
+    radial-gradient(ellipse at 50% 45%, transparent 0 48%, rgba(0, 0, 0, 0.15) 78%, rgba(0, 0, 0, 0.36) 100%),
+    linear-gradient(180deg, transparent 0 58%, rgba(1, 9, 5, 0.16) 86%, rgba(1, 6, 4, 0.34) 100%);
+  mix-blend-mode: normal;
+}
+
+.world-depth-back {
+  z-index: 3;
+  opacity: 0.82;
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(152, 188, 151, 0.36) 0 18%, transparent 36%),
+    radial-gradient(ellipse at 50% 42%, rgba(35, 87, 45, 0.40) 0 28%, transparent 56%),
+    linear-gradient(180deg, rgba(55, 96, 82, 0.10), rgba(7, 22, 12, 0.30));
+}
+
+.world-far-trees {
+  opacity: 0.84;
+  filter: blur(1.4px) brightness(1.02) saturate(1.08);
+}
+
+.far-trees-a {
+  top: 11%;
+  height: 46%;
+}
+
+.far-trees-b {
+  top: 23%;
+  height: 40%;
+  opacity: 0.58;
+}
+
+.world-mid-trees {
+  bottom: 23%;
+  height: 48%;
+  opacity: 0.98;
+  filter: blur(0.7px) brightness(0.95) saturate(1.08);
+  background:
+    radial-gradient(ellipse at 5% 78%, rgba(7, 30, 18, 0.95) 0 18%, transparent 20%),
+    radial-gradient(ellipse at 18% 73%, rgba(8, 37, 20, 0.95) 0 21%, transparent 23%),
+    radial-gradient(ellipse at 34% 69%, rgba(13, 54, 27, 0.72) 0 18%, transparent 21%),
+    radial-gradient(ellipse at 66% 69%, rgba(13, 54, 27, 0.72) 0 18%, transparent 21%),
+    radial-gradient(ellipse at 82% 73%, rgba(8, 37, 20, 0.95) 0 21%, transparent 23%),
+    radial-gradient(ellipse at 95% 78%, rgba(7, 30, 18, 0.95) 0 18%, transparent 20%);
+}
+
+.world-forest-trail {
+  left: 50%;
+  bottom: -5%;
+  z-index: 6;
+  width: min(34%, 360px);
+  height: 70%;
+  border-radius: 42% 42% 50% 50%;
+  transform: translateX(-50%) perspective(360px) rotateX(68deg);
+  transform-origin: bottom center;
+  opacity: 0.92;
+  background:
+    radial-gradient(ellipse at 50% 5%, rgba(237, 213, 142, 0.44), transparent 26%),
+    radial-gradient(ellipse at 50% 34%, rgba(190, 148, 83, 0.38), transparent 44%),
+    linear-gradient(180deg, rgba(194, 156, 89, 0.34), rgba(135, 100, 56, 0.54) 50%, rgba(96, 68, 42, 0.74) 100%);
+  box-shadow:
+    inset 0 0 26px rgba(255, 242, 174, 0.10),
+    0 -18px 34px rgba(45, 71, 34, 0.28),
+    0 24px 42px rgba(0, 0, 0, 0.20);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 20%, #000 80%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 20%, #000 80%, transparent 100%);
+}
+
+.world-forest-trail::before,
+.world-forest-trail::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 30%;
+  height: 100%;
+  border-radius: 50%;
+  opacity: 0.42;
+  background: linear-gradient(180deg, rgba(27, 70, 32, 0.04), rgba(14, 44, 20, 0.60));
+}
+
+.world-forest-trail::before {
+  left: -16%;
+}
+
+.world-forest-trail::after {
+  right: -16%;
+}
+
+.world-clearing {
+  left: 50%;
+  bottom: 52px;
+  z-index: 4;
+  width: min(92%, 900px);
+  height: 430px;
+  border-radius: 48% 48% 40% 40%;
+  transform: translateX(-50%);
+  opacity: 0.92;
+  background:
+    radial-gradient(ellipse at 50% 72%, rgba(68, 126, 55, 0.20) 0 34%, rgba(20, 69, 28, 0.20) 52%, transparent 76%),
+    radial-gradient(ellipse at 28% 70%, rgba(29, 86, 32, 0.36), transparent 54%),
+    radial-gradient(ellipse at 72% 70%, rgba(29, 86, 32, 0.38), transparent 54%);
+  backdrop-filter: blur(0.4px) brightness(0.98) saturate(1.06);
+  -webkit-backdrop-filter: blur(0.4px) brightness(0.98) saturate(1.06);
+  mask-image: radial-gradient(ellipse at 50% 64%, #000 0 68%, transparent 90%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 64%, #000 0 68%, transparent 90%);
+}
+
+.world-spot-ground {
+  left: 50%;
+  bottom: 72px;
+  z-index: 7;
+  width: min(26%, 220px);
+  height: 54px;
+  opacity: 0.58;
+  background:
+    radial-gradient(ellipse at 50% 52%, rgba(225, 198, 126, 0.36), rgba(91, 107, 54, 0.24) 44%, transparent 76%);
+  box-shadow: none;
+}
+
+.world-foreground {
+  z-index: 13;
+  height: 170px;
+  opacity: 0.94;
+  background:
+    url("assets/world/world-foreground-grass.svg") center bottom / cover no-repeat,
+    radial-gradient(ellipse at 10% 86%, rgba(7, 42, 18, 0.92), transparent 40%),
+    radial-gradient(ellipse at 36% 92%, rgba(20, 76, 25, 0.72), transparent 38%),
+    radial-gradient(ellipse at 70% 92%, rgba(20, 76, 25, 0.72), transparent 38%),
+    radial-gradient(ellipse at 90% 86%, rgba(7, 42, 18, 0.92), transparent 40%),
+    linear-gradient(180deg, transparent 0%, rgba(4, 24, 9, 0.72) 62%, rgba(2, 10, 5, 0.98) 100%);
+}
+
+.world-fog {
+  opacity: 0.24;
+}
+
+.world-front-leaves {
+  opacity: 0.32;
+}
+
+.world-neighbor-spots {
+  z-index: 8;
+}
+
+.neighbor-spot {
+  width: 72px;
+  height: 112px;
+  opacity: var(--slot-opacity, 0.55);
+  filter:
+    blur(var(--slot-blur, 0.2px))
+    brightness(var(--slot-brightness, 1))
+    saturate(var(--slot-sat, 1))
+    drop-shadow(0 18px 20px rgba(0,0,0,var(--slot-shadow,0.22)));
+  animation: neighborBreath 7.8s ease-in-out infinite;
+}
+
+.neighbor-spot small {
+  display: none;
+}
+
+.neighbor-ground {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  width: 118%;
+  height: 24px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(213, 189, 116, var(--slot-ground-opacity, 0.08)), rgba(33, 78, 31, 0.16) 48%, transparent 75%);
+}
+
+.neighbor-tree-wrap {
+  position: absolute;
+  left: 50%;
+  bottom: calc(8px + var(--slot-lift, 0px));
+  width: 88px;
+  height: 126px;
+  transform: translateX(-50%) rotate(var(--slot-tilt, 0deg));
+  transform-origin: bottom center;
+}
+
+.neighbor-tree-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -13px;
+  width: 118%;
+  transform: translateX(-50%);
+  opacity: 0.18;
+}
+
+.neighbor-tree-image {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  max-width: 100%;
+  max-height: 100%;
+  transform: translateX(-50%);
+  object-fit: contain;
+  opacity: 0.94;
+}
+
+.neighbor-spot.row-far .neighbor-tree-wrap { width: 74px; height: 106px; }
+.neighbor-spot.row-mid .neighbor-tree-wrap { width: 86px; height: 128px; }
+.neighbor-spot.row-near .neighbor-tree-wrap { width: 100px; height: 150px; }
+.neighbor-spot.row-front .neighbor-tree-wrap { width: 116px; height: 174px; }
+
+.my-world-spot,
+.world-time-day .my-world-spot,
+.world-time-sunset .my-world-spot,
+.world-time-night .my-world-spot {
+  left: 50%;
+  bottom: 120px;
+  z-index: 11;
+  width: 132px;
+  min-height: 162px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  animation: quietBreath 5.8s ease-in-out infinite;
+}
+
+.my-world-spot::before,
+.world-time-day .my-world-spot::before,
+.world-time-sunset .my-world-spot::before,
+.world-time-night .my-world-spot::before {
+  bottom: 8px;
+  width: 92px;
+  height: 22px;
+  background: radial-gradient(ellipse, rgba(235, 213, 136, 0.28), rgba(23, 60, 27, 0.20) 48%, transparent 78%);
+  opacity: 0.88;
+  filter: blur(3px);
+}
+
+.my-spot-ring {
+  left: 50%;
+  top: auto;
+  bottom: 34px;
+  width: 74px;
+  height: 36px;
+  border-color: rgba(244, 255, 197, 0.18);
+  background: radial-gradient(ellipse, rgba(245, 255, 189, 0.16), transparent 70%);
+  box-shadow: 0 0 24px rgba(238, 255, 177, 0.16);
+}
+
+.my-spot-aura {
+  position: absolute;
+  left: 50%;
+  bottom: 82px;
+  width: 110px;
+  min-height: 20px;
+  margin: 0;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.my-spot-visual {
+  position: relative;
+  min-height: 132px;
+  font-size: 0;
+}
+
+.my-spot-ground-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 15px;
+  width: 92px;
+  height: 22px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(242, 212, 133, 0.30), rgba(26, 68, 28, 0.22) 48%, transparent 76%);
+}
+
+.my-spot-tree-wrap {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  width: 112px;
+  height: 142px;
+  transform: translateX(-50%);
+  transform-origin: bottom center;
+}
+
+.my-spot-tree-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -13px;
+  width: 122%;
+  transform: translateX(-50%);
+  opacity: 0.22;
+}
+
+.my-spot-tree-image {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  max-width: 100%;
+  max-height: 100%;
+  transform: translateX(-50%);
+  object-fit: contain;
+  filter: drop-shadow(0 12px 14px rgba(0,0,0,0.34));
+}
+
+.my-world-spot .my-spot-name {
+  position: absolute;
+  left: 50%;
+  bottom: -12px;
+  max-width: 150px;
+  margin: 0;
+  padding: 4px 8px;
+  border: 1px solid rgba(242, 255, 224, 0.16);
+  border-radius: 999px;
+  background: rgba(5, 17, 10, 0.48);
+  color: rgba(247, 255, 238, 0.90);
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  backdrop-filter: blur(8px);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.42);
+}
+
+.my-world-spot .my-spot-status {
+  position: absolute;
+  left: 50%;
+  bottom: -43px;
+  width: 210px;
+  margin: 0;
+  color: rgba(238, 246, 232, 0.64);
+  font-size: 10.5px;
+  line-height: 1.35;
+  transform: translateX(-50%);
+  opacity: 0.68;
+}
+
+.my-world-spot.world-tree-seed .my-spot-tree-wrap { width: 58px; height: 78px; bottom: 22px; }
+.my-world-spot.world-tree-sprout .my-spot-tree-wrap { width: 76px; height: 102px; bottom: 20px; }
+.my-world-spot.world-tree-sapling .my-spot-tree-wrap { width: 94px; height: 126px; bottom: 18px; }
+.my-world-spot.world-tree-young .my-spot-tree-wrap { width: 116px; height: 154px; bottom: 16px; }
+.my-world-spot.world-tree-hero .my-spot-tree-wrap { width: 138px; height: 184px; bottom: 12px; }
+
+.world-focus-active .my-spot-ring {
+  border-color: rgba(255, 255, 211, 0.52);
+  box-shadow: 0 0 40px rgba(244, 255, 181, 0.45), 0 0 80px rgba(197, 255, 155, 0.22);
+}
+
+.world-focus-active .my-spot-tree-image {
+  filter: drop-shadow(0 14px 16px rgba(0,0,0,0.36)) drop-shadow(0 0 18px rgba(244,255,185,0.28));
+}
+
+.world-focus-active .world-forest-trail,
+.world-focus-active .world-clearing,
+.world-focus-active .world-spot-ground {
+  filter: brightness(1.10) saturate(1.08);
+}
+
+/* 가까운 숲속 내 자리 */
+.garden-stage {
+  min-height: 540px;
+  background-color: #1c3828;
+  background-image:
+    radial-gradient(circle at 50% 8%, rgba(255, 255, 216, 0.52), rgba(255, 246, 190, 0.16) 20%, transparent 42%),
+    linear-gradient(180deg, rgba(69, 108, 78, 0.20), rgba(16, 48, 27, 0.16) 44%, rgba(5, 18, 9, 0.22) 100%),
+    url("assets/garden/garden-night-bg.png"),
+    radial-gradient(ellipse at 50% 60%, #385c35 0%, #18351e 52%, #07100f 100%);
+  background-size: cover;
+  background-position: center 42%;
+}
+
+.garden-stage::before,
+.garden-stage::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.garden-stage::before {
+  left: 50%;
+  bottom: -8px;
+  z-index: 4;
+  width: min(42%, 300px);
+  height: 68%;
+  border-radius: 42% 42% 50% 50%;
+  transform: translateX(-20%) perspective(260px) rotateX(62deg);
+  transform-origin: bottom center;
+  background:
+    radial-gradient(ellipse at 50% 8%, rgba(238, 215, 152, 0.34), transparent 30%),
+    linear-gradient(180deg, rgba(176, 140, 83, 0.30), rgba(119, 89, 52, 0.54) 58%, rgba(78, 55, 34, 0.76) 100%);
+  box-shadow:
+    inset 0 0 24px rgba(255, 236, 170, 0.08),
+    0 0 28px rgba(0, 0, 0, 0.18);
+  opacity: 0.78;
+  mask-image: linear-gradient(90deg, transparent 0%, #000 24%, #000 82%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 24%, #000 82%, transparent 100%);
+}
+
+.garden-stage::after {
+  inset: 0;
+  z-index: 5;
+  background:
+    linear-gradient(90deg, rgba(41, 27, 16, 0.70) 0 2.2%, transparent 2.7% 12%, rgba(55, 35, 18, 0.52) 12.5% 14.4%, transparent 15% 83%, rgba(50, 32, 16, 0.54) 83.5% 85.4%, transparent 86% 96%, rgba(37, 25, 15, 0.68) 96.5% 100%),
+    radial-gradient(ellipse at 15% 62%, rgba(6, 48, 19, 0.46), transparent 40%),
+    radial-gradient(ellipse at 86% 64%, rgba(6, 48, 19, 0.48), transparent 42%),
+    radial-gradient(ellipse at 50% 14%, rgba(48, 86, 42, 0.42), transparent 52%);
+  opacity: 0.78;
+  mix-blend-mode: multiply;
+}
+
+.garden-focus-clearing {
+  bottom: 86px;
+  z-index: 3;
+  width: min(92%, 650px);
+  height: 440px;
+  background:
+    radial-gradient(ellipse at 32% 70%, rgba(47, 98, 38, 0.34) 0 30%, transparent 58%),
+    radial-gradient(ellipse at 72% 70%, rgba(41, 90, 36, 0.30) 0 34%, transparent 62%),
+    linear-gradient(180deg, rgba(8, 25, 13, 0.08), rgba(5, 18, 9, 0.32));
+  backdrop-filter: blur(1.0px) brightness(0.94) saturate(1.02);
+  -webkit-backdrop-filter: blur(1.0px) brightness(0.94) saturate(1.02);
+}
+
+.tree-planting-ground {
+  left: 46%;
+  bottom: 102px;
+  z-index: 6;
+  width: min(58%, 340px);
+  height: 105px;
+  background:
+    radial-gradient(ellipse at 46% 42%, rgba(218, 196, 123, 0.28), transparent 34%),
+    radial-gradient(ellipse at 44% 48%, rgba(69, 94, 48, 0.80), rgba(35, 54, 32, 0.78) 50%, rgba(8, 23, 11, 0.12) 72%, transparent 78%),
+    radial-gradient(ellipse at 50% 72%, rgba(4, 10, 8, 0.72), transparent 70%);
+}
+
+.tree {
+  left: 46%;
+  bottom: 88px;
+  z-index: 7;
+}
+
+.garden-foreground {
+  z-index: 9;
+  height: 148px;
+  background:
+    url("assets/garden/foreground-grass.svg") center bottom / cover no-repeat,
+    radial-gradient(ellipse at 15% 82%, rgba(15, 74, 25, 0.72), transparent 42%),
+    radial-gradient(ellipse at 88% 82%, rgba(13, 63, 23, 0.76), transparent 44%),
+    linear-gradient(180deg, transparent 0%, rgba(4, 23, 10, 0.76) 62%, rgba(2, 10, 6, 0.96) 100%);
+}
+
+.garden-stage.garden-time-day {
+  background-color: #8fb77a;
+  background-image:
+    radial-gradient(circle at 50% 8%, rgba(255,255,229,0.94), rgba(255,248,206,0.42) 20%, transparent 42%),
+    linear-gradient(180deg, rgba(220,246,208,0.28), rgba(127,188,112,0.13) 46%, rgba(25,82,32,0.12) 100%),
+    url("assets/garden/garden-night-bg.png"),
+    radial-gradient(ellipse at 50% 58%, #9ac083 0%, #4b8a4a 52%, #16351d 100%);
+  background-blend-mode: screen, screen, normal, normal;
+}
+
+.garden-stage.garden-time-day::after {
+  opacity: 0.48;
+}
+
+.garden-stage.garden-time-day::before {
+  opacity: 0.82;
+  filter: brightness(1.28) saturate(1.04);
+}
+
+.garden-stage.garden-time-day .garden-dim {
+  background:
+    radial-gradient(circle at 50% 54%, rgba(252,255,210,0.18), transparent 24%),
+    linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(212,238,196,0.00) 52%, rgba(26,62,30,0.10) 100%);
+}
+
+.garden-stage.garden-time-day .garden-fog {
+  opacity: 0.08;
+}
+
+.garden-stage.garden-time-day .tree-planting-ground {
+  filter: brightness(1.18) saturate(1.10);
+}
+
+.garden-stage.garden-time-sunset::before {
+  filter: sepia(0.18) brightness(1.02);
+}
+
+.garden-stage.garden-time-night::before {
+  opacity: 0.54;
+}
+
+.garden-stage.garden-time-night::after {
+  opacity: 0.82;
+}
+
+.garden-stage.garden-time-night .tree-image {
+  filter: drop-shadow(0 24px 28px rgba(0,0,0,0.46)) brightness(0.92);
+}
+
+@media (max-width: 620px) {
+  .world-stage {
+    height: 610px;
+    min-height: 610px;
+  }
+
+  .world-forest-trail {
+    width: 44%;
+    height: 68%;
+  }
+
+  .neighbor-spot {
+    width: 56px;
+    height: 88px;
+  }
+
+  .neighbor-spot.row-front .neighbor-tree-wrap { width: 88px; height: 136px; }
+  .neighbor-spot.row-near .neighbor-tree-wrap { width: 80px; height: 122px; }
+  .neighbor-spot.row-mid .neighbor-tree-wrap { width: 68px; height: 106px; }
+  .neighbor-spot.row-far .neighbor-tree-wrap { width: 56px; height: 88px; }
+
+  .my-world-spot,
+  .world-time-day .my-world-spot,
+  .world-time-sunset .my-world-spot,
+  .world-time-night .my-world-spot {
+    bottom: 118px;
+    width: 110px;
+  }
+
+  .my-world-spot .my-spot-status {
+    display: none;
+  }
+
+  .my-world-spot .my-spot-name {
+    bottom: -4px;
+    font-size: 10px;
+  }
+
+  .garden-stage {
+    height: 590px;
+    min-height: 590px;
+  }
+
+  .garden-stage::before {
+    width: 52%;
+    transform: translateX(-12%) perspective(240px) rotateX(62deg);
+  }
+
+  .tree,
+  .tree-planting-ground {
+    left: 45%;
+  }
+}
