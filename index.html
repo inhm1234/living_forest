@@ -35,7 +35,7 @@
 
   <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.10.9-test" />
+  <link rel="stylesheet" href="style.css?v=1.10.7-test" />
 </head>
 <body>
   <noscript>
@@ -44,10 +44,10 @@
   <main class="app">
     <section id="worldScreen" class="screen screen-active">
       <header class="hero world-hero">
-        <p class="version">살아있는 숲 V1.10.11 test · 체험판</p>
+        <p class="version">살아있는 숲 V1.10.12 test · 체험판</p>
         <h1>살아있는 숲</h1>
         <p class="subtitle">하루에 한 번, 지금의 마음을 내 나무에게 남겨요.</p>
-        <p class="demo-pill">V1.10.11 test · 자연형 관중석 숲 구조 보정</p>
+        <p class="demo-pill">V1.10.12 test · 시점/원근감 강화 + 멀리/가까이 보기</p>
       </header>
 
       <section class="world-card visual-card">
@@ -101,6 +101,11 @@
           <p id="dailyLoopText" class="daily-loop-text">숲을 둘러보고, 내 나무가 자랄 작은 자리를 시작해요.</p>
         </div>
 
+        <div class="world-view-row">
+          <button id="worldViewFarBtn" class="ghost-btn small-btn world-view-btn is-active" type="button" aria-pressed="true">멀리 보기</button>
+          <button id="worldViewNearBtn" class="ghost-btn small-btn world-view-btn" type="button" aria-pressed="false">가까이 보기</button>
+        </div>
+
         <div class="world-action-row">
           <button id="focusMyTreeBtn" class="ghost-btn world-focus-btn" type="button">내 나무 보기</button>
           <button id="goGardenBtn" class="primary-btn" type="button">내 나무 심으러 가기</button>
@@ -111,7 +116,7 @@
     <section id="gardenScreen" class="screen">
       <header class="hero garden-hero">
         <button id="backToWorldBtnTop" class="ghost-btn small-btn" type="button">← 전체 숲</button>
-        <p class="version">오늘 내 나무 돌보기 · V1.10.11 test</p>
+        <p class="version">오늘 내 나무 돌보기 · V1.10.12 test</p>
         <h2 id="gardenTitle" class="garden-title">밤 정원</h2>
         <p class="subtitle">좋음도, 보통도, 피곤함도 모두 성장으로 남아요.</p>
       </header>
@@ -259,6 +264,6 @@
   </aside>
 
 
-  <script src="app.js?v=1.10.8-test"></script>
+  <script src="app.js?v=1.10.7-test"></script>
 </body>
 </html>
