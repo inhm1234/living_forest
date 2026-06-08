@@ -7718,7 +7718,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.10.29 test: 내 나무 존재감 보강판 */
+/* V1.10.30 test: 내 나무 존재감 보강판 */
 .world-stage .my-world-spot,
 .world-time-day .my-world-spot,
 .world-time-sunset .my-world-spot,
@@ -7821,9 +7821,9 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.10.29 test: GA4 자동 집계 연결 준비판 — 화면 시각 변경 없음 */
+/* V1.10.30 test: GA4 관리자 실제 데이터 연결판 — 화면 시각 변경 없음 */
 
-/* V1.10.29 test: 내 나무 보기 버튼 복구
+/* V1.10.30 test: 내 나무 보기 버튼 복구
    원인:
    - V1.10.22 이후 선명도 확보 과정에서 ring/aura/glow를 display:none 처리함
    - focusMyWorldSpot() 함수는 실행되지만 시각 효과가 없어 버튼이 안 동작하는 것처럼 보였음

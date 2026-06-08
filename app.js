@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.10.29 test
+// 살아있는 숲 V1.10.30 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.10.29 test
-// 목적: 자동 집계 연결 준비판 — 내 나무 존재감 / 접지감 / 가독성 보정
+// 버전명: V1.10.30 test
+// 목적: 관리자 실제 데이터 연결판 — 내 나무 존재감 / 접지감 / 가독성 보정
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10.29 test",
+  version: "V1.10.30 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -14,13 +14,13 @@ const APP_CONFIG = {
 };
 
 
-// V1.10.29 test: GA4 자동 집계 연결 준비 헬퍼
+// V1.10.30 test: GA4 관리자 실제 데이터 연결 헬퍼
 
-// V1.10.29 test: 관리자 대시보드용 Google Sheets 자동 집계 연결 준비
+// V1.10.30 test: 관리자 대시보드용 Google Sheets 관리자 실제 데이터 연결
 // 아래 URL은 다음 단계에서 Google Apps Script 웹 앱 URL을 받은 뒤 넣습니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
-  endpointUrl: "",
+  endpointUrl: "https://script.google.com/macros/s/AKfycbyeqnUwroduXytKBFMs9Tpl2gngoJ0f6JmF9oKbEA-QAoJY0aFJ-bvOUWS15SFeErgkiA/exec",
   projectKey: "living_forest_v1",
 };
 
@@ -1810,7 +1810,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 자동 집계 연결 준비판`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 관리자 실제 데이터 연결판`;
   }
 }
 

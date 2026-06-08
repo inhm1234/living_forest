@@ -1,4 +1,4 @@
-살아있는 숲 V1.10.29 test 업로드 가이드
+살아있는 숲 V1.10.30 test 업로드 가이드
 
 1. GitHub 저장소로 이동
    inhm1234/living_forest
@@ -23,7 +23,7 @@
    기존 assets 폴더와 업로드된 이미지 파일들은 삭제하지 마세요.
 
 4. 커밋 메시지 추천
-   Apply V1.10.29 test admin data connector prep
+   Apply V1.10.30 test connect admin data endpoint
 
 5. 업로드 후 확인 주소
    일반 화면:
@@ -32,5 +32,5 @@
    관리자 화면:
    https://inhm1234.github.io/living_forest/admin.html
 
-6. 다음 단계
-   SHEETS_SETUP_GUIDE.txt를 참고해서 Google Sheets와 Apps Script 웹 앱 URL을 준비합니다.
+6. 확인 순서
+   일반 화면에서 행동 테스트 → Google Sheets events 기록 확인 → admin.html에서 새로고침

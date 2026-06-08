@@ -1,32 +1,45 @@
 # 살아있는 숲
 
-현재 테스트판: V1.10.29 test  
-기준 버전: V1.10.28 test  
-최근 업데이트: 관리자 대시보드 자동 집계 연결 준비판  
+현재 테스트판: V1.10.30 test  
+기준 버전: V1.10.29 test  
+최근 업데이트: 관리자 실제 데이터 연결판  
 공개 주소: https://inhm1234.github.io/living_forest/
 
-## V1.10.29 test 핵심 변경점
+## V1.10.30 test 핵심 변경점
 
-V1.10.29 test는 `/admin.html` 관리자 대시보드에 실제 숫자를 자동 표시하기 위한 연결 구조를 준비한 버전입니다.
+V1.10.30 test는 Apps Script 웹 앱 URL을 실제 코드에 연결한 버전입니다.
 
-이번 버전에서 추가/개선된 내용:
-
-- 사용자 행동을 Google Apps Script 웹 앱으로 전송할 수 있는 구조 준비
-- 관리자 화면에서 Apps Script 요약 데이터를 읽어올 수 있는 구조 준비
-- 실제 숫자 표시용 DOM ID와 계산 로직 추가
-- 클릭률, 이름 저장률, 감정 기록률, 공유율 자동 계산 구조 추가
-- Apps Script 샘플 코드 파일 추가
-- Google Sheets 연결 안내 파일 추가
-
-## 추가 파일
+연결된 Apps Script URL:
 
 ```text
-APPS_SCRIPT_CODE.txt
-SHEETS_SETUP_GUIDE.txt
+https://script.google.com/macros/s/AKfycbyeqnUwroduXytKBFMs9Tpl2gngoJ0f6JmF9oKbEA-QAoJY0aFJ-bvOUWS15SFeErgkiA/exec
 ```
 
-## 현재 상태
+## 이제 가능한 흐름
 
-이번 ZIP만 업로드하면 화면은 정상 작동하지만, 아직 Apps Script 웹 앱 URL이 비어 있기 때문에 실제 숫자는 표시되지 않습니다.
+```text
+사용자가 살아있는 숲에서 행동
+→ app.js가 Apps Script로 이벤트 전송
+→ Google Sheets events 시트에 자동 기록
+→ admin.html이 Apps Script summary 데이터를 읽어옴
+→ 관리자 화면에 실제 숫자 표시
+```
 
-다음 단계에서 Google Sheets와 Apps Script를 만들고 웹 앱 URL을 발급받은 뒤, 그 URL을 코드에 넣으면 실제 자동 집계가 시작됩니다.
+## 확인 방법
+
+1. GitHub에 V1.10.30 파일 업로드
+2. 일반 화면 접속
+   https://inhm1234.github.io/living_forest/
+3. 내 정원 이동, 감정 기록, 공유 클릭 등 테스트
+4. Google Sheets의 events 시트에 기록이 생기는지 확인
+5. 관리자 화면 접속
+   https://inhm1234.github.io/living_forest/admin.html
+6. 비밀번호 입력
+   forest2026
+7. 새로고침 버튼 클릭 후 숫자 표시 확인
+
+## 주의
+
+- 사용자가 입력한 나무 이름 실제 내용은 저장하지 않습니다.
+- 익명 브라우저 ID와 이벤트 이름, 성장 일수, 화면 경로 정도만 저장합니다.
+- 임시 관리자 비밀번호 방식은 완전한 보안이 아니므로 민감한 개인정보를 표시하지 않습니다.

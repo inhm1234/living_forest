@@ -3,7 +3,7 @@ const SESSION_KEY = "livingForestAdminUnlocked";
 
 // 다음 단계에서 Google Apps Script 웹 앱 URL을 여기에 넣습니다.
 // 예: const ADMIN_DATA_ENDPOINT = "https://script.google.com/macros/s/....../exec";
-const ADMIN_DATA_ENDPOINT = "";
+const ADMIN_DATA_ENDPOINT = "https://script.google.com/macros/s/AKfycbyeqnUwroduXytKBFMs9Tpl2gngoJ0f6JmF9oKbEA-QAoJY0aFJ-bvOUWS15SFeErgkiA/exec";
 const ADMIN_DATA_KEY = "living_forest_v1";
 
 const loginPanel = document.querySelector("#loginPanel");
