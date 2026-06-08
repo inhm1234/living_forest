@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.10.26 test
+// 살아있는 숲 V1.10.27 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.10.26 test
-// 목적: 행동 데이터 수집판 — 내 나무 존재감 / 접지감 / 가독성 보정
+// 버전명: V1.10.27 test
+// 목적: 내 나무 보기 복구판 — 내 나무 존재감 / 접지감 / 가독성 보정
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10.26 test",
+  version: "V1.10.27 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -14,7 +14,7 @@ const APP_CONFIG = {
 };
 
 
-// V1.10.26 test: GA4 행동 데이터 수집 헬퍼
+// V1.10.27 test: GA4 내 나무 보기 복구 헬퍼
 const ANALYTICS_CONFIG = {
   measurementId: "G-YC872G7MH1",
   eventCategory: "living_forest",
@@ -1551,17 +1551,20 @@ function renderWorldVisualLayers() {
 }
 
 function focusMyWorldSpot() {
+  trackForestEvent("focus_my_tree_click", { source: "focus_my_tree_button" });
+
   if (!worldStageElement || !myWorldSpotElement) {
     highlightWorldSpot();
     return;
   }
 
   worldStageElement.classList.add("world-focus-active");
+  myWorldSpotElement.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
   highlightWorldSpot();
 
   window.setTimeout(() => {
     worldStageElement.classList.remove("world-focus-active");
-  }, 2600);
+  }, 3200);
 }
 
 function renderWorldNeighbors() {
@@ -1744,7 +1747,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 행동 데이터 수집판`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 내 나무 보기 복구판`;
   }
 }
 

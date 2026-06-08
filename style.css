@@ -7718,7 +7718,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.10.26 test: 내 나무 존재감 보강판 */
+/* V1.10.27 test: 내 나무 존재감 보강판 */
 .world-stage .my-world-spot,
 .world-time-day .my-world-spot,
 .world-time-sunset .my-world-spot,
@@ -7821,4 +7821,70 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.10.26 test: GA4 행동 데이터 수집판 — 화면 시각 변경 없음 */
+/* V1.10.27 test: GA4 내 나무 보기 복구판 — 화면 시각 변경 없음 */
+
+/* V1.10.27 test: 내 나무 보기 버튼 복구
+   원인:
+   - V1.10.22 이후 선명도 확보 과정에서 ring/aura/glow를 display:none 처리함
+   - focusMyWorldSpot() 함수는 실행되지만 시각 효과가 없어 버튼이 안 동작하는 것처럼 보였음
+   목표:
+   - 선명한 배경은 유지
+   - 내 나무 보기 버튼을 누르면 3초 정도만 내 나무가 선명하게 강조됨
+   - 다시 뿌옇게 만드는 overlay/blend 구조는 사용하지 않음
+*/
+
+.world-stage.world-focus-active .my-world-spot,
+.world-time-day.world-focus-active .my-world-spot,
+.world-time-sunset.world-focus-active .my-world-spot,
+.world-time-night.world-focus-active .my-world-spot {
+  z-index: 40 !important;
+  transform: translateX(-50%) scale(1.12) !important;
+  transition: transform 280ms ease, filter 280ms ease !important;
+}
+
+.world-stage.world-focus-active .my-spot-tree-image,
+.world-time-day.world-focus-active .my-spot-tree-image,
+.world-time-sunset.world-focus-active .my-spot-tree-image,
+.world-time-night.world-focus-active .my-spot-tree-image {
+  filter:
+    drop-shadow(0 8px 10px rgba(0,0,0,0.34))
+    drop-shadow(0 0 10px rgba(247,255,190,0.28)) !important;
+}
+
+/* 기존에 display:none 된 ring을 focus 중에만 아주 잠깐 복구 */
+.world-stage.world-focus-active .my-spot-ring,
+.world-time-day.world-focus-active .my-spot-ring,
+.world-time-sunset.world-focus-active .my-spot-ring,
+.world-time-night.world-focus-active .my-spot-ring {
+  display: block !important;
+  opacity: 0.42 !important;
+  left: 50% !important;
+  top: auto !important;
+  bottom: 36px !important;
+  width: 64px !important;
+  height: 30px !important;
+  transform: translateX(-50%) !important;
+  border: 1px solid rgba(248,255,212,0.34) !important;
+  border-radius: 50% !important;
+  background: radial-gradient(ellipse, rgba(248,255,190,0.16), transparent 72%) !important;
+  box-shadow: 0 0 20px rgba(248,255,190,0.20) !important;
+  pointer-events: none !important;
+}
+
+/* 이름표도 focus 중에만 확실히 보이게 */
+.world-stage.world-focus-active .my-spot-name,
+.world-time-day.world-focus-active .my-spot-name,
+.world-time-sunset.world-focus-active .my-spot-name,
+.world-time-night.world-focus-active .my-spot-name {
+  opacity: 1 !important;
+  background: rgba(4, 14, 8, 0.56) !important;
+  border-color: rgba(248,255,230,0.18) !important;
+}
+
+/* 하얀 장식 효과는 focus보다 튀지 않게 유지 */
+.world-stage.world-focus-active .world-particle-layer span,
+.world-stage.world-focus-active .world-life-light,
+.world-time-day.world-focus-active .world-particle-layer span,
+.world-time-day.world-focus-active .world-life-light {
+  opacity: 0.06 !important;
+}
