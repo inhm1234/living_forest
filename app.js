@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.10.27 test
+// 살아있는 숲 V1.10.28 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.10.27 test
-// 목적: 내 나무 보기 복구판 — 내 나무 존재감 / 접지감 / 가독성 보정
+// 버전명: V1.10.28 test
+// 목적: 간단 관리자 대시보드 준비판 — 내 나무 존재감 / 접지감 / 가독성 보정
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10.27 test",
+  version: "V1.10.28 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -14,7 +14,7 @@ const APP_CONFIG = {
 };
 
 
-// V1.10.27 test: GA4 내 나무 보기 복구 헬퍼
+// V1.10.28 test: GA4 간단 관리자 대시보드 준비 헬퍼
 const ANALYTICS_CONFIG = {
   measurementId: "G-YC872G7MH1",
   eventCategory: "living_forest",
@@ -1747,7 +1747,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 내 나무 보기 복구판`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 간단 관리자 대시보드 준비판`;
   }
 }
 
