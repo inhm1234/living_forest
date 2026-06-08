@@ -1,14 +1,15 @@
-살아있는 숲 V1.10.28 test
+살아있는 숲 V1.10.29 test
 
-기준 버전: V1.10.27 test
-작업 내용: 간단 관리자 대시보드 준비판
+기준 버전: V1.10.28 test
+작업 내용: 관리자 대시보드 자동 집계 연결 준비판
 GA4 측정 ID: G-YC872G7MH1
 관리자 페이지: admin.html
 임시 비밀번호: forest2026
 
 변경 요약:
-- admin.html / admin.css / admin.js 추가
-- 임시 비밀번호 기반 관리자 화면 추가
-- 운영 지표 카드 UI 추가
-- 실제 데이터 자동 연결 전 레이아웃 준비
-- 일반 사용자 화면과 GA4 이벤트 수집 구조는 유지
+- Google Sheets / Apps Script 자동 집계 구조 준비
+- app.js에 관리자 집계용 이벤트 전송 함수 추가
+- admin.js에 JSONP 기반 데이터 로딩 구조 추가
+- 관리자 화면 실제 숫자 표시용 ID와 계산 로직 추가
+- APPS_SCRIPT_CODE.txt 추가
+- SHEETS_SETUP_GUIDE.txt 추가

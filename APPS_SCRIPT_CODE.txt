@@ -1,0 +1,153 @@
+// 살아있는 숲 운영 데이터 자동 집계용 Google Apps Script
+// 사용 순서:
+// 1. Google Sheets 새 파일 생성: 살아있는숲_운영데이터
+// 2. 확장 프로그램 > Apps Script 열기
+// 3. 이 코드 전체 붙여넣기
+// 4. SPREADSHEET_ID에 현재 스프레드시트 ID 입력
+// 5. 배포 > 새 배포 > 웹 앱
+// 6. 실행 사용자: 나
+// 7. 액세스 권한: 모든 사용자
+// 8. 생성된 웹 앱 URL을 V1.10.29의 app.js / admin.js에 넣기
+
+const SPREADSHEET_ID = "PASTE_YOUR_SPREADSHEET_ID_HERE";
+const PROJECT_KEY = "living_forest_v1";
+const EVENT_SHEET_NAME = "events";
+
+function doGet(e) {
+  const params = e.parameter || {};
+  const action = params.action || "";
+
+  if (params.key !== PROJECT_KEY) {
+    return outputJson_({ ok: false, error: "invalid_key" }, params.callback);
+  }
+
+  ensureSheet_();
+
+  if (action === "track") {
+    return trackEvent_(params);
+  }
+
+  if (action === "summary") {
+    return outputJson_(buildSummary_(params), params.callback);
+  }
+
+  return outputJson_({ ok: false, error: "unknown_action" }, params.callback);
+}
+
+function trackEvent_(params) {
+  const sheet = ensureSheet_();
+  const now = new Date();
+  const dateKey = Utilities.formatDate(now, "Asia/Seoul", "yyyy-MM-dd");
+
+  sheet.appendRow([
+    now,
+    dateKey,
+    params.event_name || "",
+    params.anon_id || "",
+    params.app_version || "",
+    params.schema || "",
+    params.is_test_mode || "",
+    params.page_path || "",
+    params.growth_days || "",
+    params.tree_stage || "",
+    params.p_source || "",
+    params.p_mood_type || "",
+    params.p_milestone_day || "",
+  ]);
+
+  return outputJson_({ ok: true });
+}
+
+function buildSummary_(params) {
+  const sheet = ensureSheet_();
+  const values = sheet.getDataRange().getValues();
+
+  const today = Utilities.formatDate(new Date(), "Asia/Seoul", "yyyy-MM-dd");
+  const targetDate = params.date || today;
+
+  const summary = {
+    visitors: 0,
+    app_opened: 0,
+    go_garden_click: 0,
+    tree_name_saved: 0,
+    mood_recorded: 0,
+    return_world_click: 0,
+    share_click: 0,
+    return_visit: 0,
+    growth_day_7_reached: 0,
+    focus_my_tree_click: 0,
+  };
+
+  const visitorSet = {};
+
+  for (let i = 1; i < values.length; i += 1) {
+    const row = values[i];
+    const dateKey = row[1];
+    const eventName = row[2];
+    const anonId = row[3];
+
+    if (dateKey !== targetDate) {
+      continue;
+    }
+
+    if (eventName === "app_opened" || eventName === "first_visit_living_forest" || eventName === "screen_view_world") {
+      visitorSet[anonId || `row_${i}`] = true;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(summary, eventName)) {
+      summary[eventName] += 1;
+    }
+  }
+
+  summary.visitors = Object.keys(visitorSet).length || summary.app_opened;
+
+  return {
+    ok: true,
+    date: targetDate,
+    updatedAt: Utilities.formatDate(new Date(), "Asia/Seoul", "yyyy-MM-dd HH:mm:ss"),
+    summary,
+  };
+}
+
+function ensureSheet_() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  let sheet = ss.getSheetByName(EVENT_SHEET_NAME);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(EVENT_SHEET_NAME);
+  }
+
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow([
+      "timestamp",
+      "date",
+      "event_name",
+      "anon_id",
+      "app_version",
+      "schema",
+      "is_test_mode",
+      "page_path",
+      "growth_days",
+      "tree_stage",
+      "source",
+      "mood_type",
+      "milestone_day",
+    ]);
+  }
+
+  return sheet;
+}
+
+function outputJson_(data, callback) {
+  const json = JSON.stringify(data);
+
+  if (callback) {
+    return ContentService
+      .createTextOutput(`${callback}(${json});`)
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+
+  return ContentService
+    .createTextOutput(json)
+    .setMimeType(ContentService.MimeType.JSON);
+}

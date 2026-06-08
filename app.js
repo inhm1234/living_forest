@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.10.28 test
+// 살아있는 숲 V1.10.29 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.10.28 test
-// 목적: 간단 관리자 대시보드 준비판 — 내 나무 존재감 / 접지감 / 가독성 보정
+// 버전명: V1.10.29 test
+// 목적: 자동 집계 연결 준비판 — 내 나무 존재감 / 접지감 / 가독성 보정
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10.28 test",
+  version: "V1.10.29 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -14,7 +14,69 @@ const APP_CONFIG = {
 };
 
 
-// V1.10.28 test: GA4 간단 관리자 대시보드 준비 헬퍼
+// V1.10.29 test: GA4 자동 집계 연결 준비 헬퍼
+
+// V1.10.29 test: 관리자 대시보드용 Google Sheets 자동 집계 연결 준비
+// 아래 URL은 다음 단계에서 Google Apps Script 웹 앱 URL을 받은 뒤 넣습니다.
+// 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
+const ADMIN_TRACKING_CONFIG = {
+  endpointUrl: "",
+  projectKey: "living_forest_v1",
+};
+
+function getAdminAnonId() {
+  try {
+    const key = isTestMode ? "livingForestAdminAnonId_TEST" : "livingForestAdminAnonId";
+    let anonId = localStorage.getItem(key);
+
+    if (!anonId) {
+      const randomPart = Math.random().toString(36).slice(2, 10);
+      const timePart = Date.now().toString(36);
+      anonId = `lf_${timePart}_${randomPart}`;
+      localStorage.setItem(key, anonId);
+    }
+
+    return anonId;
+  } catch (error) {
+    return "unknown";
+  }
+}
+
+function sendAdminTrackingEvent(eventName, params = {}) {
+  try {
+    if (!ADMIN_TRACKING_CONFIG.endpointUrl) {
+      return;
+    }
+
+    const url = new URL(ADMIN_TRACKING_CONFIG.endpointUrl);
+    url.searchParams.set("action", "track");
+    url.searchParams.set("key", ADMIN_TRACKING_CONFIG.projectKey);
+    url.searchParams.set("event_name", eventName);
+    url.searchParams.set("anon_id", getAdminAnonId());
+    url.searchParams.set("app_version", APP_CONFIG.version);
+    url.searchParams.set("schema", String(APP_CONFIG.dataSchemaVersion));
+    url.searchParams.set("is_test_mode", isTestMode ? "yes" : "no");
+    url.searchParams.set("page_path", window.location.pathname || "/");
+    url.searchParams.set("growth_days", String(Array.isArray(treeData?.history) ? treeData.history.length : 0));
+    url.searchParams.set("tree_stage", getTreeStageName(Array.isArray(treeData?.history) ? treeData.history.length : 0));
+
+    Object.entries(params || {}).forEach(([key, value]) => {
+      if (value === undefined || value === null) {
+        return;
+      }
+
+      const safeValue = String(value).slice(0, 80);
+      url.searchParams.set(`p_${key}`, safeValue);
+    });
+
+    const beacon = new Image();
+    beacon.referrerPolicy = "no-referrer-when-downgrade";
+    beacon.src = url.toString();
+  } catch (error) {
+    console.warn("Admin tracking skipped:", error);
+  }
+}
+
 const ANALYTICS_CONFIG = {
   measurementId: "G-YC872G7MH1",
   eventCategory: "living_forest",
@@ -32,6 +94,7 @@ function getTreeStageName(days) {
 
 function trackForestEvent(eventName, params = {}) {
   try {
+    sendAdminTrackingEvent(eventName, params);
     if (typeof window === "undefined" || typeof window.gtag !== "function") {
       return;
     }
@@ -1747,7 +1810,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 간단 관리자 대시보드 준비판`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 자동 집계 연결 준비판`;
   }
 }
 

@@ -1,0 +1,38 @@
+살아있는 숲 V1.10.29 자동 집계 연결 안내
+
+이번 버전은 관리자 화면이 실제 숫자를 받을 준비를 마친 버전입니다.
+실제 연결을 위해 다음 단계가 필요합니다.
+
+1. Google Sheets 새 파일 만들기
+   파일명:
+   살아있는숲_운영데이터
+
+2. 스프레드시트 ID 복사
+   주소 예시:
+   https://docs.google.com/spreadsheets/d/여기가_스프레드시트_ID/edit
+
+3. 확장 프로그램 > Apps Script 열기
+
+4. APPS_SCRIPT_CODE.txt 내용을 전체 복사해서 붙여넣기
+
+5. 코드 상단의 아래 부분 수정
+
+   const SPREADSHEET_ID = "PASTE_YOUR_SPREADSHEET_ID_HERE";
+
+   여기에 실제 스프레드시트 ID를 넣습니다.
+
+6. 배포 > 새 배포 > 웹 앱 선택
+
+   실행 사용자: 나
+   액세스 권한: 모든 사용자
+
+7. 배포 후 웹 앱 URL 복사
+
+8. 다음 버전에서 app.js와 admin.js의 endpointUrl / ADMIN_DATA_ENDPOINT에 이 URL을 넣으면
+   사용자 행동이 Sheets에 자동 저장되고, admin.html에 실제 숫자가 표시됩니다.
+
+주의:
+- 이 방식은 초기 테스트용 간단 자동 집계입니다.
+- 민감한 개인정보는 저장하지 않습니다.
+- 사용자가 입력한 나무 이름 실제 내용은 저장하지 않습니다.
+- anon_id는 브라우저별 익명 식별용이며 개인 신원과 직접 연결하지 않습니다.
