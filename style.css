@@ -7717,3 +7717,106 @@ body[data-world-time="day"] .daily-loop-card {
     bottom: 90px !important;
   }
 }
+
+/* V1.10.25 test: 내 나무 존재감 보강판 */
+.world-stage .my-world-spot,
+.world-time-day .my-world-spot,
+.world-time-sunset .my-world-spot,
+.world-time-night .my-world-spot {
+  left: 49% !important;
+  bottom: 100px !important;
+  width: 144px !important;
+  min-height: 164px !important;
+  z-index: 8 !important;
+}
+.world-stage .my-spot-visual,
+.world-time-day .my-spot-visual,
+.world-time-sunset .my-spot-visual,
+.world-time-night .my-spot-visual {
+  width: 124px !important;
+  height: 136px !important;
+}
+.world-stage .my-spot-tree-wrap {
+  bottom: 14px !important;
+}
+.my-world-spot.world-tree-sapling .my-spot-tree-wrap,
+.my-world-spot.world-sapling .my-spot-tree-wrap {
+  width: 94px !important;
+  height: 118px !important;
+  bottom: 16px !important;
+}
+.world-stage .my-spot-tree-image {
+  filter: drop-shadow(0 5px 7px rgba(0,0,0,0.24)) brightness(1.02) saturate(1.03) !important;
+}
+.world-stage .my-world-spot::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  width: 54px;
+  height: 11px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(14,20,10,0.30) 0%, rgba(14,20,10,0.12) 52%, rgba(14,20,10,0.00) 100%);
+  pointer-events: none;
+}
+.world-stage .my-world-spot .my-spot-name {
+  padding: 4px 9px !important;
+  background: rgba(5, 17, 10, 0.40) !important;
+  border: 1px solid rgba(247,255,238,0.10) !important;
+  color: rgba(247,255,238,0.96) !important;
+  opacity: 0.92 !important;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.40) !important;
+}
+.world-stage .my-world-spot .my-spot-status {
+  opacity: 0.54 !important;
+  color: rgba(242,255,232,0.84) !important;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.34) !important;
+}
+.world-time-day .world-particle-layer span,
+.world-time-day .world-life-light {
+  opacity: 0.10 !important;
+  box-shadow: none !important;
+}
+.world-time-day .world-life-bird,
+.world-time-day .world-life-butterfly {
+  opacity: 0.18 !important;
+  filter: none !important;
+}
+.world-time-day .world-life-squirrel {
+  opacity: 0.38 !important;
+}
+.world-time-day .bird,
+.world-time-day .bird-a,
+.world-time-day .bird-b,
+.world-time-day .bird-c {
+  opacity: 0.18 !important;
+  filter: none !important;
+}
+.garden-stage .tree-planting-ground {
+  opacity: 0.18 !important;
+}
+.garden-stage .stage-message {
+  background: rgba(5, 17, 10, 0.38) !important;
+}
+@media (max-width: 620px) {
+  .world-stage .my-world-spot,
+  .world-time-day .my-world-spot,
+  .world-time-sunset .my-world-spot,
+  .world-time-night .my-world-spot {
+    width: 124px !important;
+    min-height: 150px !important;
+    bottom: 96px !important;
+  }
+  .world-stage .my-spot-visual,
+  .world-time-day .my-spot-visual,
+  .world-time-sunset .my-spot-visual,
+  .world-time-night .my-spot-visual {
+    width: 110px !important;
+    height: 120px !important;
+  }
+  .world-stage .my-world-spot::after {
+    width: 44px;
+    height: 9px;
+  }
+}

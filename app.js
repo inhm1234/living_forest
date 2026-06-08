@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.10.24 test
+// 살아있는 숲 V1.10.25 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.10.24 test
-// 목적: 최소 보정판 — 내 나무 존재감 / 접지감 / 가독성 보정
+// 버전명: V1.10.25 test
+// 목적: 내 나무 존재감 보강판 — 내 나무 존재감 / 접지감 / 가독성 보정
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10.24 test",
+  version: "V1.10.25 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -1657,7 +1657,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 최소 보정판`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 내 나무 존재감 보강판`;
   }
 }
 
