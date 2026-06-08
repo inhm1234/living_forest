@@ -1,17 +1,103 @@
-// 살아있는 숲 V1.10.25 test
+// 살아있는 숲 V1.10.26 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.10.25 test
-// 목적: 내 나무 존재감 보강판 — 내 나무 존재감 / 접지감 / 가독성 보정
+// 버전명: V1.10.26 test
+// 목적: 행동 데이터 수집판 — 내 나무 존재감 / 접지감 / 가독성 보정
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10.25 test",
+  version: "V1.10.26 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
   serviceTimeZoneOffsetMinutes: 9 * 60
 };
+
+
+// V1.10.26 test: GA4 행동 데이터 수집 헬퍼
+const ANALYTICS_CONFIG = {
+  measurementId: "G-YC872G7MH1",
+  eventCategory: "living_forest",
+};
+
+function getTreeStageName(days) {
+  if (days >= 60) return "hero";
+  if (days >= 30) return "young";
+  if (days >= 14) return "early_tree";
+  if (days >= 7) return "sapling";
+  if (days >= 3) return "seedling";
+  if (days >= 1) return "sprout";
+  return "germination";
+}
+
+function trackForestEvent(eventName, params = {}) {
+  try {
+    if (typeof window === "undefined" || typeof window.gtag !== "function") {
+      return;
+    }
+
+    window.gtag("event", eventName, {
+      event_category: ANALYTICS_CONFIG.eventCategory,
+      app_name: APP_CONFIG.appName,
+      app_version: APP_CONFIG.version,
+      data_schema_version: APP_CONFIG.dataSchemaVersion,
+      is_test_mode: isTestMode ? "yes" : "no",
+      growth_days: Array.isArray(treeData?.history) ? treeData.history.length : 0,
+      tree_stage: getTreeStageName(Array.isArray(treeData?.history) ? treeData.history.length : 0),
+      ...params,
+    });
+  } catch (error) {
+    console.warn("Analytics tracking skipped:", error);
+  }
+}
+
+const trackedMilestones = new Set();
+
+function trackGrowthMilestones() {
+  const days = Array.isArray(treeData?.history) ? treeData.history.length : 0;
+  const milestones = [1, 3, 7, 14, 21, 30, 60];
+
+  milestones.forEach((milestone) => {
+    const key = `growth_day_${milestone}`;
+    if (days >= milestone && !trackedMilestones.has(key)) {
+      trackedMilestones.add(key);
+      trackForestEvent("growth_milestone_reached", {
+        milestone_day: milestone,
+      });
+
+      if (milestone === 7) {
+        trackForestEvent("growth_day_7_reached", {
+          milestone_day: 7,
+        });
+      }
+    }
+  });
+}
+
+function trackReturnVisitIfNeeded() {
+  try {
+    const today = getTodayKey();
+    const lastVisitKey = isTestMode ? "livingForestAnalyticsLastVisit_TEST" : "livingForestAnalyticsLastVisit";
+    const firstVisitKey = isTestMode ? "livingForestAnalyticsFirstVisit_TEST" : "livingForestAnalyticsFirstVisit";
+
+    const firstVisit = localStorage.getItem(firstVisitKey);
+    const lastVisit = localStorage.getItem(lastVisitKey);
+
+    if (!firstVisit) {
+      localStorage.setItem(firstVisitKey, today);
+      trackForestEvent("first_visit_living_forest");
+    } else if (lastVisit && lastVisit !== today) {
+      trackForestEvent("return_visit", {
+        previous_visit_date: lastVisit,
+        current_visit_date: today,
+      });
+    }
+
+    localStorage.setItem(lastVisitKey, today);
+  } catch (error) {
+    console.warn("Return visit tracking skipped:", error);
+  }
+}
 
 const STORAGE_CONFIG = {
   mode: "local-only",
@@ -996,6 +1082,7 @@ function seedVisitorHistoryForTest() {
     treeName: "방문 기록 테스트 나무"
   }));
   saveTreeData();
+  trackForestEvent("tree_name_saved");
 
   const events = [
     createVisitorEvent(getTodayKey(), "bird"),
@@ -1657,7 +1744,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 내 나무 존재감 보강판`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 행동 데이터 수집판`;
   }
 }
 
@@ -1776,6 +1863,8 @@ function renderTreeName() {
 }
 
 function saveTreeName() {
+  trackForestEvent("tree_name_save_attempt");
+
   const name = treeNameInputElement.value.trim();
 
   if (!name || treeData.treeName?.trim()) {
@@ -2007,7 +2096,10 @@ function applyTestPreset(preset) {
     saveTreeData();
     shouldHighlightWorldSpot = false;
     renderAll();
-    showWorldScreen();
+    trackReturnVisitIfNeeded();
+  trackGrowthMilestones();
+  trackForestEvent("app_opened");
+  showWorldScreen();
     return;
   }
 
@@ -2081,6 +2173,8 @@ function highlightWorldSpot() {
 }
 
 function showWorldScreen() {
+  trackForestEvent("screen_view_world");
+
   renderWorld();
   worldScreenElement.classList.add("screen-active");
   gardenScreenElement.classList.remove("screen-active");
@@ -2095,6 +2189,8 @@ function showWorldScreen() {
 }
 
 function showGardenScreen() {
+  trackForestEvent("screen_view_garden");
+
   gardenScreenElement.classList.add("screen-active");
   worldScreenElement.classList.remove("screen-active");
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -2147,3 +2243,30 @@ saveTreeData();
 setupTestMode();
 renderAll();
 showWorldScreen();
+
+
+function handleAnalyticsClickCapture(event) {
+  const button = event.target?.closest?.("button, a");
+  if (!button) {
+    return;
+  }
+
+  const text = (button.textContent || "").trim();
+  const aria = button.getAttribute("aria-label") || "";
+  const id = button.id || "";
+  const className = button.className || "";
+
+  if (/내 나무|내 자리|정원|심으러/.test(text + aria + id + className)) {
+    trackForestEvent("go_garden_click", { source: "click_capture" });
+  }
+
+  if (/전체 숲|월드|돌아/.test(text + aria + id + className)) {
+    trackForestEvent("return_world_click", { source: "click_capture" });
+  }
+
+  if (/공유/.test(text + aria + id + className)) {
+    trackForestEvent("share_click", { source: "click_capture" });
+  }
+}
+
+document.addEventListener("click", handleAnalyticsClickCapture);

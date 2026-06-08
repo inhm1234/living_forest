@@ -7718,7 +7718,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.10.25 test: 내 나무 존재감 보강판 */
+/* V1.10.26 test: 내 나무 존재감 보강판 */
 .world-stage .my-world-spot,
 .world-time-day .my-world-spot,
 .world-time-sunset .my-world-spot,
@@ -7820,3 +7820,5 @@ body[data-world-time="day"] .daily-loop-card {
     height: 9px;
   }
 }
+
+/* V1.10.26 test: GA4 행동 데이터 수집판 — 화면 시각 변경 없음 */
