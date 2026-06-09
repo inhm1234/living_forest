@@ -1,7 +1,7 @@
-// 살아있는 숲 V1.14 test 운영 데이터 자동 집계용 Google Apps Script
+// 살아있는 숲 V1.14.1 test 운영 데이터 자동 집계용 Google Apps Script
 // V1.10.31 날짜별 집계 구조를 그대로 유지합니다.
 // 목적: 관리자 대시보드에서 오늘 / 어제 / 최근 7일 / 전체 기준으로 안정적인 숫자를 보기 위한 전체 코드
-// 참고: V1.10.31 이후 Apps Script가 정상 작동 중이라면 이번 V1.14에서 새로 배포하지 않아도 됩니다.
+// 참고: V1.10.31 이후 Apps Script가 정상 작동 중이라면 이번 V1.14.1에서 새로 배포하지 않아도 됩니다.
 // 문제가 있을 때만 이 코드 전체를 붙여넣고 새 버전으로 웹 앱을 다시 배포하세요.
 
 const SPREADSHEET_ID = "1EQlAMI_pK1DrUL7MC-efcneyLYKEHj0ipWJu077TDFI";

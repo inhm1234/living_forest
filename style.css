@@ -7973,7 +7973,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.14 test: 월드 숲 누적 변화 강화판 */
+/* V1.14.1 test: 월드 숲 누적 변화 강화판 */
 .today-change-card,
 .tomorrow-promise-card {
   margin-top: 14px;
@@ -8042,7 +8042,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.14 test: 월드 숲 누적 변화 강화판 */
+/* V1.14.1 test: 월드 숲 누적 변화 강화판 */
 .return-memory-card {
   margin: 14px 0 0;
   padding: 16px;
@@ -8096,7 +8096,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.14 test: 월드 숲 누적 변화 강화판 */
+/* V1.14.1 test: 월드 숲 누적 변화 강화판 */
 .streak-reward-card {
   margin: 14px 0 0;
   padding: 16px;
@@ -8196,7 +8196,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.14 test: 월드 숲 누적 변화 강화판 */
+/* V1.14.1 test: 월드 숲 누적 변화 강화판 */
 .world-growth-card {
   margin-top: 12px;
   padding: 14px 16px;
@@ -8229,7 +8229,7 @@ body[data-world-time="day"] .daily-loop-card {
   line-height: 1.6;
 }
 
-.world-growth-progress {
+.world-growth-card > .world-growth-progress {
   position: relative;
   height: 8px;
   margin-top: 12px;
@@ -8335,4 +8335,23 @@ body[data-world-time="day"] .daily-loop-card {
   .world-growth-text {
     font-size: 13px;
   }
+}
+
+
+/* V1.14.1 test: 월드 숲 내 자리 카드 잘림 수정 */
+.world-growth-card {
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+.world-growth-card > .world-growth-kicker,
+.world-growth-card > .world-growth-title,
+.world-growth-card > .world-growth-text,
+.world-growth-card > .world-growth-meta {
+  display: block;
+}
+
+.world-growth-card > .world-growth-progress {
+  display: block;
 }
