@@ -2,7 +2,7 @@
 .header-actions{display:flex;gap:10px;flex-wrap:wrap}
 #refreshButton{background:linear-gradient(135deg,#dff5a7,#9cd67c);color:#102016}
 
-/* V1.12 test: 날짜별 집계 기준 선택 */
+/* V1.13 test: 날짜별 집계 기준 선택 */
 .range-card{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:14px 0;padding:18px 20px;border:1px solid var(--line);border-radius:22px;background:var(--panel-soft)}
 .range-card strong{display:block;color:var(--accent);font-size:16px}
 .range-card p{margin:5px 0 0;color:var(--muted);font-size:14px}

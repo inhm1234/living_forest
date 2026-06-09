@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.12 test
+// 살아있는 숲 V1.13 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.12 test
+// 버전명: V1.13 test
 // 목적: 다음날 재방문 경험 강화판 — 오늘의 변화 / 다음 성장 예고 / 재방문 동기 보강
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.12 test",
+  version: "V1.13 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -14,9 +14,9 @@ const APP_CONFIG = {
 };
 
 
-// V1.12 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.13 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.12 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.13 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -268,6 +268,34 @@ const growthMilestoneRules = [
 ];
 
 
+const streakRewardRules = [
+  {
+    day: 3,
+    title: "작은 빛",
+    teaser: "내 나무 주변에 작은 빛이 머물기 시작해요.",
+    reached: "3일째 이어진 마음이 작은 빛으로 남았어요."
+  },
+  {
+    day: 7,
+    title: "방문자의 기척",
+    teaser: "숲의 방문자가 내 나무를 더 자주 알아차릴 수 있어요.",
+    reached: "7일째 숲을 돌본 흔적이 방문자의 기척으로 이어졌어요."
+  },
+  {
+    day: 14,
+    title: "선명해지는 자리",
+    teaser: "월드 숲에서 내 자리의 빛과 그림자가 더 선명해져요.",
+    reached: "14일째 이어진 기록이 내 자리를 더 또렷하게 만들었어요."
+  },
+  {
+    day: 30,
+    title: "오래 돌본 나무",
+    teaser: "내 나무가 작은 숲의 중심처럼 더 깊게 자리 잡아요.",
+    reached: "30일 동안 이어진 마음이 오래 돌본 나무의 분위기를 만들었어요."
+  }
+];
+
+
 const visitorRules = {
   bird: {
     label: "작은 새",
@@ -413,6 +441,11 @@ const returnMemoryCardElement = document.querySelector("#returnMemoryCard");
 const returnMemoryTitleElement = document.querySelector("#returnMemoryTitle");
 const returnMemoryTextElement = document.querySelector("#returnMemoryText");
 const returnStreakTextElement = document.querySelector("#returnStreakText");
+const streakRewardCardElement = document.querySelector("#streakRewardCard");
+const streakRewardTitleElement = document.querySelector("#streakRewardTitle");
+const streakRewardTextElement = document.querySelector("#streakRewardText");
+const streakRewardMetaElement = document.querySelector("#streakRewardMeta");
+const streakRewardFillElement = document.querySelector("#streakRewardFill");
 const todayChangeCardElement = document.querySelector("#todayChangeCard");
 const todayChangeTitleElement = document.querySelector("#todayChangeTitle");
 const todayChangeTextElement = document.querySelector("#todayChangeText");
@@ -782,6 +815,78 @@ function getNextGrowthPreviewMessage() {
   return `${remainingDays}번 더 기록하면 ${nextMilestone.day}일차 ${nextMilestone.title}에 가까워져요.`;
 }
 
+function getCurrentStreakReward(streakDays) {
+  return [...streakRewardRules].reverse().find((reward) => streakDays >= reward.day) || null;
+}
+
+function getNextStreakReward(streakDays) {
+  return streakRewardRules.find((reward) => streakDays < reward.day) || null;
+}
+
+function getStreakRewardInfo() {
+  const hasName = Boolean(treeData.treeName?.trim());
+  const totalDays = Array.isArray(treeData.history) ? treeData.history.length : 0;
+
+  if (!hasName || totalDays <= 0) {
+    return null;
+  }
+
+  const streakDays = getConsecutiveRecordDays();
+  const currentReward = getCurrentStreakReward(streakDays);
+  const nextReward = getNextStreakReward(streakDays);
+
+  if (!nextReward) {
+    return {
+      title: `${streakDays}일째 이어진 긴 성장`,
+      text: "이제 정해진 초반 보상은 지나갔어요. 앞으로는 오래 돌볼수록 나무와 월드 숲의 분위기가 더 깊어져요.",
+      meta: "장기 성장 중",
+      percent: 100,
+      state: "complete"
+    };
+  }
+
+  const remaining = Math.max(nextReward.day - streakDays, 0);
+  const percent = Math.max(8, Math.min(100, Math.round((streakDays / nextReward.day) * 100)));
+
+  if (currentReward && hasCheckedToday() && currentReward.day === streakDays) {
+    return {
+      title: `${streakDays}일 연속 보상 · ${currentReward.title}`,
+      text: `${currentReward.reached} 다음 목표는 ${nextReward.day}일차 ${nextReward.title}이에요. ${nextReward.teaser}`,
+      meta: `다음 변화까지 ${remaining}번 남음`,
+      percent,
+      state: "reached"
+    };
+  }
+
+  if (remaining <= 1) {
+    return {
+      title: `${streakDays}일째 이어 키우는 중`,
+      text: `다음 기록으로 ${nextReward.day}일차 ${nextReward.title}에 닿아요. ${nextReward.teaser}`,
+      meta: `다음 보상: ${nextReward.day}일차 ${nextReward.title}`,
+      percent,
+      state: "near"
+    };
+  }
+
+  return {
+    title: `${streakDays}일째 이어 키우는 중`,
+    text: `${remaining}번 더 기록하면 ${nextReward.day}일차 ${nextReward.title}에 가까워져요. ${nextReward.teaser}`,
+    meta: `다음 변화까지 ${remaining}번 남음`,
+    percent,
+    state: "progress"
+  };
+}
+
+function getStreakRewardPreviewText() {
+  const info = getStreakRewardInfo();
+
+  if (!info) {
+    return "첫 기록을 남기면 3일차 작은 빛 목표가 시작돼요.";
+  }
+
+  return `${info.meta}. ${info.text}`;
+}
+
 function getAfterRecordExperience(record) {
   const mood = record?.mood || "normal";
   const previousRecord = getPreviousRecordBeforeToday();
@@ -820,7 +925,7 @@ function getAfterRecordExperience(record) {
     changeTitle: rule.changeTitle,
     changeText: `${returnPrefix} ${rule.changeText}`,
     tomorrowTitle: consecutiveDays >= 2 ? `${consecutiveDays}일째 이어지는 성장` : "내일의 마음도 성장으로 이어져요",
-    tomorrowText: `${rule.tomorrowText} ${getNextGrowthPreviewMessage()}${streakSuffix}`
+    tomorrowText: `${rule.tomorrowText} ${getNextGrowthPreviewMessage()} ${getStreakRewardPreviewText()}${streakSuffix}`
   };
 }
 
@@ -1540,6 +1645,7 @@ function chooseMood(mood) {
   renderMessages(`${afterRecordExperience.complete} 오늘의 변화는 월드 숲에도 조용히 남았어요. ${getNextGrowthPreviewMessage()}`);
   renderServiceFlow();
   renderReturnMemoryCard();
+  renderStreakRewardCard();
   renderCompleteCard();
   updateTodayStatus();
   prepareDailyVisitor({ forcePlay: true, allowCreate: true, allowPlay: true });
@@ -2014,6 +2120,49 @@ function renderReturnMemoryCard() {
   }
 }
 
+function renderStreakRewardCard() {
+  if (!streakRewardCardElement) {
+    return;
+  }
+
+  const rewardInfo = getStreakRewardInfo();
+
+  if (!rewardInfo) {
+    streakRewardCardElement.classList.add("hidden");
+    return;
+  }
+
+  streakRewardCardElement.classList.remove("hidden", "reward-near", "reward-reached", "reward-complete");
+
+  if (rewardInfo.state === "near") {
+    streakRewardCardElement.classList.add("reward-near");
+  }
+
+  if (rewardInfo.state === "reached") {
+    streakRewardCardElement.classList.add("reward-reached");
+  }
+
+  if (rewardInfo.state === "complete") {
+    streakRewardCardElement.classList.add("reward-complete");
+  }
+
+  if (streakRewardTitleElement) {
+    streakRewardTitleElement.textContent = rewardInfo.title;
+  }
+
+  if (streakRewardTextElement) {
+    streakRewardTextElement.textContent = rewardInfo.text;
+  }
+
+  if (streakRewardMetaElement) {
+    streakRewardMetaElement.textContent = rewardInfo.meta;
+  }
+
+  if (streakRewardFillElement) {
+    streakRewardFillElement.style.width = `${rewardInfo.percent}%`;
+  }
+}
+
 function renderCompleteCard() {
   const todayRecord = getTodayRecord();
 
@@ -2069,7 +2218,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 다음날 재방문 경험 강화판`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 연속 기록 보상 강화판`;
   }
 }
 
@@ -2236,7 +2385,7 @@ function updateTodayStatus() {
     const label = todayRecord ? todayRecord.label : "기록됨";
     todayStatusElement.textContent = `오늘(${formatDate(getTodayKey())})은 이미 "${label}" 상태를 기록했어요.`;
     if (moodGuideElement) {
-      moodGuideElement.textContent = `오늘의 기록은 완료됐어요. 내일 다시 오면 다음 성장이 이어져요. ${getNextGrowthPreviewMessage()}`;
+      moodGuideElement.textContent = `오늘의 기록은 완료됐어요. 내일 다시 오면 다음 성장이 이어져요. ${getStreakRewardPreviewText()}`;
     }
     backToWorldBtnBottomElement.textContent = "전체 숲에서 내 자리 보기";
   } else {
@@ -2552,6 +2701,7 @@ function renderAll() {
   renderForestEffect(getTodayMoodState());
   renderMessages();
   renderReturnMemoryCard();
+  renderStreakRewardCard();
   renderCompleteCard();
   renderVisitorTrace();
   renderVisitorLog();
