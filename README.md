@@ -1,45 +1,37 @@
 # 살아있는 숲
 
-현재 테스트판: V1.10.30 test  
-기준 버전: V1.10.29 test  
-최근 업데이트: 관리자 실제 데이터 연결판  
+현재 테스트판: V1.10.32 test  
+기준 버전: V1.10.31 test  
+최근 업데이트: 첫 진입 경험 개선판  
 공개 주소: https://inhm1234.github.io/living_forest/
 
-## V1.10.30 test 핵심 변경점
+## V1.10.32 test 핵심 변경점
 
-V1.10.30 test는 Apps Script 웹 앱 URL을 실제 코드에 연결한 버전입니다.
+V1.10.32 test는 처음 들어온 사람이 서비스를 더 빨리 이해하고, 자연스럽게 내 정원으로 들어가도록 첫 화면을 정리한 버전입니다.
 
-연결된 Apps Script URL:
+## 변경 내용
 
-```text
-https://script.google.com/macros/s/AKfycbyeqnUwroduXytKBFMs9Tpl2gngoJ0f6JmF9oKbEA-QAoJY0aFJ-bvOUWS15SFeErgkiA/exec
-```
-
-## 이제 가능한 흐름
-
-```text
-사용자가 살아있는 숲에서 행동
-→ app.js가 Apps Script로 이벤트 전송
-→ Google Sheets events 시트에 자동 기록
-→ admin.html이 Apps Script summary 데이터를 읽어옴
-→ 관리자 화면에 실제 숫자 표시
-```
+- 첫 화면 핵심 문구를 더 직관적으로 변경
+- 첫 방문자 안내 카드 추가
+- 메인 버튼을 `내 나무 키우러 가기` 중심으로 정리
+- `내 나무 보기` 버튼은 보조 버튼으로 유지
+- 월드 숲 요약 문구를 “오늘의 마음 → 내 나무 성장 → 월드 숲 변화” 흐름으로 정리
+- 기존 관리자 대시보드, GA4, Google Sheets / Apps Script 연결은 유지
 
 ## 확인 방법
 
-1. GitHub에 V1.10.30 파일 업로드
+1. GitHub에 V1.10.32 파일 업로드
 2. 일반 화면 접속
    https://inhm1234.github.io/living_forest/
-3. 내 정원 이동, 감정 기록, 공유 클릭 등 테스트
-4. Google Sheets의 events 시트에 기록이 생기는지 확인
-5. 관리자 화면 접속
-   https://inhm1234.github.io/living_forest/admin.html
-6. 비밀번호 입력
-   forest2026
-7. 새로고침 버튼 클릭 후 숫자 표시 확인
+3. 화면 상단 버전이 V1.10.32 test인지 확인
+4. 첫 화면 문구가 더 쉽게 보이는지 확인
+5. `내 나무 키우러 가기` 버튼이 크게 보이는지 확인
+6. 버튼 클릭 후 기존 정원 기능이 그대로 동작하는지 확인
+7. 관리자 화면에서 방문 / 내 정원 클릭 / 감정 기록 숫자가 계속 기록되는지 확인
 
 ## 주의
 
-- 사용자가 입력한 나무 이름 실제 내용은 저장하지 않습니다.
-- 익명 브라우저 ID와 이벤트 이름, 성장 일수, 화면 경로 정도만 저장합니다.
-- 임시 관리자 비밀번호 방식은 완전한 보안이 아니므로 민감한 개인정보를 표시하지 않습니다.
+- 이번 버전은 첫 화면 경험 개선판입니다.
+- Apps Script 코드는 V1.10.31 날짜별 집계 구조를 그대로 유지합니다.
+- assets 폴더는 ZIP에 포함하지 않습니다.
+- GitHub 업로드 시 기존 assets 폴더를 삭제하지 마세요.

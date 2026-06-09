@@ -7718,7 +7718,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.10.30 test: 내 나무 존재감 보강판 */
+/* V1.10.32 test: 내 나무 존재감 보강판 */
 .world-stage .my-world-spot,
 .world-time-day .my-world-spot,
 .world-time-sunset .my-world-spot,
@@ -7821,9 +7821,9 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.10.30 test: GA4 관리자 실제 데이터 연결판 — 화면 시각 변경 없음 */
+/* V1.10.32 test: GA4 날짜별 관리자 집계 안정화판 — 화면 시각 변경 없음 */
 
-/* V1.10.30 test: 내 나무 보기 버튼 복구
+/* V1.10.32 test: 내 나무 보기 버튼 복구
    원인:
    - V1.10.22 이후 선명도 확보 과정에서 ring/aura/glow를 display:none 처리함
    - focusMyWorldSpot() 함수는 실행되지만 시각 효과가 없어 버튼이 안 동작하는 것처럼 보였음
@@ -7887,4 +7887,87 @@ body[data-world-time="day"] .daily-loop-card {
 .world-time-day.world-focus-active .world-particle-layer span,
 .world-time-day.world-focus-active .world-life-light {
   opacity: 0.06 !important;
+}
+
+
+/* V1.10.32 test: 첫 진입 경험 개선판 */
+.world-hero .subtitle {
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+  color: rgba(244, 255, 233, 0.86);
+  font-size: 16px;
+  font-weight: 760;
+}
+
+.first-visit-guide {
+  margin-top: 12px;
+  padding: 15px 16px 14px;
+  border-radius: 22px;
+  background: rgba(16, 42, 27, 0.62);
+  border-color: rgba(224, 255, 190, 0.2);
+  box-shadow: 0 18px 44px rgba(106, 169, 98, 0.14);
+}
+
+.first-visit-kicker {
+  display: inline-flex;
+  margin-bottom: 6px;
+  color: rgba(220, 250, 202, 0.76);
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+}
+
+.first-visit-title {
+  margin: 0;
+  color: #f4ffe9;
+  font-size: 18px;
+  font-weight: 950;
+  line-height: 1.35;
+  letter-spacing: -0.03em;
+}
+
+.first-visit-text {
+  margin: 7px 0 0;
+  color: rgba(242, 255, 233, 0.76);
+  font-size: 14px;
+  font-weight: 720;
+  line-height: 1.58;
+}
+
+.first-visit-guide.guide-done {
+  background: rgba(29, 49, 36, 0.54);
+  border-color: rgba(224, 255, 190, 0.14);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18);
+}
+
+.world-action-row {
+  grid-template-columns: 1fr minmax(132px, 0.46fr);
+}
+
+.world-action-row #goGardenBtn {
+  font-size: 17px;
+  letter-spacing: -0.03em;
+}
+
+.world-action-row .world-focus-btn {
+  opacity: 0.86;
+}
+
+.world-summary-text {
+  font-weight: 740;
+}
+
+@media (max-width: 560px) {
+  .first-visit-guide {
+    padding: 14px;
+  }
+
+  .first-visit-title {
+    font-size: 17px;
+  }
+
+  .world-action-row {
+    grid-template-columns: 1fr;
+  }
 }

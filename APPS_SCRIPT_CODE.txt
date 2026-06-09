@@ -1,20 +1,38 @@
-// 살아있는 숲 운영 데이터 자동 집계용 Google Apps Script
-// 사용 순서:
-// 1. Google Sheets 새 파일 생성: 살아있는숲_운영데이터
-// 2. 확장 프로그램 > Apps Script 열기
-// 3. 이 코드 전체 붙여넣기
-// 4. SPREADSHEET_ID에 현재 스프레드시트 ID 입력
-// 5. 배포 > 새 배포 > 웹 앱
-// 6. 실행 사용자: 나
-// 7. 액세스 권한: 모든 사용자
-// 8. 생성된 웹 앱 URL을 V1.10.29의 app.js / admin.js에 넣기
+// 살아있는 숲 V1.10.32 test 운영 데이터 자동 집계용 Google Apps Script
+// V1.10.31 날짜별 집계 구조를 그대로 유지합니다.
+// 목적: 관리자 대시보드에서 오늘 / 어제 / 최근 7일 / 전체 기준으로 안정적인 숫자를 보기 위한 전체 코드
+// 사용 방법: Apps Script에 이 코드 전체를 붙여넣고 저장한 뒤, 새 버전으로 웹 앱을 다시 배포하세요.
 
-const SPREADSHEET_ID = "PASTE_YOUR_SPREADSHEET_ID_HERE";
+const SPREADSHEET_ID = "1EQlAMI_pK1DrUL7MC-efcneyLYKEHj0ipWJu077TDFI";
 const PROJECT_KEY = "living_forest_v1";
 const EVENT_SHEET_NAME = "events";
+const SERVICE_TIME_ZONE = "Asia/Seoul";
+
+const SUMMARY_RANGES = {
+  today: "오늘",
+  yesterday: "어제",
+  last7: "최근 7일",
+  all: "전체",
+};
+
+const TRACKED_EVENTS = [
+  "app_opened",
+  "first_visit_living_forest",
+  "screen_view_world",
+  "screen_view_garden",
+  "go_garden_click",
+  "tree_name_saved",
+  "mood_recorded",
+  "return_world_click",
+  "share_click",
+  "return_visit",
+  "growth_milestone_reached",
+  "growth_day_7_reached",
+  "focus_my_tree_click",
+];
 
 function doGet(e) {
-  const params = e.parameter || {};
+  const params = e && e.parameter ? e.parameter : {};
   const action = params.action || "";
 
   if (params.key !== PROJECT_KEY) {
@@ -37,7 +55,7 @@ function doGet(e) {
 function trackEvent_(params) {
   const sheet = ensureSheet_();
   const now = new Date();
-  const dateKey = Utilities.formatDate(now, "Asia/Seoul", "yyyy-MM-dd");
+  const dateKey = Utilities.formatDate(now, SERVICE_TIME_ZONE, "yyyy-MM-dd");
 
   sheet.appendRow([
     now,
@@ -61,37 +79,28 @@ function trackEvent_(params) {
 function buildSummary_(params) {
   const sheet = ensureSheet_();
   const values = sheet.getDataRange().getValues();
-
-  const today = Utilities.formatDate(new Date(), "Asia/Seoul", "yyyy-MM-dd");
-  const targetDate = params.date || today;
-
-  const summary = {
-    visitors: 0,
-    app_opened: 0,
-    go_garden_click: 0,
-    tree_name_saved: 0,
-    mood_recorded: 0,
-    return_world_click: 0,
-    share_click: 0,
-    return_visit: 0,
-    growth_day_7_reached: 0,
-    focus_my_tree_click: 0,
-  };
-
+  const rangeInfo = getRangeInfo_(params.range || params.period || "today", params.date);
+  const summary = createEmptySummary_();
   const visitorSet = {};
+  let matchedRows = 0;
 
   for (let i = 1; i < values.length; i += 1) {
     const row = values[i];
-    const dateKey = row[1];
-    const eventName = row[2];
-    const anonId = row[3];
+    const rowDateKey = normalizeRowDateKey_(row);
 
-    if (dateKey !== targetDate) {
+    if (!isDateInRange_(rowDateKey, rangeInfo)) {
       continue;
     }
 
-    if (eventName === "app_opened" || eventName === "first_visit_living_forest" || eventName === "screen_view_world") {
-      visitorSet[anonId || `row_${i}`] = true;
+    matchedRows += 1;
+
+    const eventName = String(row[2] || "").trim();
+    const anonId = String(row[3] || "").trim();
+
+    if (anonId) {
+      visitorSet[anonId] = true;
+    } else if (isVisitEvent_(eventName)) {
+      visitorSet[`row_${i}`] = true;
     }
 
     if (Object.prototype.hasOwnProperty.call(summary, eventName)) {
@@ -103,10 +112,142 @@ function buildSummary_(params) {
 
   return {
     ok: true,
-    date: targetDate,
-    updatedAt: Utilities.formatDate(new Date(), "Asia/Seoul", "yyyy-MM-dd HH:mm:ss"),
+    range: rangeInfo.range,
+    rangeLabel: rangeInfo.label,
+    date: rangeInfo.endDate || "전체",
+    startDate: rangeInfo.startDate || "",
+    endDate: rangeInfo.endDate || "",
+    updatedAt: Utilities.formatDate(new Date(), SERVICE_TIME_ZONE, "yyyy-MM-dd HH:mm:ss"),
     summary,
+    debug: {
+      totalRows: Math.max(values.length - 1, 0),
+      matchedRows,
+    },
   };
+}
+
+function createEmptySummary_() {
+  const summary = { visitors: 0 };
+
+  TRACKED_EVENTS.forEach((eventName) => {
+    summary[eventName] = 0;
+  });
+
+  return summary;
+}
+
+function getRangeInfo_(range, dateText) {
+  const safeRange = Object.prototype.hasOwnProperty.call(SUMMARY_RANGES, range) ? range : "today";
+  const today = Utilities.formatDate(new Date(), SERVICE_TIME_ZONE, "yyyy-MM-dd");
+  const targetDate = normalizeDateKey_(dateText) || today;
+
+  if (safeRange === "all") {
+    return {
+      range: "all",
+      label: SUMMARY_RANGES.all,
+      startDate: "",
+      endDate: "",
+    };
+  }
+
+  if (safeRange === "yesterday") {
+    const yesterday = addDaysToDateKey_(targetDate, -1);
+    return {
+      range: "yesterday",
+      label: SUMMARY_RANGES.yesterday,
+      startDate: yesterday,
+      endDate: yesterday,
+    };
+  }
+
+  if (safeRange === "last7") {
+    return {
+      range: "last7",
+      label: SUMMARY_RANGES.last7,
+      startDate: addDaysToDateKey_(targetDate, -6),
+      endDate: targetDate,
+    };
+  }
+
+  return {
+    range: "today",
+    label: SUMMARY_RANGES.today,
+    startDate: targetDate,
+    endDate: targetDate,
+  };
+}
+
+function isDateInRange_(dateKey, rangeInfo) {
+  if (rangeInfo.range === "all") {
+    return true;
+  }
+
+  if (!dateKey) {
+    return false;
+  }
+
+  return dateKey >= rangeInfo.startDate && dateKey <= rangeInfo.endDate;
+}
+
+function isVisitEvent_(eventName) {
+  return eventName === "app_opened" || eventName === "first_visit_living_forest" || eventName === "screen_view_world" || eventName === "screen_view_garden";
+}
+
+function normalizeRowDateKey_(row) {
+  return normalizeDateKey_(row[1]) || normalizeDateKey_(row[0]);
+}
+
+function normalizeDateKey_(value) {
+  if (value === null || value === undefined || value === "") {
+    return "";
+  }
+
+  if (Object.prototype.toString.call(value) === "[object Date]" && !Number.isNaN(value.getTime())) {
+    return Utilities.formatDate(value, SERVICE_TIME_ZONE, "yyyy-MM-dd");
+  }
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+    const dateValue = new Date(excelEpoch.getTime() + value * 24 * 60 * 60 * 1000);
+    return Utilities.formatDate(dateValue, SERVICE_TIME_ZONE, "yyyy-MM-dd");
+  }
+
+  const text = String(value).trim();
+
+  if (!text) {
+    return "";
+  }
+
+  const directMatch = text.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+  if (directMatch) {
+    const year = directMatch[1];
+    const month = String(Number(directMatch[2])).padStart(2, "0");
+    const day = String(Number(directMatch[3])).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  const compactMatch = text.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if (compactMatch) {
+    return `${compactMatch[1]}-${compactMatch[2]}-${compactMatch[3]}`;
+  }
+
+  const parsed = new Date(text);
+  if (!Number.isNaN(parsed.getTime())) {
+    return Utilities.formatDate(parsed, SERVICE_TIME_ZONE, "yyyy-MM-dd");
+  }
+
+  return "";
+}
+
+function addDaysToDateKey_(dateKey, days) {
+  const base = normalizeDateKey_(dateKey);
+  if (!base) {
+    return "";
+  }
+
+  const dateValue = new Date(`${base}T12:00:00+09:00`);
+  const nextDateValue = new Date(dateValue.getTime() + days * 24 * 60 * 60 * 1000);
+  return Utilities.formatDate(nextDateValue, SERVICE_TIME_ZONE, "yyyy-MM-dd");
 }
 
 function ensureSheet_() {
@@ -141,7 +282,7 @@ function ensureSheet_() {
 function outputJson_(data, callback) {
   const json = JSON.stringify(data);
 
-  if (callback) {
+  if (callback && /^[a-zA-Z_$][0-9a-zA-Z_$.]*$/.test(callback)) {
     return ContentService
       .createTextOutput(`${callback}(${json});`)
       .setMimeType(ContentService.MimeType.JAVASCRIPT);

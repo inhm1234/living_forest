@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.10.30 test
+// 살아있는 숲 V1.10.32 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.10.30 test
-// 목적: 관리자 실제 데이터 연결판 — 내 나무 존재감 / 접지감 / 가독성 보정
+// 버전명: V1.10.32 test
+// 목적: 첫 진입 경험 개선판 — 첫 화면 이해도 / 버튼 유도 / 안내 문구 보정
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10.30 test",
+  version: "V1.10.32 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -14,9 +14,9 @@ const APP_CONFIG = {
 };
 
 
-// V1.10.30 test: GA4 관리자 실제 데이터 연결 헬퍼
+// V1.10.32 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.10.30 test: 관리자 대시보드용 Google Sheets 관리자 실제 데이터 연결
+// V1.10.32 test: 관리자 대시보드용 Google Sheets 연결 유지
 // 아래 URL은 다음 단계에서 Google Apps Script 웹 앱 URL을 받은 뒤 넣습니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -101,7 +101,7 @@ function trackForestEvent(eventName, params = {}) {
 
     window.gtag("event", eventName, {
       event_category: ANALYTICS_CONFIG.eventCategory,
-      app_name: APP_CONFIG.appName,
+      app_name: APP_CONFIG.name,
       app_version: APP_CONFIG.version,
       data_schema_version: APP_CONFIG.dataSchemaVersion,
       is_test_mode: isTestMode ? "yes" : "no",
@@ -375,6 +375,7 @@ const worldSummaryNameElement = document.querySelector("#worldSummaryName");
 const worldSummaryTodayElement = document.querySelector("#worldSummaryToday");
 const worldSummaryTextElement = document.querySelector("#worldSummaryText");
 const worldCommunityHintElement = document.querySelector("#worldCommunityHint");
+const firstVisitGuideElement = document.querySelector("#firstVisitGuide");
 const dailyLoopCardElement = document.querySelector("#dailyLoopCard");
 const dailyLoopTitleElement = document.querySelector("#dailyLoopTitle");
 const dailyLoopTextElement = document.querySelector("#dailyLoopText");
@@ -1168,8 +1169,8 @@ function getServiceFlowInfo() {
 
   if (!hasName && !hasHistory) {
     return {
-      title: "내 자리에서 시작하기",
-      description: "멀리 보이는 월드 숲을 보고, 그 안의 내 숲속 자리로 들어가요.",
+      title: "내 나무 키우러 가기",
+      description: "오늘의 마음을 고르면 내 나무가 자라고, 월드 숲에도 작은 변화가 생겨요.",
       activeStep: "world",
       doneSteps: ["world"]
     };
@@ -1220,8 +1221,8 @@ function getDailyLoopInfo() {
   if (!hasName && totalDays === 0) {
     return {
       state: "start",
-      title: "큰 숲 안에 내 자리가 기다려요",
-      text: "이름을 정하고 첫 마음을 남기면 내 나무가 숲속 자리에서 바로 반응해요. 3일차에는 월드 숲에 작은 빛이 생겨요."
+      title: "오늘의 마음으로 내 나무 시작하기",
+      text: "이름을 정하고 좋음·보통·피곤 중 하나만 골라보세요. 첫 기록만 남겨도 내 나무가 바로 반응해요."
     };
   }
 
@@ -1235,7 +1236,7 @@ function getDailyLoopInfo() {
 
   return {
     state: "waiting",
-    title: "오늘 내 나무 돌보기",
+    title: "오늘 마음 기록하기",
     text: `좋음, 보통, 피곤 중 지금과 가까운 마음 하나만 골라도 충분해요. ${nextGoalMessage}`
   };
 }
@@ -1368,9 +1369,11 @@ function chooseMood(mood) {
   });
 
   saveTreeData();
+  trackForestEvent("mood_recorded", { mood_type: mood });
   shouldHighlightWorldSpot = true;
 
   renderWorld();
+  renderFirstVisitGuide();
   renderDailyLoop();
   renderHeader();
   renderTreeName();
@@ -1715,8 +1718,8 @@ function renderWorld() {
 
     if (treeData.history.length === 0) {
       worldSummaryTextElement.textContent = treeData.treeName?.trim()
-        ? "큰 숲 안의 작은 자리가 오늘의 마음을 기다리고 있어요."
-        : "넓은 월드 숲 안에, 아직 이름 없는 작은 자리가 기다리고 있어요.";
+        ? "오늘의 마음을 하나 남기면 내 나무가 큰 숲 안의 작은 자리에서 자라기 시작해요."
+        : "오늘의 마음을 하나 고르면 내 나무가 자라고, 월드 숲에도 작은 변화가 생겨요.";
     } else {
       worldSummaryTextElement.textContent = getWorldProgressMessage();
     }
@@ -1726,11 +1729,11 @@ function renderWorld() {
   myWorldSpotElement.setAttribute("aria-label", `${name}의 월드 숲 자리`);
 
   if (hasCheckedToday()) {
-    goGardenBtnElement.textContent = "내 정원 조용히 둘러보기";
+    goGardenBtnElement.textContent = "내 정원 둘러보기";
   } else if (!treeData.treeName?.trim()) {
-    goGardenBtnElement.textContent = treeData.history.length === 0 ? "내 자리에서 시작하기" : "내 나무 이름 정하러 가기";
+    goGardenBtnElement.textContent = treeData.history.length === 0 ? "내 나무 키우러 가기" : "내 나무 이름 정하기";
   } else {
-    goGardenBtnElement.textContent = "오늘 내 나무 돌보기";
+    goGardenBtnElement.textContent = "오늘 마음 기록하기";
   }
 }
 
@@ -1773,6 +1776,46 @@ function renderServiceFlow() {
   });
 }
 
+function renderFirstVisitGuide() {
+  if (!firstVisitGuideElement) {
+    return;
+  }
+
+  const hasName = Boolean(treeData.treeName?.trim());
+  const hasHistory = Array.isArray(treeData.history) && treeData.history.length > 0;
+  const checkedToday = hasCheckedToday();
+
+  firstVisitGuideElement.classList.remove("hidden", "guide-ready", "guide-done");
+
+  const titleElement = firstVisitGuideElement.querySelector(".first-visit-title");
+  const textElement = firstVisitGuideElement.querySelector(".first-visit-text");
+
+  if (!hasName && !hasHistory) {
+    firstVisitGuideElement.classList.add("guide-ready");
+    if (titleElement) titleElement.textContent = "오늘의 마음을 고르면 내 나무가 자라요.";
+    if (textElement) textElement.textContent = "먼저 내 나무 이름을 정하고, 좋음·보통·피곤 중 하나만 골라보세요.";
+    return;
+  }
+
+  if (!hasName) {
+    firstVisitGuideElement.classList.add("guide-ready");
+    if (titleElement) titleElement.textContent = "이제 내 나무 이름만 정하면 돼요.";
+    if (textElement) textElement.textContent = "이름을 저장한 뒤 오늘의 마음을 고르면 성장 기록이 남아요.";
+    return;
+  }
+
+  if (!checkedToday) {
+    firstVisitGuideElement.classList.add("guide-ready");
+    if (titleElement) titleElement.textContent = "오늘 마음 하나만 남기면 충분해요.";
+    if (textElement) textElement.textContent = "기록은 길게 쓰지 않아도 돼요. 지금과 가까운 상태 하나만 선택하면 내 나무가 반응해요.";
+    return;
+  }
+
+  firstVisitGuideElement.classList.add("guide-done");
+  if (titleElement) titleElement.textContent = "오늘의 기록이 숲에 남았어요.";
+  if (textElement) textElement.textContent = "내 나무와 월드 숲에 오늘의 기운이 조용히 반영됐어요.";
+}
+
 function renderDailyLoop() {
   if (!dailyLoopCardElement || !dailyLoopTitleElement || !dailyLoopTextElement) {
     return;
@@ -1810,7 +1853,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 관리자 실제 데이터 연결판`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 첫 진입 경험 개선판`;
   }
 }
 
@@ -2272,6 +2315,7 @@ function renderAll() {
   renderVersionLabels();
   renderTestModeStatus();
   renderWorld();
+  renderFirstVisitGuide();
   renderDailyLoop();
   renderServiceFlow();
   renderGardenAtmosphere();
@@ -2322,7 +2366,7 @@ function handleAnalyticsClickCapture(event) {
   const id = button.id || "";
   const className = button.className || "";
 
-  if (/내 나무|내 자리|정원|심으러/.test(text + aria + id + className)) {
+  if (/내 나무|내 자리|정원|심으러|키우러|마음 기록/.test(text + aria + id + className)) {
     trackForestEvent("go_garden_click", { source: "click_capture" });
   }
 

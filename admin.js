@@ -1,10 +1,21 @@
 const ADMIN_PASSWORD = "forest2026";
 const SESSION_KEY = "livingForestAdminUnlocked";
+const RANGE_STORAGE_KEY = "livingForestAdminSelectedRange";
 
-// 다음 단계에서 Google Apps Script 웹 앱 URL을 여기에 넣습니다.
-// 예: const ADMIN_DATA_ENDPOINT = "https://script.google.com/macros/s/....../exec";
 const ADMIN_DATA_ENDPOINT = "https://script.google.com/macros/s/AKfycbyeqnUwroduXytKBFMs9Tpl2gngoJ0f6JmF9oKbEA-QAoJY0aFJ-bvOUWS15SFeErgkiA/exec";
 const ADMIN_DATA_KEY = "living_forest_v1";
+
+const RANGE_OPTIONS = {
+  today: "오늘",
+  yesterday: "어제",
+  last7: "최근 7일",
+  all: "전체",
+};
+
+let selectedRange = localStorage.getItem(RANGE_STORAGE_KEY) || "today";
+if (!Object.prototype.hasOwnProperty.call(RANGE_OPTIONS, selectedRange)) {
+  selectedRange = "today";
+}
 
 const loginPanel = document.querySelector("#loginPanel");
 const dashboardPanel = document.querySelector("#dashboardPanel");
@@ -13,6 +24,8 @@ const loginButton = document.querySelector("#loginButton");
 const logoutButton = document.querySelector("#logoutButton");
 const refreshButton = document.querySelector("#refreshButton");
 const loginMessage = document.querySelector("#loginMessage");
+const rangeButtons = document.querySelectorAll("[data-range]");
+const selectedRangeLabel = document.querySelector("#selectedRangeLabel");
 
 const statusTitle = document.querySelector("#statusTitle");
 const statusText = document.querySelector("#statusText");
@@ -34,6 +47,7 @@ const valueElements = {
 function showDashboard() {
   loginPanel.classList.add("hidden");
   dashboardPanel.classList.remove("hidden");
+  updateRangeUi();
   loadDashboardData();
 }
 
@@ -86,14 +100,38 @@ function safeDivideRate(numerator, denominator) {
   return (num / den) * 100;
 }
 
-function setLoadingState(message = "데이터를 불러오는 중입니다.") {
+function updateRangeUi() {
+  rangeButtons.forEach((button) => {
+    const isActive = button.dataset.range === selectedRange;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
+
+  if (selectedRangeLabel) {
+    selectedRangeLabel.textContent = RANGE_OPTIONS[selectedRange] || "오늘";
+  }
+}
+
+function setSelectedRange(range) {
+  if (!Object.prototype.hasOwnProperty.call(RANGE_OPTIONS, range)) {
+    return;
+  }
+
+  selectedRange = range;
+  localStorage.setItem(RANGE_STORAGE_KEY, selectedRange);
+  updateRangeUi();
+  loadDashboardData();
+}
+
+function setLoadingState(message) {
+  const rangeLabel = RANGE_OPTIONS[selectedRange] || "선택 기간";
   statusTitle.textContent = "불러오는 중";
-  statusText.textContent = message;
+  statusText.textContent = message || `${rangeLabel} 기준 데이터를 불러오는 중입니다.`;
 }
 
 function setDisconnectedState() {
   statusTitle.textContent = "연결 준비중";
-  statusText.textContent = "아직 Apps Script 웹 앱 URL이 연결되지 않았습니다. 다음 단계에서 URL을 넣으면 실제 숫자가 자동 표시됩니다.";
+  statusText.textContent = "아직 Apps Script 웹 앱 URL이 연결되지 않았습니다. URL을 넣으면 실제 숫자가 자동 표시됩니다.";
 }
 
 function setErrorState(error) {
@@ -101,7 +139,25 @@ function setErrorState(error) {
   statusText.textContent = `데이터를 불러오지 못했습니다. ${error?.message || "Apps Script URL 또는 배포 권한을 확인하세요."}`;
 }
 
+function getRangeText(data) {
+  const label = data?.rangeLabel || RANGE_OPTIONS[selectedRange] || "선택 기간";
+
+  if (data?.startDate && data?.endDate && data.startDate !== data.endDate) {
+    return `${label} · ${data.startDate} ~ ${data.endDate}`;
+  }
+
+  if (data?.startDate || data?.endDate || data?.date) {
+    return `${label} · ${data.startDate || data.endDate || data.date}`;
+  }
+
+  return label;
+}
+
 function applyDashboardData(data) {
+  if (!data?.ok) {
+    throw new Error(data?.error || "summary 응답이 올바르지 않습니다.");
+  }
+
   const summary = data?.summary || {};
   const visitors = Number(summary.visitors || 0);
   const goGarden = Number(summary.go_garden_click || 0);
@@ -128,14 +184,14 @@ function applyDashboardData(data) {
   valueElements.shareRate.textContent = formatRate(shareRate);
 
   statusTitle.textContent = "자동 데이터 연결됨";
-  statusText.textContent = `${data?.date || "오늘"} 기준 데이터입니다. 마지막 업데이트: ${data?.updatedAt || "확인 중"}`;
+  statusText.textContent = `${getRangeText(data)} 기준 데이터입니다. 마지막 업데이트: ${data?.updatedAt || "확인 중"}`;
 
   if (visitors === 0) {
-    analysisText.textContent = "아직 오늘 방문 데이터가 없습니다. 먼저 일반 페이지에서 접속과 감정 기록 테스트를 해보세요.";
+    analysisText.textContent = `${data?.rangeLabel || RANGE_OPTIONS[selectedRange]} 기준 방문 데이터가 아직 없습니다. 일반 화면에서 접속과 행동 테스트를 해보세요.`;
   } else if (moodRate >= 30) {
     analysisText.textContent = `감정 기록률 ${moodRate.toFixed(1)}%로 초기 흐름은 괜찮습니다. 다음 목표는 재방문과 공유 클릭을 확인하는 것입니다.`;
   } else if (moodRate >= 15) {
-    analysisText.textContent = `감정 기록률 ${moodRate.toFixed(1)}%입니다. 첫 화면에서 내 정원으로 들어가는 이유와 감정 기록 유도 문구를 더 점검해야 합니다.`;
+    analysisText.textContent = `감정 기록률 ${moodRate.toFixed(1)}%입니다. 첫 화면에서 내 정원으로 들어가는 이유와 감정 기록 유도 문구를 점검하면 좋습니다.`;
   } else {
     analysisText.textContent = `감정 기록률 ${moodRate.toFixed(1)}%로 낮습니다. 방문자는 들어오지만 핵심 행동까지 이어지지 않는지 확인해야 합니다.`;
   }
@@ -164,7 +220,9 @@ function loadJsonp(url) {
     const finalUrl = new URL(url);
     finalUrl.searchParams.set("action", "summary");
     finalUrl.searchParams.set("key", ADMIN_DATA_KEY);
+    finalUrl.searchParams.set("range", selectedRange);
     finalUrl.searchParams.set("callback", callbackName);
+    finalUrl.searchParams.set("cache", String(Date.now()));
 
     script.src = finalUrl.toString();
     document.body.appendChild(script);
@@ -190,11 +248,19 @@ loginButton.addEventListener("click", handleLogin);
 logoutButton.addEventListener("click", handleLogout);
 refreshButton.addEventListener("click", loadDashboardData);
 
+rangeButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setSelectedRange(button.dataset.range);
+  });
+});
+
 adminPasswordInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
     handleLogin();
   }
 });
+
+updateRangeUi();
 
 if (sessionStorage.getItem(SESSION_KEY) === "yes") {
   showDashboard();

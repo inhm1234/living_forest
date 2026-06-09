@@ -35,7 +35,7 @@
 
   <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.10.30-test" />
+  <link rel="stylesheet" href="style.css?v=1.10.32-test" />
 <!-- Google tag (gtag.js) - Living Forest GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-YC872G7MH1"></script>
 <script>
@@ -56,10 +56,10 @@
   <main class="app">
     <section id="worldScreen" class="screen screen-active">
       <header class="hero world-hero">
-        <p class="version">살아있는 숲 V1.10.30 test · 관리자 실제 데이터 연결</p>
+        <p class="version">살아있는 숲 V1.10.32 test · 첫 진입 경험 개선</p>
         <h1>살아있는 숲</h1>
-        <p class="subtitle">하루에 한 번, 지금의 마음을 내 나무에게 남겨요.</p>
-        <p class="demo-pill">V1.10.30 test · 관리자 실제 데이터 연결판</p>
+        <p class="subtitle">하루에 한 번, 오늘의 마음을 고르면 내 나무가 자라요.</p>
+        <p class="demo-pill">V1.10.32 test · 첫 진입 경험 개선판</p>
       </header>
 
       <section class="world-card visual-card">
@@ -102,9 +102,15 @@
             <p id="worldSummaryName" class="summary-name">이름 없는 나무</p>
             <span id="worldSummaryToday" class="summary-chip">오늘 기록 전</span>
           </div>
-          <p id="worldSummaryText" class="world-summary-text">내 나무가 이 숲에 들어갈 준비를 하고 있어요.</p>
-          <p id="worldCommunityHint" class="world-community-hint">숲의 다른 자리들도 조용히 숨 쉬고 있어요.</p>
-          <p id="worldAtmosphereHint" class="world-atmosphere-hint">지금 숲의 빛과 생명체 움직임이 시간에 따라 달라져요.</p>
+          <p id="worldSummaryText" class="world-summary-text">오늘의 마음을 하나 고르면 내 나무가 자라고, 월드 숲에도 작은 변화가 생겨요.</p>
+          <p id="worldCommunityHint" class="world-community-hint">먼저 숲속 내 자리로 들어가 내 나무를 시작해보세요.</p>
+          <p id="worldAtmosphereHint" class="world-atmosphere-hint">하루 한 번의 기록이 내 정원과 월드 숲에 조용히 남아요.</p>
+        </div>
+
+        <div id="firstVisitGuide" class="first-visit-guide glass-panel" aria-live="polite">
+          <span class="first-visit-kicker">처음 오셨나요?</span>
+          <p class="first-visit-title">오늘의 마음을 고르면 내 나무가 자라요.</p>
+          <p class="first-visit-text">이름을 정하고 좋음·보통·피곤 중 하나만 선택하면, 내 정원과 월드 숲에 작은 변화가 생겨요.</p>
         </div>
 
         <div id="dailyLoopCard" class="daily-loop-card glass-panel" aria-live="polite">
@@ -114,8 +120,8 @@
         </div>
 
         <div class="world-action-row">
+          <button id="goGardenBtn" class="primary-btn" type="button">내 나무 키우러 가기</button>
           <button id="focusMyTreeBtn" class="ghost-btn world-focus-btn" type="button">내 나무 보기</button>
-          <button id="goGardenBtn" class="primary-btn" type="button">숲속 내 자리로 들어가기</button>
         </div>
       </section>
     </section>
@@ -123,7 +129,7 @@
     <section id="gardenScreen" class="screen">
       <header class="hero garden-hero">
         <button id="backToWorldBtnTop" class="ghost-btn small-btn" type="button">← 전체 숲</button>
-        <p class="version">오늘 내 나무 돌보기 · V1.10.30 test</p>
+        <p class="version">오늘 내 나무 돌보기 · V1.10.32 test</p>
         <h2 id="gardenTitle" class="garden-title">밤 숲속 자리</h2>
         <p class="subtitle">좋음도, 보통도, 피곤함도 모두 성장으로 남아요.</p>
       </header>
@@ -249,7 +255,7 @@
     </div>
 
     <p class="test-storage-line">저장키: <span id="testModeStorageKey">livingForestV012_TEST</span></p>
-    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.10.30 test · schema 3 · local-only</span></p>
+    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.10.32 test · schema 3 · local-only</span></p>
 
     <div class="test-preset-buttons">
       <button type="button" data-test-preset="first">첫 방문자</button>
@@ -271,6 +277,6 @@
   </aside>
 
 
-  <script src="app.js?v=1.10.30-test"></script>
+  <script src="app.js?v=1.10.32-test"></script>
 </body>
 </html>
