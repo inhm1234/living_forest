@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.13 test
+// 살아있는 숲 V1.14 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.13 test
+// 버전명: V1.14 test
 // 목적: 다음날 재방문 경험 강화판 — 오늘의 변화 / 다음 성장 예고 / 재방문 동기 보강
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.13 test",
+  version: "V1.14 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -14,9 +14,9 @@ const APP_CONFIG = {
 };
 
 
-// V1.13 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.14 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.13 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.14 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -295,6 +295,51 @@ const streakRewardRules = [
   }
 ];
 
+const worldEvolutionRules = [
+  {
+    day: 1,
+    title: "첫 월드 흔적",
+    teaser: "월드 숲의 내 자리에 작은 씨앗빛이 남아요.",
+    reached: "첫 기록이 월드 숲의 내 자리에 작은 씨앗빛으로 남았어요.",
+    className: "world-growth-seed"
+  },
+  {
+    day: 3,
+    title: "작은 빛 자리",
+    teaser: "내 자리 주변에 작은 빛이 맴돌기 시작해요.",
+    reached: "3일의 기록이 내 자리 주변에 작은 빛을 만들었어요.",
+    className: "world-growth-light"
+  },
+  {
+    day: 7,
+    title: "숲길에 자리 잡기",
+    teaser: "월드 숲길 근처에서 내 나무의 존재감이 더 분명해져요.",
+    reached: "7일의 기록으로 내 나무가 월드 숲길에 조금 더 단단히 자리 잡았어요.",
+    className: "world-growth-rooted"
+  },
+  {
+    day: 14,
+    title: "선명한 빈터",
+    teaser: "내 나무 주변 풀과 빛이 더 선명하게 살아나요.",
+    reached: "14일의 기록이 내 나무 주변의 빈터를 더 선명하게 만들었어요.",
+    className: "world-growth-clearing"
+  },
+  {
+    day: 30,
+    title: "오래 돌본 자리",
+    teaser: "내 나무가 월드 숲 안에서 오래 돌본 나무처럼 깊어져요.",
+    reached: "30일의 기록이 내 자리를 오래 돌본 나무의 분위기로 바꾸었어요.",
+    className: "world-growth-mature"
+  },
+  {
+    day: 60,
+    title: "대표 나무의 기운",
+    teaser: "월드 숲 안에서 내 나무가 대표 나무처럼 조용한 존재감을 가져요.",
+    reached: "60일의 기록이 내 나무를 월드 숲의 대표 나무처럼 깊게 만들었어요.",
+    className: "world-growth-hero"
+  }
+];
+
 
 const visitorRules = {
   bird: {
@@ -403,6 +448,11 @@ const worldSummaryNameElement = document.querySelector("#worldSummaryName");
 const worldSummaryTodayElement = document.querySelector("#worldSummaryToday");
 const worldSummaryTextElement = document.querySelector("#worldSummaryText");
 const worldCommunityHintElement = document.querySelector("#worldCommunityHint");
+const worldGrowthCardElement = document.querySelector("#worldGrowthCard");
+const worldGrowthTitleElement = document.querySelector("#worldGrowthTitle");
+const worldGrowthTextElement = document.querySelector("#worldGrowthText");
+const worldGrowthMetaElement = document.querySelector("#worldGrowthMeta");
+const worldGrowthFillElement = document.querySelector("#worldGrowthFill");
 const firstVisitGuideElement = document.querySelector("#firstVisitGuide");
 const dailyLoopCardElement = document.querySelector("#dailyLoopCard");
 const dailyLoopTitleElement = document.querySelector("#dailyLoopTitle");
@@ -875,6 +925,105 @@ function getStreakRewardInfo() {
     percent,
     state: "progress"
   };
+}
+
+function getCurrentWorldEvolution(totalDays = treeData.history.length) {
+  return [...worldEvolutionRules].reverse().find((rule) => totalDays >= rule.day) || null;
+}
+
+function getNextWorldEvolution(totalDays = treeData.history.length) {
+  return worldEvolutionRules.find((rule) => totalDays < rule.day) || null;
+}
+
+function getWorldEvolutionInfo() {
+  const totalDays = Array.isArray(treeData.history) ? treeData.history.length : 0;
+  const currentWorld = getCurrentWorldEvolution(totalDays);
+  const nextWorld = getNextWorldEvolution(totalDays);
+
+  if (totalDays <= 0) {
+    const firstGoal = worldEvolutionRules[0];
+    return {
+      title: "월드 숲은 첫 흔적을 기다려요",
+      text: "첫 마음을 기록하면 내 나무의 작은 자리에도 씨앗빛이 남기 시작해요.",
+      meta: `첫 월드 변화: ${firstGoal.day}일차 ${firstGoal.title}`,
+      percent: 0,
+      state: "empty",
+      className: "world-growth-empty",
+      nextTitle: firstGoal.title,
+      remaining: firstGoal.day
+    };
+  }
+
+  if (!nextWorld) {
+    return {
+      title: `${totalDays}일째 월드 숲에 남은 자리`,
+      text: currentWorld
+        ? `${currentWorld.reached} 이제부터는 오래 돌볼수록 내 나무 주변의 빛과 그림자가 더 깊어져요.`
+        : "오래 돌본 기록이 월드 숲의 내 자리에 조용히 쌓이고 있어요.",
+      meta: "장기 월드 성장 중",
+      percent: 100,
+      state: "complete",
+      className: currentWorld?.className || "world-growth-hero",
+      nextTitle: null,
+      remaining: 0
+    };
+  }
+
+  const remaining = Math.max(nextWorld.day - totalDays, 0);
+  const percent = Math.max(8, Math.min(100, Math.round((totalDays / nextWorld.day) * 100)));
+
+  if (currentWorld) {
+    return {
+      title: `${totalDays}일째 월드 숲에 쌓인 기록`,
+      text: `${currentWorld.reached} ${remaining}번 더 기록하면 ${nextWorld.day}일차 ${nextWorld.title}에 가까워져요. ${nextWorld.teaser}`,
+      meta: `다음 월드 변화까지 ${remaining}번 남음`,
+      percent,
+      state: remaining <= 1 ? "near" : "progress",
+      className: currentWorld.className,
+      nextTitle: nextWorld.title,
+      remaining
+    };
+  }
+
+  return {
+    title: `${totalDays}일째 월드 숲에 닿는 중`,
+    text: `${remaining}번 더 기록하면 ${nextWorld.day}일차 ${nextWorld.title}에 닿아요. ${nextWorld.teaser}`,
+    meta: `다음 월드 변화까지 ${remaining}번 남음`,
+    percent,
+    state: "progress",
+    className: "world-growth-seed",
+    nextTitle: nextWorld.title,
+    remaining
+  };
+}
+
+function getWorldEvolutionSummaryText() {
+  const info = getWorldEvolutionInfo();
+
+  if (info.state === "empty") {
+    return "첫 기록을 남기면 월드 숲의 내 자리에도 작은 흔적이 생겨요.";
+  }
+
+  if (info.remaining <= 0) {
+    return "내 나무는 이제 월드 숲 안에서 오래 돌본 자리처럼 조용히 깊어지고 있어요.";
+  }
+
+  return `${info.meta}. ${info.nextTitle}을 향해 내 자리가 조금씩 변하고 있어요.`;
+}
+
+function getWorldFocusMessage() {
+  const days = Array.isArray(treeData.history) ? treeData.history.length : 0;
+  const info = getWorldEvolutionInfo();
+
+  if (days <= 0) {
+    return "아직은 빈 자리예요. 첫 마음을 기록하면 이곳에 내 나무의 작은 흔적이 생겨요.";
+  }
+
+  if (info.remaining <= 0) {
+    return `${days}일 동안 돌본 내 나무가 월드 숲 안에서 오래 남는 자리로 깊어지고 있어요.`;
+  }
+
+  return `지금 내 자리는 ${days}일의 기록을 품고 있어요. ${info.meta}`;
 }
 
 function getStreakRewardPreviewText() {
@@ -1562,45 +1711,55 @@ function getTreeState() {
 function getWorldSpotInfo() {
   const days = treeData.history.length;
   const hasName = Boolean(treeData.treeName?.trim());
+  const worldInfo = getWorldEvolutionInfo();
+  const evolutionClass = worldInfo.className || "world-growth-empty";
 
   if (days === 0) {
     return {
-      className: "world-seed",
+      className: `world-seed world-level-0 ${evolutionClass}`,
       visual: "•",
       status: hasName
-        ? "이름을 얻은 작은 자리가 오늘의 마음을 기다리고 있어요."
-        : "숲 한가운데, 아직 이름 없는 작은 자리가 기다리고 있어요."
+        ? "이름을 얻은 작은 자리가 오늘의 첫 마음을 기다리고 있어요."
+        : "숲 한가운데, 아직 이름 없는 작은 자리가 첫 기록을 기다리고 있어요."
     };
   }
 
   if (days <= 2) {
     return {
-      className: "world-sprout",
+      className: `world-sprout world-level-1 ${evolutionClass}`,
       visual: "✦",
-      status: "월드 숲에 들어갈 준비를 하고 있어요. 3일차에는 작은 빛이 생겨요."
+      status: "첫 기록이 월드 숲의 내 자리에 씨앗빛으로 남았어요. 3일차에는 작은 빛이 더 선명해져요."
     };
   }
 
   if (days <= 6) {
     return {
-      className: "world-sprout world-preview",
+      className: `world-sprout world-preview world-level-2 ${evolutionClass}`,
       visual: "✦",
-      status: "월드 숲의 내 자리 주변에 작은 빛이 생겼어요. 7일차에는 정식으로 자리 잡아요."
+      status: "내 자리 주변에 작은 빛이 돌기 시작했어요. 7일차에는 숲길에 더 단단히 자리 잡아요."
+    };
+  }
+
+  if (days <= 13) {
+    return {
+      className: `world-tree world-level-3 ${evolutionClass}`,
+      visual: "✧",
+      status: "내 나무가 월드 숲길 근처에 뿌리내리는 중이에요. 기록이 쌓일수록 주변 풀이 더 살아나요."
     };
   }
 
   if (days < 30) {
     return {
-      className: "world-tree",
+      className: `world-tree world-level-4 ${evolutionClass}`,
       visual: "✧",
-      status: "내 나무가 아직 낮은 자리에서, 훨씬 큰 숲 사이로 천천히 자라고 있어요."
+      status: "내 나무 주변 빈터가 더 선명해졌어요. 이제 월드 숲 안에서 내 자리의 분위기가 조금씩 보이기 시작해요."
     };
   }
 
   return {
-    className: "world-tree world-mature",
+    className: `world-tree world-mature world-level-5 ${evolutionClass}`,
     visual: "✺",
-    status: "오래 돌본 대표 나무가 숲의 큰 흐름 속에서도 분명한 존재감을 가지게 되었어요."
+    status: "오래 돌본 대표 나무가 월드 숲의 큰 흐름 속에서도 분명한 존재감을 가지게 되었어요."
   };
 }
 
@@ -1893,9 +2052,18 @@ function focusMyWorldSpot() {
   myWorldSpotElement.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
   highlightWorldSpot();
 
+  if (worldCommunityHintElement) {
+    worldCommunityHintElement.textContent = getWorldFocusMessage();
+  }
+
+  if (worldSummaryTextElement) {
+    worldSummaryTextElement.textContent = getWorldEvolutionSummaryText();
+  }
+
   window.setTimeout(() => {
     worldStageElement.classList.remove("world-focus-active");
-  }, 3200);
+    renderWorld();
+  }, 3600);
 }
 
 function renderWorldNeighbors() {
@@ -1934,10 +2102,10 @@ function renderWorldCommunityHint(todayRecord) {
     return;
   }
 
-  const slotCount = worldForestSlots.length;
+  const worldInfo = getWorldEvolutionInfo();
 
   if (todayRecord) {
-    worldCommunityHintElement.textContent = `큰 월드 숲 배경 안에서 오늘의 ${todayRecord.label} 기운이 내 나무 자리로 조용히 스며들었어요.`;
+    worldCommunityHintElement.textContent = `오늘의 ${todayRecord.label} 기운이 내 자리 주변에 남았어요. ${getWorldEvolutionSummaryText()}`;
     return;
   }
 
@@ -1946,7 +2114,33 @@ function renderWorldCommunityHint(todayRecord) {
     return;
   }
 
-  worldCommunityHintElement.textContent = `처음에는 큰 숲 전체가 먼저 보이고, 내 나무는 그 숲 안의 한 자리로 자연스럽게 들어가요.`;
+  worldCommunityHintElement.textContent = `${treeData.history.length}일의 기록이 월드 숲에 쌓였어요. ${worldInfo.meta}`;
+}
+
+function renderWorldGrowthCard() {
+  if (!worldGrowthCardElement) {
+    return;
+  }
+
+  const info = getWorldEvolutionInfo();
+  worldGrowthCardElement.classList.remove("world-growth-empty", "world-growth-progress", "world-growth-near", "world-growth-complete", "world-growth-seed", "world-growth-light", "world-growth-rooted", "world-growth-clearing", "world-growth-mature", "world-growth-hero");
+  worldGrowthCardElement.classList.add(`world-growth-${info.state}`, info.className);
+
+  if (worldGrowthTitleElement) {
+    worldGrowthTitleElement.textContent = info.title;
+  }
+
+  if (worldGrowthTextElement) {
+    worldGrowthTextElement.textContent = info.text;
+  }
+
+  if (worldGrowthMetaElement) {
+    worldGrowthMetaElement.textContent = info.meta;
+  }
+
+  if (worldGrowthFillElement) {
+    worldGrowthFillElement.style.width = `${info.percent}%`;
+  }
 }
 
 function renderWorld() {
@@ -1960,6 +2154,7 @@ function renderWorld() {
 
   renderWorldNeighbors();
   renderWorldCommunityHint(todayRecord);
+  renderWorldGrowthCard();
 
   myWorldSpotElement.className = `my-world-spot ${spotInfo.className} ${myWorldTreeSizeClass}`;
   mySpotVisualElement.innerHTML = `
@@ -1976,7 +2171,7 @@ function renderWorld() {
     const moodClass = `mood-${todayRecord.mood}`;
     mySpotAuraElement.innerHTML = `<span class="${moodClass}"></span><span class="${moodClass}"></span><span class="${moodClass}"></span>`;
     worldSummaryTodayElement.textContent = `오늘 ${todayRecord.label}`;
-    worldSummaryTextElement.textContent = `오늘의 ${todayRecord.label} 기운이 큰 숲 안의 내 나무 자리에도 조용히 스며들었어요. 내일 다시 오면 이 변화 위에 성장이 이어져요.`;
+    worldSummaryTextElement.textContent = `오늘의 ${todayRecord.label} 기운이 큰 숲 안의 내 나무 자리에도 남았어요. ${getWorldEvolutionSummaryText()}`;
   } else {
     mySpotAuraElement.innerHTML = "";
     worldSummaryTodayElement.textContent = "오늘 기록 전";
@@ -2218,7 +2413,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 연속 기록 보상 강화판`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 월드 숲 누적 변화 강화판`;
   }
 }
 
