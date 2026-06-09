@@ -1,14 +1,19 @@
-살아있는 숲 V1.14.1 test
+살아있는 숲 V1.15 test
 
-기준 버전: V1.14 test
-작업 내용: 월드 숲 내 자리 카드 잘림 수정판
-GA4 측정 ID: G-YC872G7MH1
+기준 버전: V1.14.1 test
+작업 내용: 월드 숲 자리감 강화판
 관리자 페이지: admin.html
 임시 비밀번호: forest2026
+Apps Script URL: https://script.google.com/macros/s/AKfycbyeqnUwroduXytKBFMs9Tpl2gngoJ0f6JmF9oKbEA-QAoJY0aFJ-bvOUWS15SFeErgkiA/exec
 
 변경 요약:
-- V1.14에서 추가한 `월드 숲의 내 자리` 카드가 얇게 잘려 보이던 문제 수정
-- 원인: 카드 상태 클래스 `world-growth-progress`와 진행률 바 클래스 `world-growth-progress`가 충돌
-- CSS 선택자를 카드 내부 진행률 바에만 적용되도록 수정
-- 카드 제목, 본문, 진행률, 다음 월드 변화 문구가 정상 표시되도록 보정
-- 관리자/GA4/Google Sheets/Apps Script/방문자 시스템/나무 이미지는 유지
+- 월드 숲 안에 비어 있는 자리 빛 표시 추가
+- 내 자리 바닥빛 / 이름표 / 포커스 효과 강화
+- 주변 나무들이 단순 장식이 아니라 숲의 자리처럼 보이도록 시각 보정
+- 월드 숲 자리 안내 카드 추가
+- 내 나무 보기 버튼 클릭 시 내 자리와 주변 자리의 대비 강화
+- 관리자 / GA4 / Google Sheets / Apps Script 구조는 유지
+
+주의:
+- 이번 버전은 Apps Script 재배포가 필요 없는 프론트 화면 개선판입니다.
+- assets 폴더는 ZIP에 포함되어 있지 않으므로 기존 assets 폴더를 삭제하지 마세요.

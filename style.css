@@ -7973,7 +7973,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.14.1 test: 월드 숲 누적 변화 강화판 */
+/* V1.15 test: 월드 숲 누적 변화 강화판 */
 .today-change-card,
 .tomorrow-promise-card {
   margin-top: 14px;
@@ -8042,7 +8042,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.14.1 test: 월드 숲 누적 변화 강화판 */
+/* V1.15 test: 월드 숲 누적 변화 강화판 */
 .return-memory-card {
   margin: 14px 0 0;
   padding: 16px;
@@ -8096,7 +8096,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.14.1 test: 월드 숲 누적 변화 강화판 */
+/* V1.15 test: 월드 숲 누적 변화 강화판 */
 .streak-reward-card {
   margin: 14px 0 0;
   padding: 16px;
@@ -8196,7 +8196,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.14.1 test: 월드 숲 누적 변화 강화판 */
+/* V1.15 test: 월드 숲 누적 변화 강화판 */
 .world-growth-card {
   margin-top: 12px;
   padding: 14px 16px;
@@ -8338,7 +8338,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.14.1 test: 월드 숲 내 자리 카드 잘림 수정 */
+/* V1.15 test: 월드 숲 내 자리 카드 잘림 수정 */
 .world-growth-card {
   height: auto;
   min-height: 0;
@@ -8354,4 +8354,219 @@ body[data-world-time="day"] .daily-loop-card {
 
 .world-growth-card > .world-growth-progress {
   display: block;
+}
+
+/* V1.15 test: 월드 숲 자리감 강화판 */
+.world-empty-slots {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.world-empty-slot {
+  position: absolute;
+  width: 54px;
+  height: 24px;
+  border: 1px solid rgba(230, 255, 199, 0.18);
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 50% 44%, rgba(231, 255, 196, 0.16), transparent 48%),
+    radial-gradient(ellipse, rgba(34, 61, 36, 0.18), transparent 72%);
+  box-shadow: 0 0 22px rgba(220, 255, 176, 0.08);
+  opacity: 0.46;
+  transform: translate(-50%, -50%) rotate(var(--empty-tilt, 0deg));
+  animation: emptySlotBreath 6.2s ease-in-out infinite;
+}
+
+.world-empty-slot::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(233, 255, 197, 0.72);
+  box-shadow: 0 0 16px rgba(233, 255, 197, 0.42);
+  transform: translate(-50%, -50%);
+}
+
+.empty-slot-a { left: 47%; top: 63%; --empty-tilt: -5deg; animation-delay: -1s; }
+.empty-slot-b { left: 53%; top: 63%; --empty-tilt: 5deg; animation-delay: -2.2s; }
+.empty-slot-c { left: 33%; top: 70%; --empty-tilt: -9deg; animation-delay: -3.1s; }
+.empty-slot-d { left: 67%; top: 70%; --empty-tilt: 9deg; animation-delay: -4s; }
+.empty-slot-e { left: 50%; top: 78%; --empty-tilt: 0deg; animation-delay: -5.4s; }
+
+.world-place-card {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: 22px;
+  background: rgba(7, 18, 16, 0.58);
+  border-color: rgba(223, 255, 180, 0.16);
+}
+
+.world-place-kicker {
+  display: inline-flex;
+  margin-bottom: 6px;
+  color: rgba(218, 248, 199, 0.72);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.world-place-title {
+  margin: 0;
+  color: #f4ffe9;
+  font-size: 16px;
+  font-weight: 950;
+  line-height: 1.35;
+}
+
+.world-place-text {
+  margin: 7px 0 0;
+  color: rgba(238, 246, 232, 0.72);
+  font-size: 13.5px;
+  font-weight: 720;
+  line-height: 1.58;
+}
+
+.world-neighbor-spots {
+  z-index: 7;
+}
+
+.neighbor-spot {
+  overflow: visible;
+}
+
+.neighbor-spot small {
+  opacity: 0.18;
+  background: rgba(6, 16, 13, 0.22);
+}
+
+.my-world-spot,
+.world-time-day .my-world-spot,
+.world-time-sunset .my-world-spot,
+.world-time-night .my-world-spot {
+  width: 206px;
+  bottom: 90px;
+  z-index: 12;
+}
+
+.my-spot-ring {
+  opacity: 0.62;
+  border-color: rgba(238, 255, 207, 0.28);
+  background: radial-gradient(circle, rgba(226, 255, 190, 0.13), transparent 68%);
+  box-shadow: 0 0 0 7px rgba(232, 255, 185, 0.035), 0 0 42px rgba(212, 255, 174, 0.16);
+}
+
+.my-world-spot::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  z-index: -1;
+  width: 170px;
+  height: 42px;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(238, 255, 190, 0.24), transparent 50%),
+    radial-gradient(ellipse, rgba(45, 80, 44, 0.26), transparent 78%);
+  filter: blur(8px);
+  opacity: 0.86;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.my-world-spot .my-spot-name {
+  opacity: 0.92;
+  background: rgba(7, 18, 16, 0.44);
+  border: 1px solid rgba(231, 255, 222, 0.12);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+
+.my-world-spot .my-spot-status {
+  opacity: 0.38;
+  background: rgba(7, 18, 16, 0.16);
+  border-radius: 999px;
+}
+
+.world-focus-active .my-world-spot {
+  transform: translateX(-50%) translateY(-10px) scale(1.07);
+}
+
+.world-focus-active .my-spot-ring {
+  opacity: 1;
+  border-color: rgba(250, 255, 210, 0.48);
+  box-shadow:
+    0 0 0 13px rgba(232, 255, 185, 0.08),
+    0 0 58px rgba(225, 255, 178, 0.34),
+    0 0 110px rgba(151, 221, 128, 0.18);
+}
+
+.world-focus-active .my-world-spot::after {
+  opacity: 1;
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(248, 255, 199, 0.38), transparent 52%),
+    radial-gradient(ellipse, rgba(75, 126, 63, 0.34), transparent 80%);
+}
+
+.world-focus-active .my-spot-name,
+.world-focus-active .my-spot-status {
+  opacity: 1;
+}
+
+.world-focus-active .neighbor-spot {
+  opacity: calc(var(--slot-opacity, 0.62) * 0.72);
+  filter: saturate(0.78) brightness(0.78);
+}
+
+.world-focus-active .world-empty-slot {
+  opacity: 0.22;
+}
+
+.world-focus-active .world-place-card {
+  border-color: rgba(245, 255, 206, 0.28);
+}
+
+@keyframes emptySlotBreath {
+  0%, 100% { opacity: 0.28; transform: translate(-50%, -50%) rotate(var(--empty-tilt, 0deg)) scale(0.96); }
+  50% { opacity: 0.56; transform: translate(-50%, -50%) rotate(var(--empty-tilt, 0deg)) scale(1.06); }
+}
+
+@media (max-width: 560px) {
+  .world-empty-slot {
+    width: 42px;
+    height: 19px;
+  }
+
+  .empty-slot-a { left: 43%; top: 64%; }
+  .empty-slot-b { left: 57%; top: 64%; }
+  .empty-slot-c { left: 28%; top: 71%; }
+  .empty-slot-d { left: 72%; top: 71%; }
+  .empty-slot-e { left: 50%; top: 79%; }
+
+  .world-place-card {
+    padding: 13px 14px;
+  }
+
+  .world-place-title {
+    font-size: 15px;
+  }
+
+  .world-place-text {
+    font-size: 13px;
+  }
+
+  .my-world-spot,
+  .world-time-day .my-world-spot,
+  .world-time-sunset .my-world-spot,
+  .world-time-night .my-world-spot {
+    width: 188px;
+    bottom: 88px;
+  }
+
+  .my-world-spot::after {
+    width: 146px;
+  }
 }

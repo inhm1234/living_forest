@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.14.1 test
+// 살아있는 숲 V1.15 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.14.1 test
-// 목적: 다음날 재방문 경험 강화판 — 오늘의 변화 / 다음 성장 예고 / 재방문 동기 보강
+// 버전명: V1.15 test
+// 목적: 월드 숲 자리감 강화판 — 내 자리 / 주변 자리 / 빈 자리의 공간감 보강
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.14.1 test",
+  version: "V1.15 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -14,9 +14,9 @@ const APP_CONFIG = {
 };
 
 
-// V1.14.1 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.15 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.14.1 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.15 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -1001,14 +1001,14 @@ function getWorldEvolutionSummaryText() {
   const info = getWorldEvolutionInfo();
 
   if (info.state === "empty") {
-    return "첫 기록을 남기면 월드 숲의 내 자리에도 작은 흔적이 생겨요.";
+    return "첫 기록을 남기면 월드 숲의 내 자리에도 작은 흔적이 생기고, 주변 자리들과 함께 숲을 이루기 시작해요.";
   }
 
   if (info.remaining <= 0) {
-    return "내 나무는 이제 월드 숲 안에서 오래 돌본 자리처럼 조용히 깊어지고 있어요.";
+    return "내 나무는 이제 월드 숲 안에서 오래 돌본 자리처럼 조용히 깊어지고, 주변 자리들과 함께 하나의 숲을 이루고 있어요.";
   }
 
-  return `${info.meta}. ${info.nextTitle}을 향해 내 자리가 조금씩 변하고 있어요.`;
+  return `${info.meta}. ${info.nextTitle}을 향해 내 자리가 주변 자리들 사이에서 조금씩 더 선명해지고 있어요.`;
 }
 
 function getWorldFocusMessage() {
@@ -1016,14 +1016,14 @@ function getWorldFocusMessage() {
   const info = getWorldEvolutionInfo();
 
   if (days <= 0) {
-    return "아직은 빈 자리예요. 첫 마음을 기록하면 이곳에 내 나무의 작은 흔적이 생겨요.";
+    return "아직은 빈 자리예요. 첫 마음을 기록하면 이곳이 주변 자리들 사이에서 내 나무의 자리로 깨어나요.";
   }
 
   if (info.remaining <= 0) {
-    return `${days}일 동안 돌본 내 나무가 월드 숲 안에서 오래 남는 자리로 깊어지고 있어요.`;
+    return `${days}일 동안 돌본 내 나무가 월드 숲 안에서 오래 남는 자리로 깊어지고 있어요. 주변 나무들 사이에서 내 자리가 더 자연스럽게 숲의 일부가 되었어요.`;
   }
 
-  return `지금 내 자리는 ${days}일의 기록을 품고 있어요. ${info.meta}`;
+  return `지금 내 자리는 주변 나무들 사이에서 ${days}일의 기록을 품고 있어요. ${info.meta}`;
 }
 
 function getStreakRewardPreviewText() {
@@ -2413,7 +2413,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 월드 숲 누적 변화 강화판`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 월드 숲 자리감 강화판`;
   }
 }
 
