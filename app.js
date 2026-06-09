@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.11 test
+// 살아있는 숲 V1.12 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.11 test
-// 목적: 기록 후 내일 기대감 강화판 — 오늘의 변화 / 다음 성장 예고 / 재방문 동기 보강
+// 버전명: V1.12 test
+// 목적: 다음날 재방문 경험 강화판 — 오늘의 변화 / 다음 성장 예고 / 재방문 동기 보강
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.11 test",
+  version: "V1.12 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -14,9 +14,9 @@ const APP_CONFIG = {
 };
 
 
-// V1.11 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.12 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.11 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.12 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -409,6 +409,10 @@ const treeNameInputElement = document.querySelector("#treeNameInput");
 const treeNameMessageElement = document.querySelector("#treeNameMessage");
 const completeCardElement = document.querySelector("#completeCard");
 const completeMessageElement = document.querySelector("#completeMessage");
+const returnMemoryCardElement = document.querySelector("#returnMemoryCard");
+const returnMemoryTitleElement = document.querySelector("#returnMemoryTitle");
+const returnMemoryTextElement = document.querySelector("#returnMemoryText");
+const returnStreakTextElement = document.querySelector("#returnStreakText");
 const todayChangeCardElement = document.querySelector("#todayChangeCard");
 const todayChangeTitleElement = document.querySelector("#todayChangeTitle");
 const todayChangeTextElement = document.querySelector("#todayChangeText");
@@ -562,6 +566,80 @@ function isValidDateKey(dateText) {
   return typeof dateText === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateText);
 }
 
+function addDaysToDateKey(dateText, dayOffset) {
+  if (!isValidDateKey(dateText)) {
+    return null;
+  }
+
+  const [year, month, date] = dateText.split("-").map(Number);
+  const dateValue = new Date(year, month - 1, date);
+  dateValue.setDate(dateValue.getDate() + dayOffset);
+  return getDateKeyFromDate(dateValue);
+}
+
+function getPreviousRecordBeforeToday() {
+  const today = getTodayKey();
+  return treeData.history.find((item) => item.date !== today) || null;
+}
+
+function getYesterdayRecord() {
+  const yesterday = getRelativeDateKey(1);
+  return treeData.history.find((item) => item.date === yesterday) || null;
+}
+
+function getLatestPastRecord() {
+  return getYesterdayRecord() || getPreviousRecordBeforeToday();
+}
+
+function getConsecutiveRecordDays() {
+  const dateSet = new Set(
+    treeData.history
+      .map((item) => item.date)
+      .filter((dateText) => isValidDateKey(dateText))
+  );
+
+  if (!dateSet.size) {
+    return 0;
+  }
+
+  let currentDate = hasCheckedToday() ? getTodayKey() : getRelativeDateKey(1);
+  let count = 0;
+
+  while (currentDate && dateSet.has(currentDate)) {
+    count += 1;
+    currentDate = addDaysToDateKey(currentDate, -1);
+  }
+
+  return count;
+}
+
+function getReturnMemoryInfo() {
+  const hasName = Boolean(treeData.treeName?.trim());
+  const checkedToday = hasCheckedToday();
+  const pastRecord = getLatestPastRecord();
+
+  if (!hasName || checkedToday || !pastRecord) {
+    return null;
+  }
+
+  const isYesterday = pastRecord.date === getRelativeDateKey(1);
+  const streakDays = getConsecutiveRecordDays();
+  const dayLabel = isYesterday ? "어제" : `${formatDate(pastRecord.date)}의 기록`;
+  const title = isYesterday
+    ? `${dayLabel} 남긴 ${pastRecord.label} 마음이 아직 숲에 남아 있어요`
+    : `${dayLabel}이 아직 내 나무 곁에 남아 있어요`;
+  const text = isYesterday
+    ? `${dayLabel}의 ${pastRecord.label} 기운 위에 오늘의 마음을 더하면 성장이 자연스럽게 이어져요.`
+    : `마지막으로 남긴 ${pastRecord.label} 마음을 이어받아, 오늘 다시 한 번 나무를 돌볼 수 있어요.`;
+  const streakText = streakDays >= 2
+    ? `최근 ${streakDays}일 흐름이 이어지는 중`
+    : isYesterday
+      ? "어제의 기록을 이어갈 차례"
+      : "오늘 다시 이어갈 수 있어요";
+
+  return { title, text, streakText, pastRecord, isYesterday, streakDays };
+}
+
 function normalizeHistoryRecord(record, fallbackIndex = 0) {
   if (!record || typeof record !== "object") {
     return null;
@@ -706,6 +784,14 @@ function getNextGrowthPreviewMessage() {
 
 function getAfterRecordExperience(record) {
   const mood = record?.mood || "normal";
+  const previousRecord = getPreviousRecordBeforeToday();
+  const consecutiveDays = getConsecutiveRecordDays();
+  const returnPrefix = previousRecord
+    ? `이전 ${previousRecord.label} 기록 위에 오늘의 마음이 더해졌어요.`
+    : "오늘의 첫 기록이 내 나무의 새로운 시작이 되었어요.";
+  const streakSuffix = consecutiveDays >= 2
+    ? ` 지금 ${consecutiveDays}일째 숲을 이어 돌보고 있어요.`
+    : " 내일 다시 오면 오늘의 변화가 다음 성장으로 이어져요.";
   const experienceRules = {
     good: {
       complete: "오늘의 밝은 마음이 잎사귀에 닿아 나무가 조금 더 환해졌어요.",
@@ -732,9 +818,9 @@ function getAfterRecordExperience(record) {
   return {
     complete: rule.complete,
     changeTitle: rule.changeTitle,
-    changeText: rule.changeText,
-    tomorrowTitle: "내일의 마음도 성장으로 이어져요",
-    tomorrowText: `${rule.tomorrowText} ${getNextGrowthPreviewMessage()}`
+    changeText: `${returnPrefix} ${rule.changeText}`,
+    tomorrowTitle: consecutiveDays >= 2 ? `${consecutiveDays}일째 이어지는 성장` : "내일의 마음도 성장으로 이어져요",
+    tomorrowText: `${rule.tomorrowText} ${getNextGrowthPreviewMessage()}${streakSuffix}`
   };
 }
 
@@ -1244,9 +1330,12 @@ function getServiceFlowInfo() {
   }
 
   if (!checkedToday) {
+    const returnMemory = getReturnMemoryInfo();
     return {
-      title: "오늘 마음 기록하기",
-      description: "좋음, 보통, 피곤 중 지금의 나와 가까운 상태 하나만 골라요. 어떤 선택도 성장으로 남아요.",
+      title: returnMemory ? "어제의 마음 위에 오늘을 더하기" : "오늘 마음 기록하기",
+      description: returnMemory
+        ? `${returnMemory.pastRecord.label} 기록이 아직 숲에 남아 있어요. 오늘의 마음을 더하면 성장이 이어져요.`
+        : "좋음, 보통, 피곤 중 지금의 나와 가까운 상태 하나만 골라요. 어떤 선택도 성장으로 남아요.",
       activeStep: "mood",
       doneSteps: ["world", "name"]
     };
@@ -1289,6 +1378,16 @@ function getDailyLoopInfo() {
       state: "name",
       title: "내 나무 이름 정하기",
       text: "이름을 한 번 정하면, 오늘의 마음을 남기고 다음 성장 목표를 볼 수 있어요."
+    };
+  }
+
+  const returnMemory = getReturnMemoryInfo();
+
+  if (returnMemory) {
+    return {
+      state: "returning",
+      title: "어제의 마음이 이어지고 있어요",
+      text: `${returnMemory.text} ${nextGoalMessage}`
     };
   }
 
@@ -1440,6 +1539,7 @@ function chooseMood(mood) {
   const afterRecordExperience = getAfterRecordExperience({ mood, label: rule.label });
   renderMessages(`${afterRecordExperience.complete} 오늘의 변화는 월드 숲에도 조용히 남았어요. ${getNextGrowthPreviewMessage()}`);
   renderServiceFlow();
+  renderReturnMemoryCard();
   renderCompleteCard();
   updateTodayStatus();
   prepareDailyVisitor({ forcePlay: true, allowCreate: true, allowPlay: true });
@@ -1882,8 +1982,36 @@ function renderDailyLoop() {
 
   const loop = getDailyLoopInfo();
   dailyLoopCardElement.classList.toggle("done", loop.state === "done");
+  dailyLoopCardElement.classList.toggle("returning", loop.state === "returning");
   dailyLoopTitleElement.textContent = loop.title;
   dailyLoopTextElement.textContent = loop.text;
+}
+
+function renderReturnMemoryCard() {
+  const returnMemory = getReturnMemoryInfo();
+
+  if (!returnMemoryCardElement) {
+    return;
+  }
+
+  if (!returnMemory) {
+    returnMemoryCardElement.classList.add("hidden");
+    return;
+  }
+
+  returnMemoryCardElement.classList.remove("hidden");
+
+  if (returnMemoryTitleElement) {
+    returnMemoryTitleElement.textContent = returnMemory.title;
+  }
+
+  if (returnMemoryTextElement) {
+    returnMemoryTextElement.textContent = returnMemory.text;
+  }
+
+  if (returnStreakTextElement) {
+    returnStreakTextElement.textContent = returnMemory.streakText;
+  }
 }
 
 function renderCompleteCard() {
@@ -1941,7 +2069,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 기록 후 내일 기대감 강화판`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 다음날 재방문 경험 강화판`;
   }
 }
 
@@ -2038,7 +2166,10 @@ function renderMessages(customMessage) {
     const experience = getAfterRecordExperience(getTodayRecord());
     growthMessageElement.textContent = `${experience.complete} ${getNextGrowthPreviewMessage()}`;
   } else if (treeData.history.length > 0) {
-    growthMessageElement.textContent = `어제까지의 기록이 숲에 남아 있어요. 오늘의 마음을 더하면 성장이 다시 이어져요.`;
+    const returnMemory = getReturnMemoryInfo();
+    growthMessageElement.textContent = returnMemory
+      ? `${returnMemory.title} 오늘의 마음을 더하면 내 나무가 다시 반응해요.`
+      : `이전 기록이 숲에 남아 있어요. 오늘의 마음을 더하면 성장이 다시 이어져요.`;
   } else if (!treeData.treeName?.trim()) {
     growthMessageElement.textContent = "먼저 내 나무 이름을 정하면 오늘의 마음을 남길 수 있어요.";
   } else {
@@ -2109,9 +2240,14 @@ function updateTodayStatus() {
     }
     backToWorldBtnBottomElement.textContent = "전체 숲에서 내 자리 보기";
   } else {
-    todayStatusElement.textContent = `오늘(${formatDate(getTodayKey())})의 상태를 아직 기록하지 않았어요.`;
+    const returnMemory = getReturnMemoryInfo();
+    todayStatusElement.textContent = returnMemory
+      ? `오늘(${formatDate(getTodayKey())})의 마음을 더하면 어제의 성장 위에 새로운 기록이 이어져요.`
+      : `오늘(${formatDate(getTodayKey())})의 상태를 아직 기록하지 않았어요.`;
     if (moodGuideElement) {
-      moodGuideElement.textContent = `하루에 한 번, 지금의 나와 가까운 상태를 골라주세요. ${getNextGoalMessage()}`;
+      moodGuideElement.textContent = returnMemory
+        ? `어제의 마음 위에 오늘의 마음을 더해볼까요? 정답은 없어요. 지금과 가장 가까운 상태 하나만 골라주세요.`
+        : `하루에 한 번, 지금의 나와 가까운 상태를 골라주세요. ${getNextGoalMessage()}`;
     }
     backToWorldBtnBottomElement.textContent = "전체 숲으로 돌아가기";
   }
@@ -2415,6 +2551,7 @@ function renderAll() {
   renderTree();
   renderForestEffect(getTodayMoodState());
   renderMessages();
+  renderReturnMemoryCard();
   renderCompleteCard();
   renderVisitorTrace();
   renderVisitorLog();

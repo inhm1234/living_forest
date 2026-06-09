@@ -35,7 +35,7 @@
 
   <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.11-test" />
+  <link rel="stylesheet" href="style.css?v=1.12-test" />
 <!-- Google tag (gtag.js) - Living Forest GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-YC872G7MH1"></script>
 <script>
@@ -56,10 +56,10 @@
   <main class="app">
     <section id="worldScreen" class="screen screen-active">
       <header class="hero world-hero">
-        <p class="version">살아있는 숲 V1.11 test · 내일 기대감 강화</p>
+        <p class="version">살아있는 숲 V1.12 test · 재방문 경험 강화</p>
         <h1>살아있는 숲</h1>
         <p class="subtitle">하루에 한 번, 오늘의 마음을 고르면 내 나무가 자라요.</p>
-        <p class="demo-pill">V1.11 test · 기록 후 내일 기대감 강화판</p>
+        <p class="demo-pill">V1.12 test · 다음날 재방문 경험 강화판</p>
       </header>
 
       <section class="world-card visual-card">
@@ -129,7 +129,7 @@
     <section id="gardenScreen" class="screen">
       <header class="hero garden-hero">
         <button id="backToWorldBtnTop" class="ghost-btn small-btn" type="button">← 전체 숲</button>
-        <p class="version">오늘 내 나무 돌보기 · V1.11 test</p>
+        <p class="version">오늘 내 나무 돌보기 · V1.12 test</p>
         <h2 id="gardenTitle" class="garden-title">밤 숲속 자리</h2>
         <p class="subtitle">좋음도, 보통도, 피곤함도 모두 성장으로 남아요.</p>
       </header>
@@ -200,6 +200,14 @@
         <p id="treeNameMessage" class="tree-name-message">나무 이름은 한 번만 정할 수 있어요.</p>
       </section>
 
+
+      <section id="returnMemoryCard" class="return-memory-card glass-panel hidden" aria-live="polite">
+        <span class="return-memory-kicker">이어지는 숲</span>
+        <p id="returnMemoryTitle" class="return-memory-title">어제의 마음이 아직 숲에 남아 있어요</p>
+        <p id="returnMemoryText" class="return-memory-text">오늘의 마음을 더하면 어제의 성장 위에 새로운 변화가 이어져요.</p>
+        <p id="returnStreakText" class="return-streak-text">이어 키우는 중</p>
+      </section>
+
       <section class="mood-card glass-panel">
         <p id="moodGuide" class="mood-guide">하루에 한 번, 지금의 나와 가까운 상태를 골라주세요.</p>
 
@@ -267,7 +275,7 @@
     </div>
 
     <p class="test-storage-line">저장키: <span id="testModeStorageKey">livingForestV012_TEST</span></p>
-    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.11 test · schema 3 · local-only</span></p>
+    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.12 test · schema 3 · local-only</span></p>
 
     <div class="test-preset-buttons">
       <button type="button" data-test-preset="first">첫 방문자</button>
@@ -289,6 +297,6 @@
   </aside>
 
 
-  <script src="app.js?v=1.11-test"></script>
+  <script src="app.js?v=1.12-test"></script>
 </body>
 </html>
