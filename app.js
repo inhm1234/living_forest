@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.10.32 test
+// 살아있는 숲 V1.11 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.10.32 test
-// 목적: 첫 진입 경험 개선판 — 첫 화면 이해도 / 버튼 유도 / 안내 문구 보정
+// 버전명: V1.11 test
+// 목적: 기록 후 내일 기대감 강화판 — 오늘의 변화 / 다음 성장 예고 / 재방문 동기 보강
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.10.32 test",
+  version: "V1.11 test",
   dataSchemaVersion: 3,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -14,10 +14,10 @@ const APP_CONFIG = {
 };
 
 
-// V1.10.32 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.11 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.10.32 test: 관리자 대시보드용 Google Sheets 연결 유지
-// 아래 URL은 다음 단계에서 Google Apps Script 웹 앱 URL을 받은 뒤 넣습니다.
+// V1.11 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
   endpointUrl: "https://script.google.com/macros/s/AKfycbyeqnUwroduXytKBFMs9Tpl2gngoJ0f6JmF9oKbEA-QAoJY0aFJ-bvOUWS15SFeErgkiA/exec",
@@ -409,6 +409,12 @@ const treeNameInputElement = document.querySelector("#treeNameInput");
 const treeNameMessageElement = document.querySelector("#treeNameMessage");
 const completeCardElement = document.querySelector("#completeCard");
 const completeMessageElement = document.querySelector("#completeMessage");
+const todayChangeCardElement = document.querySelector("#todayChangeCard");
+const todayChangeTitleElement = document.querySelector("#todayChangeTitle");
+const todayChangeTextElement = document.querySelector("#todayChangeText");
+const tomorrowPromiseCardElement = document.querySelector("#tomorrowPromiseCard");
+const tomorrowPromiseTitleElement = document.querySelector("#tomorrowPromiseTitle");
+const tomorrowPromiseTextElement = document.querySelector("#tomorrowPromiseText");
 const visitorTraceCardElement = document.querySelector("#visitorTraceCard");
 const visitorTraceTitleElement = document.querySelector("#visitorTraceTitle");
 const visitorTraceTextElement = document.querySelector("#visitorTraceText");
@@ -678,6 +684,58 @@ function getNextGoalMessage() {
   }
 
   return `${nextMilestone.day}일차 ${nextMilestone.title}까지 ${remainingDays}일 남았어요. ${nextMilestone.message}`;
+}
+
+
+function getNextGrowthPreviewMessage() {
+  const totalDays = treeData.history.length;
+  const nextMilestone = getNextGrowthMilestone();
+
+  if (!nextMilestone) {
+    return "이제부터는 오래 돌볼수록 나무와 주변 숲이 더 깊어져요.";
+  }
+
+  const remainingDays = Math.max(nextMilestone.day - totalDays, 0);
+
+  if (remainingDays <= 1) {
+    return `내일 한 번 더 기록하면 ${nextMilestone.day}일차 ${nextMilestone.title}에 닿아요.`;
+  }
+
+  return `${remainingDays}번 더 기록하면 ${nextMilestone.day}일차 ${nextMilestone.title}에 가까워져요.`;
+}
+
+function getAfterRecordExperience(record) {
+  const mood = record?.mood || "normal";
+  const experienceRules = {
+    good: {
+      complete: "오늘의 밝은 마음이 잎사귀에 닿아 나무가 조금 더 환해졌어요.",
+      changeTitle: "잎이 가볍게 반응했어요",
+      changeText: "좋음의 기운이 잎과 빛으로 퍼졌어요. 월드 숲의 내 자리에도 은은한 밝기가 남았어요.",
+      tomorrowText: "내일 다시 오면 오늘의 밝은 기운 위에 새로운 잎이 이어져요."
+    },
+    normal: {
+      complete: "오늘의 차분한 마음이 줄기와 잎 사이로 고르게 스며들었어요.",
+      changeTitle: "나무가 균형 있게 자랐어요",
+      changeText: "보통의 기운이 나무를 천천히 안정시켰어요. 월드 숲의 내 자리도 조용히 균형을 잡고 있어요.",
+      tomorrowText: "내일 다시 오면 오늘의 차분한 성장 위에 다음 변화가 이어져요."
+    },
+    tired: {
+      complete: "오늘의 피곤함도 뿌리로 스며들어 나무가 더 단단해졌어요.",
+      changeTitle: "뿌리가 조금 더 깊어졌어요",
+      changeText: "피곤한 마음도 성장으로 남았어요. 보이지 않는 아래쪽에서 내 나무가 천천히 버틸 힘을 얻었어요.",
+      tomorrowText: "내일 다시 오면 오늘 깊어진 뿌리 위에 새로운 회복이 이어져요."
+    }
+  };
+
+  const rule = experienceRules[mood] || experienceRules.normal;
+
+  return {
+    complete: rule.complete,
+    changeTitle: rule.changeTitle,
+    changeText: rule.changeText,
+    tomorrowTitle: "내일의 마음도 성장으로 이어져요",
+    tomorrowText: `${rule.tomorrowText} ${getNextGrowthPreviewMessage()}`
+  };
 }
 
 function getWorldProgressMessage() {
@@ -1195,8 +1253,8 @@ function getServiceFlowInfo() {
   }
 
   return {
-    title: "월드 숲에 반영됨",
-    description: "오늘의 마음은 숲에 남았어요. 이제 그만 쉬어도 괜찮아요.",
+    title: "오늘의 변화가 남았어요",
+    description: "오늘의 마음이 내 나무와 월드 숲에 반영됐어요. 내일 다시 오면 이 변화 위에 새로운 성장이 이어져요.",
     activeStep: "return",
     doneSteps: ["world", "name", "mood", "return"]
   };
@@ -1213,8 +1271,8 @@ function getDailyLoopInfo() {
   if (checkedToday && todayRecord) {
     return {
       state: "done",
-      title: "오늘은 여기까지",
-      text: `오늘의 ${todayRecord.label} 기운이 숲에 남았어요. 이제 그만 쉬어도 괜찮아요. ${nextGoalMessage}`
+      title: "오늘의 변화가 숲에 남았어요",
+      text: `오늘의 ${todayRecord.label} 기운이 내 나무와 월드 숲에 남았어요. 내일 다시 오면 이 변화 위에 새로운 성장이 이어져요. ${getNextGrowthPreviewMessage()}`
     };
   }
 
@@ -1379,7 +1437,8 @@ function chooseMood(mood) {
   renderTreeName();
   renderTree(true);
   renderForestEffect(rule.state, true);
-  renderMessages(`오늘은 ${rule.message} 오늘의 기운이 밤 정원과 숲에 조용히 스며들었어요. ${getNextGoalMessage()}`);
+  const afterRecordExperience = getAfterRecordExperience({ mood, label: rule.label });
+  renderMessages(`${afterRecordExperience.complete} 오늘의 변화는 월드 숲에도 조용히 남았어요. ${getNextGrowthPreviewMessage()}`);
   renderServiceFlow();
   renderCompleteCard();
   updateTodayStatus();
@@ -1711,7 +1770,7 @@ function renderWorld() {
     const moodClass = `mood-${todayRecord.mood}`;
     mySpotAuraElement.innerHTML = `<span class="${moodClass}"></span><span class="${moodClass}"></span><span class="${moodClass}"></span>`;
     worldSummaryTodayElement.textContent = `오늘 ${todayRecord.label}`;
-    worldSummaryTextElement.textContent = `오늘의 ${todayRecord.label} 기운이 큰 숲 안의 내 나무 자리에도 조용히 스며들었어요.`;
+    worldSummaryTextElement.textContent = `오늘의 ${todayRecord.label} 기운이 큰 숲 안의 내 나무 자리에도 조용히 스며들었어요. 내일 다시 오면 이 변화 위에 성장이 이어져요.`;
   } else {
     mySpotAuraElement.innerHTML = "";
     worldSummaryTodayElement.textContent = "오늘 기록 전";
@@ -1812,8 +1871,8 @@ function renderFirstVisitGuide() {
   }
 
   firstVisitGuideElement.classList.add("guide-done");
-  if (titleElement) titleElement.textContent = "오늘의 기록이 숲에 남았어요.";
-  if (textElement) textElement.textContent = "내 나무와 월드 숲에 오늘의 기운이 조용히 반영됐어요.";
+  if (titleElement) titleElement.textContent = "오늘의 변화가 숲에 남았어요.";
+  if (textElement) textElement.textContent = `내 나무와 월드 숲에 오늘의 기운이 반영됐어요. ${getNextGrowthPreviewMessage()}`;
 }
 
 function renderDailyLoop() {
@@ -1830,14 +1889,43 @@ function renderDailyLoop() {
 function renderCompleteCard() {
   const todayRecord = getTodayRecord();
 
+  const afterRecordCards = [
+    completeCardElement,
+    todayChangeCardElement,
+    tomorrowPromiseCardElement
+  ];
+
   if (!todayRecord) {
-    completeCardElement.classList.add("hidden");
-    completeMessageElement.textContent = "오늘의 기운이 월드 숲에 조용히 스며들었어요.";
+    afterRecordCards.forEach((element) => element?.classList.add("hidden"));
+    if (completeMessageElement) {
+      completeMessageElement.textContent = "오늘의 기운이 월드 숲에 조용히 스며들었어요.";
+    }
     return;
   }
 
-  completeCardElement.classList.remove("hidden");
-  completeMessageElement.textContent = `오늘의 ${todayRecord.label} 기운이 내 나무와 월드 숲의 내 자리에 조용히 스며들었어요. 오늘의 마음은 숲에 남았어요. 이제 그만 쉬어도 괜찮아요. ${getNextGoalMessage()}`;
+  const experience = getAfterRecordExperience(todayRecord);
+
+  afterRecordCards.forEach((element) => element?.classList.remove("hidden"));
+
+  if (completeMessageElement) {
+    completeMessageElement.textContent = `${experience.complete} 오늘의 마음은 숲에 남았고, 내일 다시 오면 성장이 이어져요.`;
+  }
+
+  if (todayChangeTitleElement) {
+    todayChangeTitleElement.textContent = experience.changeTitle;
+  }
+
+  if (todayChangeTextElement) {
+    todayChangeTextElement.textContent = experience.changeText;
+  }
+
+  if (tomorrowPromiseTitleElement) {
+    tomorrowPromiseTitleElement.textContent = experience.tomorrowTitle;
+  }
+
+  if (tomorrowPromiseTextElement) {
+    tomorrowPromiseTextElement.textContent = experience.tomorrowText;
+  }
 }
 
 function renderVersionLabels() {
@@ -1853,7 +1941,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 첫 진입 경험 개선판`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 기록 후 내일 기대감 강화판`;
   }
 }
 
@@ -1946,8 +2034,11 @@ function renderForestEffect(state = null, animate = false) {
 function renderMessages(customMessage) {
   if (customMessage) {
     growthMessageElement.textContent = customMessage;
+  } else if (hasCheckedToday() && getTodayRecord()) {
+    const experience = getAfterRecordExperience(getTodayRecord());
+    growthMessageElement.textContent = `${experience.complete} ${getNextGrowthPreviewMessage()}`;
   } else if (treeData.history.length > 0) {
-    growthMessageElement.textContent = `가장 최근 기록: ${treeData.history[0].message}`;
+    growthMessageElement.textContent = `어제까지의 기록이 숲에 남아 있어요. 오늘의 마음을 더하면 성장이 다시 이어져요.`;
   } else if (!treeData.treeName?.trim()) {
     growthMessageElement.textContent = "먼저 내 나무 이름을 정하면 오늘의 마음을 남길 수 있어요.";
   } else {
@@ -2014,7 +2105,7 @@ function updateTodayStatus() {
     const label = todayRecord ? todayRecord.label : "기록됨";
     todayStatusElement.textContent = `오늘(${formatDate(getTodayKey())})은 이미 "${label}" 상태를 기록했어요.`;
     if (moodGuideElement) {
-      moodGuideElement.textContent = "오늘의 기록은 완료됐어요. 더 고르지 않아도 괜찮아요.";
+      moodGuideElement.textContent = `오늘의 기록은 완료됐어요. 내일 다시 오면 다음 성장이 이어져요. ${getNextGrowthPreviewMessage()}`;
     }
     backToWorldBtnBottomElement.textContent = "전체 숲에서 내 자리 보기";
   } else {

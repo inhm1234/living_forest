@@ -1,24 +1,14 @@
-살아있는 숲 V1.10.32 관리자 데이터 안내
+살아있는 숲 V1.11 관리자 데이터 안내
 
-현재 Google Sheets 파일:
-살아있는 숲
+이번 V1.11은 관리자 데이터 구조를 새로 바꾸는 버전이 아닙니다.
 
-스프레드시트 ID:
-1EQlAMI_pK1DrUL7MC-efcneyLYKEHj0ipWJu077TDFI
+기준:
+- V1.10.31에서 만든 날짜별 집계 구조 유지
+- 오늘 / 어제 / 최근 7일 / 전체 선택 유지
+- Apps Script 웹 앱 URL 유지
+- Google Sheets events 시트 기록 유지
 
-현재 Apps Script 웹 앱 URL:
-https://script.google.com/macros/s/AKfycbyeqnUwroduXytKBFMs9Tpl2gngoJ0f6JmF9oKbEA-QAoJY0aFJ-bvOUWS15SFeErgkiA/exec
+따라서 V1.10.31 이후 관리자 숫자가 정상 표시되고 있다면,
+이번 V1.11 업로드 때 Apps Script를 새로 배포하지 않아도 됩니다.
 
-이번 버전에서 하는 일:
-- V1.10.31에서 만든 날짜별 집계 구조를 그대로 유지합니다.
-- V1.10.32는 관리자 데이터 구조가 아니라 첫 화면 경험을 개선하는 버전입니다.
-- 관리자 화면의 오늘 / 어제 / 최근 7일 / 전체 기준 선택은 계속 유지됩니다.
-
-Apps Script 관련:
-- V1.10.31에서 날짜별 집계가 정상 작동했다면 Apps Script를 새로 교체하지 않아도 됩니다.
-- 문제가 생긴 경우에만 APPS_SCRIPT_CODE.txt 전체 코드를 다시 붙여넣고 새 배포하면 됩니다.
-
-확인할 것:
-1. 일반 화면에서 접속 / 내 정원 이동 / 감정 기록을 해봅니다.
-2. Google Sheets events 시트에 행이 추가되는지 확인합니다.
-3. 관리자 화면에서 오늘 / 최근 7일 / 전체 숫자가 유지되는지 확인합니다.
+이번 V1.11의 목적은 감정 기록 후 사용자가 “내일 다시 와야 이어진다”는 기대감을 느끼게 만드는 것입니다.

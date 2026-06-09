@@ -1,4 +1,4 @@
-살아있는 숲 V1.10.32 test 업로드 가이드
+살아있는 숲 V1.11 test 업로드 가이드
 
 1. GitHub 저장소로 이동
    inhm1234/living_forest
@@ -23,11 +23,11 @@
    기존 assets 폴더와 업로드된 이미지 파일들은 삭제하지 마세요.
 
 4. Apps Script
-   이번 V1.10.32에서는 Apps Script를 새로 바꾸지 않아도 됩니다.
+   이번 V1.11에서는 Apps Script를 새로 바꾸지 않아도 됩니다.
    V1.10.31에서 날짜별 집계가 이미 정상이라면 그대로 유지하면 됩니다.
 
 5. 커밋 메시지 추천
-   Apply V1.10.32 test improve first entry experience
+   Apply V1.11 test improve tomorrow return motivation
 
 6. 업로드 후 확인 주소
    일반 화면:
@@ -37,4 +37,4 @@
    https://inhm1234.github.io/living_forest/admin.html
 
 7. 확인 순서
-   일반 화면 첫 문구 확인 → 버튼 문구 확인 → 내 정원 이동 확인 → 감정 기록 확인 → 관리자 숫자 확인
+   일반 화면 버전 확인 → 내 정원 이동 → 감정 기록 → 오늘의 변화 카드 확인 → 내일 이어질 성장 카드 확인 → 관리자 숫자 확인
