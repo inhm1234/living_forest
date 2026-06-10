@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.40 test
+// 살아있는 숲 V1.41 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.40 test
-// 목적: 나무 중심 감성 UX/UI 전환 — 10대 감성 귀여운 숲 톤과 하단 패널 구조로 전환
+// 버전명: V1.41 test
+// 목적: 나무 중심 하단 패널 안정화 — V1.40 UX 구조의 실제 작동 오류 수정 및 불필요 흐름 정리
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.40 test",
+  version: "V1.41 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -620,12 +620,11 @@ const forestInviteMetaElement = document.querySelector("#forestInviteMeta");
 const dailyLoopCardElement = document.querySelector("#dailyLoopCard");
 const dailyLoopTitleElement = document.querySelector("#dailyLoopTitle");
 const dailyLoopTextElement = document.querySelector("#dailyLoopText");
-const flowTitleElement = document.querySelector("#flowTitle");
-const flowDescriptionElement = document.querySelector("#flowDescription");
-const flowStepWorldElement = document.querySelector("#flowStepWorld");
-const flowStepNameElement = document.querySelector("#flowStepName");
-const flowStepMoodElement = document.querySelector("#flowStepMood");
-const flowStepReturnElement = document.querySelector("#flowStepReturn");
+const gardenHubElement = document.querySelector("#gardenHub");
+const gardenHubSheetElement = document.querySelector("#gardenHubSheet");
+const gardenPanelTitleElement = document.querySelector("#gardenPanelTitle");
+const closeGardenPanelBtnElement = document.querySelector("#closeGardenPanelBtn");
+const gardenHubTabButtons = document.querySelectorAll("[data-garden-tab]");
 
 const skyElement = document.querySelector("#sky");
 const gardenTitleElement = document.querySelector("#gardenTitle");
@@ -770,6 +769,8 @@ let forestSoundRuntime = {
   timers: [],
   activeSound: ""
 };
+let gardenHubLayoutBuilt = false;
+let activeGardenHubTab = "record";
 
 function createTreeId() {
   const randomPart = Math.random().toString(36).slice(2, 10);
@@ -2296,50 +2297,6 @@ function seedVisitorHistoryForTest() {
   showGardenScreen();
 }
 
-function getServiceFlowInfo() {
-  const hasName = Boolean(treeData.treeName?.trim());
-  const hasHistory = treeData.history.length > 0;
-  const checkedToday = hasCheckedToday();
-
-  if (!hasName && !hasHistory) {
-    return {
-      title: "내 나무 키우러 가기",
-      description: "오늘의 마음을 고르면 내 나무가 자라고, 월드 숲에도 작은 변화가 생겨요.",
-      activeStep: "world",
-      doneSteps: ["world"]
-    };
-  }
-
-  if (!hasName) {
-    return {
-      title: "내 나무 이름 정하기",
-      description: "이름을 한 번 정하면, 그다음 오늘의 마음을 남길 수 있어요.",
-      activeStep: "name",
-      doneSteps: ["world"]
-    };
-  }
-
-  if (!checkedToday) {
-    const returnMemory = getReturnMemoryInfo();
-    return {
-      title: returnMemory ? "어제의 마음 위에 오늘을 더하기" : "오늘 마음 기록하기",
-      description: returnMemory
-        ? `${returnMemory.pastRecord.label} 기록이 아직 숲에 남아 있어요. 오늘의 마음을 더하면 성장이 이어져요.`
-        : "좋음, 보통, 피곤 중 지금의 나와 가까운 상태 하나만 골라요. 어떤 선택도 성장으로 남아요.",
-      activeStep: "mood",
-      doneSteps: ["world", "name"]
-    };
-  }
-
-  return {
-    title: "오늘의 변화가 남았어요",
-    description: "오늘의 마음이 내 나무와 월드 숲에 반영됐어요. 내일 다시 오면 이 변화 위에 새로운 성장이 이어져요.",
-    activeStep: "return",
-    doneSteps: ["world", "name", "mood", "return"]
-  };
-}
-
-
 function getDailyLoopInfo() {
   const hasName = Boolean(treeData.treeName?.trim());
   const checkedToday = hasCheckedToday();
@@ -2544,7 +2501,6 @@ function chooseMood(mood) {
   renderForestEffect(rule.state, true);
   const afterRecordExperience = getAfterRecordExperience({ mood, label: rule.label });
   renderMessages(`${afterRecordExperience.complete} 오늘의 변화는 월드 숲에도 조용히 남았어요. ${getNextGrowthPreviewMessage()}`);
-  renderServiceFlow();
   renderReturnMemoryCard();
   renderStreakRewardCard();
   renderCompleteCard();
@@ -2947,45 +2903,6 @@ function renderWorld() {
   } else {
     goGardenBtnElement.textContent = "오늘 마음 기록하기";
   }
-}
-
-function renderServiceFlow() {
-  const flowElements = [
-    flowTitleElement,
-    flowDescriptionElement,
-    flowStepWorldElement,
-    flowStepNameElement,
-    flowStepMoodElement,
-    flowStepReturnElement
-  ];
-
-  if (flowElements.some((element) => !element)) {
-    return;
-  }
-
-  const flow = getServiceFlowInfo();
-
-  flowTitleElement.textContent = flow.title;
-  flowDescriptionElement.textContent = flow.description;
-
-  const steps = [
-    { key: "world", element: flowStepWorldElement },
-    { key: "name", element: flowStepNameElement },
-    { key: "mood", element: flowStepMoodElement },
-    { key: "return", element: flowStepReturnElement }
-  ];
-
-  steps.forEach((step) => {
-    step.element.classList.remove("done", "active", "waiting");
-
-    if (flow.activeStep === step.key) {
-      step.element.classList.add("active");
-    } else if (flow.doneSteps.includes(step.key)) {
-      step.element.classList.add("done");
-    } else {
-      step.element.classList.add("waiting");
-    }
-  });
 }
 
 function renderForestInviteCard() {
@@ -4879,6 +4796,11 @@ function showGardenScreen() {
   worldScreenElement.classList.remove("screen-active");
   window.scrollTo({ top: 0, behavior: "smooth" });
 
+  buildGardenHubLayout();
+  if (gardenHubElement && gardenHubSheetElement && gardenHubSheetElement.hidden) {
+    openGardenHubTab(activeGardenHubTab || "record");
+  }
+
   const canCheckVisitorAfterCare = hasCheckedToday();
   prepareDailyVisitor({
     allowCreate: canCheckVisitorAfterCare,
@@ -4893,7 +4815,6 @@ function renderAll() {
   renderFirstVisitGuide();
   renderForestInviteCard();
   renderDailyLoop();
-  renderServiceFlow();
   renderGardenAtmosphere();
   renderHeader();
   renderTreeName();
@@ -5055,7 +4976,8 @@ const GARDEN_HUB_CONFIG = {
 };
 
 function buildGardenHubLayout() {
-  if (!gardenHubElement) return;
+  if (!gardenHubElement || gardenHubLayoutBuilt) return;
+  gardenHubLayoutBuilt = true;
 
   Object.entries(GARDEN_HUB_CONFIG).forEach(([tabKey, config]) => {
     const panel = document.getElementById(`gardenPanel-${tabKey}`);
@@ -5105,6 +5027,10 @@ function buildGardenHubLayout() {
 
 function openGardenHubTab(tabKey) {
   if (!gardenHubElement) return;
+  if (!Object.prototype.hasOwnProperty.call(GARDEN_HUB_CONFIG, tabKey)) {
+    tabKey = "record";
+  }
+  activeGardenHubTab = tabKey;
   gardenHubElement.classList.add("is-open");
   if (gardenHubSheetElement) {
     gardenHubSheetElement.hidden = false;

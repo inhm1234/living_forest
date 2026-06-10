@@ -1224,74 +1224,6 @@ h1,
   backdrop-filter: blur(14px);
 }
 
-.service-flow {
-  margin-top: 12px;
-  padding: 15px 16px 14px;
-  border-radius: 24px;
-}
-
-.flow-now {
-  display: grid;
-  gap: 5px;
-}
-
-.flow-kicker,
-.complete-kicker {
-  color: rgba(217, 247, 198, 0.72);
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-}
-
-#flowTitle {
-  color: #f4ffe9;
-  font-size: 18px;
-  font-weight: 950;
-  letter-spacing: -0.03em;
-}
-
-#flowDescription {
-  margin: 0;
-  color: rgba(238, 246, 232, 0.72);
-  line-height: 1.55;
-}
-
-.flow-steps {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-top: 14px;
-}
-
-.flow-steps span {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 34px;
-  padding: 8px 9px;
-  border: 1px solid rgba(231, 255, 222, 0.12);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(238, 246, 232, 0.58);
-  font-size: 12px;
-  font-weight: 900;
-  white-space: nowrap;
-}
-
-.flow-steps span.done {
-  color: rgba(217, 247, 198, 0.82);
-  background: rgba(156, 207, 128, 0.1);
-}
-
-.flow-steps span.active {
-  color: #132115;
-  background: linear-gradient(135deg, #d9f7b5, #8fcf8f);
-  box-shadow: 0 10px 22px rgba(122, 186, 120, 0.16);
-}
-
-.flow-steps span.waiting {
-  opacity: 0.68;
-}
 
 .complete-card {
   margin-top: 14px;
@@ -1405,16 +1337,8 @@ h1,
   .primary-btn {
     min-height: 48px;
   }
-  .flow-steps {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .neighbor-spot small {
     display: none;
-  }
-
-  .service-flow {
-    padding: 14px;
   }
 
 }
@@ -10111,7 +10035,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.40 test · 나무 중심 감성 UX/UI 전환 */
+/* V1.41 test · 나무 중심 하단 패널 안정화 */
 html {
   background: #160f23;
 }
@@ -10372,4 +10296,24 @@ button[type="submit"],
   .garden-hub-panel {
     max-height: min(38vh, 340px);
   }
+}
+
+/* V1.41 test: 하단 패널 안정화 보강 */
+.garden-hub.is-open {
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.garden-hub:not(.is-open) .garden-hub-nav {
+  opacity: 0.78;
+}
+
+.garden-hub-tab:focus-visible,
+.garden-hub-close:focus-visible {
+  outline: 2px solid rgba(217, 247, 181, 0.78);
+  outline-offset: 3px;
+}
+
+.hub-inline-return {
+  width: 100%;
+  justify-content: center;
 }

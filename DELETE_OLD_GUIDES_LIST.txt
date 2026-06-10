@@ -1,0 +1,27 @@
+살아있는 숲 V1.41 test 정리 가능 파일 목록
+
+아래 파일들은 이전 버전의 패치 안내 파일입니다.
+현재 앱 실행에는 필요하지 않으므로 저장소를 깔끔하게 정리하고 싶다면 삭제해도 됩니다.
+단, 작업 히스토리를 남기고 싶으면 보관해도 문제는 없습니다.
+
+- CARE_ACTION_VISIBILITY_FIX_GUIDE.txt
+- CARE_DOCK_UX_FIX_GUIDE.txt
+- FOREST_ARCHIVE_GUIDE.txt
+- FOREST_MANAGEMENT_GUIDE.txt
+- FOREST_SOUND_GUIDE.txt
+- FOREST_TRAIL_GUIDE.txt
+- INDEX_FIX_GUIDE.txt
+- MARKER_VISIBILITY_FIX_GUIDE.txt
+- SELF_CARE_ACTION_GUIDE.txt
+- SOUND_BUTTON_FIX_GUIDE.txt
+- TOMORROW_SEED_GUIDE.txt
+- WEEKLY_FOREST_LETTER_GUIDE.txt
+
+유지 추천 파일:
+- README.md
+- VERSION.txt
+- LAUNCH_CHECKLIST.txt
+- UPLOAD_GUIDE.txt
+- PUBLIC_SHARE_COPY.txt
+- APPS_SCRIPT_CODE.txt
+- SHEETS_SETUP_GUIDE.txt
