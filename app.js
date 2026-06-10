@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.25.2 test
+// 살아있는 숲 V1.25.3 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.25.2 test
+// 버전명: V1.25.3 test
 // 목적: 내 정원 표식 1차 — 내 나무 곁에 개인화 표식을 놓는 확장
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.25.2 test",
+  version: "V1.25.3 test",
   dataSchemaVersion: 6,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -14,9 +14,9 @@ const APP_CONFIG = {
 };
 
 
-// V1.25.2 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.25.3 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.25.2 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.25.3 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {

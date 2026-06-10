@@ -9074,7 +9074,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.25.2 test: 작은 돌봄 버튼 위치 보정 — 나무 가까이에서 바로 선택하고 결과를 확인 */
+/* V1.25.3 test: 작은 돌봄 버튼 위치 보정 — 정원 화면을 가리지 않는 미니 컨트롤 */
 .tree-care-card,
 .garden-marker-card {
   margin-top: 14px;
@@ -9273,5 +9273,109 @@ body[data-world-time="day"] .daily-loop-card {
   .tree-care-actions,
   .garden-marker-actions {
     grid-template-columns: 1fr;
+  }
+}
+
+
+/* V1.25.3 test: 작은 돌봄 패널 가림 문제 최종 보정
+   - 중앙 하단 오버레이를 없애고, 나무와 메시지를 가리지 않는 우측 상단 미니 컨트롤로 이동 */
+.tree-care-stage-dock {
+  left: auto;
+  right: 14px;
+  top: 14px;
+  bottom: auto;
+  z-index: 13;
+  width: min(184px, calc(100% - 28px));
+  padding: 8px;
+  border-radius: 18px;
+  background: rgba(7, 18, 16, 0.54);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2), 0 0 22px rgba(207, 255, 181, 0.06);
+  transform: none;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.tree-care-stage-label {
+  margin: 0 0 5px;
+  font-size: 10px;
+  line-height: 1.2;
+  text-align: left;
+  opacity: 0.84;
+}
+
+.tree-care-stage-text {
+  margin: 0 0 7px;
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.25;
+  text-align: left;
+  color: rgba(246, 255, 238, 0.84);
+}
+
+.tree-care-stage-dock:not(.care-dock-done) .tree-care-stage-text {
+  display: none;
+}
+
+.tree-care-stage-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.tree-care-stage-actions button {
+  min-height: 32px;
+  padding: 4px 5px;
+  border-radius: 12px;
+  gap: 2px;
+  font-size: 11px;
+}
+
+.tree-care-stage-actions button span {
+  font-size: 15px;
+}
+
+.tree-care-stage-actions button em {
+  font-size: 11px;
+}
+
+.tree-care-stage-actions button.selected {
+  box-shadow: 0 8px 16px rgba(122, 186, 120, 0.16);
+}
+
+.tree-care-stage-dock.care-dock-done {
+  background: rgba(20, 42, 30, 0.64);
+}
+
+@media (max-width: 560px) {
+  .tree-care-stage-dock {
+    top: 12px;
+    right: 12px;
+    width: min(174px, calc(100% - 24px));
+    padding: 7px;
+    border-radius: 16px;
+  }
+
+  .tree-care-stage-label {
+    margin-bottom: 4px;
+    font-size: 9.5px;
+  }
+
+  .tree-care-stage-text {
+    margin-bottom: 6px;
+    font-size: 10.5px;
+  }
+
+  .tree-care-stage-actions {
+    gap: 4px;
+  }
+
+  .tree-care-stage-actions button {
+    min-height: 30px;
+    padding: 3px 4px;
+    font-size: 10.5px;
+  }
+
+  .tree-care-stage-actions button span {
+    font-size: 14px;
   }
 }
