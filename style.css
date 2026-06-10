@@ -9074,7 +9074,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.26 test: 작은 돌봄 버튼 위치 보정 — 정원 화면을 가리지 않는 미니 컨트롤 */
+/* V1.27 test: 작은 돌봄 버튼 위치 보정 — 정원 화면을 가리지 않는 미니 컨트롤 */
 .tree-care-card,
 .forest-trail-card,
 .garden-marker-card {
@@ -9167,7 +9167,7 @@ body[data-world-time="day"] .daily-loop-card {
   opacity: 1;
 }
 
-/* V1.26 test: 숲길 산책 1차 — 기록 후 오늘 걸은 길을 남기는 확장 */
+/* V1.27 test: 숲길 산책 1차 — 기록 후 오늘 걸은 길을 남기는 확장 */
 .forest-trail-card.trail-ready {
   border-color: rgba(223, 255, 180, 0.2);
   background:
@@ -9309,7 +9309,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.26 test: 작은 돌봄 패널 가림 문제 최종 보정
+/* V1.27 test: 작은 돌봄 패널 가림 문제 최종 보정
    - 중앙 하단 오버레이를 없애고, 나무와 메시지를 가리지 않는 우측 상단 미니 컨트롤로 이동 */
 .tree-care-stage-dock {
   left: auto;
@@ -9409,5 +9409,87 @@ body[data-world-time="day"] .daily-loop-card {
 
   .tree-care-stage-actions button span {
     font-size: 14px;
+  }
+}
+
+
+/* V1.27 test: 숲의 소리 1차 */
+.forest-sound-card {
+  margin-top: 12px;
+  padding: 15px 16px 14px;
+  border-radius: 24px;
+}
+
+.forest-sound-kicker {
+  display: inline-flex;
+  margin-bottom: 6px;
+  color: rgba(218, 248, 199, 0.72);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.forest-sound-title {
+  margin: 0;
+  color: #f4ffe9;
+  font-size: 17px;
+  font-weight: 950;
+  line-height: 1.35;
+}
+
+.forest-sound-text,
+.forest-sound-message {
+  margin: 7px 0 0;
+  color: rgba(238, 246, 232, 0.74);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.forest-sound-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.forest-sound-actions button {
+  min-height: 42px;
+  border: 1px solid rgba(225, 255, 211, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f2ffe7;
+  font-size: 13px;
+  font-weight: 850;
+  cursor: pointer;
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.forest-sound-actions button span {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 17px;
+}
+
+.forest-sound-actions button.selected {
+  border-color: rgba(220, 255, 183, 0.44);
+  background: rgba(218, 255, 187, 0.16);
+  box-shadow: 0 0 24px rgba(209, 255, 185, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.forest-sound-stop {
+  color: rgba(238, 246, 232, 0.78) !important;
+  background: rgba(255, 255, 255, 0.055) !important;
+}
+
+.forest-sound-card.sound-playing {
+  border-color: rgba(223, 255, 180, 0.24);
+  background: rgba(28, 54, 38, 0.42);
+  box-shadow: 0 18px 44px rgba(106, 169, 98, 0.13);
+}
+
+@media (max-width: 560px) {
+  .forest-sound-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

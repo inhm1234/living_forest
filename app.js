@@ -1,22 +1,22 @@
-// 살아있는 숲 V1.26 test
+// 살아있는 숲 V1.27 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.26 test
-// 목적: 숲길 산책 1차 — 감정 기록 후 오늘의 숲길을 골라 짧은 산책 흔적을 남기는 확장
+// 버전명: V1.27 test
+// 목적: 숲의 소리 1차 — 내 정원에 짧은 배경 소리를 더하는 감각 확장
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.26 test",
-  dataSchemaVersion: 7,
+  version: "V1.27 test",
+  dataSchemaVersion: 8,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
   serviceTimeZoneOffsetMinutes: 9 * 60
 };
 
 
-// V1.26 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.27 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.26 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.27 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -478,6 +478,27 @@ const forestTrailRules = {
   }
 };
 
+const forestSoundRules = {
+  wind: {
+    label: "바람",
+    icon: "🍃",
+    title: "잎 사이를 지나가는 바람",
+    message: "가벼운 바람 소리가 내 정원 위를 천천히 지나가요. 잠깐 멈춰 숨을 고르기 좋은 소리예요."
+  },
+  water: {
+    label: "물방울",
+    icon: "💧",
+    title: "작은 물방울 소리",
+    message: "맑은 물방울이 멀리서 톡톡 떨어져요. 오늘의 마음이 조금씩 가라앉는 느낌을 줘요."
+  },
+  night: {
+    label: "밤벌레",
+    icon: "🌙",
+    title: "밤 숲의 작은 소리",
+    message: "밤벌레의 짧은 울림이 숲을 조용히 채워요. 너무 밝지도, 너무 무겁지도 않은 밤의 소리예요."
+  }
+};
+
 const forestEffectRules = {
   "leaf-strong": {
     className: "effect-leaf",
@@ -652,6 +673,12 @@ const forestTrailTitleElement = document.querySelector("#forestTrailTitle");
 const forestTrailTextElement = document.querySelector("#forestTrailText");
 const forestTrailMessageElement = document.querySelector("#forestTrailMessage");
 const forestTrailButtons = document.querySelectorAll("[data-forest-trail]");
+const forestSoundCardElement = document.querySelector("#forestSoundCard");
+const forestSoundTitleElement = document.querySelector("#forestSoundTitle");
+const forestSoundTextElement = document.querySelector("#forestSoundText");
+const forestSoundMessageElement = document.querySelector("#forestSoundMessage");
+const forestSoundButtons = document.querySelectorAll("[data-forest-sound]");
+const stopForestSoundBtnElement = document.querySelector("#stopForestSoundBtn");
 
 const gardenMarkerLayerElement = document.querySelector("#gardenMarkerLayer");
 const gardenMarkerCardElement = document.querySelector("#gardenMarkerCard");
@@ -679,6 +706,11 @@ let shouldHighlightWorldSpot = false;
 let todayVisitorEvent = null;
 let visitorAnimationTimer = null;
 let visitorPlayedSessionDate = null;
+let forestSoundRuntime = {
+  context: null,
+  timers: [],
+  activeSound: ""
+};
 
 function createTreeId() {
   const randomPart = Math.random().toString(36).slice(2, 10);
@@ -3116,6 +3148,184 @@ function chooseTreeCare(care) {
 }
 
 
+
+function renderForestSoundCard() {
+  if (!forestSoundCardElement || !forestSoundTitleElement || !forestSoundTextElement || !forestSoundMessageElement) {
+    return;
+  }
+
+  const activeRule = forestSoundRules[forestSoundRuntime.activeSound] || null;
+  forestSoundCardElement.classList.toggle("sound-playing", Boolean(activeRule));
+
+  forestSoundButtons.forEach((button) => {
+    const soundKey = button.dataset.forestSound;
+    const selected = forestSoundRuntime.activeSound === soundKey;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", selected ? "true" : "false");
+  });
+
+  if (activeRule) {
+    forestSoundTitleElement.textContent = `${activeRule.icon} ${activeRule.title}`;
+    forestSoundTextElement.textContent = activeRule.message;
+    forestSoundMessageElement.textContent = "소리가 재생 중이에요. 화면을 떠나거나 끄기를 누르면 멈춰요.";
+    return;
+  }
+
+  forestSoundTitleElement.textContent = "내 정원에 어울리는 소리를 켜보세요";
+  forestSoundTextElement.textContent = "바람, 물방울, 밤벌레 중 하나를 누르면 이 기기에서만 짧은 숲 분위기가 재생돼요.";
+  forestSoundMessageElement.textContent = "소리는 저장 데이터에 영향을 주지 않는 몰입용 기능이에요.";
+}
+
+function getForestAudioContext() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) {
+    return null;
+  }
+  return new AudioContextClass();
+}
+
+function stopForestSound() {
+  try {
+    forestSoundRuntime.timers.forEach((timerId) => window.clearInterval(timerId));
+    forestSoundRuntime.timers = [];
+
+    const context = forestSoundRuntime.context;
+    forestSoundRuntime.context = null;
+    forestSoundRuntime.activeSound = "";
+
+    if (context && context.state !== "closed") {
+      context.close();
+    }
+  } catch (error) {
+    console.warn("Forest sound stop skipped:", error);
+  }
+
+  renderForestSoundCard();
+}
+
+function createNoiseSource(context, seconds = 2) {
+  const bufferSize = Math.max(1, Math.floor(context.sampleRate * seconds));
+  const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
+  const data = buffer.getChannelData(0);
+
+  for (let i = 0; i < bufferSize; i += 1) {
+    data[i] = Math.random() * 2 - 1;
+  }
+
+  const source = context.createBufferSource();
+  source.buffer = buffer;
+  source.loop = true;
+  return source;
+}
+
+function playSoftTone(context, destination, frequency, duration = 0.28, type = "sine") {
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  const now = context.currentTime;
+
+  oscillator.type = type;
+  oscillator.frequency.setValueAtTime(frequency, now);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.045, now + 0.025);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+  oscillator.connect(gain);
+  gain.connect(destination);
+  oscillator.start(now);
+  oscillator.stop(now + duration + 0.04);
+}
+
+function startWindSound(context, masterGain) {
+  const noise = createNoiseSource(context, 2.5);
+  const filter = context.createBiquadFilter();
+  const gain = context.createGain();
+  const lfo = context.createOscillator();
+  const lfoGain = context.createGain();
+
+  filter.type = "lowpass";
+  filter.frequency.setValueAtTime(520, context.currentTime);
+  gain.gain.setValueAtTime(0.028, context.currentTime);
+  lfo.type = "sine";
+  lfo.frequency.setValueAtTime(0.18, context.currentTime);
+  lfoGain.gain.setValueAtTime(0.018, context.currentTime);
+
+  lfo.connect(lfoGain);
+  lfoGain.connect(gain.gain);
+  noise.connect(filter);
+  filter.connect(gain);
+  gain.connect(masterGain);
+
+  noise.start();
+  lfo.start();
+}
+
+function startWaterSound(context, masterGain) {
+  playSoftTone(context, masterGain, 980, 0.22, "sine");
+  const timerId = window.setInterval(() => {
+    const frequency = 760 + Math.random() * 520;
+    playSoftTone(context, masterGain, frequency, 0.18 + Math.random() * 0.14, "sine");
+  }, 520);
+  forestSoundRuntime.timers.push(timerId);
+}
+
+function startNightSound(context, masterGain) {
+  const timerId = window.setInterval(() => {
+    const base = 1900 + Math.random() * 700;
+    playSoftTone(context, masterGain, base, 0.075, "square");
+    window.setTimeout(() => playSoftTone(context, masterGain, base * 1.08, 0.065, "square"), 95);
+  }, 920);
+  forestSoundRuntime.timers.push(timerId);
+}
+
+async function playForestSound(soundKey) {
+  const rule = forestSoundRules[soundKey];
+  if (!rule) {
+    stopForestSound();
+    return;
+  }
+
+  stopForestSound();
+
+  const context = getForestAudioContext();
+  if (!context) {
+    if (forestSoundMessageElement) {
+      forestSoundMessageElement.textContent = "이 브라우저에서는 숲의 소리를 재생할 수 없어요.";
+    }
+    return;
+  }
+
+  try {
+    if (context.state === "suspended") {
+      await context.resume();
+    }
+
+    const masterGain = context.createGain();
+    masterGain.gain.setValueAtTime(0.0001, context.currentTime);
+    masterGain.gain.exponentialRampToValueAtTime(0.55, context.currentTime + 0.25);
+    masterGain.connect(context.destination);
+
+    forestSoundRuntime.context = context;
+    forestSoundRuntime.activeSound = soundKey;
+
+    if (soundKey === "wind") {
+      startWindSound(context, masterGain);
+    } else if (soundKey === "water") {
+      startWaterSound(context, masterGain);
+    } else if (soundKey === "night") {
+      startNightSound(context, masterGain);
+    }
+
+    renderForestSoundCard();
+    trackForestEvent("forest_sound_played", { sound_type: soundKey });
+  } catch (error) {
+    console.warn("Forest sound play skipped:", error);
+    stopForestSound();
+    if (forestSoundMessageElement) {
+      forestSoundMessageElement.textContent = "소리를 재생하지 못했어요. 브라우저의 자동 재생 설정을 확인해주세요.";
+    }
+  }
+}
+
 function renderForestTrailCard() {
   if (!forestTrailCardElement || !forestTrailTitleElement || !forestTrailTextElement || !forestTrailMessageElement) {
     return;
@@ -3887,6 +4097,7 @@ function renderAll() {
   renderForestShareCard();
   renderTreeCareCard();
   renderForestTrailCard();
+  renderForestSoundCard();
   renderGardenMarkerCard();
   renderGardenMarkerLayer();
   renderForestBadgeCard();
