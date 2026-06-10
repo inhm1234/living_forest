@@ -35,7 +35,7 @@
 
   <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.30-test" />
+  <link rel="stylesheet" href="style.css?v=1.31-test" />
 <!-- Google tag (gtag.js) - Living Forest GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-YC872G7MH1"></script>
 <script>
@@ -56,10 +56,10 @@
   <main class="app">
     <section id="worldScreen" class="screen screen-active">
       <header class="hero world-hero">
-        <p class="version">살아있는 숲 V1.30 test · 주간 숲 편지 1차</p>
+        <p class="version">살아있는 숲 V1.31 test · 내 숲 보관함 1차</p>
         <h1>살아있는 숲</h1>
         <p class="subtitle">하루 한 번 마음을 남기면 내 나무와 숲 일기장이 자라요.</p>
-        <p class="demo-pill">V1.30 test · 주간 숲 편지 1차</p>
+        <p class="demo-pill">V1.31 test · 내 숲 보관함 1차</p>
       </header>
 
       <section class="world-card visual-card">
@@ -160,7 +160,7 @@
     <section id="gardenScreen" class="screen">
       <header class="hero garden-hero">
         <button id="backToWorldBtnTop" class="ghost-btn small-btn" type="button">← 전체 숲</button>
-        <p class="version">오늘 내 나무 돌보기 · V1.30 test</p>
+        <p class="version">오늘 내 나무 돌보기 · V1.31 test</p>
         <h2 id="gardenTitle" class="garden-title">밤 숲속 자리</h2>
         <p class="subtitle">좋음도, 보통도, 피곤함도 모두 성장으로 남아요.</p>
       </header>
@@ -388,6 +388,18 @@
         <p id="weeklyForestLetterMeta" class="weekly-forest-letter-meta">최근 기록 3개부터 열려요.</p>
       </section>
 
+      <section id="forestArchiveCard" class="forest-archive-card glass-panel" aria-live="polite">
+        <span class="forest-archive-kicker">내 숲 보관함</span>
+        <p id="forestArchiveTitle" class="forest-archive-title">내 숲 기록을 파일로 보관할 수 있어요</p>
+        <p id="forestArchiveText" class="forest-archive-text">이 기기에 저장된 나무 이름, 감정 기록, 숲 일기장, 작은 선택들을 하나의 보관 파일로 내려받을 수 있어요.</p>
+        <div id="forestArchiveStats" class="forest-archive-stats" aria-label="내 숲 보관 요약"></div>
+        <div class="forest-archive-actions">
+          <button id="downloadForestArchiveBtn" class="primary-btn" type="button">보관 파일 받기</button>
+          <button id="copyForestArchiveBtn" class="ghost-btn" type="button">요약 복사</button>
+        </div>
+        <p id="forestArchiveMessage" class="forest-archive-message">서버 전송 없이 이 기기 안의 기록만 내보내요.</p>
+      </section>
+
       <section id="gardenMarkerCard" class="garden-marker-card glass-panel" aria-live="polite">
         <span class="garden-marker-kicker">내 정원 표식</span>
         <p id="gardenMarkerTitle" class="garden-marker-title">내 정원에 작은 표식을 놓아보세요</p>
@@ -437,7 +449,7 @@
     </div>
 
     <p class="test-storage-line">저장키: <span id="testModeStorageKey">livingForestV012_TEST</span></p>
-    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.30 test · schema 10 · local-only · 주간 숲 편지 1차</span></p>
+    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.31 test · schema 10 · local-only · 내 숲 보관함 1차</span></p>
 
     <div class="test-preset-buttons">
       <button type="button" data-test-preset="first">첫 방문자</button>
@@ -459,6 +471,6 @@
   </aside>
 
 
-  <script src="app.js?v=1.30-test"></script>
+  <script src="app.js?v=1.31-test"></script>
 </body>
 </html>

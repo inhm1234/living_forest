@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.30 test
+// 살아있는 숲 V1.31 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.30 test
-// 목적: 주간 숲 편지 1차 — 오늘의 기록 뒤 실제 나에게 돌아오는 작은 행동 남기기
+// 버전명: V1.31 test
+// 목적: 내 숲 보관함 1차 — 이 기기에 저장된 숲 기록을 안전하게 내보내는 확장 — 오늘의 기록 뒤 실제 나에게 돌아오는 작은 행동 남기기
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.30 test",
+  version: "V1.31 test",
   dataSchemaVersion: 10,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -14,9 +14,9 @@ const APP_CONFIG = {
 };
 
 
-// V1.30 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.31 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.30 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.31 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -711,6 +711,13 @@ const weeklyForestLetterTitleElement = document.querySelector("#weeklyForestLett
 const weeklyForestLetterTextElement = document.querySelector("#weeklyForestLetterText");
 const weeklyForestLetterStatsElement = document.querySelector("#weeklyForestLetterStats");
 const weeklyForestLetterMetaElement = document.querySelector("#weeklyForestLetterMeta");
+const forestArchiveCardElement = document.querySelector("#forestArchiveCard");
+const forestArchiveTitleElement = document.querySelector("#forestArchiveTitle");
+const forestArchiveTextElement = document.querySelector("#forestArchiveText");
+const forestArchiveStatsElement = document.querySelector("#forestArchiveStats");
+const forestArchiveMessageElement = document.querySelector("#forestArchiveMessage");
+const downloadForestArchiveBtnElement = document.querySelector("#downloadForestArchiveBtn");
+const copyForestArchiveBtnElement = document.querySelector("#copyForestArchiveBtn");
 const forestSoundCardElement = document.querySelector("#forestSoundCard");
 const forestSoundTitleElement = document.querySelector("#forestSoundTitle");
 const forestSoundTextElement = document.querySelector("#forestSoundText");
@@ -3822,7 +3829,16 @@ function renderGardenMarkerCard() {
 
   gardenMarkerCardElement.classList.toggle("marker-selected", Boolean(rule));
 
-  gardenMarkerButtons.forEach((button) => {
+  
+if (downloadForestArchiveBtnElement) {
+  downloadForestArchiveBtnElement.addEventListener("click", downloadForestArchive);
+}
+
+if (copyForestArchiveBtnElement) {
+  copyForestArchiveBtnElement.addEventListener("click", copyForestArchiveSummary);
+}
+
+gardenMarkerButtons.forEach((button) => {
     const buttonMarker = button.dataset.gardenMarker;
     const selected = markerKey === buttonMarker;
     button.classList.toggle("selected", selected);
@@ -3987,12 +4003,162 @@ async function shareForestSentence() {
   }
 }
 
+
+function buildForestArchiveData() {
+  const history = Array.isArray(treeData.history) ? treeData.history : [];
+  const careHistory = Array.isArray(treeData.careHistory) ? treeData.careHistory : [];
+  const trailHistory = Array.isArray(treeData.trailHistory) ? treeData.trailHistory : [];
+  const selfCareHistory = Array.isArray(treeData.selfCareHistory) ? treeData.selfCareHistory : [];
+  const tomorrowSeeds = Array.isArray(treeData.tomorrowSeeds) ? treeData.tomorrowSeeds : [];
+  const sharedForestSentenceDates = Array.isArray(treeData.sharedForestSentenceDates) ? treeData.sharedForestSentenceDates : [];
+
+  return {
+    archiveType: "living_forest_local_archive",
+    archiveVersion: "1.0",
+    exportedAt: getNowIsoString(),
+    appName: APP_CONFIG.name,
+    appVersion: APP_CONFIG.version,
+    dataSchemaVersion: APP_CONFIG.dataSchemaVersion,
+    storageMode: STORAGE_CONFIG.mode,
+    note: "이 파일은 살아있는 숲 로컬 기록 보관용입니다. 서버로 자동 전송되지 않습니다.",
+    tree: {
+      treeId: treeData.treeId || "",
+      treeName: treeData.treeName || "",
+      createdAt: treeData.createdAt || "",
+      updatedAt: treeData.updatedAt || "",
+      lastCheckDate: treeData.lastCheckDate || null,
+      leaf: treeData.leaf,
+      trunk: treeData.trunk,
+      root: treeData.root,
+      totalRecords: history.length,
+      currentStage: getTreeStageName(history.length),
+      gardenMarker: treeData.gardenMarker || ""
+    },
+    records: {
+      history,
+      careHistory,
+      trailHistory,
+      selfCareHistory,
+      tomorrowSeeds,
+      sharedForestSentenceDates,
+      inviteStartedAt: treeData.inviteStartedAt || null
+    }
+  };
+}
+
+function getForestArchiveInfo() {
+  const history = Array.isArray(treeData.history) ? treeData.history : [];
+  const totalRecords = history.length;
+  const totalCare = Array.isArray(treeData.careHistory) ? treeData.careHistory.length : 0;
+  const totalTrail = Array.isArray(treeData.trailHistory) ? treeData.trailHistory.length : 0;
+  const totalSelfCare = Array.isArray(treeData.selfCareHistory) ? treeData.selfCareHistory.length : 0;
+  const totalSeeds = Array.isArray(treeData.tomorrowSeeds) ? treeData.tomorrowSeeds.length : 0;
+  const hasName = Boolean(treeData.treeName?.trim());
+
+  if (totalRecords <= 0 && !hasName) {
+    return {
+      title: "내 숲 보관함은 첫 기록을 기다려요",
+      text: "나무 이름을 정하거나 오늘의 마음을 남기면, 이 기기에 저장된 숲 기록을 보관 파일로 내려받을 수 있어요.",
+      stats: ["기록 0개", "보관 준비 중"],
+      message: "첫 기록 전에는 내보낼 숲 기록이 거의 없어요."
+    };
+  }
+
+  const actionCount = totalCare + totalTrail + totalSelfCare + totalSeeds;
+  return {
+    title: `${treeData.treeName?.trim() || "내 나무"}의 숲 기록 보관함`,
+    text: "지금 이 기기에 남아 있는 내 나무와 숲 일기장 기록을 파일로 보관할 수 있어요. 로그인이나 서버 저장 없이, 사용자가 직접 내려받는 방식이에요.",
+    stats: [
+      `감정 기록 ${totalRecords}개`,
+      `작은 선택 ${actionCount}개`,
+      treeData.gardenMarker ? "정원 표식 있음" : "정원 표식 없음"
+    ],
+    message: "보관 파일은 JSON 형식이에요. 나중에 백업/복구 기능으로 확장하기 위한 첫 단계예요."
+  };
+}
+
+function renderForestArchiveCard() {
+  if (!forestArchiveCardElement || !forestArchiveTitleElement || !forestArchiveTextElement || !forestArchiveStatsElement || !forestArchiveMessageElement) {
+    return;
+  }
+
+  const info = getForestArchiveInfo();
+  forestArchiveTitleElement.textContent = info.title;
+  forestArchiveTextElement.textContent = info.text;
+  forestArchiveStatsElement.innerHTML = info.stats.map((stat) => `<span>${escapeHtml(stat)}</span>`).join("");
+  forestArchiveMessageElement.textContent = info.message;
+}
+
+function getForestArchiveFilename() {
+  const safeDate = getTodayKey().replace(/-/g, "");
+  const safeName = (treeData.treeName?.trim() || "living-forest")
+    .replace(/[\\/:*?"<>|\s]+/g, "-")
+    .slice(0, 24);
+  return `${safeName}-archive-${safeDate}.json`;
+}
+
+function downloadForestArchive() {
+  try {
+    const data = buildForestArchiveData();
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = getForestArchiveFilename();
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 500);
+
+    if (forestArchiveMessageElement) {
+      forestArchiveMessageElement.textContent = "내 숲 보관 파일을 만들었어요. 다운로드 폴더를 확인해 주세요.";
+    }
+    trackForestEvent("forest_archive_download", { source: "forest_archive_card" });
+  } catch (error) {
+    if (forestArchiveMessageElement) {
+      forestArchiveMessageElement.textContent = "보관 파일을 만들지 못했어요. 브라우저 권한이나 저장 공간을 확인해 주세요.";
+    }
+  }
+}
+
+function buildForestArchiveSummaryText() {
+  const data = buildForestArchiveData();
+  const tree = data.tree;
+  const records = data.records;
+  const totalSmallActions = (records.careHistory?.length || 0) + (records.trailHistory?.length || 0) + (records.selfCareHistory?.length || 0) + (records.tomorrowSeeds?.length || 0);
+
+  return [
+    "살아있는 숲 · 내 숲 보관 요약",
+    `나무 이름: ${tree.treeName || "이름 없는 나무"}`,
+    `감정 기록: ${tree.totalRecords}개`,
+    `작은 선택: ${totalSmallActions}개`,
+    `현재 단계: ${tree.currentStage}`,
+    `내보낸 시간: ${data.exportedAt}`,
+    "기록은 이 기기에만 저장되어 있어요."
+  ].join("\n");
+}
+
+async function copyForestArchiveSummary() {
+  try {
+    await copyTextToClipboard(buildForestArchiveSummaryText());
+    if (forestArchiveMessageElement) {
+      forestArchiveMessageElement.textContent = "내 숲 보관 요약을 복사했어요.";
+    }
+    trackForestEvent("forest_archive_summary_copy", { source: "forest_archive_card" });
+  } catch (error) {
+    if (forestArchiveMessageElement) {
+      forestArchiveMessageElement.textContent = "복사에 실패했어요. 브라우저 권한을 확인해 주세요.";
+    }
+  }
+}
+
 function renderVersionLabels() {
   const versionElements = document.querySelectorAll(".version");
   const demoPillElement = document.querySelector(".demo-pill");
 
   if (versionElements[0]) {
-    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 숲길 산책 1차`;
+    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 내 숲 보관함 1차`;
   }
 
   if (versionElements[1]) {
@@ -4000,7 +4166,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 숲길 산책 1차`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 내 숲 보관함 1차`;
   }
 }
 
@@ -4398,7 +4564,7 @@ function renderTestModeStatus() {
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
   const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 주간 숲 편지 1차 · ${shortTreeId}`;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 내 숲 보관함 1차 · ${shortTreeId}`;
 }
 
 function setupTestMode() {
@@ -4494,6 +4660,7 @@ function renderAll() {
   renderForestTrailCard();
   renderSelfCareCard();
   renderWeeklyForestLetterCard();
+  renderForestArchiveCard();
   renderForestSoundCard();
   renderGardenMarkerCard();
   renderGardenMarkerLayer();
@@ -4562,6 +4729,15 @@ if (stopForestSoundBtnElement) {
   stopForestSoundBtnElement.addEventListener("click", stopForestSound);
 }
 
+
+
+if (downloadForestArchiveBtnElement) {
+  downloadForestArchiveBtnElement.addEventListener("click", downloadForestArchive);
+}
+
+if (copyForestArchiveBtnElement) {
+  copyForestArchiveBtnElement.addEventListener("click", copyForestArchiveSummary);
+}
 
 gardenMarkerButtons.forEach((button) => {
   button.addEventListener("click", () => {
