@@ -1,16 +1,30 @@
-살아있는 숲 V1.31 test 업로드 가이드
+살아있는 숲 V1.36 test 업로드 가이드
 
 1. GitHub 저장소로 이동
    inhm1234/living_forest
 
-2. ZIP 안의 파일을 저장소 루트에 업로드
+2. ZIP 안의 파일을 저장소 루트에 덮어 업로드
+   - app.js
+   - style.css
+   - index.html
+   - admin.html
+   - admin.css
+   - admin.js
+   - README.md
+   - VERSION.txt
+   - UPLOAD_GUIDE.txt
+   - LAUNCH_CHECKLIST.txt
+   - PUBLIC_SHARE_COPY.txt
+   - APPS_SCRIPT_CODE.txt
+   - SHEETS_SETUP_GUIDE.txt
+   - 기타 *_GUIDE.txt 파일
 
 3. 주의
    assets 폴더는 이번 ZIP에 포함되어 있지 않습니다.
    기존 assets 폴더와 업로드된 이미지 파일들은 삭제하지 마세요.
 
 4. 커밋 메시지 추천
-   Apply V1.31 test add forest archive export
+   Apply V1.36 test add integrated forest management room
 
 5. 업로드 후 확인 주소
    일반 화면:
@@ -18,6 +32,3 @@
 
    관리자 화면:
    https://inhm1234.github.io/living_forest/admin.html
-
-6. 확인 순서
-   일반 화면 버전 확인 → 내 정원 이동 → 내 숲 보관함 카드 확인 → JSON 파일 다운로드 → 요약 복사 → 기존 기능 유지 확인

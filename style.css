@@ -9074,7 +9074,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.31 test: 작은 돌봄 버튼 위치 보정 — 정원 화면을 가리지 않는 미니 컨트롤 */
+/* V1.36 test: 작은 돌봄 버튼 위치 보정 — 정원 화면을 가리지 않는 미니 컨트롤 */
 .tree-care-card,
 .forest-trail-card,
 .garden-marker-card {
@@ -9167,7 +9167,7 @@ body[data-world-time="day"] .daily-loop-card {
   opacity: 1;
 }
 
-/* V1.31 test: 숲길 산책 1차 — 기록 후 오늘 걸은 길을 남기는 확장 */
+/* V1.36 test: 숲길 산책 1차 — 기록 후 오늘 걸은 길을 남기는 확장 */
 .forest-trail-card.trail-ready {
   border-color: rgba(223, 255, 180, 0.2);
   background:
@@ -9309,7 +9309,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.31 test: 작은 돌봄 패널 가림 문제 최종 보정
+/* V1.36 test: 작은 돌봄 패널 가림 문제 최종 보정
    - 중앙 하단 오버레이를 없애고, 나무와 메시지를 가리지 않는 우측 상단 미니 컨트롤로 이동 */
 .tree-care-stage-dock {
   left: auto;
@@ -9413,7 +9413,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.31 test: 내일의 씨앗 1차 */
+/* V1.36 test: 내일의 씨앗 1차 */
 .forest-sound-card {
   margin-top: 12px;
   padding: 15px 16px 14px;
@@ -9494,7 +9494,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.31 test: 내일의 씨앗 1차 */
+/* V1.36 test: 내일의 씨앗 1차 */
 .tomorrow-seed-card {
   margin-top: 14px;
   padding: 16px;
@@ -9605,7 +9605,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.31 test: 주간 숲 편지 1차 */
+/* V1.36 test: 주간 숲 편지 1차 */
 .self-care-card {
   margin-top: 14px;
   padding: 16px;
@@ -9709,7 +9709,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.31 test: 주간 숲 편지 1차 — 최근 기록을 모아 며칠 단위 회고로 보여주는 확장 */
+/* V1.36 test: 주간 숲 편지 1차 — 최근 기록을 모아 며칠 단위 회고로 보여주는 확장 */
 .weekly-forest-letter-card {
   margin-top: 14px;
   padding: 16px;
@@ -9799,7 +9799,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.31 test: 내 숲 보관함 1차 — 이 기기의 숲 기록을 사용자가 직접 보관 */
+/* V1.36 test: 내 숲 관리 확장 통합본 — 이 기기의 숲 기록을 사용자가 직접 보관 */
 .forest-archive-card {
   margin-top: 14px;
   padding: 16px;
@@ -9879,5 +9879,233 @@ body[data-world-time="day"] .daily-loop-card {
 @media (max-width: 560px) {
   .forest-archive-actions {
     grid-template-columns: 1fr;
+  }
+}
+
+/* V1.36 test: 내 숲 관리 확장 통합본 — 보관/복원/달력/기억 찾기/백업 준비 */
+.forest-management-card,
+.forest-calendar-card,
+.forest-memory-card {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 24px;
+}
+
+.forest-management-card {
+  border-color: rgba(223, 255, 180, 0.22);
+  background: rgba(28, 54, 38, 0.44);
+}
+
+.forest-backup-note {
+  margin-top: 13px;
+  padding: 12px 13px;
+  border: 1px solid rgba(225, 255, 211, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.065);
+}
+
+.forest-backup-note strong {
+  display: block;
+  color: #f2ffe7;
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.forest-backup-note p {
+  margin: 5px 0 0;
+  color: rgba(238, 246, 232, 0.72);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.forest-management-actions {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.forest-calendar-kicker,
+.forest-memory-kicker {
+  display: inline-flex;
+  margin-bottom: 6px;
+  color: rgba(218, 248, 199, 0.72);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.forest-calendar-title,
+.forest-memory-title {
+  margin: 0;
+  color: #f4ffe9;
+  font-size: 18px;
+  font-weight: 950;
+  line-height: 1.35;
+}
+
+.forest-calendar-text,
+.forest-calendar-message,
+.forest-memory-text,
+.forest-memory-message {
+  margin: 7px 0 0;
+  color: rgba(238, 246, 232, 0.74);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.forest-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 13px;
+}
+
+.forest-calendar-day {
+  min-height: 68px;
+  padding: 8px 5px;
+  border: 1px solid rgba(225, 255, 211, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.055);
+  text-align: center;
+}
+
+.forest-calendar-day span,
+.forest-calendar-day small,
+.forest-calendar-day strong {
+  display: block;
+}
+
+.forest-calendar-day span {
+  color: rgba(238, 246, 232, 0.64);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.forest-calendar-day strong {
+  margin-top: 5px;
+  color: rgba(238, 246, 232, 0.46);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.forest-calendar-day small {
+  margin-top: 5px;
+  color: rgba(238, 246, 232, 0.48);
+  font-size: 10px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.forest-calendar-day.has-record {
+  border-color: rgba(223, 255, 180, 0.24);
+  background: rgba(217, 247, 181, 0.105);
+  box-shadow: 0 0 24px rgba(205, 255, 171, 0.08);
+}
+
+.forest-calendar-day.has-record strong {
+  color: #efffcf;
+  text-shadow: 0 0 16px rgba(224, 255, 184, 0.22);
+}
+
+.forest-calendar-day.has-record small {
+  color: rgba(238, 246, 232, 0.78);
+}
+
+.forest-calendar-day.today {
+  outline: 2px solid rgba(217, 247, 181, 0.2);
+  outline-offset: 2px;
+}
+
+.forest-memory-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 13px;
+}
+
+.forest-memory-filters button {
+  min-height: 34px;
+  border: 1px solid rgba(225, 255, 211, 0.13);
+  border-radius: 999px;
+  padding: 7px 11px;
+  background: rgba(255, 255, 255, 0.075);
+  color: rgba(238, 246, 232, 0.76);
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.forest-memory-filters button.active {
+  border-color: rgba(223, 255, 180, 0.36);
+  background: rgba(217, 247, 181, 0.16);
+  color: #f4ffe9;
+}
+
+.forest-memory-list {
+  display: grid;
+  gap: 9px;
+  margin-top: 13px;
+}
+
+.forest-memory-item {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid rgba(225, 255, 211, 0.11);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.forest-memory-item > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: rgba(217, 247, 181, 0.11);
+  font-size: 19px;
+}
+
+.forest-memory-item strong {
+  display: block;
+  color: #f2ffe7;
+  font-size: 14px;
+  font-weight: 950;
+  line-height: 1.35;
+}
+
+.forest-memory-item p,
+.forest-memory-empty {
+  margin: 4px 0 0;
+  color: rgba(238, 246, 232, 0.72);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.forest-memory-item small {
+  display: inline-flex;
+  margin-top: 6px;
+  color: rgba(217, 247, 198, 0.62);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+@media (max-width: 560px) {
+  .forest-management-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .forest-calendar-grid {
+    gap: 5px;
+  }
+
+  .forest-calendar-day {
+    min-height: 58px;
+    padding: 7px 3px;
+    border-radius: 13px;
+  }
+
+  .forest-calendar-day small {
+    display: none;
   }
 }
