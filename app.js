@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.27 test
+// 살아있는 숲 V1.27.1 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.27 test
-// 목적: 숲의 소리 1차 — 내 정원에 짧은 배경 소리를 더하는 감각 확장
+// 버전명: V1.27.1 test
+// 목적: 숲의 소리 버튼 수정판 — 내 정원에 짧은 배경 소리를 더하는 감각 확장
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.27 test",
+  version: "V1.27.1 test",
   dataSchemaVersion: 8,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -14,9 +14,9 @@ const APP_CONFIG = {
 };
 
 
-// V1.27 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.27.1 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.27 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.27.1 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -4005,7 +4005,7 @@ function renderTestModeStatus() {
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
   const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 숲길 산책 1차 · ${shortTreeId}`;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 숲의 소리 버튼 수정판 · ${shortTreeId}`;
 }
 
 function setupTestMode() {
@@ -4048,6 +4048,7 @@ function highlightWorldSpot() {
 
 function showWorldScreen() {
   trackForestEvent("screen_view_world");
+  stopForestSound();
 
   renderWorld();
   worldScreenElement.classList.add("screen-active");
@@ -4142,6 +4143,16 @@ forestTrailButtons.forEach((button) => {
   });
 });
 
+forestSoundButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    playForestSound(button.dataset.forestSound);
+  });
+});
+
+if (stopForestSoundBtnElement) {
+  stopForestSoundBtnElement.addEventListener("click", stopForestSound);
+}
+
 
 gardenMarkerButtons.forEach((button) => {
   button.addEventListener("click", () => {
@@ -4155,6 +4166,14 @@ if (focusMyTreeBtnElement) {
 }
 backToWorldBtnTopElement.addEventListener("click", showWorldScreen);
 backToWorldBtnBottomElement.addEventListener("click", showWorldScreen);
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    stopForestSound();
+  }
+});
+
+window.addEventListener("beforeunload", stopForestSound);
 
 applyGrowthDaysFromUrlForTest();
 saveTreeData();
