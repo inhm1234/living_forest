@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.20 test
+// 살아있는 숲 V1.21 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.20 test
-// 목적: 1차 완성형 — 첫 이용, 감정 기록, 숲 일기장, 다음날 재방문 흐름 정리
+// 버전명: V1.21 test
+// 목적: 공유/확산 1차 — 오늘의 숲 문장을 복사하고 나눌 수 있는 흐름 추가
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.20 test",
+  version: "V1.21 test",
   dataSchemaVersion: 4,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -14,9 +14,9 @@ const APP_CONFIG = {
 };
 
 
-// V1.20 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.21 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.20 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.21 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -541,6 +541,13 @@ const forestDiaryTodayElement = document.querySelector("#forestDiaryToday");
 const forestDiaryListElement = document.querySelector("#forestDiaryList");
 const forestDiaryEmptyElement = document.querySelector("#forestDiaryEmpty");
 const forestDiaryFlowElement = document.querySelector("#forestDiaryFlow");
+const forestShareCardElement = document.querySelector("#forestShareCard");
+const forestShareTitleElement = document.querySelector("#forestShareTitle");
+const forestShareTextElement = document.querySelector("#forestShareText");
+const forestSharePreviewElement = document.querySelector("#forestSharePreview");
+const copyForestShareBtnElement = document.querySelector("#copyForestShareBtn");
+const nativeForestShareBtnElement = document.querySelector("#nativeForestShareBtn");
+const forestShareMessageElement = document.querySelector("#forestShareMessage");
 const visitorTraceCardElement = document.querySelector("#visitorTraceCard");
 const visitorTraceTitleElement = document.querySelector("#visitorTraceTitle");
 const visitorTraceTextElement = document.querySelector("#visitorTraceText");
@@ -1950,6 +1957,7 @@ function chooseMood(mood) {
   renderStreakRewardCard();
   renderCompleteCard();
   renderForestDiaryCard();
+  renderForestShareCard();
   updateTodayStatus();
   prepareDailyVisitor({ forcePlay: true, allowCreate: true, allowPlay: true });
 }
@@ -2611,12 +2619,151 @@ function renderForestDiaryCard() {
   forestDiaryFlowElement.textContent = `${flowPrefix} · ${getForestDiaryFlowInfo()} ${flowSuffix}`;
 }
 
+function getForestSharePayload() {
+  const todayRecord = getTodayRecord();
+
+  if (!todayRecord) {
+    return null;
+  }
+
+  const entry = getForestDiaryEntry(todayRecord);
+  const treeName = treeData.treeName?.trim() || "이름 없는 나무";
+  const growthDays = Array.isArray(treeData.history) ? treeData.history.length : 0;
+  const url = "https://inhm1234.github.io/living_forest/";
+  const title = "오늘의 숲 문장";
+  const text = [
+    `살아있는 숲 · ${treeName}`,
+    `${entry.displayDate} ${entry.label} · ${entry.title}`,
+    `“${entry.sentence}”`,
+    `${growthDays}번째 기록이 내 숲에 남았어요.`,
+    url
+  ].join("\n");
+
+  return {
+    title,
+    text,
+    url,
+    entry,
+    treeName,
+    growthDays
+  };
+}
+
+function renderForestShareCard() {
+  if (!forestShareCardElement || !forestSharePreviewElement || !forestShareMessageElement) {
+    return;
+  }
+
+  const payload = getForestSharePayload();
+
+  if (!payload) {
+    forestShareCardElement.classList.add("hidden");
+    forestShareMessageElement.textContent = "오늘 기록 후 사용 가능";
+    return;
+  }
+
+  forestShareCardElement.classList.remove("hidden");
+
+  if (forestShareTitleElement) {
+    forestShareTitleElement.textContent = "오늘의 숲 문장이 준비됐어요";
+  }
+
+  if (forestShareTextElement) {
+    forestShareTextElement.textContent = "오늘 남긴 문장을 복사하거나 공유해서, 내 숲의 하루를 가볍게 꺼낼 수 있어요.";
+  }
+
+  forestSharePreviewElement.textContent = `${payload.entry.displayDate} ${payload.entry.label} · ${payload.entry.title}\n“${payload.entry.sentence}”`;
+  forestShareMessageElement.textContent = "복사하면 오늘의 숲 문장과 링크가 함께 담겨요.";
+
+  if (nativeForestShareBtnElement) {
+    nativeForestShareBtnElement.textContent = typeof navigator !== "undefined" && typeof navigator.share === "function"
+      ? "공유하기"
+      : "공유 문장 복사";
+  }
+}
+
+async function copyTextToClipboard(text) {
+  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  textarea.remove();
+}
+
+async function copyForestShareText() {
+  const payload = getForestSharePayload();
+
+  if (!payload) {
+    if (forestShareMessageElement) {
+      forestShareMessageElement.textContent = "오늘의 마음을 기록한 뒤 공유 문장을 만들 수 있어요.";
+    }
+    return;
+  }
+
+  try {
+    await copyTextToClipboard(payload.text);
+    if (forestShareMessageElement) {
+      forestShareMessageElement.textContent = "오늘의 숲 문장을 복사했어요.";
+    }
+    trackForestEvent("share_click", { source: "forest_sentence_copy" });
+  } catch (error) {
+    if (forestShareMessageElement) {
+      forestShareMessageElement.textContent = "복사에 실패했어요. 문장을 길게 눌러 직접 복사해 주세요.";
+    }
+  }
+}
+
+async function shareForestSentence() {
+  const payload = getForestSharePayload();
+
+  if (!payload) {
+    if (forestShareMessageElement) {
+      forestShareMessageElement.textContent = "오늘의 마음을 기록한 뒤 공유할 수 있어요.";
+    }
+    return;
+  }
+
+  try {
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      await navigator.share({
+        title: payload.title,
+        text: payload.text,
+        url: payload.url
+      });
+      if (forestShareMessageElement) {
+        forestShareMessageElement.textContent = "오늘의 숲 문장을 공유했어요.";
+      }
+      trackForestEvent("share_click", { source: "forest_sentence_native_share" });
+      return;
+    }
+
+    await copyTextToClipboard(payload.text);
+    if (forestShareMessageElement) {
+      forestShareMessageElement.textContent = "공유 문장을 복사했어요. 원하는 곳에 붙여넣어 주세요.";
+    }
+    trackForestEvent("share_click", { source: "forest_sentence_share_fallback" });
+  } catch (error) {
+    if (forestShareMessageElement) {
+      forestShareMessageElement.textContent = "공유를 완료하지 않았어요. 필요하면 문장 복사를 사용해 주세요.";
+    }
+  }
+}
+
 function renderVersionLabels() {
   const versionElements = document.querySelectorAll(".version");
   const demoPillElement = document.querySelector(".demo-pill");
 
   if (versionElements[0]) {
-    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 1차 완성형`;
+    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 오늘의 숲 문장 공유`;
   }
 
   if (versionElements[1]) {
@@ -2624,7 +2771,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 1차 완성형`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 공유/확산 1차`;
   }
 }
 
@@ -3022,7 +3169,7 @@ function renderTestModeStatus() {
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
   const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 1차 완성형 · ${shortTreeId}`;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 공유/확산 1차 · ${shortTreeId}`;
 }
 
 function setupTestMode() {
@@ -3110,6 +3257,7 @@ function renderAll() {
   renderStreakRewardCard();
   renderCompleteCard();
   renderForestDiaryCard();
+  renderForestShareCard();
   renderVisitorTrace();
   renderVisitorLog();
   updateTodayStatus();
@@ -3125,6 +3273,14 @@ moodButtons.forEach((button) => {
     chooseMood(button.dataset.mood);
   });
 });
+
+if (copyForestShareBtnElement) {
+  copyForestShareBtnElement.addEventListener("click", copyForestShareText);
+}
+
+if (nativeForestShareBtnElement) {
+  nativeForestShareBtnElement.addEventListener("click", shareForestSentence);
+}
 
 goGardenBtnElement.addEventListener("click", showGardenScreen);
 if (focusMyTreeBtnElement) {
@@ -3159,7 +3315,7 @@ function handleAnalyticsClickCapture(event) {
     trackForestEvent("return_world_click", { source: "click_capture" });
   }
 
-  if (/공유/.test(text + aria + id + className)) {
+  if (/공유/.test(text + aria + id + className) && id !== "nativeForestShareBtn" && id !== "copyForestShareBtn") {
     trackForestEvent("share_click", { source: "click_capture" });
   }
 }
