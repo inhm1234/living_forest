@@ -1,0 +1,22 @@
+살아있는 숲 V1.16.1 index.html 표시 수정 패치
+
+목적:
+- index.html에 남아 있던 V1.16 또는 V1.15 표기를 V1.16.1 test로 통일합니다.
+- style.css / app.js 캐시 버전값을 1.16.1-test로 맞춥니다.
+- 기능 추가 없이 일반 화면 버전 표시만 정리합니다.
+
+업로드 방법:
+1. GitHub 저장소 inhm1234/living_forest 로 이동합니다.
+2. 저장소 루트의 기존 index.html을 이 ZIP 안의 index.html로 덮어씁니다.
+3. assets 폴더는 삭제하지 않습니다.
+4. 커밋 메시지 추천:
+   Fix V1.16.1 index version display
+
+업로드 후 확인할 문구:
+- 살아있는 숲 V1.16.1 test · 숲 일기장 1차
+- 오늘 내 나무 돌보기 · V1.16.1 test
+- 데이터: V1.16.1 test · schema 4 · local-only
+
+연결 확인:
+- style.css?v=1.16.1-test
+- app.js?v=1.16.1-test
