@@ -8571,7 +8571,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.16.1 test: 숲 일기장 1차 */
+/* V1.20 test: 숲 일기장 1차 */
 .forest-diary-card {
   margin-top: 14px;
   padding: 16px;
@@ -8693,4 +8693,25 @@ body[data-world-time="day"] .daily-loop-card {
   .forest-diary-date {
     width: fit-content;
   }
+}
+
+
+/* V1.20 test: 1차 완성형 — 숲 일기장 기록 전/후 상태 구분 */
+.forest-diary-card.diary-waiting {
+  border-color: rgba(223, 255, 180, 0.22);
+  background: rgba(21, 47, 34, 0.48);
+}
+
+.forest-diary-card.diary-done {
+  border-color: rgba(223, 255, 180, 0.28);
+  background: rgba(34, 68, 45, 0.48);
+  box-shadow: 0 18px 44px rgba(106, 169, 98, 0.16);
+}
+
+.forest-diary-card.diary-waiting .forest-diary-today,
+.forest-diary-card.diary-done .forest-diary-today {
+  padding: 11px 12px;
+  border: 1px solid rgba(225, 255, 211, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.07);
 }

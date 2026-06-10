@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.16.1 test
+// 살아있는 숲 V1.20 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.16.1 test
-// 목적: 숲 일기장 1차 — 감정 기록이 하루의 숲 문장과 최근 흐름으로 남도록 보강
+// 버전명: V1.20 test
+// 목적: 1차 완성형 — 첫 이용, 감정 기록, 숲 일기장, 다음날 재방문 흐름 정리
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.16.1 test",
+  version: "V1.20 test",
   dataSchemaVersion: 4,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -14,9 +14,9 @@ const APP_CONFIG = {
 };
 
 
-// V1.16.1 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.20 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.16.1 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.20 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -940,6 +940,20 @@ function createForestDiaryNote(mood, dateText = getTodayKey()) {
   };
 }
 
+function getForestDiaryDisplayDate(dateText, fallbackIndex = 0) {
+  const safeDate = isValidDateKey(dateText) ? dateText : getRelativeDateKey(fallbackIndex);
+
+  if (safeDate === getTodayKey()) {
+    return "오늘";
+  }
+
+  if (safeDate === getRelativeDateKey(1)) {
+    return "어제";
+  }
+
+  return formatDate(safeDate);
+}
+
 function getForestDiaryEntry(record, index = 0) {
   const mood = record?.mood || "normal";
   const rule = getForestDiaryRule(mood);
@@ -952,7 +966,7 @@ function getForestDiaryEntry(record, index = 0) {
     mood,
     title,
     sentence,
-    displayDate: record?.date === getTodayKey() ? "오늘" : formatDate(record?.date || getRelativeDateKey(index)),
+    displayDate: getForestDiaryDisplayDate(record?.date, index),
     shortLabel: rule.shortLabel
   };
 }
@@ -1736,10 +1750,11 @@ function getDailyLoopInfo() {
   const nextGoalMessage = getNextGoalMessage();
 
   if (checkedToday && todayRecord) {
+    const diaryEntry = getForestDiaryEntry(todayRecord);
     return {
       state: "done",
-      title: "오늘의 변화가 숲에 남았어요",
-      text: `오늘의 ${todayRecord.label} 기운이 내 나무와 월드 숲에 남았어요. 내일 다시 오면 이 변화 위에 새로운 성장이 이어져요. ${getNextGrowthPreviewMessage()}`
+      title: "오늘의 숲 문장까지 남았어요",
+      text: `오늘의 ${todayRecord.label} 마음이 내 나무와 숲 일기장에 남았어요. “${diaryEntry.sentence}” 내일 다시 오면 이 문장 위에 새로운 기록이 이어져요.`
     };
   }
 
@@ -1762,10 +1777,11 @@ function getDailyLoopInfo() {
   const returnMemory = getReturnMemoryInfo();
 
   if (returnMemory) {
+    const pastDiary = getForestDiaryEntry(returnMemory.pastRecord);
     return {
       state: "returning",
-      title: "어제의 마음이 이어지고 있어요",
-      text: `${returnMemory.text} ${nextGoalMessage}`
+      title: returnMemory.isYesterday ? "어제의 숲 문장 이어쓰기" : "이전 숲 기록 이어쓰기",
+      text: `${pastDiary.displayDate}의 숲 문장 “${pastDiary.sentence}” 위에 오늘의 마음을 더하면 흐름이 이어져요. ${nextGoalMessage}`
     };
   }
 
@@ -2534,17 +2550,22 @@ function renderForestDiaryCard() {
   }
 
   const hasName = Boolean(treeData.treeName?.trim());
+  const checkedToday = hasCheckedToday();
   const entries = getRecentForestDiaryEntries(3);
-  const todayEntry = entries.find((entry) => entry?.date === getTodayKey()) || entries[0];
+  const todayEntry = entries.find((entry) => entry?.date === getTodayKey()) || null;
+  const latestPastEntry = entries.find((entry) => entry?.date !== getTodayKey()) || null;
+  const returnMemory = getReturnMemoryInfo();
 
   forestDiaryCardElement.classList.toggle("diary-ready", entries.length > 0);
+  forestDiaryCardElement.classList.toggle("diary-waiting", entries.length > 0 && !checkedToday);
+  forestDiaryCardElement.classList.toggle("diary-done", Boolean(todayEntry));
 
   if (!hasName && entries.length <= 0) {
     forestDiaryTodayElement.textContent = "나무 이름을 정하면 오늘의 숲 문장이 이곳에 남아요.";
     forestDiaryListElement.innerHTML = "";
     forestDiaryEmptyElement.textContent = "아직 쌓인 숲 기록이 없어요.";
     forestDiaryEmptyElement.classList.remove("hidden");
-    forestDiaryFlowElement.textContent = "첫 기록 전";
+    forestDiaryFlowElement.textContent = "첫 기록 전 · 이름을 정한 뒤 오늘의 마음 하나를 남기면 시작돼요.";
     return;
   }
 
@@ -2553,13 +2574,19 @@ function renderForestDiaryCard() {
     forestDiaryListElement.innerHTML = "";
     forestDiaryEmptyElement.textContent = "아직 쌓인 숲 기록이 없어요. 오늘의 마음 하나가 첫 일기가 돼요.";
     forestDiaryEmptyElement.classList.remove("hidden");
-    forestDiaryFlowElement.textContent = "첫 기록 대기 중";
+    forestDiaryFlowElement.textContent = "오늘 기록 전 · 첫 숲 문장을 기다리는 중";
     return;
   }
 
-  forestDiaryTodayElement.textContent = todayEntry?.date === getTodayKey()
-    ? `오늘의 숲 문장 · ${todayEntry.sentence}`
-    : `최근 숲 문장 · ${todayEntry.sentence}`;
+  if (todayEntry) {
+    forestDiaryTodayElement.textContent = `오늘의 숲 문장 · ${todayEntry.sentence}`;
+  } else if (returnMemory && latestPastEntry) {
+    const pastLabel = returnMemory.isYesterday ? "어제의 숲 문장" : "이전 숲 문장";
+    forestDiaryTodayElement.textContent = `${pastLabel} · ${latestPastEntry.sentence} 오늘의 마음을 더하면 이 흐름 위에 새 문장이 이어져요.`;
+  } else {
+    const latestEntry = entries[0];
+    forestDiaryTodayElement.textContent = `최근 숲 문장 · ${latestEntry.sentence}`;
+  }
 
   forestDiaryEmptyElement.classList.add("hidden");
   forestDiaryListElement.innerHTML = entries
@@ -2576,7 +2603,12 @@ function renderForestDiaryCard() {
       `;
     })
     .join("");
-  forestDiaryFlowElement.textContent = getForestDiaryFlowInfo();
+
+  const flowPrefix = todayEntry ? "오늘 기록 완료" : "오늘 기록 전";
+  const flowSuffix = todayEntry
+    ? "내일 다시 오면 이 문장 위에 새 기록이 이어져요."
+    : "오늘의 마음을 남기면 이 흐름이 이어져요.";
+  forestDiaryFlowElement.textContent = `${flowPrefix} · ${getForestDiaryFlowInfo()} ${flowSuffix}`;
 }
 
 function renderVersionLabels() {
@@ -2584,7 +2616,7 @@ function renderVersionLabels() {
   const demoPillElement = document.querySelector(".demo-pill");
 
   if (versionElements[0]) {
-    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 체험판`;
+    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 1차 완성형`;
   }
 
   if (versionElements[1]) {
@@ -2592,7 +2624,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 숲 일기장 1차`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 1차 완성형`;
   }
 }
 
@@ -2990,7 +3022,7 @@ function renderTestModeStatus() {
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
   const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · ${shortTreeId}`;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 1차 완성형 · ${shortTreeId}`;
 }
 
 function setupTestMode() {
