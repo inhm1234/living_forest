@@ -1,22 +1,22 @@
-// 살아있는 숲 V1.28 test
+// 살아있는 숲 V1.29 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.28 test
-// 목적: 내일의 씨앗 1차 — 오늘의 기록 끝에 내일의 나에게 짧은 씨앗 문장을 남기는 확장
+// 버전명: V1.29 test
+// 목적: 나를 위한 작은 실천 1차 — 오늘의 기록 뒤 실제 나에게 돌아오는 작은 행동 남기기
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.28 test",
-  dataSchemaVersion: 9,
+  version: "V1.29 test",
+  dataSchemaVersion: 10,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
   serviceTimeZoneOffsetMinutes: 9 * 60
 };
 
 
-// V1.28 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.29 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.28 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.29 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -499,6 +499,27 @@ const forestSoundRules = {
   }
 };
 
+const selfCareRules = {
+  breathe: {
+    label: "숨 고르기",
+    icon: "🫧",
+    title: "숨을 고른 하루",
+    message: "잠깐 숨을 천천히 고르기로 했어요. 오늘의 마음이 조금 더 넓은 자리를 찾을 수 있어요."
+  },
+  sip: {
+    label: "물 한 모금",
+    icon: "🥤",
+    title: "나에게 물을 건넨 하루",
+    message: "내 나무뿐 아니라 나에게도 작은 물 한 모금을 건넸어요. 몸이 아주 조금 가벼워질 수 있어요."
+  },
+  stretch: {
+    label: "어깨 풀기",
+    icon: "🧘",
+    title: "몸을 조금 풀어준 하루",
+    message: "굳어 있던 어깨와 목을 천천히 풀어주기로 했어요. 내 숲을 돌보듯 나도 잠깐 돌봤어요."
+  }
+};
+
 const forestEffectRules = {
   "leaf-strong": {
     className: "effect-leaf",
@@ -680,6 +701,11 @@ const forestTrailTitleElement = document.querySelector("#forestTrailTitle");
 const forestTrailTextElement = document.querySelector("#forestTrailText");
 const forestTrailMessageElement = document.querySelector("#forestTrailMessage");
 const forestTrailButtons = document.querySelectorAll("[data-forest-trail]");
+const selfCareCardElement = document.querySelector("#selfCareCard");
+const selfCareTitleElement = document.querySelector("#selfCareTitle");
+const selfCareTextElement = document.querySelector("#selfCareText");
+const selfCareMessageElement = document.querySelector("#selfCareMessage");
+const selfCareButtons = document.querySelectorAll("[data-self-care]");
 const forestSoundCardElement = document.querySelector("#forestSoundCard");
 const forestSoundTitleElement = document.querySelector("#forestSoundTitle");
 const forestSoundTextElement = document.querySelector("#forestSoundText");
@@ -795,6 +821,7 @@ function createNewTreeData(overrides = {}) {
     treeName: "",
     careHistory: [],
     trailHistory: [],
+    selfCareHistory: [],
     sharedForestSentenceDates: [],
     inviteStartedAt: null,
     gardenMarker: "",
@@ -969,6 +996,12 @@ function normalizeTreeData(rawData) {
         .filter(Boolean)
         .slice(0, 60)
     : [];
+  const selfCareHistory = Array.isArray(sourceData.selfCareHistory)
+    ? sourceData.selfCareHistory
+        .map((record) => normalizeSelfCareRecord(record))
+        .filter(Boolean)
+        .slice(0, 60)
+    : [];
   const sharedForestSentenceDates = Array.isArray(sourceData.sharedForestSentenceDates)
     ? [...new Set(sourceData.sharedForestSentenceDates.filter((dateText) => isValidDateKey(dateText)))].slice(0, 60)
     : [];
@@ -1000,6 +1033,7 @@ function normalizeTreeData(rawData) {
     treeName,
     careHistory,
     trailHistory,
+    selfCareHistory,
     sharedForestSentenceDates,
     inviteStartedAt,
     gardenMarker,
@@ -1242,6 +1276,44 @@ function hasWalkedTrailToday() {
 
 function getLatestTrailRecord() {
   const records = Array.isArray(treeData.trailHistory) ? treeData.trailHistory : [];
+  return records[0] || null;
+}
+
+function normalizeSelfCareRecord(record) {
+  if (!record || typeof record !== "object") {
+    return null;
+  }
+
+  const action = selfCareRules[record.action] ? record.action : null;
+  const date = isValidDateKey(record.date) ? record.date : null;
+
+  if (!action || !date) {
+    return null;
+  }
+
+  const rule = selfCareRules[action];
+
+  return {
+    date,
+    action,
+    label: typeof record.label === "string" && record.label.trim() ? record.label.slice(0, 24) : rule.label,
+    icon: typeof record.icon === "string" && record.icon.trim() ? record.icon.slice(0, 8) : rule.icon,
+    title: typeof record.title === "string" && record.title.trim() ? record.title.slice(0, 40) : rule.title,
+    message: typeof record.message === "string" && record.message.trim() ? record.message.slice(0, 150) : rule.message
+  };
+}
+
+function getTodaySelfCareRecord() {
+  const records = Array.isArray(treeData.selfCareHistory) ? treeData.selfCareHistory : [];
+  return records.find((item) => item.date === getTodayKey()) || null;
+}
+
+function hasSelfCaredToday() {
+  return Boolean(getTodaySelfCareRecord());
+}
+
+function getLatestSelfCareRecord() {
+  const records = Array.isArray(treeData.selfCareHistory) ? treeData.selfCareHistory : [];
   return records[0] || null;
 }
 
@@ -3537,6 +3609,72 @@ function chooseForestTrail(trail) {
   trackForestEvent("forest_trail_selected", { trail_type: trail });
 }
 
+function renderSelfCareCard() {
+  if (!selfCareCardElement || !selfCareTitleElement || !selfCareTextElement || !selfCareMessageElement) {
+    return;
+  }
+
+  const todayRecord = getTodayRecord();
+  const todayAction = getTodaySelfCareRecord();
+  const latestAction = getLatestSelfCareRecord();
+  const canChoose = Boolean(todayRecord) && !todayAction;
+
+  selfCareCardElement.classList.toggle("self-care-ready", Boolean(todayRecord));
+  selfCareCardElement.classList.toggle("self-care-done", Boolean(todayAction));
+
+  selfCareButtons.forEach((button) => {
+    const actionKey = button.dataset.selfCare;
+    const selected = todayAction?.action === actionKey;
+    button.disabled = !canChoose;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", selected ? "true" : "false");
+  });
+
+  if (!todayRecord) {
+    selfCareTitleElement.textContent = "오늘 기록 후 나를 위한 작은 실천을 고를 수 있어요";
+    selfCareTextElement.textContent = "내 나무를 돌보는 것처럼, 오늘의 나에게도 아주 작은 행동 하나를 남겨요.";
+    selfCareMessageElement.textContent = latestAction
+      ? `최근 실천 · ${latestAction.icon} ${latestAction.label} — ${latestAction.title}`
+      : "오늘 기록 후 사용 가능";
+    return;
+  }
+
+  if (todayAction) {
+    selfCareTitleElement.textContent = `${todayAction.icon} ${todayAction.title}`;
+    selfCareTextElement.textContent = todayAction.message;
+    selfCareMessageElement.textContent = "오늘의 작은 실천이 내 숲의 하루에 함께 남았어요. 내일 다시 하나를 고를 수 있어요.";
+    return;
+  }
+
+  selfCareTitleElement.textContent = "오늘 나에게 할 작은 실천을 하나 골라주세요";
+  selfCareTextElement.textContent = "기록과 돌봄이 숲에 남았다면, 이번에는 실제 나에게 돌아오는 작은 행동을 하나 정해요.";
+  selfCareMessageElement.textContent = "하루에 한 번만 선택돼요.";
+}
+
+function chooseSelfCare(action) {
+  if (!selfCareRules[action] || !getTodayRecord() || hasSelfCaredToday()) {
+    renderSelfCareCard();
+    return;
+  }
+
+  const rule = selfCareRules[action];
+  const records = Array.isArray(treeData.selfCareHistory) ? [...treeData.selfCareHistory] : [];
+  records.unshift({
+    date: getTodayKey(),
+    action,
+    label: rule.label,
+    icon: rule.icon,
+    title: rule.title,
+    message: rule.message
+  });
+  treeData.selfCareHistory = records.slice(0, 60);
+  saveTreeData();
+
+  renderSelfCareCard();
+  renderMessages(`${rule.message} 오늘은 숲뿐 아니라 나도 조금 돌본 날이에요.`);
+  trackForestEvent("self_care_selected", { self_care_type: action });
+}
+
 
 function getSelectedGardenMarker() {
   const marker = typeof treeData.gardenMarker === "string" ? treeData.gardenMarker : "";
@@ -4151,7 +4289,7 @@ function renderTestModeStatus() {
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
   const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 내일의 씨앗 1차 · ${shortTreeId}`;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 나를 위한 작은 실천 1차 · ${shortTreeId}`;
 }
 
 function setupTestMode() {
@@ -4245,6 +4383,7 @@ function renderAll() {
   renderForestShareCard();
   renderTreeCareCard();
   renderForestTrailCard();
+  renderSelfCareCard();
   renderForestSoundCard();
   renderGardenMarkerCard();
   renderGardenMarkerLayer();
@@ -4294,6 +4433,12 @@ treeCareButtons.forEach((button) => {
 forestTrailButtons.forEach((button) => {
   button.addEventListener("click", () => {
     chooseForestTrail(button.dataset.forestTrail);
+  });
+});
+
+selfCareButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    chooseSelfCare(button.dataset.selfCare);
   });
 });
 

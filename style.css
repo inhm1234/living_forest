@@ -9074,7 +9074,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.28 test: 작은 돌봄 버튼 위치 보정 — 정원 화면을 가리지 않는 미니 컨트롤 */
+/* V1.29 test: 작은 돌봄 버튼 위치 보정 — 정원 화면을 가리지 않는 미니 컨트롤 */
 .tree-care-card,
 .forest-trail-card,
 .garden-marker-card {
@@ -9167,7 +9167,7 @@ body[data-world-time="day"] .daily-loop-card {
   opacity: 1;
 }
 
-/* V1.28 test: 숲길 산책 1차 — 기록 후 오늘 걸은 길을 남기는 확장 */
+/* V1.29 test: 숲길 산책 1차 — 기록 후 오늘 걸은 길을 남기는 확장 */
 .forest-trail-card.trail-ready {
   border-color: rgba(223, 255, 180, 0.2);
   background:
@@ -9309,7 +9309,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.28 test: 작은 돌봄 패널 가림 문제 최종 보정
+/* V1.29 test: 작은 돌봄 패널 가림 문제 최종 보정
    - 중앙 하단 오버레이를 없애고, 나무와 메시지를 가리지 않는 우측 상단 미니 컨트롤로 이동 */
 .tree-care-stage-dock {
   left: auto;
@@ -9413,7 +9413,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.28 test: 내일의 씨앗 1차 */
+/* V1.29 test: 내일의 씨앗 1차 */
 .forest-sound-card {
   margin-top: 12px;
   padding: 15px 16px 14px;
@@ -9494,7 +9494,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.28 test: 내일의 씨앗 1차 */
+/* V1.29 test: 내일의 씨앗 1차 */
 .tomorrow-seed-card {
   margin-top: 14px;
   padding: 16px;
@@ -9601,5 +9601,109 @@ body[data-world-time="day"] .daily-loop-card {
 
   .tomorrow-seed-form button {
     min-height: 46px;
+  }
+}
+
+
+/* V1.29 test: 나를 위한 작은 실천 1차 */
+.self-care-card {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 24px;
+}
+
+.self-care-kicker {
+  display: inline-flex;
+  margin-bottom: 6px;
+  color: rgba(218, 248, 199, 0.72);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.self-care-title {
+  margin: 0;
+  color: #f4ffe9;
+  font-size: 18px;
+  font-weight: 950;
+  line-height: 1.35;
+}
+
+.self-care-text {
+  margin: 7px 0 0;
+  color: rgba(238, 246, 232, 0.76);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.self-care-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.self-care-actions button {
+  min-height: 52px;
+  border: 1px solid rgba(225, 255, 211, 0.14);
+  border-radius: 18px;
+  padding: 10px 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f2ffe7;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.self-care-actions button span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 22px;
+}
+
+.self-care-actions button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.self-care-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+  transform: none;
+}
+
+.self-care-actions button.selected {
+  border-color: rgba(224, 255, 184, 0.42);
+  background: rgba(212, 255, 184, 0.16);
+  opacity: 1;
+  box-shadow: 0 0 24px rgba(211, 255, 184, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.self-care-message {
+  margin: 11px 0 0;
+  color: rgba(217, 247, 198, 0.74);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.self-care-card.self-care-ready {
+  border-color: rgba(223, 255, 180, 0.2);
+}
+
+.self-care-card.self-care-done {
+  border-color: rgba(223, 255, 180, 0.26);
+  background: rgba(35, 67, 46, 0.42);
+  box-shadow: 0 18px 44px rgba(106, 169, 98, 0.13);
+}
+
+@media (max-width: 560px) {
+  .self-care-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .self-care-actions button {
+    min-height: 48px;
   }
 }
