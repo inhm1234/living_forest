@@ -1,4 +1,4 @@
-살아있는 숲 V1.22 test 업로드 가이드
+살아있는 숲 V1.23 test 업로드 가이드
 
 1. GitHub 저장소로 이동
    inhm1234/living_forest
@@ -23,17 +23,14 @@
    기존 assets 폴더와 업로드된 이미지 파일들은 삭제하지 마세요.
 
 4. 커밋 메시지 추천
-   Apply V1.22 test add forest invite flow
+   Apply V1.23 test add forest badge collection
 
 5. 업로드 후 확인 주소
    일반 화면:
    https://inhm1234.github.io/living_forest/
 
-   초대 링크 확인:
-   https://inhm1234.github.io/living_forest/?invite=forest_sentence
-
    관리자 화면:
    https://inhm1234.github.io/living_forest/admin.html
 
 6. 확인 순서
-   일반 화면 버전 확인 → 감정 기록 → 오늘의 숲 나누기 확인 → 초대 링크 접속 → 숲 초대장 카드 확인 → 내 숲 시작하기 이동 확인 → 관리자 숫자 유지 확인
+   일반 화면 버전 확인 → 내 정원 이동 → 내 숲 배지 카드 확인 → 이름/감정 기록 후 배지 변화 확인 → 공유 후 나눔 배지 확인 → 관리자 숫자 유지 확인

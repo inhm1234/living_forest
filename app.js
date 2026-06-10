@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.22 test
+// 살아있는 숲 V1.23 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.22 test
-// 목적: 초대/유입 1차 — 오늘의 숲 문장을 복사하고 나눌 수 있는 흐름 추가
+// 버전명: V1.23 test
+// 목적: 성취/수집 1차 — 기록과 나눔에 따라 내 숲 배지를 보여주는 확장
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.22 test",
+  version: "V1.23 test",
   dataSchemaVersion: 4,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -14,9 +14,9 @@ const APP_CONFIG = {
 };
 
 
-// V1.22 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.23 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.22 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.23 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -568,6 +568,11 @@ const forestSharePreviewElement = document.querySelector("#forestSharePreview");
 const copyForestShareBtnElement = document.querySelector("#copyForestShareBtn");
 const nativeForestShareBtnElement = document.querySelector("#nativeForestShareBtn");
 const forestShareMessageElement = document.querySelector("#forestShareMessage");
+const forestBadgeCardElement = document.querySelector("#forestBadgeCard");
+const forestBadgeTitleElement = document.querySelector("#forestBadgeTitle");
+const forestBadgeTextElement = document.querySelector("#forestBadgeText");
+const forestBadgeListElement = document.querySelector("#forestBadgeList");
+const forestBadgeMetaElement = document.querySelector("#forestBadgeMeta");
 const visitorTraceCardElement = document.querySelector("#visitorTraceCard");
 const visitorTraceTitleElement = document.querySelector("#visitorTraceTitle");
 const visitorTraceTextElement = document.querySelector("#visitorTraceText");
@@ -663,6 +668,8 @@ function createNewTreeData(overrides = {}) {
     lastCheckDate: null,
     history: [],
     treeName: "",
+    sharedForestSentenceDates: [],
+    inviteStartedAt: null,
     ...overrides
   };
 }
@@ -821,6 +828,12 @@ function normalizeTreeData(rawData) {
     ? sourceData.createdAt
     : baseData.createdAt;
   const updatedAt = typeof sourceData.updatedAt === "string" && sourceData.updatedAt.trim() ? sourceData.updatedAt : createdAt;
+  const sharedForestSentenceDates = Array.isArray(sourceData.sharedForestSentenceDates)
+    ? [...new Set(sourceData.sharedForestSentenceDates.filter((dateText) => isValidDateKey(dateText)))].slice(0, 60)
+    : [];
+  const inviteStartedAt = typeof sourceData.inviteStartedAt === "string" && sourceData.inviteStartedAt.trim()
+    ? sourceData.inviteStartedAt.slice(0, 40)
+    : null;
 
   return {
     appName: APP_CONFIG.name,
@@ -835,7 +848,9 @@ function normalizeTreeData(rawData) {
     root: toSafeNumber(sourceData.root, baseData.root),
     lastCheckDate: isValidDateKey(sourceData.lastCheckDate) ? sourceData.lastCheckDate : null,
     history,
-    treeName
+    treeName,
+    sharedForestSentenceDates,
+    inviteStartedAt
   };
 }
 
@@ -2435,7 +2450,13 @@ function renderForestInviteCard() {
 }
 
 function startFromForestInvite() {
+  if (!treeData.inviteStartedAt) {
+    treeData.inviteStartedAt = getNowIsoString();
+    saveTreeData();
+  }
+
   trackForestEvent("go_garden_click", { source: "forest_invite_start" });
+  renderForestBadgeCard();
   showGardenScreen();
 }
 
@@ -2733,6 +2754,146 @@ function renderForestShareCard() {
   }
 }
 
+function hasSharedForestSentenceToday() {
+  const dates = Array.isArray(treeData.sharedForestSentenceDates) ? treeData.sharedForestSentenceDates : [];
+  return dates.includes(getTodayKey());
+}
+
+function hasAnyForestSentenceShare() {
+  return Array.isArray(treeData.sharedForestSentenceDates) && treeData.sharedForestSentenceDates.length > 0;
+}
+
+function markForestSentenceShared(source = "forest_sentence") {
+  const today = getTodayKey();
+  const dates = Array.isArray(treeData.sharedForestSentenceDates) ? [...treeData.sharedForestSentenceDates] : [];
+
+  if (!dates.includes(today)) {
+    dates.unshift(today);
+    treeData.sharedForestSentenceDates = dates.slice(0, 60);
+    saveTreeData();
+  }
+
+  renderForestBadgeCard();
+  trackForestEvent("forest_badge_action", { source, action: "forest_sentence_shared" });
+}
+
+function getForestBadgeItems() {
+  const days = Array.isArray(treeData.history) ? treeData.history.length : 0;
+  const hasName = Boolean(treeData.treeName?.trim());
+  const hasDiary = Array.isArray(treeData.history) && treeData.history.some((record) => Boolean(getForestDiaryEntry(record)?.sentence));
+  const invited = isForestInviteVisit() || Boolean(treeData.inviteStartedAt);
+  const sharedAny = hasAnyForestSentenceShare();
+
+  return [
+    {
+      id: "named_tree",
+      icon: "🏷️",
+      title: "이름 붙인 나무",
+      text: "내 나무가 이름을 얻었어요.",
+      hint: "나무 이름 저장",
+      unlocked: hasName
+    },
+    {
+      id: "first_record",
+      icon: "🌱",
+      title: "첫 씨앗",
+      text: "첫 마음이 숲에 남았어요.",
+      hint: "첫 감정 기록",
+      unlocked: days >= 1
+    },
+    {
+      id: "forest_diary",
+      icon: "📖",
+      title: "숲 일기장",
+      text: "오늘의 숲 문장이 기록으로 쌓이기 시작했어요.",
+      hint: "숲 문장 생성",
+      unlocked: hasDiary
+    },
+    {
+      id: "three_records",
+      icon: "✨",
+      title: "작은 숲길",
+      text: "세 번의 마음이 하나의 길처럼 이어졌어요.",
+      hint: "3번 기록",
+      unlocked: days >= 3
+    },
+    {
+      id: "seven_records",
+      icon: "🌿",
+      title: "일곱 날의 숲",
+      text: "일주일의 기록이 내 숲에 자리 잡았어요.",
+      hint: "7번 기록",
+      unlocked: days >= 7
+    },
+    {
+      id: "forest_sentence_share",
+      icon: "💌",
+      title: "숲 문장 나눔",
+      text: "오늘의 숲 문장을 밖으로 꺼내 나눴어요.",
+      hint: "문장 복사/공유",
+      unlocked: sharedAny
+    },
+    {
+      id: "invite_seed",
+      icon: "🕊️",
+      title: "초대받은 씨앗",
+      text: "누군가의 숲 문장에서 이곳으로 이어졌어요.",
+      hint: "초대 링크로 시작",
+      unlocked: invited
+    }
+  ];
+}
+
+function renderForestBadgeCard() {
+  if (!forestBadgeCardElement || !forestBadgeListElement || !forestBadgeMetaElement) {
+    return;
+  }
+
+  const badges = getForestBadgeItems();
+  const unlockedBadges = badges.filter((badge) => badge.unlocked);
+  const nextBadge = badges.find((badge) => !badge.unlocked) || null;
+
+  forestBadgeCardElement.classList.toggle("badge-ready", unlockedBadges.length > 0);
+  forestBadgeCardElement.classList.toggle("badge-complete", unlockedBadges.length === badges.length);
+
+  if (forestBadgeTitleElement) {
+    forestBadgeTitleElement.textContent = unlockedBadges.length > 0
+      ? `내 숲에 남은 배지 ${unlockedBadges.length}개`
+      : "첫 배지를 기다리는 숲";
+  }
+
+  if (forestBadgeTextElement) {
+    forestBadgeTextElement.textContent = unlockedBadges.length > 0
+      ? "기록, 일기장, 나눔이 쌓인 흔적을 작은 배지로 모아 보여줘요."
+      : "나무 이름을 정하고 첫 마음을 남기면 내 숲의 첫 배지가 열려요.";
+  }
+
+  forestBadgeListElement.innerHTML = badges
+    .map((badge) => {
+      const stateClass = badge.unlocked ? "badge-unlocked" : "badge-locked";
+      const stateText = badge.unlocked ? "열림" : badge.hint;
+      return `
+        <article class="forest-badge-item ${stateClass}">
+          <span class="forest-badge-icon" aria-hidden="true">${escapeHtml(badge.icon)}</span>
+          <div>
+            <strong>${escapeHtml(badge.title)}</strong>
+            <p>${escapeHtml(badge.unlocked ? badge.text : badge.hint)}</p>
+          </div>
+          <em>${escapeHtml(stateText)}</em>
+        </article>
+      `;
+    })
+    .join("");
+
+  if (unlockedBadges.length === badges.length) {
+    forestBadgeMetaElement.textContent = "현재 준비된 숲 배지를 모두 열었어요.";
+  } else if (nextBadge) {
+    forestBadgeMetaElement.textContent = `다음 배지 · ${nextBadge.title} — ${nextBadge.hint}`;
+  } else {
+    forestBadgeMetaElement.textContent = "첫 배지를 기다리는 중";
+  }
+}
+
 async function copyTextToClipboard(text) {
   if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(text);
@@ -2763,8 +2924,9 @@ async function copyForestShareText() {
   try {
     await copyTextToClipboard(payload.text);
     if (forestShareMessageElement) {
-      forestShareMessageElement.textContent = "오늘의 숲 문장을 복사했어요.";
+      forestShareMessageElement.textContent = "오늘의 숲 문장을 복사했어요. 내 숲 배지에도 나눔 흔적이 남았어요.";
     }
+    markForestSentenceShared("forest_sentence_copy");
     trackForestEvent("share_click", { source: "forest_sentence_copy" });
   } catch (error) {
     if (forestShareMessageElement) {
@@ -2791,16 +2953,18 @@ async function shareForestSentence() {
         url: payload.url
       });
       if (forestShareMessageElement) {
-        forestShareMessageElement.textContent = "오늘의 숲 문장을 공유했어요.";
+        forestShareMessageElement.textContent = "오늘의 숲 문장을 공유했어요. 내 숲 배지에도 나눔 흔적이 남았어요.";
       }
+      markForestSentenceShared("forest_sentence_native_share");
       trackForestEvent("share_click", { source: "forest_sentence_native_share" });
       return;
     }
 
     await copyTextToClipboard(payload.text);
     if (forestShareMessageElement) {
-      forestShareMessageElement.textContent = "공유 문장을 복사했어요. 원하는 곳에 붙여넣어 주세요.";
+      forestShareMessageElement.textContent = "공유 문장을 복사했어요. 내 숲 배지에도 나눔 흔적이 남았어요.";
     }
+    markForestSentenceShared("forest_sentence_share_fallback");
     trackForestEvent("share_click", { source: "forest_sentence_share_fallback" });
   } catch (error) {
     if (forestShareMessageElement) {
@@ -2814,7 +2978,7 @@ function renderVersionLabels() {
   const demoPillElement = document.querySelector(".demo-pill");
 
   if (versionElements[0]) {
-    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 숲 초대장 1차`;
+    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 내 숲 배지 1차`;
   }
 
   if (versionElements[1]) {
@@ -2822,7 +2986,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 초대/유입 1차`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 성취/수집 1차`;
   }
 }
 
@@ -3220,7 +3384,7 @@ function renderTestModeStatus() {
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
   const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 초대/유입 1차 · ${shortTreeId}`;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 성취/수집 1차 · ${shortTreeId}`;
 }
 
 function setupTestMode() {
@@ -3310,6 +3474,7 @@ function renderAll() {
   renderCompleteCard();
   renderForestDiaryCard();
   renderForestShareCard();
+  renderForestBadgeCard();
   renderVisitorTrace();
   renderVisitorLog();
   updateTodayStatus();
