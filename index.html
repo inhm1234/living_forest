@@ -35,7 +35,7 @@
 
   <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.27.1-test" />
+  <link rel="stylesheet" href="style.css?v=1.28-test" />
 <!-- Google tag (gtag.js) - Living Forest GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-YC872G7MH1"></script>
 <script>
@@ -56,10 +56,10 @@
   <main class="app">
     <section id="worldScreen" class="screen screen-active">
       <header class="hero world-hero">
-        <p class="version">살아있는 숲 V1.27.1 test · 숲의 소리 버튼 수정판</p>
+        <p class="version">살아있는 숲 V1.28 test · 내일의 씨앗 1차</p>
         <h1>살아있는 숲</h1>
         <p class="subtitle">하루 한 번 마음을 남기면 내 나무와 숲 일기장이 자라요.</p>
-        <p class="demo-pill">V1.27.1 test · 숲의 소리 버튼 수정</p>
+        <p class="demo-pill">V1.28 test · 내일의 씨앗 1차</p>
       </header>
 
       <section class="world-card visual-card">
@@ -160,7 +160,7 @@
     <section id="gardenScreen" class="screen">
       <header class="hero garden-hero">
         <button id="backToWorldBtnTop" class="ghost-btn small-btn" type="button">← 전체 숲</button>
-        <p class="version">오늘 내 나무 돌보기 · V1.27.1 test</p>
+        <p class="version">오늘 내 나무 돌보기 · V1.28 test</p>
         <h2 id="gardenTitle" class="garden-title">밤 숲속 자리</h2>
         <p class="subtitle">좋음도, 보통도, 피곤함도 모두 성장으로 남아요.</p>
       </header>
@@ -311,6 +311,18 @@
         <p id="tomorrowPromiseText" class="tomorrow-promise-text">내일의 마음을 한 번 더 남기면 오늘의 변화 위에 새로운 성장이 이어져요.</p>
       </section>
 
+
+      <section id="tomorrowSeedCard" class="tomorrow-seed-card glass-panel" aria-live="polite">
+        <span class="tomorrow-seed-kicker">내일의 씨앗</span>
+        <p id="tomorrowSeedTitle" class="tomorrow-seed-title">오늘 기록 후 내일의 나에게 씨앗을 남길 수 있어요</p>
+        <p id="tomorrowSeedText" class="tomorrow-seed-text">짧은 한 문장을 남기면, 다음날 다시 왔을 때 숲이 먼저 보여줘요.</p>
+        <form id="tomorrowSeedForm" class="tomorrow-seed-form">
+          <input id="tomorrowSeedInput" type="text" maxlength="64" placeholder="내일의 나에게 남길 한 문장" aria-label="내일의 씨앗 문장 입력" />
+          <button id="saveTomorrowSeedBtn" type="submit">씨앗 남기기</button>
+        </form>
+        <p id="tomorrowSeedMessage" class="tomorrow-seed-message">오늘 기록 후 사용 가능</p>
+      </section>
+
       <section id="forestDiaryCard" class="forest-diary-card glass-panel" aria-live="polite">
         <span class="forest-diary-kicker">숲 일기장</span>
         <p class="forest-diary-title">최근 숲 기록</p>
@@ -405,7 +417,7 @@
     </div>
 
     <p class="test-storage-line">저장키: <span id="testModeStorageKey">livingForestV012_TEST</span></p>
-    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.27.1 test · schema 8 · local-only · 숲의 소리 버튼 수정판</span></p>
+    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.28 test · schema 9 · local-only · 내일의 씨앗 1차</span></p>
 
     <div class="test-preset-buttons">
       <button type="button" data-test-preset="first">첫 방문자</button>
@@ -427,6 +439,6 @@
   </aside>
 
 
-  <script src="app.js?v=1.27.1-test"></script>
+  <script src="app.js?v=1.28-test"></script>
 </body>
 </html>

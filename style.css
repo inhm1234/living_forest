@@ -9074,7 +9074,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.27.1 test: 작은 돌봄 버튼 위치 보정 — 정원 화면을 가리지 않는 미니 컨트롤 */
+/* V1.28 test: 작은 돌봄 버튼 위치 보정 — 정원 화면을 가리지 않는 미니 컨트롤 */
 .tree-care-card,
 .forest-trail-card,
 .garden-marker-card {
@@ -9167,7 +9167,7 @@ body[data-world-time="day"] .daily-loop-card {
   opacity: 1;
 }
 
-/* V1.27.1 test: 숲길 산책 1차 — 기록 후 오늘 걸은 길을 남기는 확장 */
+/* V1.28 test: 숲길 산책 1차 — 기록 후 오늘 걸은 길을 남기는 확장 */
 .forest-trail-card.trail-ready {
   border-color: rgba(223, 255, 180, 0.2);
   background:
@@ -9309,7 +9309,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.27.1 test: 작은 돌봄 패널 가림 문제 최종 보정
+/* V1.28 test: 작은 돌봄 패널 가림 문제 최종 보정
    - 중앙 하단 오버레이를 없애고, 나무와 메시지를 가리지 않는 우측 상단 미니 컨트롤로 이동 */
 .tree-care-stage-dock {
   left: auto;
@@ -9413,7 +9413,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.27.1 test: 숲의 소리 버튼 수정판 */
+/* V1.28 test: 내일의 씨앗 1차 */
 .forest-sound-card {
   margin-top: 12px;
   padding: 15px 16px 14px;
@@ -9491,5 +9491,115 @@ body[data-world-time="day"] .daily-loop-card {
 @media (max-width: 560px) {
   .forest-sound-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* V1.28 test: 내일의 씨앗 1차 */
+.tomorrow-seed-card {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 24px;
+}
+
+.tomorrow-seed-kicker {
+  display: inline-flex;
+  margin-bottom: 6px;
+  color: rgba(218, 248, 199, 0.72);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.tomorrow-seed-title {
+  margin: 0;
+  color: #f4ffe9;
+  font-size: 18px;
+  font-weight: 950;
+  line-height: 1.35;
+}
+
+.tomorrow-seed-text {
+  margin: 7px 0 0;
+  color: rgba(238, 246, 232, 0.78);
+  font-size: 14px;
+  font-weight: 720;
+  line-height: 1.6;
+}
+
+.tomorrow-seed-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.tomorrow-seed-form input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(225, 255, 211, 0.18);
+  border-radius: 18px;
+  padding: 13px 14px;
+  background: rgba(255, 255, 255, 0.09);
+  color: #f4ffe9;
+  font-size: 14px;
+  outline: none;
+}
+
+.tomorrow-seed-form input::placeholder {
+  color: rgba(238, 246, 232, 0.48);
+}
+
+.tomorrow-seed-form input:focus {
+  border-color: rgba(220, 255, 183, 0.54);
+  box-shadow: 0 0 0 4px rgba(204, 255, 181, 0.09);
+}
+
+.tomorrow-seed-form input:disabled {
+  opacity: 0.62;
+}
+
+.tomorrow-seed-form button {
+  border: 0;
+  border-radius: 18px;
+  padding: 0 15px;
+  background: linear-gradient(135deg, #d9f7b5, #7eb77f);
+  color: #132115;
+  font-size: 14px;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.tomorrow-seed-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.56;
+}
+
+.tomorrow-seed-message {
+  margin: 10px 0 0;
+  color: rgba(238, 246, 232, 0.66);
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.tomorrow-seed-card.seed-from-yesterday {
+  border-color: rgba(223, 255, 180, 0.26);
+  background: rgba(38, 70, 48, 0.42);
+  box-shadow: 0 18px 44px rgba(106, 169, 98, 0.14);
+}
+
+.tomorrow-seed-card.seed-saved {
+  border-color: rgba(223, 255, 180, 0.22);
+  background: rgba(32, 62, 42, 0.42);
+}
+
+@media (max-width: 560px) {
+  .tomorrow-seed-form {
+    grid-template-columns: 1fr;
+  }
+
+  .tomorrow-seed-form button {
+    min-height: 46px;
   }
 }

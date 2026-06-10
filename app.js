@@ -1,22 +1,22 @@
-// 살아있는 숲 V1.27.1 test
+// 살아있는 숲 V1.28 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.27.1 test
-// 목적: 숲의 소리 버튼 수정판 — 내 정원에 짧은 배경 소리를 더하는 감각 확장
+// 버전명: V1.28 test
+// 목적: 내일의 씨앗 1차 — 오늘의 기록 끝에 내일의 나에게 짧은 씨앗 문장을 남기는 확장
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.27.1 test",
-  dataSchemaVersion: 8,
+  version: "V1.28 test",
+  dataSchemaVersion: 9,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
   serviceTimeZoneOffsetMinutes: 9 * 60
 };
 
 
-// V1.27.1 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.28 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.27.1 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.28 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -644,6 +644,13 @@ const todayChangeTextElement = document.querySelector("#todayChangeText");
 const tomorrowPromiseCardElement = document.querySelector("#tomorrowPromiseCard");
 const tomorrowPromiseTitleElement = document.querySelector("#tomorrowPromiseTitle");
 const tomorrowPromiseTextElement = document.querySelector("#tomorrowPromiseText");
+const tomorrowSeedCardElement = document.querySelector("#tomorrowSeedCard");
+const tomorrowSeedTitleElement = document.querySelector("#tomorrowSeedTitle");
+const tomorrowSeedTextElement = document.querySelector("#tomorrowSeedText");
+const tomorrowSeedFormElement = document.querySelector("#tomorrowSeedForm");
+const tomorrowSeedInputElement = document.querySelector("#tomorrowSeedInput");
+const tomorrowSeedMessageElement = document.querySelector("#tomorrowSeedMessage");
+const saveTomorrowSeedBtnElement = document.querySelector("#saveTomorrowSeedBtn");
 const forestDiaryCardElement = document.querySelector("#forestDiaryCard");
 const forestDiaryTodayElement = document.querySelector("#forestDiaryToday");
 const forestDiaryListElement = document.querySelector("#forestDiaryList");
@@ -791,6 +798,7 @@ function createNewTreeData(overrides = {}) {
     sharedForestSentenceDates: [],
     inviteStartedAt: null,
     gardenMarker: "",
+    tomorrowSeeds: [],
     ...overrides
   };
 }
@@ -969,6 +977,12 @@ function normalizeTreeData(rawData) {
     : null;
 
   const gardenMarker = gardenMarkerRules[sourceData.gardenMarker] ? sourceData.gardenMarker : "";
+  const tomorrowSeeds = Array.isArray(sourceData.tomorrowSeeds)
+    ? sourceData.tomorrowSeeds
+        .map((seed) => normalizeTomorrowSeed(seed))
+        .filter(Boolean)
+        .slice(0, 60)
+    : [];
 
   return {
     appName: APP_CONFIG.name,
@@ -988,7 +1002,8 @@ function normalizeTreeData(rawData) {
     trailHistory,
     sharedForestSentenceDates,
     inviteStartedAt,
-    gardenMarker
+    gardenMarker,
+    tomorrowSeeds
   };
 }
 
@@ -1023,6 +1038,136 @@ function hasCheckedToday() {
 function getTodayRecord() {
   return treeData.history.find((item) => item.date === getTodayKey()) || null;
 }
+
+function normalizeTomorrowSeed(seed) {
+  if (!seed || typeof seed !== "object") {
+    return null;
+  }
+
+  const date = isValidDateKey(seed.date) ? seed.date : null;
+  const targetDate = isValidDateKey(seed.targetDate) ? seed.targetDate : null;
+  const text = typeof seed.text === "string" ? seed.text.trim().slice(0, 64) : "";
+
+  if (!date || !targetDate || !text) {
+    return null;
+  }
+
+  return {
+    date,
+    targetDate,
+    text,
+    createdAt: typeof seed.createdAt === "string" && seed.createdAt.trim() ? seed.createdAt : getNowIsoString()
+  };
+}
+
+function getTomorrowSeedForDate(dateText) {
+  const records = Array.isArray(treeData.tomorrowSeeds) ? treeData.tomorrowSeeds : [];
+  return records.find((seed) => seed.targetDate === dateText) || null;
+}
+
+function getTomorrowSeedWrittenToday() {
+  const today = getTodayKey();
+  const tomorrow = addDaysToDateKey(today, 1);
+  const records = Array.isArray(treeData.tomorrowSeeds) ? treeData.tomorrowSeeds : [];
+  return records.find((seed) => seed.date === today && seed.targetDate === tomorrow) || null;
+}
+
+function hasTomorrowSeedWrittenToday() {
+  return Boolean(getTomorrowSeedWrittenToday());
+}
+
+function sanitizeTomorrowSeedText(text) {
+  return String(text || "").replace(/\s+/g, " ").trim().slice(0, 64);
+}
+
+function renderTomorrowSeedCard() {
+  if (!tomorrowSeedCardElement || !tomorrowSeedTitleElement || !tomorrowSeedTextElement || !tomorrowSeedMessageElement || !tomorrowSeedInputElement || !saveTomorrowSeedBtnElement) {
+    return;
+  }
+
+  const today = getTodayKey();
+  const checked = hasCheckedToday();
+  const seedForToday = getTomorrowSeedForDate(today);
+  const seedWrittenToday = getTomorrowSeedWrittenToday();
+  const tomorrow = addDaysToDateKey(today, 1);
+
+  tomorrowSeedCardElement.classList.toggle("seed-from-yesterday", Boolean(seedForToday) && !checked);
+  tomorrowSeedCardElement.classList.toggle("seed-ready", checked && !seedWrittenToday);
+  tomorrowSeedCardElement.classList.toggle("seed-saved", Boolean(seedWrittenToday));
+
+  if (seedForToday && !checked) {
+    tomorrowSeedTitleElement.textContent = "어제 남긴 씨앗이 오늘 숲에 도착했어요";
+    tomorrowSeedTextElement.textContent = `“${seedForToday.text}”`;
+    tomorrowSeedMessageElement.textContent = "오늘의 마음을 기록하면 이 씨앗 위에 새로운 하루가 이어져요.";
+    tomorrowSeedInputElement.value = "";
+    tomorrowSeedInputElement.disabled = true;
+    saveTomorrowSeedBtnElement.disabled = true;
+    saveTomorrowSeedBtnElement.textContent = "오늘 기록 후 새 씨앗";
+    return;
+  }
+
+  if (!checked) {
+    tomorrowSeedTitleElement.textContent = "오늘 기록 후 내일의 나에게 씨앗을 남길 수 있어요";
+    tomorrowSeedTextElement.textContent = "짧은 한 문장을 남기면, 다음날 다시 왔을 때 숲이 먼저 보여줘요.";
+    tomorrowSeedMessageElement.textContent = "오늘의 마음을 먼저 기록하면 사용할 수 있어요.";
+    tomorrowSeedInputElement.value = "";
+    tomorrowSeedInputElement.disabled = true;
+    saveTomorrowSeedBtnElement.disabled = true;
+    saveTomorrowSeedBtnElement.textContent = "씨앗 남기기";
+    return;
+  }
+
+  if (seedWrittenToday) {
+    tomorrowSeedTitleElement.textContent = "내일의 씨앗을 남겼어요";
+    tomorrowSeedTextElement.textContent = `“${seedWrittenToday.text}”`;
+    tomorrowSeedMessageElement.textContent = `${formatDate(tomorrow)}에 다시 오면 이 문장이 먼저 보여요.`;
+    tomorrowSeedInputElement.value = seedWrittenToday.text;
+    tomorrowSeedInputElement.disabled = true;
+    saveTomorrowSeedBtnElement.disabled = true;
+    saveTomorrowSeedBtnElement.textContent = "오늘 씨앗 완료";
+    return;
+  }
+
+  tomorrowSeedTitleElement.textContent = "내일의 나에게 작은 씨앗을 남겨요";
+  tomorrowSeedTextElement.textContent = "오늘의 기록 끝에 내일 다시 보고 싶은 짧은 문장을 하나 남길 수 있어요.";
+  tomorrowSeedMessageElement.textContent = "최대 64자까지 저장돼요. 이 기기에만 남아요.";
+  tomorrowSeedInputElement.disabled = false;
+  saveTomorrowSeedBtnElement.disabled = false;
+  saveTomorrowSeedBtnElement.textContent = "씨앗 남기기";
+}
+
+function saveTomorrowSeed() {
+  if (!hasCheckedToday() || hasTomorrowSeedWrittenToday()) {
+    renderTomorrowSeedCard();
+    return;
+  }
+
+  const text = sanitizeTomorrowSeedText(tomorrowSeedInputElement?.value);
+  if (!text) {
+    if (tomorrowSeedMessageElement) {
+      tomorrowSeedMessageElement.textContent = "내일의 나에게 남길 짧은 문장을 적어주세요.";
+    }
+    tomorrowSeedInputElement?.focus?.();
+    return;
+  }
+
+  const today = getTodayKey();
+  const tomorrow = addDaysToDateKey(today, 1);
+  const records = Array.isArray(treeData.tomorrowSeeds) ? [...treeData.tomorrowSeeds] : [];
+
+  records.unshift({
+    date: today,
+    targetDate: tomorrow,
+    text,
+    createdAt: getNowIsoString()
+  });
+
+  treeData.tomorrowSeeds = records.slice(0, 60);
+  saveTreeData();
+  renderTomorrowSeedCard();
+  trackForestEvent("tomorrow_seed_saved", { source: "garden", target_date: tomorrow });
+}
+
 
 function normalizeCareRecord(record) {
   if (!record || typeof record !== "object") {
@@ -2206,6 +2351,7 @@ function chooseMood(mood) {
   renderReturnMemoryCard();
   renderStreakRewardCard();
   renderCompleteCard();
+  renderTomorrowSeedCard();
   renderForestDiaryCard();
   renderForestShareCard();
   renderTreeCareCard();
@@ -4005,7 +4151,7 @@ function renderTestModeStatus() {
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
   const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 숲의 소리 버튼 수정판 · ${shortTreeId}`;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 내일의 씨앗 1차 · ${shortTreeId}`;
 }
 
 function setupTestMode() {
@@ -4094,6 +4240,7 @@ function renderAll() {
   renderReturnMemoryCard();
   renderStreakRewardCard();
   renderCompleteCard();
+  renderTomorrowSeedCard();
   renderForestDiaryCard();
   renderForestShareCard();
   renderTreeCareCard();
@@ -4111,6 +4258,13 @@ treeNameFormElement.addEventListener("submit", (event) => {
   event.preventDefault();
   saveTreeName();
 });
+
+if (tomorrowSeedFormElement) {
+  tomorrowSeedFormElement.addEventListener("submit", (event) => {
+    event.preventDefault();
+    saveTomorrowSeed();
+  });
+}
 
 moodButtons.forEach((button) => {
   button.addEventListener("click", () => {
