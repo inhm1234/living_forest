@@ -1,4 +1,4 @@
-살아있는 숲 V1.15 test 업로드 가이드
+살아있는 숲 V1.16 test 업로드 가이드
 
 1. GitHub 저장소로 이동
    inhm1234/living_forest
@@ -23,7 +23,7 @@
    기존 assets 폴더와 업로드된 이미지 파일들은 삭제하지 마세요.
 
 4. 커밋 메시지 추천
-   Apply V1.15 test improve world forest place feeling
+   Apply V1.16 test add forest diary
 
 5. 업로드 후 확인 주소
    일반 화면:
@@ -33,4 +33,4 @@
    https://inhm1234.github.io/living_forest/admin.html
 
 6. 확인 순서
-   일반 화면 버전 확인 → 월드 숲 자리감 확인 → 내 나무 보기 포커스 확인 → 내 정원/감정 기록 확인 → 관리자 숫자 유지 확인
+   일반 화면 버전 확인 → 내 정원 이동 → 감정 기록 → 숲 일기장 카드 확인 → 최근 기록/감정 흐름 확인 → 방문자 기능 유지 확인 → 관리자 숫자 유지 확인

@@ -8570,3 +8570,127 @@ body[data-world-time="day"] .daily-loop-card {
     width: 146px;
   }
 }
+
+/* V1.16 test: 숲 일기장 1차 */
+.forest-diary-card {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 24px;
+}
+
+.forest-diary-card.diary-ready {
+  border-color: rgba(223, 255, 180, 0.24);
+  background: rgba(29, 56, 42, 0.44);
+  box-shadow: 0 18px 44px rgba(106, 169, 98, 0.14);
+}
+
+.forest-diary-kicker {
+  display: inline-flex;
+  margin-bottom: 6px;
+  color: rgba(218, 248, 199, 0.72);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.forest-diary-title {
+  margin: 0;
+  color: #f4ffe9;
+  font-size: 18px;
+  font-weight: 950;
+  line-height: 1.35;
+}
+
+.forest-diary-today {
+  margin: 8px 0 0;
+  padding: 12px 13px;
+  border: 1px solid rgba(225, 255, 211, 0.13);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(244, 255, 233, 0.86);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.forest-diary-list {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.forest-diary-item {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 11px 12px;
+  border: 1px solid rgba(225, 255, 211, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.forest-diary-date {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: rgba(217, 247, 181, 0.11);
+  color: rgba(238, 246, 232, 0.78);
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.forest-diary-item strong {
+  display: block;
+  color: #f2ffe7;
+  font-size: 14px;
+  font-weight: 950;
+  line-height: 1.4;
+}
+
+.forest-diary-item p,
+.forest-diary-empty {
+  margin: 4px 0 0;
+  color: rgba(238, 246, 232, 0.72);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.forest-diary-flow {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(217, 247, 181, 0.09);
+  color: rgba(217, 247, 198, 0.78);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.forest-diary-item.diary-mood-good .forest-diary-date {
+  background: rgba(205, 255, 171, 0.13);
+}
+
+.forest-diary-item.diary-mood-normal .forest-diary-date {
+  background: rgba(255, 244, 184, 0.12);
+}
+
+.forest-diary-item.diary-mood-tired .forest-diary-date {
+  background: rgba(226, 178, 119, 0.13);
+}
+
+@media (max-width: 420px) {
+  .forest-diary-item {
+    grid-template-columns: 1fr;
+  }
+
+  .forest-diary-date {
+    width: fit-content;
+  }
+}

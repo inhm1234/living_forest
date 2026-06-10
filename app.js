@@ -1,22 +1,22 @@
-// 살아있는 숲 V1.15 test
+// 살아있는 숲 V1.16 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.15 test
-// 목적: 월드 숲 자리감 강화판 — 내 자리 / 주변 자리 / 빈 자리의 공간감 보강
+// 버전명: V1.16 test
+// 목적: 숲 일기장 1차 — 감정 기록이 하루의 숲 문장과 최근 흐름으로 남도록 보강
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.15 test",
-  dataSchemaVersion: 3,
+  version: "V1.16 test",
+  dataSchemaVersion: 4,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
   serviceTimeZoneOffsetMinutes: 9 * 60
 };
 
 
-// V1.15 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.16 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.15 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.16 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -205,6 +205,40 @@ const moodRules = {
     trunk: 1,
     root: 2,
     message: "뿌리가 깊게 자라며 회복하고 있어요."
+  }
+};
+
+
+const forestDiaryRules = {
+  good: {
+    dayTitle: "잎이 밝아진 날",
+    shortLabel: "밝은 잎",
+    sentences: [
+      "오늘의 밝은 마음이 잎 끝에 오래 머물렀어요.",
+      "가벼운 마음이 숲 안쪽까지 부드럽게 번졌어요.",
+      "나무가 오늘의 좋은 기운을 잎사귀 빛으로 간직했어요."
+    ],
+    flowText: "최근 밝은 기록이 많아요. 잎이 더 쉽게 빛을 받아들이는 흐름이에요."
+  },
+  normal: {
+    dayTitle: "균형을 회복한 날",
+    shortLabel: "고른 숨",
+    sentences: [
+      "조용한 균형이 나무 안쪽에 차분히 남았어요.",
+      "크게 흔들리지 않는 하루가 줄기를 천천히 단단하게 했어요.",
+      "오늘의 보통 마음도 숲에는 안정된 숨으로 쌓였어요."
+    ],
+    flowText: "최근 균형 잡힌 기록이 많아요. 나무가 무리하지 않고 고르게 자라는 흐름이에요."
+  },
+  tired: {
+    dayTitle: "뿌리가 깊어진 날",
+    shortLabel: "깊은 뿌리",
+    sentences: [
+      "오늘은 위로 자라기보다 아래로 단단해진 날이에요.",
+      "피곤한 마음도 뿌리 가까이에 조용한 힘으로 남았어요.",
+      "쉬어가고 싶은 마음이 나무를 더 깊이 붙잡아 주었어요."
+    ],
+    flowText: "최근 피곤한 기록이 많아요. 잎보다 뿌리가 먼저 깊어지는 회복의 흐름이에요."
   }
 };
 
@@ -502,6 +536,11 @@ const todayChangeTextElement = document.querySelector("#todayChangeText");
 const tomorrowPromiseCardElement = document.querySelector("#tomorrowPromiseCard");
 const tomorrowPromiseTitleElement = document.querySelector("#tomorrowPromiseTitle");
 const tomorrowPromiseTextElement = document.querySelector("#tomorrowPromiseText");
+const forestDiaryCardElement = document.querySelector("#forestDiaryCard");
+const forestDiaryTodayElement = document.querySelector("#forestDiaryToday");
+const forestDiaryListElement = document.querySelector("#forestDiaryList");
+const forestDiaryEmptyElement = document.querySelector("#forestDiaryEmpty");
+const forestDiaryFlowElement = document.querySelector("#forestDiaryFlow");
 const visitorTraceCardElement = document.querySelector("#visitorTraceCard");
 const visitorTraceTitleElement = document.querySelector("#visitorTraceTitle");
 const visitorTraceTextElement = document.querySelector("#visitorTraceText");
@@ -736,7 +775,9 @@ function normalizeHistoryRecord(record, fallbackIndex = 0) {
     mood,
     label: typeof record.label === "string" && record.label.trim() ? record.label : rule.label,
     icon: typeof record.icon === "string" && record.icon.trim() ? record.icon : rule.icon,
-    message: typeof record.message === "string" && record.message.trim() ? record.message : rule.message
+    message: typeof record.message === "string" && record.message.trim() ? record.message : rule.message,
+    forestTitle: typeof record.forestTitle === "string" && record.forestTitle.trim() ? record.forestTitle.slice(0, 32) : "",
+    forestSentence: typeof record.forestSentence === "string" && record.forestSentence.trim() ? record.forestSentence.slice(0, 120) : ""
   };
 }
 
@@ -863,6 +904,89 @@ function getNextGrowthPreviewMessage() {
   }
 
   return `${remainingDays}번 더 기록하면 ${nextMilestone.day}일차 ${nextMilestone.title}에 가까워져요.`;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function getForestDiaryRule(mood) {
+  return forestDiaryRules[mood] || forestDiaryRules.normal;
+}
+
+function getDiarySentenceIndex(dateText, mood = "normal") {
+  const source = `${dateText || ""}-${mood}`;
+  let sum = 0;
+
+  for (let i = 0; i < source.length; i += 1) {
+    sum += source.charCodeAt(i);
+  }
+
+  return sum;
+}
+
+function createForestDiaryNote(mood, dateText = getTodayKey()) {
+  const rule = getForestDiaryRule(mood);
+  const index = getDiarySentenceIndex(dateText, mood) % rule.sentences.length;
+
+  return {
+    forestTitle: rule.dayTitle,
+    forestSentence: rule.sentences[index]
+  };
+}
+
+function getForestDiaryEntry(record, index = 0) {
+  const mood = record?.mood || "normal";
+  const rule = getForestDiaryRule(mood);
+  const fallback = createForestDiaryNote(mood, record?.date || getRelativeDateKey(index));
+  const title = record?.forestTitle || fallback.forestTitle || rule.dayTitle;
+  const sentence = record?.forestSentence || fallback.forestSentence || rule.sentences[0];
+
+  return {
+    ...record,
+    mood,
+    title,
+    sentence,
+    displayDate: record?.date === getTodayKey() ? "오늘" : formatDate(record?.date || getRelativeDateKey(index)),
+    shortLabel: rule.shortLabel
+  };
+}
+
+function getRecentForestDiaryEntries(limit = 3) {
+  return (Array.isArray(treeData.history) ? treeData.history : [])
+    .slice(0, limit)
+    .map((record, index) => getForestDiaryEntry(record, index));
+}
+
+function getForestDiaryFlowInfo() {
+  const history = Array.isArray(treeData.history) ? treeData.history : [];
+
+  if (history.length <= 0) {
+    return "첫 마음을 남기면 이곳에 숲 일기장이 열려요.";
+  }
+
+  const recent = history.slice(0, Math.min(7, history.length));
+  const counts = recent.reduce((acc, record) => {
+    const mood = moodRules[record.mood] ? record.mood : "normal";
+    acc[mood] = (acc[mood] || 0) + 1;
+    return acc;
+  }, { good: 0, normal: 0, tired: 0 });
+
+  const topMood = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || "normal";
+  const topRule = getForestDiaryRule(topMood);
+  const streakDays = getConsecutiveRecordDays();
+  const streakText = streakDays >= 2 ? ` 최근 ${streakDays}일의 기록이 이어지고 있어요.` : "";
+
+  if (recent.length < 3) {
+    return `아직 기록이 적지만, ${moodRules[topMood].label} 마음이 숲에 먼저 남기 시작했어요.${streakText}`;
+  }
+
+  return `${topRule.flowText}${streakText}`;
 }
 
 function getCurrentStreakReward(streakDays) {
@@ -1776,6 +1900,7 @@ function chooseMood(mood) {
   }
 
   const rule = moodRules[mood];
+  const diaryNote = createForestDiaryNote(mood, getTodayKey());
 
   treeData.leaf += rule.leaf;
   treeData.trunk += rule.trunk;
@@ -1786,7 +1911,9 @@ function chooseMood(mood) {
     mood,
     label: rule.label,
     icon: rule.icon,
-    message: rule.message
+    message: rule.message,
+    forestTitle: diaryNote.forestTitle,
+    forestSentence: diaryNote.forestSentence
   });
 
   saveTreeData();
@@ -1806,6 +1933,7 @@ function chooseMood(mood) {
   renderReturnMemoryCard();
   renderStreakRewardCard();
   renderCompleteCard();
+  renderForestDiaryCard();
   updateTodayStatus();
   prepareDailyVisitor({ forcePlay: true, allowCreate: true, allowPlay: true });
 }
@@ -2400,6 +2528,57 @@ function renderCompleteCard() {
   }
 }
 
+function renderForestDiaryCard() {
+  if (!forestDiaryCardElement || !forestDiaryTodayElement || !forestDiaryListElement || !forestDiaryEmptyElement || !forestDiaryFlowElement) {
+    return;
+  }
+
+  const hasName = Boolean(treeData.treeName?.trim());
+  const entries = getRecentForestDiaryEntries(3);
+  const todayEntry = entries.find((entry) => entry?.date === getTodayKey()) || entries[0];
+
+  forestDiaryCardElement.classList.toggle("diary-ready", entries.length > 0);
+
+  if (!hasName && entries.length <= 0) {
+    forestDiaryTodayElement.textContent = "나무 이름을 정하면 오늘의 숲 문장이 이곳에 남아요.";
+    forestDiaryListElement.innerHTML = "";
+    forestDiaryEmptyElement.textContent = "아직 쌓인 숲 기록이 없어요.";
+    forestDiaryEmptyElement.classList.remove("hidden");
+    forestDiaryFlowElement.textContent = "첫 기록 전";
+    return;
+  }
+
+  if (entries.length <= 0) {
+    forestDiaryTodayElement.textContent = "첫 마음을 고르면 오늘의 숲 문장이 생겨요.";
+    forestDiaryListElement.innerHTML = "";
+    forestDiaryEmptyElement.textContent = "아직 쌓인 숲 기록이 없어요. 오늘의 마음 하나가 첫 일기가 돼요.";
+    forestDiaryEmptyElement.classList.remove("hidden");
+    forestDiaryFlowElement.textContent = "첫 기록 대기 중";
+    return;
+  }
+
+  forestDiaryTodayElement.textContent = todayEntry?.date === getTodayKey()
+    ? `오늘의 숲 문장 · ${todayEntry.sentence}`
+    : `최근 숲 문장 · ${todayEntry.sentence}`;
+
+  forestDiaryEmptyElement.classList.add("hidden");
+  forestDiaryListElement.innerHTML = entries
+    .map((entry) => {
+      const moodClass = `diary-mood-${entry.mood}`;
+      return `
+        <li class="forest-diary-item ${moodClass}">
+          <span class="forest-diary-date">${escapeHtml(entry.displayDate)}</span>
+          <div>
+            <strong>${escapeHtml(entry.icon || "✦")} ${escapeHtml(entry.label)} · ${escapeHtml(entry.title)}</strong>
+            <p>${escapeHtml(entry.sentence)}</p>
+          </div>
+        </li>
+      `;
+    })
+    .join("");
+  forestDiaryFlowElement.textContent = getForestDiaryFlowInfo();
+}
+
 function renderVersionLabels() {
   const versionElements = document.querySelectorAll(".version");
   const demoPillElement = document.querySelector(".demo-pill");
@@ -2413,7 +2592,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 월드 숲 자리감 강화판`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 숲 일기장 1차`;
   }
 }
 
@@ -2898,6 +3077,7 @@ function renderAll() {
   renderReturnMemoryCard();
   renderStreakRewardCard();
   renderCompleteCard();
+  renderForestDiaryCard();
   renderVisitorTrace();
   renderVisitorLog();
   updateTodayStatus();
