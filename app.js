@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.29 test
+// 살아있는 숲 V1.30 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.29 test
-// 목적: 나를 위한 작은 실천 1차 — 오늘의 기록 뒤 실제 나에게 돌아오는 작은 행동 남기기
+// 버전명: V1.30 test
+// 목적: 주간 숲 편지 1차 — 오늘의 기록 뒤 실제 나에게 돌아오는 작은 행동 남기기
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.29 test",
+  version: "V1.30 test",
   dataSchemaVersion: 10,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -14,9 +14,9 @@ const APP_CONFIG = {
 };
 
 
-// V1.29 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.30 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.29 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.30 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -706,6 +706,11 @@ const selfCareTitleElement = document.querySelector("#selfCareTitle");
 const selfCareTextElement = document.querySelector("#selfCareText");
 const selfCareMessageElement = document.querySelector("#selfCareMessage");
 const selfCareButtons = document.querySelectorAll("[data-self-care]");
+const weeklyForestLetterCardElement = document.querySelector("#weeklyForestLetterCard");
+const weeklyForestLetterTitleElement = document.querySelector("#weeklyForestLetterTitle");
+const weeklyForestLetterTextElement = document.querySelector("#weeklyForestLetterText");
+const weeklyForestLetterStatsElement = document.querySelector("#weeklyForestLetterStats");
+const weeklyForestLetterMetaElement = document.querySelector("#weeklyForestLetterMeta");
 const forestSoundCardElement = document.querySelector("#forestSoundCard");
 const forestSoundTitleElement = document.querySelector("#forestSoundTitle");
 const forestSoundTextElement = document.querySelector("#forestSoundText");
@@ -1199,6 +1204,7 @@ function saveTomorrowSeed() {
   treeData.tomorrowSeeds = records.slice(0, 60);
   saveTreeData();
   renderTomorrowSeedCard();
+  renderWeeklyForestLetterCard();
   trackForestEvent("tomorrow_seed_saved", { source: "garden", target_date: tomorrow });
 }
 
@@ -1474,6 +1480,103 @@ function getForestDiaryFlowInfo() {
   }
 
   return `${topRule.flowText}${streakText}`;
+}
+
+function getWeeklyForestLetterInfo() {
+  const history = Array.isArray(treeData.history) ? treeData.history : [];
+  const recentRecords = history.slice(0, Math.min(7, history.length));
+  const recentEntries = recentRecords.map((record, index) => getForestDiaryEntry(record, index));
+  const recentDates = new Set(recentEntries.map((entry) => entry.date).filter((dateText) => isValidDateKey(dateText)));
+  const totalRecords = history.length;
+
+  if (recentEntries.length < 3) {
+    const remaining = Math.max(3 - recentEntries.length, 0);
+    return {
+      ready: false,
+      title: "주간 숲 편지는 기록 3개부터 열려요",
+      text: recentEntries.length <= 0
+        ? "오늘의 마음을 하나씩 남기면, 며칠 뒤 내 숲이 짧은 편지처럼 흐름을 정리해줘요."
+        : `지금 ${recentEntries.length}개의 숲 기록이 쌓였어요. ${remaining}번 더 기록하면 최근 흐름을 편지로 볼 수 있어요.`,
+      stats: [
+        `최근 기록 ${recentEntries.length}/3`,
+        "아직 편지 준비 중"
+      ],
+      meta: "기록이 3개 이상 쌓이면 자동으로 열려요."
+    };
+  }
+
+  const counts = recentEntries.reduce((acc, entry) => {
+    const mood = moodRules[entry.mood] ? entry.mood : "normal";
+    acc[mood] = (acc[mood] || 0) + 1;
+    return acc;
+  }, { good: 0, normal: 0, tired: 0 });
+  const topMood = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || "normal";
+  const topMoodRule = moodRules[topMood] || moodRules.normal;
+  const diaryRule = getForestDiaryRule(topMood);
+  const streakDays = getConsecutiveRecordDays();
+
+  const recentCare = (Array.isArray(treeData.careHistory) ? treeData.careHistory : [])
+    .filter((record) => recentDates.has(record.date));
+  const recentTrails = (Array.isArray(treeData.trailHistory) ? treeData.trailHistory : [])
+    .filter((record) => recentDates.has(record.date));
+  const recentSelfCare = (Array.isArray(treeData.selfCareHistory) ? treeData.selfCareHistory : [])
+    .filter((record) => recentDates.has(record.date));
+  const recentSeeds = (Array.isArray(treeData.tomorrowSeeds) ? treeData.tomorrowSeeds : [])
+    .filter((record) => recentDates.has(record.date));
+
+  const actionPieces = [];
+  if (recentCare[0]) actionPieces.push(`${recentCare[0].icon} ${recentCare[0].label}`);
+  if (recentTrails[0]) actionPieces.push(`${recentTrails[0].icon} ${recentTrails[0].label}`);
+  if (recentSelfCare[0]) actionPieces.push(`${recentSelfCare[0].icon} ${recentSelfCare[0].label}`);
+  if (recentSeeds[0]) actionPieces.push("🌱 내일의 씨앗");
+
+  const moodOpening = {
+    good: "최근 너의 숲은 밝은 잎을 자주 펼쳤어요.",
+    normal: "최근 너의 숲은 크게 흔들리지 않고 고른 숨을 이어갔어요.",
+    tired: "최근 너의 숲은 위로 빨리 자라기보다 뿌리를 깊게 내리고 있었어요."
+  }[topMood] || diaryRule.flowText;
+
+  const actionText = actionPieces.length > 0
+    ? `${actionPieces.slice(0, 3).join(" · ")} 같은 작은 선택들이 숲의 하루를 더 또렷하게 남겼어요.`
+    : "아직 작은 돌봄과 실천은 적지만, 마음을 기록한 것만으로도 숲은 흐름을 기억하고 있어요.";
+  const streakText = streakDays >= 2
+    ? ` ${streakDays}일째 이어진 기록은 숲에 조용한 길을 만들고 있어요.`
+    : " 하루하루의 기록은 아직 느리지만, 숲은 이미 방향을 잡기 시작했어요.";
+  const closing = {
+    good: "이번 주의 숲은 가볍고 밝은 쪽으로 잎을 열고 있어요.",
+    normal: "이번 주의 숲은 무리하지 않는 균형을 배우고 있어요.",
+    tired: "이번 주의 숲은 쉬어가면서도 단단해지는 법을 배우고 있어요."
+  }[topMood] || "이번 주의 숲은 천천히 자기 흐름을 만들고 있어요.";
+
+  const totalActionCount = recentCare.length + recentTrails.length + recentSelfCare.length + recentSeeds.length;
+
+  return {
+    ready: true,
+    title: `${treeData.treeName?.trim() || "내 나무"}에게 온 주간 숲 편지`,
+    text: `${moodOpening} ${actionText}${streakText} ${closing}`,
+    stats: [
+      `최근 기록 ${recentEntries.length}개`,
+      `가장 많은 마음 ${topMoodRule.icon} ${topMoodRule.label}`,
+      totalActionCount > 0 ? `작은 선택 ${totalActionCount}개` : "작은 선택 준비 중"
+    ],
+    meta: `전체 ${totalRecords}번째 기록까지, 최근 ${recentEntries.length}개의 흐름을 바탕으로 쓴 편지예요.`
+  };
+}
+
+function renderWeeklyForestLetterCard() {
+  if (!weeklyForestLetterCardElement || !weeklyForestLetterTitleElement || !weeklyForestLetterTextElement || !weeklyForestLetterStatsElement || !weeklyForestLetterMetaElement) {
+    return;
+  }
+
+  const info = getWeeklyForestLetterInfo();
+  weeklyForestLetterCardElement.classList.toggle("weekly-letter-ready", info.ready);
+  weeklyForestLetterCardElement.classList.toggle("weekly-letter-waiting", !info.ready);
+  weeklyForestLetterTitleElement.textContent = info.title;
+  weeklyForestLetterTextElement.textContent = info.text;
+  weeklyForestLetterStatsElement.innerHTML = info.stats
+    .map((stat) => `<span>${escapeHtml(stat)}</span>`)
+    .join("");
+  weeklyForestLetterMetaElement.textContent = info.meta;
 }
 
 function getCurrentStreakReward(streakDays) {
@@ -2427,6 +2530,9 @@ function chooseMood(mood) {
   renderForestDiaryCard();
   renderForestShareCard();
   renderTreeCareCard();
+  renderForestTrailCard();
+  renderSelfCareCard();
+  renderWeeklyForestLetterCard();
   updateTodayStatus();
   prepareDailyVisitor({ forcePlay: true, allowCreate: true, allowPlay: true });
 }
@@ -3360,6 +3466,7 @@ function chooseTreeCare(care) {
   saveTreeData();
 
   renderTreeCareCard();
+  renderWeeklyForestLetterCard();
   renderForestEffect(getTodayMoodState(), true);
   renderMessages(`${rule.message} 오늘의 돌봄도 내 숲의 하루에 함께 남았어요.`);
   trackForestEvent("tree_care_selected", { care_type: care });
@@ -3605,6 +3712,7 @@ function chooseForestTrail(trail) {
   saveTreeData();
 
   renderForestTrailCard();
+  renderWeeklyForestLetterCard();
   renderMessages(`${rule.message} 오늘의 숲길 산책도 내 숲의 하루에 함께 남았어요.`);
   trackForestEvent("forest_trail_selected", { trail_type: trail });
 }
@@ -3671,6 +3779,7 @@ function chooseSelfCare(action) {
   saveTreeData();
 
   renderSelfCareCard();
+  renderWeeklyForestLetterCard();
   renderMessages(`${rule.message} 오늘은 숲뿐 아니라 나도 조금 돌본 날이에요.`);
   trackForestEvent("self_care_selected", { self_care_type: action });
 }
@@ -4289,7 +4398,7 @@ function renderTestModeStatus() {
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
   const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 나를 위한 작은 실천 1차 · ${shortTreeId}`;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 주간 숲 편지 1차 · ${shortTreeId}`;
 }
 
 function setupTestMode() {
@@ -4384,6 +4493,7 @@ function renderAll() {
   renderTreeCareCard();
   renderForestTrailCard();
   renderSelfCareCard();
+  renderWeeklyForestLetterCard();
   renderForestSoundCard();
   renderGardenMarkerCard();
   renderGardenMarkerLayer();

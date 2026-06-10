@@ -9074,7 +9074,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.29 test: 작은 돌봄 버튼 위치 보정 — 정원 화면을 가리지 않는 미니 컨트롤 */
+/* V1.30 test: 작은 돌봄 버튼 위치 보정 — 정원 화면을 가리지 않는 미니 컨트롤 */
 .tree-care-card,
 .forest-trail-card,
 .garden-marker-card {
@@ -9167,7 +9167,7 @@ body[data-world-time="day"] .daily-loop-card {
   opacity: 1;
 }
 
-/* V1.29 test: 숲길 산책 1차 — 기록 후 오늘 걸은 길을 남기는 확장 */
+/* V1.30 test: 숲길 산책 1차 — 기록 후 오늘 걸은 길을 남기는 확장 */
 .forest-trail-card.trail-ready {
   border-color: rgba(223, 255, 180, 0.2);
   background:
@@ -9309,7 +9309,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.29 test: 작은 돌봄 패널 가림 문제 최종 보정
+/* V1.30 test: 작은 돌봄 패널 가림 문제 최종 보정
    - 중앙 하단 오버레이를 없애고, 나무와 메시지를 가리지 않는 우측 상단 미니 컨트롤로 이동 */
 .tree-care-stage-dock {
   left: auto;
@@ -9413,7 +9413,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.29 test: 내일의 씨앗 1차 */
+/* V1.30 test: 내일의 씨앗 1차 */
 .forest-sound-card {
   margin-top: 12px;
   padding: 15px 16px 14px;
@@ -9494,7 +9494,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.29 test: 내일의 씨앗 1차 */
+/* V1.30 test: 내일의 씨앗 1차 */
 .tomorrow-seed-card {
   margin-top: 14px;
   padding: 16px;
@@ -9605,7 +9605,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.29 test: 나를 위한 작은 실천 1차 */
+/* V1.30 test: 주간 숲 편지 1차 */
 .self-care-card {
   margin-top: 14px;
   padding: 16px;
@@ -9705,5 +9705,95 @@ body[data-world-time="day"] .daily-loop-card {
 
   .self-care-actions button {
     min-height: 48px;
+  }
+}
+
+
+/* V1.30 test: 주간 숲 편지 1차 — 최근 기록을 모아 며칠 단위 회고로 보여주는 확장 */
+.weekly-forest-letter-card {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 24px;
+}
+
+.weekly-forest-letter-kicker {
+  display: inline-flex;
+  margin-bottom: 6px;
+  color: rgba(218, 248, 199, 0.72);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.weekly-forest-letter-title {
+  margin: 0;
+  color: #f4ffe9;
+  font-size: 18px;
+  font-weight: 950;
+  line-height: 1.35;
+}
+
+.weekly-forest-letter-text {
+  margin: 9px 0 0;
+  padding: 13px 14px;
+  border: 1px solid rgba(225, 255, 211, 0.13);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.065);
+  color: rgba(244, 255, 233, 0.86);
+  font-size: 14px;
+  font-weight: 760;
+  line-height: 1.68;
+}
+
+.weekly-forest-letter-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.weekly-forest-letter-stats span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 6px 10px;
+  border: 1px solid rgba(225, 255, 211, 0.12);
+  border-radius: 999px;
+  background: rgba(217, 247, 181, 0.09);
+  color: rgba(238, 246, 232, 0.78);
+  font-size: 12px;
+  font-weight: 880;
+}
+
+.weekly-forest-letter-meta {
+  margin: 11px 0 0;
+  color: rgba(217, 247, 198, 0.72);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.weekly-forest-letter-card.weekly-letter-ready {
+  border-color: rgba(223, 255, 180, 0.25);
+  background:
+    radial-gradient(circle at 18% 12%, rgba(223, 255, 180, 0.12), transparent 38%),
+    rgba(30, 60, 42, 0.46);
+  box-shadow: 0 18px 44px rgba(106, 169, 98, 0.14);
+}
+
+.weekly-forest-letter-card.weekly-letter-waiting {
+  border-color: rgba(231, 255, 222, 0.12);
+  background: rgba(8, 20, 18, 0.42);
+}
+
+@media (max-width: 520px) {
+  .weekly-forest-letter-stats {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .weekly-forest-letter-stats span {
+    justify-content: flex-start;
   }
 }
