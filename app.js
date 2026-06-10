@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.25 test
+// 살아있는 숲 V1.25.2 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.25 test
+// 버전명: V1.25.2 test
 // 목적: 내 정원 표식 1차 — 내 나무 곁에 개인화 표식을 놓는 확장
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.25 test",
+  version: "V1.25.2 test",
   dataSchemaVersion: 6,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -14,9 +14,9 @@ const APP_CONFIG = {
 };
 
 
-// V1.25 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.25.2 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.25 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.25.2 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -623,6 +623,8 @@ const treeCareCardElement = document.querySelector("#treeCareCard");
 const treeCareTitleElement = document.querySelector("#treeCareTitle");
 const treeCareTextElement = document.querySelector("#treeCareText");
 const treeCareMessageElement = document.querySelector("#treeCareMessage");
+const treeCareStageDockElement = document.querySelector("#treeCareStageDock");
+const treeCareStageTextElement = document.querySelector("#treeCareStageText");
 const treeCareButtons = document.querySelectorAll("[data-care-action]");
 
 const gardenMarkerLayerElement = document.querySelector("#gardenMarkerLayer");
@@ -2963,6 +2965,19 @@ function renderTreeCareCard() {
   const latestCare = getLatestCareRecord();
   const canCare = Boolean(todayRecord) && !todayCare;
 
+  if (treeCareStageDockElement) {
+    treeCareStageDockElement.classList.toggle("hidden", !todayRecord);
+    treeCareStageDockElement.classList.toggle("care-dock-ready", Boolean(todayRecord));
+    treeCareStageDockElement.classList.toggle("care-dock-done", Boolean(todayCare));
+  }
+
+  if (skyElement) {
+    skyElement.classList.remove("care-visual-water", "care-visual-light", "care-visual-rest");
+    if (todayCare?.care) {
+      skyElement.classList.add(`care-visual-${todayCare.care}`);
+    }
+  }
+
   treeCareCardElement.classList.toggle("care-ready", Boolean(todayRecord));
   treeCareCardElement.classList.toggle("care-done", Boolean(todayCare));
 
@@ -2979,6 +2994,9 @@ function renderTreeCareCard() {
     treeCareMessageElement.textContent = latestCare
       ? `최근 돌봄 · ${latestCare.icon} ${latestCare.label} — ${latestCare.title}`
       : "오늘 기록 후 사용 가능";
+    if (treeCareStageTextElement) {
+      treeCareStageTextElement.textContent = "기록 후 나무 가까이에서 바로 돌볼 수 있어요.";
+    }
     return;
   }
 
@@ -2986,12 +3004,18 @@ function renderTreeCareCard() {
     treeCareTitleElement.textContent = `${todayCare.icon} ${todayCare.title}`;
     treeCareTextElement.textContent = todayCare.message;
     treeCareMessageElement.textContent = "오늘의 작은 돌봄이 내 숲에 남았어요. 내일 다시 다른 돌봄을 남길 수 있어요.";
+    if (treeCareStageTextElement) {
+      treeCareStageTextElement.textContent = `${todayCare.icon} ${todayCare.title}`;
+    }
     return;
   }
 
   treeCareTitleElement.textContent = "오늘의 작은 돌봄을 골라주세요";
   treeCareTextElement.textContent = "감정 기록은 끝났어요. 이제 내 나무에게 오늘 어울리는 돌봄 하나를 남길 수 있어요.";
   treeCareMessageElement.textContent = "하루에 한 번만 선택돼요.";
+  if (treeCareStageTextElement) {
+    treeCareStageTextElement.textContent = "나무 가까이에서 바로 돌봄을 골라보세요.";
+  }
 }
 
 function chooseTreeCare(care) {
