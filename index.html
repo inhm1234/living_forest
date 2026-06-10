@@ -6,7 +6,7 @@
   <title>살아있는 숲 | 하루 한 번, 내 마음이 자라는 숲</title>
   <meta
     name="description"
-    content="하루에 한 번 지금의 마음을 남기면 내 나무와 월드 숲이 조용히 자라는 작은 체험판입니다. 기록은 이 기기에만 저장돼요."
+    content="내 나무를 키우고 친구들과 함께 숲을 채워가는 귀엽고 따뜻한 숲 놀이터 체험판입니다. 기록은 이 기기에만 저장돼요."
   />
   <meta name="theme-color" content="#07100f" />
   <meta name="color-scheme" content="dark" />
@@ -35,7 +35,7 @@
 
   <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.41.1-test" />
+  <link rel="stylesheet" href="style.css?v=1.42-test" />
 <!-- Google tag (gtag.js) - Living Forest GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-YC872G7MH1"></script>
 <script>
@@ -56,10 +56,10 @@
   <main class="app">
     <section id="worldScreen" class="screen screen-active">
       <header class="hero world-hero">
-        <p class="version">살아있는 숲 V1.41.1 test · 하단 패널 가림 보정</p>
+        <p class="version">살아있는 숲 V1.42 test · 귀여운 숲 비주얼 개편 1차</p>
         <h1>살아있는 숲</h1>
-        <p class="subtitle">하루 한 번 마음을 남기면 내 나무와 숲 일기장이 자라요.</p>
-        <p class="demo-pill">V1.41.1 test · 하단 패널 가림 보정</p>
+        <p class="subtitle">내 나무를 키우고, 친구들과 함께 숲을 채워가요.</p>
+        <p class="demo-pill">V1.42 test · 귀여운 숲 비주얼 개편 1차</p>
       </header>
 
       <section class="world-card visual-card">
@@ -109,15 +109,15 @@
             <p id="worldSummaryName" class="summary-name">이름 없는 나무</p>
             <span id="worldSummaryToday" class="summary-chip">오늘 기록 전</span>
           </div>
-          <p id="worldSummaryText" class="world-summary-text">오늘의 마음을 하나 고르면 내 나무가 자라고, 월드 숲에도 작은 변화가 생겨요.</p>
-          <p id="worldCommunityHint" class="world-community-hint">먼저 숲속 내 자리로 들어가 내 나무를 시작해보세요.</p>
-          <p id="worldAtmosphereHint" class="world-atmosphere-hint">하루 한 번의 기록이 내 정원과 월드 숲에 조용히 남아요.</p>
+          <p id="worldSummaryText" class="world-summary-text">오늘의 마음을 하나 고르면 내 나무가 자라고, 친구 숲에도 작은 변화가 생겨요.</p>
+          <p id="worldCommunityHint" class="world-community-hint">먼저 숲속 내 자리에서 내 나무를 시작하고, 친구들과 함께 채워질 숲을 떠올려보세요.</p>
+          <p id="worldAtmosphereHint" class="world-atmosphere-hint">하루 한 번의 기록이 내 정원과 친구 숲에 작은 흔적으로 남아요.</p>
         </div>
 
         <div id="forestInviteCard" class="forest-invite-card glass-panel hidden" aria-live="polite">
           <span class="forest-invite-kicker">숲 초대장</span>
           <p id="forestInviteTitle" class="forest-invite-title">누군가의 숲 문장을 보고 오셨나요?</p>
-          <p id="forestInviteText" class="forest-invite-text">하루에 한 번 마음을 남기면 나만의 나무와 숲 일기장이 조용히 자라요.</p>
+          <p id="forestInviteText" class="forest-invite-text">하루에 한 번 마음을 남기면 내 나무가 자라고, 친구들과 함께 숲도 조금씩 채워져요.</p>
           <button id="forestInviteStartBtn" class="primary-btn forest-invite-start" type="button">내 숲 시작하기</button>
           <p id="forestInviteMeta" class="forest-invite-meta">초대 링크로 들어왔어요 · 로그인 없이 바로 시작할 수 있어요.</p>
         </div>
@@ -125,7 +125,7 @@
         <div id="worldGrowthCard" class="world-growth-card glass-panel" aria-live="polite">
           <span class="world-growth-kicker">월드 숲의 내 자리</span>
           <p id="worldGrowthTitle" class="world-growth-title">월드 숲은 첫 흔적을 기다려요</p>
-          <p id="worldGrowthText" class="world-growth-text">첫 마음을 기록하면 내 나무의 작은 자리에도 씨앗빛이 남기 시작해요.</p>
+          <p id="worldGrowthText" class="world-growth-text">첫 마음을 기록하면 내 나무 자리에도 작은 씨앗빛이 남고, 함께 만드는 숲의 시작이 열려요.</p>
           <div class="world-growth-progress" aria-hidden="true">
             <span id="worldGrowthFill" class="world-growth-fill"></span>
           </div>
@@ -134,24 +134,24 @@
 
         <div id="worldPlaceCard" class="world-place-card glass-panel" aria-live="polite">
           <span class="world-place-kicker">월드 숲 자리 안내</span>
-          <p class="world-place-title">밝게 보이는 곳이 내 나무가 자라는 자리예요.</p>
-          <p class="world-place-text">주변의 작은 나무와 빈 빛자리는 앞으로 더 많은 나무가 채워질 숲의 자리들이에요.</p>
+          <p class="world-place-title">반짝이는 자리가 내 나무와 친구들의 나무가 함께 자랄 자리예요.</p>
+          <p class="world-place-text">주변의 작은 나무와 빈 자리는 앞으로 더 많은 친구 나무가 채워질 숲의 자리들이에요.</p>
         </div>
 
         <div id="firstVisitGuide" class="first-visit-guide glass-panel" aria-live="polite">
           <span class="first-visit-kicker">처음 오셨나요?</span>
-          <p class="first-visit-title">오늘의 마음을 고르면 내 나무가 자라요.</p>
-          <p class="first-visit-text">이름을 정하고 좋음·보통·피곤 중 하나만 선택하면, 내 정원과 월드 숲에 작은 변화가 생겨요.</p>
+          <p class="first-visit-title">오늘의 마음을 고르면 내 나무와 친구 숲이 함께 자라요.</p>
+          <p class="first-visit-text">이름을 정하고 좋음·보통·피곤 중 하나만 선택하면, 내 정원과 친구 숲에 작은 변화가 생겨요.</p>
         </div>
 
         <div id="dailyLoopCard" class="daily-loop-card glass-panel" aria-live="polite">
           <span class="daily-loop-kicker">오늘의 흐름</span>
           <p id="dailyLoopTitle" class="daily-loop-title">내 나무를 심을 준비</p>
-          <p id="dailyLoopText" class="daily-loop-text">숲을 둘러보고, 내 나무가 자랄 작은 자리를 시작해요.</p>
+          <p id="dailyLoopText" class="daily-loop-text">숲을 둘러보고, 내 나무와 친구들이 함께 채울 자리를 시작해요.</p>
         </div>
 
         <div class="world-action-row">
-          <button id="goGardenBtn" class="primary-btn" type="button">내 나무 키우러 가기</button>
+          <button id="goGardenBtn" class="primary-btn" type="button">내 나무 보러 가기</button>
           <button id="focusMyTreeBtn" class="ghost-btn world-focus-btn" type="button">내 나무 보기</button>
         </div>
       </section>
@@ -160,9 +160,9 @@
     <section id="gardenScreen" class="screen">
       <header class="hero garden-hero">
         <button id="backToWorldBtnTop" class="ghost-btn small-btn" type="button">← 전체 숲</button>
-        <p class="version">오늘 내 나무 돌보기 · V1.41.1 test</p>
+        <p class="version">오늘 내 나무 돌보기 · V1.42 test</p>
         <h2 id="gardenTitle" class="garden-title">밤 숲속 자리</h2>
-        <p class="subtitle">좋음도, 보통도, 피곤함도 모두 성장으로 남아요.</p>
+        <p class="subtitle">오늘의 마음이 내 나무와 친구 숲에 귀여운 흔적으로 남아요.</p>
       </header>
 
       <section class="forest-head glass-panel">
@@ -232,7 +232,7 @@
         <div class="garden-hub-head">
           <div>
             <span class="garden-hub-kicker">내 정원 메뉴</span>
-            <p id="gardenPanelTitle" class="garden-hub-title">기록, 활동, 꾸미기, 편지, 보관함을 나무를 보면서 바로 열어볼 수 있어요.</p>
+            <p id="gardenPanelTitle" class="garden-hub-title">기록, 활동, 꾸미기, 편지, 보관함을 내 나무를 보면서 바로 열어볼 수 있어요.</p>
           </div>
           <button id="closeGardenPanelBtn" class="ghost-btn small-btn garden-hub-close" type="button">패널 접기</button>
         </div>
@@ -489,7 +489,7 @@
       </section>
 
       <button id="backToWorldBtnBottom" class="primary-btn return-btn" type="button">전체 숲으로 돌아가기</button>
-      <p class="storage-note">1차 완성판에서는 기록이 이 기기에만 저장돼요. 기기를 바꾸면 기록이 이어지지 않을 수 있어요.</p>
+      <p class="storage-note">지금은 기록이 이 기기에만 저장돼요. 친구 숲 감각은 먼저 보여주고, 실제 확장 기능은 다음 단계에서 이어갈 예정이에요.</p>
     </section>
   </main>
 
@@ -503,7 +503,7 @@
     </div>
 
     <p class="test-storage-line">저장키: <span id="testModeStorageKey">livingForestV012_TEST</span></p>
-    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.41.1 test · schema 12 · local-only · 하단 패널 가림 보정</span></p>
+    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.42 test · schema 12 · local-only · 귀여운 숲 비주얼 개편 1차</span></p>
 
     <div class="test-preset-buttons">
       <button type="button" data-test-preset="first">첫 방문자</button>
@@ -525,6 +525,6 @@
   </aside>
 
 
-  <script src="app.js?v=1.41.1-test"></script>
+  <script src="app.js?v=1.42-test"></script>
 </body>
 </html>

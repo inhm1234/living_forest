@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.41.1 test
+// 살아있는 숲 V1.42 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.41.1 test
-// 목적: 하단 패널 가림 보정 — 첫 진입은 얇게, 필요할 때만 펼쳐지는 나무 중심 UX 안정화
+// 버전명: V1.42 test
+// 목적: 귀여운 숲 비주얼 개편 1차 — 리얼 숲에서 파스텔 웹툰풍 숲 톤으로 전환
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.41.1 test",
+  version: "V1.42 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",

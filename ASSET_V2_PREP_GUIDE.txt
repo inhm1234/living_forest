@@ -1,0 +1,29 @@
+살아있는 숲 V1.42 이후 자산 준비 가이드
+
+이번 V1.42는 코드/톤 기반 비주얼 개편 1차입니다.
+다음 단계에서 교체하면 좋은 우선 자산 목록은 아래와 같습니다.
+
+[1차 우선 교체 자산]
+assets/world/world-overview-day-v2.png
+assets/world/world-overview-sunset-v2.png
+assets/world/world-overview-night-v2.png
+assets/garden/garden-inner-day-v2.png
+assets/garden/garden-inner-sunset-v2.png
+assets/garden/garden-inner-night-v2.png
+
+[2차 우선 교체 자산]
+assets/garden/tree-germination-v2.png
+assets/garden/tree-sprout-v2.png
+assets/garden/tree-seedling-v2.png
+assets/garden/tree-sapling-v2.png
+assets/garden/tree-young-v2.png
+assets/garden/tree-hero-v2.png
+assets/garden/bird-silhouette-v2.svg 또는 png
+assets/garden/squirrel-silhouette-v2.svg 또는 png
+
+[3차 확장 자산]
+리본 / 별 가랜드 / 하트 풍선 / 꽃밭 / 작은 랜턴 / 토끼 소풍 세트 / 친구 선물 상자 / 방문 흔적 스티커
+
+주의:
+- v2 파일은 아직 실제 코드에 연결되지 않았습니다.
+- 기존 v1 자산은 유지하고, 다음 버전에서 단계적으로 연결하는 방식이 안전합니다.

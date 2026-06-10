@@ -10416,3 +10416,262 @@ button[type="submit"],
     max-height: min(30vh, 260px);
   }
 }
+
+
+/* V1.42 test · 귀여운 숲 비주얼 개편 1차 */
+html {
+  background: linear-gradient(180deg, #fffaf4 0%, #fff4fb 40%, #f7fbff 100%);
+}
+
+body {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(255, 193, 214, 0.42), transparent 20%),
+    radial-gradient(circle at 88% 10%, rgba(183, 225, 255, 0.4), transparent 18%),
+    radial-gradient(circle at 50% 0%, rgba(218, 182, 255, 0.26), transparent 28%),
+    linear-gradient(180deg, #fff9f3 0%, #fff6fb 42%, #f4fbff 100%);
+  color: #5b3a32;
+}
+
+.app {
+  width: min(100%, 860px);
+}
+
+.version,
+.demo-pill,
+.summary-chip,
+.meta-chip {
+  border-color: rgba(244, 127, 166, 0.18) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  color: #cf5e86 !important;
+  box-shadow: 0 8px 18px rgba(244, 127, 166, 0.08);
+}
+
+h1,
+.garden-title,
+.tree-name-display,
+.summary-name,
+.my-spot-name,
+.message-main {
+  color: #7b4f63;
+  text-shadow: none;
+}
+
+.subtitle,
+.world-summary-text,
+.world-community-hint,
+.world-atmosphere-hint,
+.message-sub,
+.my-spot-status,
+.storage-note,
+.today-status,
+.forest-share-text,
+.forest-archive-text,
+#forestCalendarMessage,
+#forestMemoryTitle + p {
+  color: rgba(91, 58, 50, 0.82) !important;
+}
+
+.visual-card,
+.glass-panel,
+.name-card,
+.mood-card,
+.forest-head,
+.world-growth-card,
+.world-place-card,
+.first-visit-guide,
+.daily-loop-card,
+.forest-invite-card,
+.tree-care-card,
+.forest-trail-card,
+.self-care-card,
+.weekly-forest-letter-card,
+.forest-archive-card,
+.forest-calendar-card,
+.forest-memory-card,
+.forest-badge-card,
+.visitor-trace-card,
+.visitor-log-card,
+.test-mode-card,
+.garden-hub,
+.stage-message {
+  border: 1px solid rgba(244, 127, 166, 0.14) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 245, 250, 0.92)) !important;
+  box-shadow: 0 18px 42px rgba(233, 169, 197, 0.16) !important;
+  backdrop-filter: blur(12px);
+}
+
+.world-card,
+.garden-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,246,251,0.92)) !important;
+}
+
+.visual-stage {
+  background-color: #f8f2ff;
+}
+
+.world-stage {
+  background-color: #d9efff;
+}
+
+.world-dim {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 243, 249, 0.06) 56%, rgba(255, 228, 242, 0.12) 100%),
+    radial-gradient(circle at 50% 58%, rgba(255, 255, 255, 0.28), transparent 28%);
+}
+
+.world-depth-back {
+  background:
+    radial-gradient(ellipse at 50% 62%, rgba(255, 255, 255, 0.02) 0 18%, rgba(255, 235, 245, 0.12) 48%, rgba(255, 213, 233, 0.22) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 235, 245, 0.16));
+}
+
+.world-canopy-shadow {
+  background:
+    radial-gradient(ellipse at 18% 20%, rgba(255, 205, 227, 0.24), transparent 54%),
+    radial-gradient(ellipse at 80% 22%, rgba(205, 236, 255, 0.22), transparent 54%),
+    linear-gradient(180deg, rgba(255, 236, 246, 0.2), transparent 82%);
+  filter: blur(6px);
+}
+
+.world-clearing {
+  background:
+    radial-gradient(ellipse at 50% 74%, rgba(255, 229, 159, 0.24) 0 18%, rgba(174, 230, 199, 0.16) 34%, transparent 62%),
+    radial-gradient(ellipse at 50% 45%, rgba(255, 255, 255, 0.1), transparent 68%);
+  backdrop-filter: blur(1.3px) brightness(1.02) saturate(1.04);
+}
+
+.world-spot-ground {
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(255, 247, 186, 0.45), transparent 34%),
+    radial-gradient(ellipse at 48% 50%, rgba(186, 233, 193, 0.84), rgba(152, 214, 173, 0.84) 52%, rgba(255, 223, 236, 0.18) 72%, transparent 78%);
+  box-shadow: 0 18px 32px rgba(221, 170, 193, 0.18), 0 0 42px rgba(255, 213, 161, 0.18);
+}
+
+.world-growth-kicker,
+.world-place-kicker,
+.first-visit-kicker,
+.daily-loop-kicker,
+.forest-invite-kicker,
+.garden-hub-kicker,
+.complete-kicker,
+.visitor-log-kicker,
+.tree-care-stage-label {
+  color: #d56f96 !important;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, #ffc1d6, #dab6ff) !important;
+  color: #6b3b5a !important;
+  box-shadow: 0 14px 28px rgba(244, 127, 166, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
+}
+
+.ghost-btn {
+  border: 1px solid rgba(218, 182, 255, 0.48) !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  color: #8c5d74 !important;
+  box-shadow: 0 8px 18px rgba(218, 182, 255, 0.12) !important;
+}
+
+.mood-guide {
+  color: #ba6a8b;
+}
+
+.mood-buttons button,
+.garden-hub-tab,
+.tree-care-stage-actions button,
+.forest-sound-button,
+.marker-option,
+.memory-filter-btn {
+  border-color: rgba(218, 182, 255, 0.34) !important;
+  background: rgba(255, 255, 255, 0.86) !important;
+  color: #7a5366 !important;
+  box-shadow: 0 10px 20px rgba(233, 169, 197, 0.1) !important;
+}
+
+.mood-buttons button.selected,
+.garden-hub-tab.active,
+.marker-option.selected,
+.memory-filter-btn.active {
+  border-color: rgba(244, 127, 166, 0.38) !important;
+  background: linear-gradient(135deg, rgba(255, 193, 214, 0.94), rgba(218, 182, 255, 0.94)) !important;
+  color: #fff !important;
+  box-shadow: 0 12px 22px rgba(214, 111, 150, 0.18) !important;
+}
+
+.tree-name-form input,
+.tomorrow-seed-card textarea,
+.memory-search-input {
+  border-color: rgba(218, 182, 255, 0.34) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  color: #5b3a32 !important;
+}
+
+.garden-stage {
+  background:
+    radial-gradient(circle at 50% 14%, rgba(255, 220, 236, 0.65), transparent 26%),
+    radial-gradient(circle at 20% 10%, rgba(183, 225, 255, 0.46), transparent 20%),
+    linear-gradient(180deg, #d6c6ff 0%, #b7e1ff 42%, #fff6f4 100%) !important;
+}
+
+.garden-dim {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,240,248,0.08) 58%, rgba(255,227,241,0.14) 100%),
+    radial-gradient(circle at 50% 58%, rgba(255, 255, 255, 0.24), transparent 28%) !important;
+}
+
+.garden-hub {
+  background: linear-gradient(180deg, rgba(255, 250, 252, 0.95), rgba(255, 243, 249, 0.96)) !important;
+  box-shadow: 0 18px 40px rgba(233, 169, 197, 0.18) !important;
+}
+
+.garden-hub:not(.is-open) {
+  background: linear-gradient(180deg, rgba(255, 251, 253, 0.92), rgba(255, 244, 250, 0.94)) !important;
+  box-shadow: 0 12px 28px rgba(233, 169, 197, 0.16) !important;
+}
+
+.tree-care-stage-dock {
+  background: rgba(255, 249, 252, 0.82) !important;
+  border-color: rgba(255, 193, 214, 0.24) !important;
+}
+
+.world-action-row .world-focus-btn,
+.hub-inline-return,
+#copyShareBtn,
+#saveArchiveBtn,
+#loadArchiveBtn {
+  min-height: 50px;
+}
+
+#worldScreen .visual-card,
+#worldScreen .glass-panel {
+  background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,246,251,0.94)) !important;
+}
+
+.progress-bar,
+.world-growth-progress,
+.streak-reward-progress {
+  background: rgba(218, 182, 255, 0.18) !important;
+}
+
+.progress-fill,
+.world-growth-fill,
+.streak-reward-fill {
+  background: linear-gradient(90deg, #ffc1d6, #aee6c7, #b7e1ff) !important;
+}
+
+.tree-glow {
+  filter: drop-shadow(0 0 28px rgba(255, 176, 220, 0.34));
+}
+
+@media (max-width: 760px) {
+  .app {
+    padding: 14px 10px 20px;
+  }
+
+  .version,
+  .demo-pill,
+  .summary-chip,
+  .meta-chip {
+    font-size: 12px;
+  }
+}
