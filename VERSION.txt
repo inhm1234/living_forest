@@ -1,21 +1,27 @@
-살아있는 숲 V1.21 test
+살아있는 숲 V1.22 test
 
-기준 버전: V1.20 test
-작업 내용: 오늘의 숲 문장 공유 1차
+기준 버전: V1.21 test
+작업 내용: 숲 초대장 1차
 관리자 페이지: admin.html
 임시 비밀번호: forest2026
 Apps Script URL: https://script.google.com/macros/s/AKfycbyeqnUwroduXytKBFMs9Tpl2gngoJ0f6JmF9oKbEA-QAoJY0aFJ-bvOUWS15SFeErgkiA/exec
 
 변경 요약:
-- V1.20 1차 완성 흐름은 유지
-- 감정 기록 후 오늘의 숲 문장을 복사/공유할 수 있는 카드 추가
-- Web Share API 지원 환경에서는 기본 공유창 사용
-- 공유 기능이 없거나 PC 환경에서는 문장 복사로 대체
-- 공유 클릭은 기존 share_click 집계 흐름으로 유지
-- 관리자 / GA4 / Google Sheets / Apps Script / 방문자 시스템 구조는 유지
+- 오늘의 숲 문장 공유 링크를 초대 링크로 확장
+- 공유 링크에 ?invite=forest_sentence 파라미터 추가
+- 초대 링크로 들어온 방문자에게 숲 초대장 카드 표시
+- 숲 초대장에서 내 숲 시작하기 버튼 제공
+- 초대 CTA 클릭은 기존 go_garden_click 이벤트로 기록
+- V1.20 1차 완성 흐름과 V1.21 공유 기능 유지
+
+제외:
+- 로그인 없음
+- 서버 저장 없음
+- Google 계정 로그인 없음
+- 월드 숲 비주얼 반복 보강 없음
+- 방문자 종류 추가 없음
+- 관리자 대시보드 구조 변경 없음
 
 주의:
-- 이번 버전은 로그인/서버 저장을 넣는 버전이 아닙니다.
-- 같은 부분을 반복 보강하지 않고, 공유/확산 축을 새로 추가하는 확장판입니다.
-- Apps Script 재배포는 필요하지 않습니다.
+- 이번 버전은 Apps Script 재배포가 필요 없는 프론트 확장판입니다.
 - assets 폴더는 ZIP에 포함되어 있지 않으므로 기존 assets 폴더를 삭제하지 마세요.

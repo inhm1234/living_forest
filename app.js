@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.21 test
+// 살아있는 숲 V1.22 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.21 test
-// 목적: 공유/확산 1차 — 오늘의 숲 문장을 복사하고 나눌 수 있는 흐름 추가
+// 버전명: V1.22 test
+// 목적: 초대/유입 1차 — 오늘의 숲 문장을 복사하고 나눌 수 있는 흐름 추가
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.21 test",
+  version: "V1.22 test",
   dataSchemaVersion: 4,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -14,9 +14,9 @@ const APP_CONFIG = {
 };
 
 
-// V1.21 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.22 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.21 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.22 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -81,6 +81,20 @@ const ANALYTICS_CONFIG = {
   measurementId: "G-YC872G7MH1",
   eventCategory: "living_forest",
 };
+
+function getForestInviteSource() {
+  const inviteValue = (urlParams.get("invite") || urlParams.get("from") || urlParams.get("source") || "").toLowerCase();
+
+  if (["forest_sentence", "forest-sentence", "forest_share", "forest-share", "sentence_share", "sentence-share"].includes(inviteValue)) {
+    return "forest_sentence";
+  }
+
+  return "";
+}
+
+function isForestInviteVisit() {
+  return forestInviteSource === "forest_sentence";
+}
 
 function getTreeStageName(days) {
   if (days >= 60) return "hero";
@@ -174,6 +188,7 @@ const BASE_STORAGE_KEY = APP_CONFIG.baseStorageKey;
 const TEST_STORAGE_KEY = APP_CONFIG.testStorageKey;
 const urlParams = new URLSearchParams(window.location.search);
 const isTestMode = urlParams.get("test") === "1";
+const forestInviteSource = getForestInviteSource();
 const STORAGE_KEY = isTestMode ? TEST_STORAGE_KEY : BASE_STORAGE_KEY;
 const VISITOR_STORAGE_KEY = `${STORAGE_KEY}_VISITOR_V12`;
 const OWNER_STORAGE_KEY = `${STORAGE_KEY}_OWNER_V15`;
@@ -488,6 +503,11 @@ const worldGrowthTextElement = document.querySelector("#worldGrowthText");
 const worldGrowthMetaElement = document.querySelector("#worldGrowthMeta");
 const worldGrowthFillElement = document.querySelector("#worldGrowthFill");
 const firstVisitGuideElement = document.querySelector("#firstVisitGuide");
+const forestInviteCardElement = document.querySelector("#forestInviteCard");
+const forestInviteTitleElement = document.querySelector("#forestInviteTitle");
+const forestInviteTextElement = document.querySelector("#forestInviteText");
+const forestInviteStartBtnElement = document.querySelector("#forestInviteStartBtn");
+const forestInviteMetaElement = document.querySelector("#forestInviteMeta");
 const dailyLoopCardElement = document.querySelector("#dailyLoopCard");
 const dailyLoopTitleElement = document.querySelector("#dailyLoopTitle");
 const dailyLoopTextElement = document.querySelector("#dailyLoopText");
@@ -1945,6 +1965,7 @@ function chooseMood(mood) {
 
   renderWorld();
   renderFirstVisitGuide();
+  renderForestInviteCard();
   renderDailyLoop();
   renderHeader();
   renderTreeName();
@@ -2388,6 +2409,36 @@ function renderServiceFlow() {
   });
 }
 
+function renderForestInviteCard() {
+  if (!forestInviteCardElement) {
+    return;
+  }
+
+  if (!isForestInviteVisit()) {
+    forestInviteCardElement.classList.add("hidden");
+    return;
+  }
+
+  forestInviteCardElement.classList.remove("hidden");
+
+  if (forestInviteTitleElement) {
+    forestInviteTitleElement.textContent = "누군가의 숲 문장을 보고 오셨나요?";
+  }
+
+  if (forestInviteTextElement) {
+    forestInviteTextElement.textContent = "이곳에서는 하루 한 번 마음을 남기고, 나만의 나무와 숲 일기장을 조용히 키울 수 있어요.";
+  }
+
+  if (forestInviteMetaElement) {
+    forestInviteMetaElement.textContent = "초대 링크로 들어왔어요 · 로그인 없이 바로 시작할 수 있어요.";
+  }
+}
+
+function startFromForestInvite() {
+  trackForestEvent("go_garden_click", { source: "forest_invite_start" });
+  showGardenScreen();
+}
+
 function renderFirstVisitGuide() {
   if (!firstVisitGuideElement) {
     return;
@@ -2629,14 +2680,14 @@ function getForestSharePayload() {
   const entry = getForestDiaryEntry(todayRecord);
   const treeName = treeData.treeName?.trim() || "이름 없는 나무";
   const growthDays = Array.isArray(treeData.history) ? treeData.history.length : 0;
-  const url = "https://inhm1234.github.io/living_forest/";
+  const url = "https://inhm1234.github.io/living_forest/?invite=forest_sentence";
   const title = "오늘의 숲 문장";
   const text = [
     `살아있는 숲 · ${treeName}`,
     `${entry.displayDate} ${entry.label} · ${entry.title}`,
     `“${entry.sentence}”`,
     `${growthDays}번째 기록이 내 숲에 남았어요.`,
-    url
+    `나도 내 숲 시작하기: ${url}`
   ].join("\n");
 
   return {
@@ -2763,7 +2814,7 @@ function renderVersionLabels() {
   const demoPillElement = document.querySelector(".demo-pill");
 
   if (versionElements[0]) {
-    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 오늘의 숲 문장 공유`;
+    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 숲 초대장 1차`;
   }
 
   if (versionElements[1]) {
@@ -2771,7 +2822,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 공유/확산 1차`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 초대/유입 1차`;
   }
 }
 
@@ -3169,7 +3220,7 @@ function renderTestModeStatus() {
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
   const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 공유/확산 1차 · ${shortTreeId}`;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 초대/유입 1차 · ${shortTreeId}`;
 }
 
 function setupTestMode() {
@@ -3245,6 +3296,7 @@ function renderAll() {
   renderTestModeStatus();
   renderWorld();
   renderFirstVisitGuide();
+  renderForestInviteCard();
   renderDailyLoop();
   renderServiceFlow();
   renderGardenAtmosphere();
@@ -3280,6 +3332,10 @@ if (copyForestShareBtnElement) {
 
 if (nativeForestShareBtnElement) {
   nativeForestShareBtnElement.addEventListener("click", shareForestSentence);
+}
+
+if (forestInviteStartBtnElement) {
+  forestInviteStartBtnElement.addEventListener("click", startFromForestInvite);
 }
 
 goGardenBtnElement.addEventListener("click", showGardenScreen);
