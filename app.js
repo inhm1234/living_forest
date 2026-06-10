@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.41 test
+// 살아있는 숲 V1.41.1 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.41 test
-// 목적: 나무 중심 하단 패널 안정화 — V1.40 UX 구조의 실제 작동 오류 수정 및 불필요 흐름 정리
+// 버전명: V1.41.1 test
+// 목적: 하단 패널 가림 보정 — 첫 진입은 얇게, 필요할 때만 펼쳐지는 나무 중심 UX 안정화
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.41 test",
+  version: "V1.41.1 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -4797,9 +4797,8 @@ function showGardenScreen() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 
   buildGardenHubLayout();
-  if (gardenHubElement && gardenHubSheetElement && gardenHubSheetElement.hidden) {
-    openGardenHubTab(activeGardenHubTab || "record");
-  }
+  // V1.41.1 test: 내 정원 첫 진입에서는 패널을 얇게 접어 두어 나무/숲 무대를 먼저 보이게 합니다.
+  closeGardenHubPanel();
 
   const canCheckVisitorAfterCare = hasCheckedToday();
   prepareDailyVisitor({
@@ -5019,10 +5018,18 @@ function buildGardenHubLayout() {
   });
 
   if (closeGardenPanelBtnElement) {
-    closeGardenPanelBtnElement.addEventListener("click", closeGardenHubPanel);
+    closeGardenPanelBtnElement.setAttribute("aria-controls", "gardenHubSheet");
+    closeGardenPanelBtnElement.addEventListener("click", () => {
+      if (gardenHubElement.classList.contains("is-open")) {
+        closeGardenHubPanel();
+      } else {
+        openGardenHubTab(activeGardenHubTab || "record");
+      }
+    });
   }
 
   openGardenHubTab("record");
+  closeGardenHubPanel();
 }
 
 function openGardenHubTab(tabKey) {
@@ -5034,6 +5041,10 @@ function openGardenHubTab(tabKey) {
   gardenHubElement.classList.add("is-open");
   if (gardenHubSheetElement) {
     gardenHubSheetElement.hidden = false;
+  }
+  if (closeGardenPanelBtnElement) {
+    closeGardenPanelBtnElement.textContent = "패널 접기";
+    closeGardenPanelBtnElement.setAttribute("aria-expanded", "true");
   }
 
   gardenHubTabButtons.forEach((button) => {
@@ -5058,6 +5069,10 @@ function closeGardenHubPanel() {
   gardenHubElement.classList.remove("is-open");
   if (gardenHubSheetElement) {
     gardenHubSheetElement.hidden = true;
+  }
+  if (closeGardenPanelBtnElement) {
+    closeGardenPanelBtnElement.textContent = "패널 열기";
+    closeGardenPanelBtnElement.setAttribute("aria-expanded", "false");
   }
   if (gardenPanelTitleElement) {
     gardenPanelTitleElement.textContent = "기록, 활동, 꾸미기, 편지, 보관함을 나무를 보면서 바로 열어볼 수 있어요.";

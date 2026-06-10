@@ -10035,7 +10035,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.41 test · 나무 중심 하단 패널 안정화 */
+/* V1.41.1 test · 하단 패널 가림 보정 */
 html {
   background: #160f23;
 }
@@ -10298,7 +10298,7 @@ button[type="submit"],
   }
 }
 
-/* V1.41 test: 하단 패널 안정화 보강 */
+/* V1.41.1 test: 하단 패널 안정화 보강 */
 .garden-hub.is-open {
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
@@ -10316,4 +10316,103 @@ button[type="submit"],
 .hub-inline-return {
   width: 100%;
   justify-content: center;
+}
+
+/* V1.41.1 test: 하단 패널 가림 보정 — 첫 화면은 얇게, 필요할 때만 펼침 */
+.garden-stage {
+  min-height: clamp(430px, 55vh, 560px);
+}
+
+.garden-hub {
+  margin-top: -2px;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+}
+
+.garden-hub:not(.is-open) {
+  padding: 8px 10px 10px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(34, 24, 53, 0.78), rgba(18, 16, 32, 0.88));
+  box-shadow: 0 14px 32px rgba(6, 6, 15, 0.28);
+}
+
+.garden-hub:not(.is-open) .garden-hub-head {
+  align-items: center;
+  margin-bottom: 7px;
+}
+
+.garden-hub:not(.is-open) .garden-hub-kicker {
+  margin-bottom: 0;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.garden-hub:not(.is-open) .garden-hub-title {
+  display: none;
+}
+
+.garden-hub:not(.is-open) .garden-hub-close {
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.garden-hub:not(.is-open) .garden-hub-nav {
+  gap: 6px;
+  opacity: 0.96;
+}
+
+.garden-hub:not(.is-open) .garden-hub-tab {
+  min-height: 36px;
+  border-radius: 15px;
+  font-size: 12px;
+}
+
+.garden-hub.is-open .garden-hub-panel {
+  max-height: min(31vh, 280px);
+}
+
+.garden-hub.is-open .garden-hub-sheet {
+  margin-top: 10px;
+}
+
+.garden-hub.is-open .garden-hub-panel.active {
+  gap: 10px;
+}
+
+.garden-hub.is-open .garden-hub-panel > section {
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+@media (max-width: 760px) {
+  .garden-stage {
+    min-height: clamp(360px, 52vh, 430px);
+  }
+
+  .garden-hub:not(.is-open) {
+    padding: 8px;
+    border-radius: 20px;
+  }
+
+  .garden-hub:not(.is-open) .garden-hub-head {
+    flex-direction: row;
+    margin-bottom: 6px;
+  }
+
+  .garden-hub:not(.is-open) .garden-hub-close {
+    align-self: center;
+    min-height: 30px;
+    padding: 0 10px;
+  }
+
+  .garden-hub:not(.is-open) .garden-hub-tab {
+    min-height: 34px;
+    padding: 0 4px;
+    font-size: 11px;
+  }
+
+  .garden-hub.is-open .garden-hub-panel {
+    max-height: min(30vh, 260px);
+  }
 }
