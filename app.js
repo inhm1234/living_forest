@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.36 test
+// 살아있는 숲 V1.40 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.36 test
-// 목적: 내 숲 관리 확장 통합본 — 보관/복원/달력/기억 찾기/백업 준비를 한 번에 묶은 관리 확장
+// 버전명: V1.40 test
+// 목적: 나무 중심 감성 UX/UI 전환 — 10대 감성 귀여운 숲 톤과 하단 패널 구조로 전환
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.36 test",
-  dataSchemaVersion: 11,
+  version: "V1.40 test",
+  dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
   serviceTimeZoneOffsetMinutes: 9 * 60
@@ -5025,10 +5025,124 @@ document.addEventListener("visibilitychange", () => {
 
 window.addEventListener("beforeunload", stopForestSound);
 
+
+const GARDEN_HUB_CONFIG = {
+  record: {
+    title: "오늘의 기록과 숲 일기장",
+    ids: [
+      "nameCard", "returnMemoryCard", "streakRewardCard", "mood-card", "completeCard",
+      "todayChangeCard", "tomorrowPromiseCard", "tomorrowSeedCard", "forestDiaryCard"
+    ]
+  },
+  activity: {
+    title: "오늘의 활동",
+    ids: [
+      "forestSoundCard", "treeCareCard", "forestTrailCard", "selfCareCard", "visitorTraceCard", "visitorLogCard"
+    ]
+  },
+  decorate: {
+    title: "정원 꾸미기",
+    ids: ["gardenMarkerCard", "forestBadgeCard"]
+  },
+  letter: {
+    title: "나누기와 편지",
+    ids: ["forestShareCard", "weeklyForestLetterCard"]
+  },
+  archive: {
+    title: "내 숲 보관함",
+    ids: ["forestArchiveCard", "forestCalendarCard", "forestMemoryCard"]
+  }
+};
+
+function buildGardenHubLayout() {
+  if (!gardenHubElement) return;
+
+  Object.entries(GARDEN_HUB_CONFIG).forEach(([tabKey, config]) => {
+    const panel = document.getElementById(`gardenPanel-${tabKey}`);
+    if (!panel) return;
+
+    config.ids.forEach((rawId) => {
+      let targetId = rawId;
+      if (rawId === "mood-card") {
+        const moodCardElement = document.querySelector(".mood-card");
+        if (moodCardElement && !panel.contains(moodCardElement)) {
+          panel.appendChild(moodCardElement);
+        }
+        return;
+      }
+
+      const element = document.getElementById(targetId);
+      if (element && !panel.contains(element)) {
+        panel.appendChild(element);
+      }
+    });
+  });
+
+  const archivePanel = document.getElementById("gardenPanel-archive");
+  if (archivePanel) {
+    const storageNote = document.querySelector(".storage-note");
+    if (backToWorldBtnBottomElement && !archivePanel.contains(backToWorldBtnBottomElement)) {
+      backToWorldBtnBottomElement.classList.add("hub-inline-return");
+      archivePanel.appendChild(backToWorldBtnBottomElement);
+    }
+    if (storageNote && !archivePanel.contains(storageNote)) {
+      archivePanel.appendChild(storageNote);
+    }
+  }
+
+  gardenHubTabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      openGardenHubTab(button.dataset.gardenTab);
+    });
+  });
+
+  if (closeGardenPanelBtnElement) {
+    closeGardenPanelBtnElement.addEventListener("click", closeGardenHubPanel);
+  }
+
+  openGardenHubTab("record");
+}
+
+function openGardenHubTab(tabKey) {
+  if (!gardenHubElement) return;
+  gardenHubElement.classList.add("is-open");
+  if (gardenHubSheetElement) {
+    gardenHubSheetElement.hidden = false;
+  }
+
+  gardenHubTabButtons.forEach((button) => {
+    const isActive = button.dataset.gardenTab === tabKey;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-selected", isActive ? "true" : "false");
+  });
+
+  document.querySelectorAll(".garden-hub-panel").forEach((panel) => {
+    const isActive = panel.dataset.gardenPanel === tabKey;
+    panel.classList.toggle("active", isActive);
+    panel.hidden = !isActive;
+  });
+
+  if (gardenPanelTitleElement) {
+    gardenPanelTitleElement.textContent = GARDEN_HUB_CONFIG[tabKey]?.title || "내 정원 메뉴";
+  }
+}
+
+function closeGardenHubPanel() {
+  if (!gardenHubElement) return;
+  gardenHubElement.classList.remove("is-open");
+  if (gardenHubSheetElement) {
+    gardenHubSheetElement.hidden = true;
+  }
+  if (gardenPanelTitleElement) {
+    gardenPanelTitleElement.textContent = "기록, 활동, 꾸미기, 편지, 보관함을 나무를 보면서 바로 열어볼 수 있어요.";
+  }
+}
+
 applyGrowthDaysFromUrlForTest();
 saveTreeData();
 setupTestMode();
 renderAll();
+buildGardenHubLayout();
 showWorldScreen();
 
 

@@ -10109,3 +10109,267 @@ body[data-world-time="day"] .daily-loop-card {
     display: none;
   }
 }
+
+
+/* V1.40 test · 나무 중심 감성 UX/UI 전환 */
+html {
+  background: #160f23;
+}
+
+body {
+  background:
+    radial-gradient(circle at top, rgba(255, 174, 218, 0.18), transparent 28%),
+    radial-gradient(circle at 12% 18%, rgba(158, 224, 255, 0.16), transparent 18%),
+    linear-gradient(180deg, #221530 0%, #1a1630 45%, #121222 100%);
+  color: #fff7ff;
+}
+
+.app {
+  width: min(100%, 860px);
+  padding: 18px 14px 28px;
+}
+
+.version {
+  border-color: rgba(255, 221, 244, 0.24);
+  background: rgba(255, 244, 251, 0.12);
+  color: #ffe5f6;
+}
+
+h1,
+.garden-title {
+  color: #fff5ff;
+}
+
+.subtitle {
+  color: rgba(255, 240, 248, 0.82);
+}
+
+.visual-card,
+.glass-panel,
+.name-card,
+.mood-card,
+.forest-head {
+  border: 1px solid rgba(255, 223, 242, 0.16);
+  background: linear-gradient(180deg, rgba(38, 28, 58, 0.84), rgba(22, 20, 40, 0.8));
+  box-shadow: 0 20px 48px rgba(10, 7, 23, 0.36);
+}
+
+.primary-btn,
+button[type="submit"],
+.forest-share-actions .primary-btn,
+#backToWorldBtnBottom {
+  background: linear-gradient(135deg, #ff8dc5, #b48dff);
+  color: #fff;
+  border: none;
+  box-shadow: 0 12px 26px rgba(186, 126, 255, 0.28);
+}
+
+.ghost-btn,
+.small-btn,
+.forest-share-actions .ghost-btn {
+  border-color: rgba(255, 220, 240, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffe8f6;
+}
+
+#gardenScreen.screen-active {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.garden-hero {
+  margin-bottom: 0;
+}
+
+.forest-head {
+  margin-bottom: 0;
+}
+
+.garden-card {
+  position: sticky;
+  top: 10px;
+  z-index: 6;
+  margin-bottom: 0;
+  padding: 10px;
+  border-radius: 30px;
+}
+
+.garden-stage {
+  min-height: 420px;
+  background:
+    radial-gradient(circle at 50% 14%, rgba(255, 196, 233, 0.2), transparent 22%),
+    radial-gradient(circle at 20% 10%, rgba(158, 219, 255, 0.18), transparent 18%),
+    linear-gradient(180deg, #34244d 0%, #22253f 42%, #161625 100%);
+}
+
+.garden-hub {
+  position: sticky;
+  bottom: 10px;
+  z-index: 8;
+  padding: 12px;
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(34, 24, 53, 0.92), rgba(18, 16, 32, 0.94));
+  box-shadow: 0 20px 48px rgba(6, 6, 15, 0.45);
+}
+
+.garden-hub-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.garden-hub-kicker {
+  display: inline-block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #ffc2e3;
+}
+
+.garden-hub-title {
+  margin: 0;
+  color: rgba(255, 241, 248, 0.88);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.garden-hub-close {
+  white-space: nowrap;
+}
+
+.garden-hub-nav {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.garden-hub-tab {
+  min-height: 44px;
+  border: 1px solid rgba(255, 223, 242, 0.15);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #ffebf8;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.garden-hub-tab.active {
+  background: linear-gradient(135deg, rgba(255, 145, 199, 0.92), rgba(164, 128, 255, 0.92));
+  color: #fff;
+  box-shadow: 0 12px 22px rgba(180, 130, 255, 0.24);
+}
+
+.garden-hub-sheet {
+  margin-top: 12px;
+}
+
+.garden-hub-sheet[hidden] {
+  display: none;
+}
+
+.garden-hub-panel {
+  display: none;
+  max-height: min(42vh, 380px);
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.garden-hub-panel.active {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.garden-hub-panel::-webkit-scrollbar {
+  width: 10px;
+}
+
+.garden-hub-panel::-webkit-scrollbar-thumb {
+  background: rgba(255, 180, 220, 0.26);
+  border-radius: 999px;
+}
+
+.garden-hub-panel > section,
+.garden-hub-panel > button,
+.garden-hub-panel > p,
+.garden-hub-panel > div {
+  margin: 0;
+}
+
+.hub-inline-return {
+  width: 100%;
+}
+
+.storage-note {
+  margin: 0;
+  color: rgba(255, 233, 246, 0.7);
+}
+
+.meta-chip {
+  border-color: rgba(255, 225, 241, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffe6f4;
+}
+
+.tree-care-stage-dock {
+  right: 14px;
+  top: 14px;
+  background: rgba(42, 30, 62, 0.72);
+  border: 1px solid rgba(255, 223, 242, 0.18);
+}
+
+.stage-message {
+  background: rgba(34, 22, 50, 0.72);
+  border: 1px solid rgba(255, 223, 242, 0.16);
+}
+
+.tree-glow {
+  filter: drop-shadow(0 0 22px rgba(255, 181, 225, 0.24));
+}
+
+#worldScreen .visual-card,
+#worldScreen .glass-panel {
+  background: linear-gradient(180deg, rgba(34, 26, 50, 0.72), rgba(17, 16, 33, 0.76));
+}
+
+@media (max-width: 760px) {
+  .app {
+    padding: 16px 12px 22px;
+  }
+
+  .garden-stage {
+    min-height: 390px;
+  }
+
+  .garden-hub {
+    bottom: 8px;
+    padding: 10px;
+    border-radius: 22px;
+  }
+
+  .garden-hub-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .garden-hub-close {
+    align-self: flex-end;
+  }
+
+  .garden-hub-nav {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .garden-hub-tab {
+    min-height: 42px;
+    padding: 0 6px;
+    font-size: 12px;
+  }
+
+  .garden-hub-panel {
+    max-height: min(38vh, 340px);
+  }
+}
