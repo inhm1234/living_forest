@@ -7973,7 +7973,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.15 test: 월드 숲 누적 변화 강화판 */
+/* 이전 작업: 월드 숲 누적 변화 강화판 */
 .today-change-card,
 .tomorrow-promise-card {
   margin-top: 14px;
@@ -8042,7 +8042,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.15 test: 월드 숲 누적 변화 강화판 */
+/* 이전 작업: 월드 숲 누적 변화 강화판 */
 .return-memory-card {
   margin: 14px 0 0;
   padding: 16px;
@@ -8096,7 +8096,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.15 test: 월드 숲 누적 변화 강화판 */
+/* 이전 작업: 월드 숲 누적 변화 강화판 */
 .streak-reward-card {
   margin: 14px 0 0;
   padding: 16px;
@@ -8196,7 +8196,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.15 test: 월드 숲 누적 변화 강화판 */
+/* 이전 작업: 월드 숲 누적 변화 강화판 */
 .world-growth-card {
   margin-top: 12px;
   padding: 14px 16px;
@@ -8338,7 +8338,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.15 test: 월드 숲 내 자리 카드 잘림 수정 */
+/* 이전 작업: 월드 숲 내 자리 카드 잘림 수정 */
 .world-growth-card {
   height: auto;
   min-height: 0;
@@ -8356,7 +8356,7 @@ body[data-world-time="day"] .daily-loop-card {
   display: block;
 }
 
-/* V1.15 test: 월드 숲 자리감 강화판 */
+/* 이전 작업: 월드 숲 자리감 강화판 */
 .world-empty-slots {
   position: absolute;
   inset: 0;
@@ -8571,7 +8571,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.16 test: 숲 일기장 1차 */
+/* V1.16.1 test: 숲 일기장 1차 */
 .forest-diary-card {
   margin-top: 14px;
   padding: 16px;
