@@ -1,19 +1,30 @@
-살아있는 숲 V1.24 test
+살아있는 숲 V1.25 test
 
-기준 버전: V1.23 test
-작업 내용: 오늘의 작은 돌봄 1차
+기준 버전: V1.24 test
+작업 내용: 내 정원 표식 1차
 관리자 페이지: admin.html
 임시 비밀번호: forest2026
-Apps Script URL: https://script.google.com/macros/s/AKfycbyeqnUwroduXytKBFMs9Tpl2gngoJ0f6JmF9oKbEA-QAoJY0aFJ-bvOUWS15SFeErgkiA/exec
 
 변경 요약:
-- 감정 기록 후 내 나무에게 작은 돌봄을 남기는 카드 추가
-- 물 주기 / 빛 쬐기 / 쉬게 하기 3가지 돌봄 선택 추가
-- 하루 1회 선택 제한
-- 선택한 돌봄을 careHistory에 저장
-- tree_care_selected 이벤트 추적 추가
-- 관리자 / GA4 / Google Sheets / Apps Script 구조는 유지
+- 내 정원 무대에 개인화 표식 레이어 추가
+- 내 정원 표식 카드 추가
+- 들꽃 / 조약돌 / 작은 등불 선택 기능 추가
+- 선택한 표식이 내 나무 곁에 표시되도록 구현
+- 선택한 표식은 localStorage에 저장되어 재방문 시 유지
+- garden_marker_selected 이벤트 추적 추가
+
+유지:
+- 월드 숲 흐름 유지
+- 숲 일기장 유지
+- 오늘의 숲 나누기 유지
+- 숲 초대장 유지
+- 내 숲 배지 유지
+- 오늘의 작은 돌봄 유지
+- 방문자 시스템 유지
+- 관리자 / GA4 / Google Sheets / Apps Script 구조 유지
 
 주의:
-- 이번 버전은 Apps Script 재배포가 필요 없는 프론트 화면 확장판입니다.
+- 이번 버전은 정원 개인화 확장판입니다.
+- 로그인 / 서버 저장 / Google 계정 로그인은 포함하지 않습니다.
+- Apps Script 재배포는 필요하지 않습니다.
 - assets 폴더는 ZIP에 포함되어 있지 않으므로 기존 assets 폴더를 삭제하지 마세요.

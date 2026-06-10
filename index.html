@@ -35,7 +35,7 @@
 
   <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.24-test" />
+  <link rel="stylesheet" href="style.css?v=1.25-test" />
 <!-- Google tag (gtag.js) - Living Forest GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-YC872G7MH1"></script>
 <script>
@@ -56,10 +56,10 @@
   <main class="app">
     <section id="worldScreen" class="screen screen-active">
       <header class="hero world-hero">
-        <p class="version">살아있는 숲 V1.24 test · 오늘의 작은 돌봄 1차</p>
+        <p class="version">살아있는 숲 V1.25 test · 내 정원 표식 1차</p>
         <h1>살아있는 숲</h1>
         <p class="subtitle">하루 한 번 마음을 남기면 내 나무와 숲 일기장이 자라요.</p>
-        <p class="demo-pill">V1.24 test · 기록 후 돌봄 확장</p>
+        <p class="demo-pill">V1.25 test · 정원 개인화 확장</p>
       </header>
 
       <section class="world-card visual-card">
@@ -160,7 +160,7 @@
     <section id="gardenScreen" class="screen">
       <header class="hero garden-hero">
         <button id="backToWorldBtnTop" class="ghost-btn small-btn" type="button">← 전체 숲</button>
-        <p class="version">오늘 내 나무 돌보기 · V1.24 test</p>
+        <p class="version">오늘 내 나무 돌보기 · V1.25 test</p>
         <h2 id="gardenTitle" class="garden-title">밤 숲속 자리</h2>
         <p class="subtitle">좋음도, 보통도, 피곤함도 모두 성장으로 남아요.</p>
       </header>
@@ -194,6 +194,7 @@
           <div class="firefly firefly-6"></div>
 
           <div id="effectLayer" class="effect-layer" aria-hidden="true"></div>
+          <div id="gardenMarkerLayer" class="garden-marker-layer" aria-hidden="true"></div>
           <div id="bird" class="creature bird" aria-label="새">
             <img src="assets/garden/bird-silhouette.svg" alt="" />
           </div>
@@ -320,6 +321,20 @@
         <p id="treeCareMessage" class="tree-care-message">오늘 기록 후 사용 가능</p>
       </section>
 
+
+
+      <section id="gardenMarkerCard" class="garden-marker-card glass-panel" aria-live="polite">
+        <span class="garden-marker-kicker">내 정원 표식</span>
+        <p id="gardenMarkerTitle" class="garden-marker-title">내 정원에 작은 표식을 놓아보세요</p>
+        <p id="gardenMarkerText" class="garden-marker-text">들꽃, 조약돌, 작은 등불 중 하나를 골라 내 나무 곁 분위기를 정할 수 있어요.</p>
+        <div class="garden-marker-actions">
+          <button type="button" data-garden-marker="wildflower" aria-pressed="false"><span>🌼</span>들꽃</button>
+          <button type="button" data-garden-marker="pebble" aria-pressed="false"><span>🪨</span>조약돌</button>
+          <button type="button" data-garden-marker="lantern" aria-pressed="false"><span>🕯️</span>작은 등불</button>
+        </div>
+        <p id="gardenMarkerMessage" class="garden-marker-message">표식은 성장 수치가 아니라 내 정원을 구분하는 작은 개인화 요소예요.</p>
+      </section>
+
       <section id="forestBadgeCard" class="forest-badge-card glass-panel" aria-live="polite">
         <span class="forest-badge-kicker">내 숲 배지</span>
         <p id="forestBadgeTitle" class="forest-badge-title">내 숲에 남은 배지</p>
@@ -357,7 +372,7 @@
     </div>
 
     <p class="test-storage-line">저장키: <span id="testModeStorageKey">livingForestV012_TEST</span></p>
-    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.24 test · schema 5 · local-only · 작은 돌봄 1차</span></p>
+    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.25 test · schema 6 · local-only · 내 정원 표식 1차</span></p>
 
     <div class="test-preset-buttons">
       <button type="button" data-test-preset="first">첫 방문자</button>
@@ -379,6 +394,6 @@
   </aside>
 
 
-  <script src="app.js?v=1.24-test"></script>
+  <script src="app.js?v=1.25-test"></script>
 </body>
 </html>

@@ -1,22 +1,22 @@
-// 살아있는 숲 V1.24 test
+// 살아있는 숲 V1.25 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.24 test
-// 목적: 작은 돌봄 1차 — 기록과 나눔에 따라 내 숲 배지를 보여주는 확장
+// 버전명: V1.25 test
+// 목적: 내 정원 표식 1차 — 내 나무 곁에 개인화 표식을 놓는 확장
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.24 test",
-  dataSchemaVersion: 5,
+  version: "V1.25 test",
+  dataSchemaVersion: 6,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
   serviceTimeZoneOffsetMinutes: 9 * 60
 };
 
 
-// V1.24 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.25 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.24 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.25 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -432,6 +432,31 @@ const treeCareRules = {
   }
 };
 
+
+const gardenMarkerRules = {
+  wildflower: {
+    label: "들꽃",
+    icon: "🌼",
+    title: "들꽃이 핀 자리",
+    message: "내 나무 곁에 작은 들꽃을 놓았어요. 오늘의 숲이 조금 더 부드럽게 느껴져요.",
+    className: "garden-marker-wildflower"
+  },
+  pebble: {
+    label: "조약돌",
+    icon: "🪨",
+    title: "조약돌 쉼터",
+    message: "내 나무 곁에 둥근 조약돌을 놓았어요. 마음이 잠시 앉아 쉴 수 있는 자리가 생겼어요.",
+    className: "garden-marker-pebble"
+  },
+  lantern: {
+    label: "작은 등불",
+    icon: "🕯️",
+    title: "작은 등불",
+    message: "내 나무 곁에 작은 등불을 밝혔어요. 어두운 날에도 숲의 자리가 조용히 보일 거예요.",
+    className: "garden-marker-lantern"
+  }
+};
+
 const forestEffectRules = {
   "leaf-strong": {
     className: "effect-leaf",
@@ -599,6 +624,13 @@ const treeCareTitleElement = document.querySelector("#treeCareTitle");
 const treeCareTextElement = document.querySelector("#treeCareText");
 const treeCareMessageElement = document.querySelector("#treeCareMessage");
 const treeCareButtons = document.querySelectorAll("[data-care-action]");
+
+const gardenMarkerLayerElement = document.querySelector("#gardenMarkerLayer");
+const gardenMarkerCardElement = document.querySelector("#gardenMarkerCard");
+const gardenMarkerTitleElement = document.querySelector("#gardenMarkerTitle");
+const gardenMarkerTextElement = document.querySelector("#gardenMarkerText");
+const gardenMarkerMessageElement = document.querySelector("#gardenMarkerMessage");
+const gardenMarkerButtons = document.querySelectorAll("[data-garden-marker]");
 const visitorTraceCardElement = document.querySelector("#visitorTraceCard");
 const visitorTraceTitleElement = document.querySelector("#visitorTraceTitle");
 const visitorTraceTextElement = document.querySelector("#visitorTraceText");
@@ -697,6 +729,7 @@ function createNewTreeData(overrides = {}) {
     careHistory: [],
     sharedForestSentenceDates: [],
     inviteStartedAt: null,
+    gardenMarker: "",
     ...overrides
   };
 }
@@ -868,6 +901,8 @@ function normalizeTreeData(rawData) {
     ? sourceData.inviteStartedAt.slice(0, 40)
     : null;
 
+  const gardenMarker = gardenMarkerRules[sourceData.gardenMarker] ? sourceData.gardenMarker : "";
+
   return {
     appName: APP_CONFIG.name,
     appVersion: APP_CONFIG.version,
@@ -884,7 +919,8 @@ function normalizeTreeData(rawData) {
     treeName,
     careHistory,
     sharedForestSentenceDates,
-    inviteStartedAt
+    inviteStartedAt,
+    gardenMarker
   };
 }
 
@@ -2983,6 +3019,80 @@ function chooseTreeCare(care) {
   trackForestEvent("tree_care_selected", { care_type: care });
 }
 
+
+function getSelectedGardenMarker() {
+  const marker = typeof treeData.gardenMarker === "string" ? treeData.gardenMarker : "";
+  return gardenMarkerRules[marker] ? marker : "";
+}
+
+function renderGardenMarkerLayer() {
+  if (!gardenMarkerLayerElement) {
+    return;
+  }
+
+  const markerKey = getSelectedGardenMarker();
+  const rule = markerKey ? gardenMarkerRules[markerKey] : null;
+
+  if (!rule) {
+    gardenMarkerLayerElement.innerHTML = "";
+    gardenMarkerLayerElement.className = "garden-marker-layer";
+    return;
+  }
+
+  gardenMarkerLayerElement.className = `garden-marker-layer marker-active ${rule.className}`;
+  gardenMarkerLayerElement.innerHTML = `
+    <span class="garden-marker-ground" aria-hidden="true"></span>
+    <span class="garden-marker-item" aria-label="${rule.label}">${rule.icon}</span>
+  `;
+}
+
+function renderGardenMarkerCard() {
+  if (!gardenMarkerCardElement || !gardenMarkerTitleElement || !gardenMarkerTextElement || !gardenMarkerMessageElement) {
+    return;
+  }
+
+  const markerKey = getSelectedGardenMarker();
+  const rule = markerKey ? gardenMarkerRules[markerKey] : null;
+  const hasRecord = Array.isArray(treeData.history) && treeData.history.length > 0;
+
+  gardenMarkerCardElement.classList.toggle("marker-selected", Boolean(rule));
+
+  gardenMarkerButtons.forEach((button) => {
+    const buttonMarker = button.dataset.gardenMarker;
+    const selected = markerKey === buttonMarker;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", selected ? "true" : "false");
+  });
+
+  if (rule) {
+    gardenMarkerTitleElement.textContent = `${rule.icon} ${rule.title}`;
+    gardenMarkerTextElement.textContent = rule.message;
+    gardenMarkerMessageElement.textContent = "내 정원 무대에도 선택한 표식이 함께 보여요. 언제든 다른 표식으로 바꿀 수 있어요.";
+    return;
+  }
+
+  gardenMarkerTitleElement.textContent = "내 정원에 작은 표식을 놓아보세요";
+  gardenMarkerTextElement.textContent = hasRecord
+    ? "기록이 쌓인 정원에 들꽃, 조약돌, 작은 등불 중 하나를 놓아 내 자리의 분위기를 정할 수 있어요."
+    : "첫 기록 전에도 표식을 미리 정할 수 있어요. 내 나무가 자랄 자리의 분위기를 골라보세요.";
+  gardenMarkerMessageElement.textContent = "표식은 성장 수치가 아니라 내 정원을 구분하는 작은 개인화 요소예요.";
+}
+
+function chooseGardenMarker(marker) {
+  if (!gardenMarkerRules[marker]) {
+    renderGardenMarkerCard();
+    renderGardenMarkerLayer();
+    return;
+  }
+
+  treeData.gardenMarker = marker;
+  saveTreeData();
+  renderGardenMarkerCard();
+  renderGardenMarkerLayer();
+  renderMessages(`${gardenMarkerRules[marker].message} 내 정원이 조금 더 나다운 자리로 남았어요.`);
+  trackForestEvent("garden_marker_selected", { marker_type: marker });
+}
+
 function renderForestBadgeCard() {
   if (!forestBadgeCardElement || !forestBadgeListElement || !forestBadgeMetaElement) {
     return;
@@ -3117,7 +3227,7 @@ function renderVersionLabels() {
   const demoPillElement = document.querySelector(".demo-pill");
 
   if (versionElements[0]) {
-    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 오늘의 작은 돌봄 1차`;
+    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 내 정원 표식 1차`;
   }
 
   if (versionElements[1]) {
@@ -3125,7 +3235,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 작은 돌봄 1차`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 내 정원 표식 1차`;
   }
 }
 
@@ -3523,7 +3633,7 @@ function renderTestModeStatus() {
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
   const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 작은 돌봄 1차 · ${shortTreeId}`;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 내 정원 표식 1차 · ${shortTreeId}`;
 }
 
 function setupTestMode() {
@@ -3614,6 +3724,8 @@ function renderAll() {
   renderForestDiaryCard();
   renderForestShareCard();
   renderTreeCareCard();
+  renderGardenMarkerCard();
+  renderGardenMarkerLayer();
   renderForestBadgeCard();
   renderVisitorTrace();
   renderVisitorLog();
@@ -3646,6 +3758,13 @@ if (forestInviteStartBtnElement) {
 treeCareButtons.forEach((button) => {
   button.addEventListener("click", () => {
     chooseTreeCare(button.dataset.careAction);
+  });
+});
+
+
+gardenMarkerButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    chooseGardenMarker(button.dataset.gardenMarker);
   });
 });
 
