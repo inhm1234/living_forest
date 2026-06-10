@@ -1,22 +1,22 @@
-// 살아있는 숲 V1.23 test
+// 살아있는 숲 V1.24 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.23 test
-// 목적: 성취/수집 1차 — 기록과 나눔에 따라 내 숲 배지를 보여주는 확장
+// 버전명: V1.24 test
+// 목적: 작은 돌봄 1차 — 기록과 나눔에 따라 내 숲 배지를 보여주는 확장
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.23 test",
-  dataSchemaVersion: 4,
+  version: "V1.24 test",
+  dataSchemaVersion: 5,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
   serviceTimeZoneOffsetMinutes: 9 * 60
 };
 
 
-// V1.23 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.24 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.23 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.24 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -411,6 +411,27 @@ const visitorRules = {
   }
 };
 
+const treeCareRules = {
+  water: {
+    label: "물 주기",
+    icon: "💧",
+    title: "물을 머금은 나무",
+    message: "오늘의 마음 위에 맑은 물을 조금 더해줬어요. 내 나무가 조용히 숨을 고르고 있어요."
+  },
+  light: {
+    label: "빛 쬐기",
+    icon: "☀️",
+    title: "빛을 받은 나무",
+    message: "오늘의 마음 위로 따뜻한 빛이 내려앉았어요. 잎 끝에 작은 밝기가 머물렀어요."
+  },
+  rest: {
+    label: "쉬게 하기",
+    icon: "🌙",
+    title: "쉬어가는 나무",
+    message: "오늘은 더 자라라고 재촉하지 않고 나무를 쉬게 했어요. 쉬는 시간도 숲의 일부로 남았어요."
+  }
+};
+
 const forestEffectRules = {
   "leaf-strong": {
     className: "effect-leaf",
@@ -573,6 +594,11 @@ const forestBadgeTitleElement = document.querySelector("#forestBadgeTitle");
 const forestBadgeTextElement = document.querySelector("#forestBadgeText");
 const forestBadgeListElement = document.querySelector("#forestBadgeList");
 const forestBadgeMetaElement = document.querySelector("#forestBadgeMeta");
+const treeCareCardElement = document.querySelector("#treeCareCard");
+const treeCareTitleElement = document.querySelector("#treeCareTitle");
+const treeCareTextElement = document.querySelector("#treeCareText");
+const treeCareMessageElement = document.querySelector("#treeCareMessage");
+const treeCareButtons = document.querySelectorAll("[data-care-action]");
 const visitorTraceCardElement = document.querySelector("#visitorTraceCard");
 const visitorTraceTitleElement = document.querySelector("#visitorTraceTitle");
 const visitorTraceTextElement = document.querySelector("#visitorTraceText");
@@ -668,6 +694,7 @@ function createNewTreeData(overrides = {}) {
     lastCheckDate: null,
     history: [],
     treeName: "",
+    careHistory: [],
     sharedForestSentenceDates: [],
     inviteStartedAt: null,
     ...overrides
@@ -828,6 +855,12 @@ function normalizeTreeData(rawData) {
     ? sourceData.createdAt
     : baseData.createdAt;
   const updatedAt = typeof sourceData.updatedAt === "string" && sourceData.updatedAt.trim() ? sourceData.updatedAt : createdAt;
+  const careHistory = Array.isArray(sourceData.careHistory)
+    ? sourceData.careHistory
+        .map((record) => normalizeCareRecord(record))
+        .filter(Boolean)
+        .slice(0, 60)
+    : [];
   const sharedForestSentenceDates = Array.isArray(sourceData.sharedForestSentenceDates)
     ? [...new Set(sourceData.sharedForestSentenceDates.filter((dateText) => isValidDateKey(dateText)))].slice(0, 60)
     : [];
@@ -849,6 +882,7 @@ function normalizeTreeData(rawData) {
     lastCheckDate: isValidDateKey(sourceData.lastCheckDate) ? sourceData.lastCheckDate : null,
     history,
     treeName,
+    careHistory,
     sharedForestSentenceDates,
     inviteStartedAt
   };
@@ -884,6 +918,44 @@ function hasCheckedToday() {
 
 function getTodayRecord() {
   return treeData.history.find((item) => item.date === getTodayKey()) || null;
+}
+
+function normalizeCareRecord(record) {
+  if (!record || typeof record !== "object") {
+    return null;
+  }
+
+  const care = treeCareRules[record.care] ? record.care : null;
+  const date = isValidDateKey(record.date) ? record.date : null;
+
+  if (!care || !date) {
+    return null;
+  }
+
+  const rule = treeCareRules[care];
+
+  return {
+    date,
+    care,
+    label: typeof record.label === "string" && record.label.trim() ? record.label.slice(0, 24) : rule.label,
+    icon: typeof record.icon === "string" && record.icon.trim() ? record.icon.slice(0, 8) : rule.icon,
+    title: typeof record.title === "string" && record.title.trim() ? record.title.slice(0, 40) : rule.title,
+    message: typeof record.message === "string" && record.message.trim() ? record.message.slice(0, 140) : rule.message
+  };
+}
+
+function getTodayCareRecord() {
+  const records = Array.isArray(treeData.careHistory) ? treeData.careHistory : [];
+  return records.find((item) => item.date === getTodayKey()) || null;
+}
+
+function hasCaredToday() {
+  return Boolean(getTodayCareRecord());
+}
+
+function getLatestCareRecord() {
+  const records = Array.isArray(treeData.careHistory) ? treeData.careHistory : [];
+  return records[0] || null;
 }
 
 function getTodayMoodState() {
@@ -1994,6 +2066,7 @@ function chooseMood(mood) {
   renderCompleteCard();
   renderForestDiaryCard();
   renderForestShareCard();
+  renderTreeCareCard();
   updateTodayStatus();
   prepareDailyVisitor({ forcePlay: true, allowCreate: true, allowPlay: true });
 }
@@ -2844,6 +2917,72 @@ function getForestBadgeItems() {
   ];
 }
 
+function renderTreeCareCard() {
+  if (!treeCareCardElement || !treeCareTitleElement || !treeCareTextElement || !treeCareMessageElement) {
+    return;
+  }
+
+  const todayRecord = getTodayRecord();
+  const todayCare = getTodayCareRecord();
+  const latestCare = getLatestCareRecord();
+  const canCare = Boolean(todayRecord) && !todayCare;
+
+  treeCareCardElement.classList.toggle("care-ready", Boolean(todayRecord));
+  treeCareCardElement.classList.toggle("care-done", Boolean(todayCare));
+
+  treeCareButtons.forEach((button) => {
+    const careKey = button.dataset.careAction;
+    const selected = todayCare?.care === careKey;
+    button.disabled = !canCare;
+    button.classList.toggle("selected", selected);
+  });
+
+  if (!todayRecord) {
+    treeCareTitleElement.textContent = "오늘 기록 후 내 나무를 돌볼 수 있어요";
+    treeCareTextElement.textContent = "마음을 기록한 뒤, 물 주기·빛 쬐기·쉬게 하기 중 하나를 골라 오늘의 작은 돌봄을 남겨요.";
+    treeCareMessageElement.textContent = latestCare
+      ? `최근 돌봄 · ${latestCare.icon} ${latestCare.label} — ${latestCare.title}`
+      : "오늘 기록 후 사용 가능";
+    return;
+  }
+
+  if (todayCare) {
+    treeCareTitleElement.textContent = `${todayCare.icon} ${todayCare.title}`;
+    treeCareTextElement.textContent = todayCare.message;
+    treeCareMessageElement.textContent = "오늘의 작은 돌봄이 내 숲에 남았어요. 내일 다시 다른 돌봄을 남길 수 있어요.";
+    return;
+  }
+
+  treeCareTitleElement.textContent = "오늘의 작은 돌봄을 골라주세요";
+  treeCareTextElement.textContent = "감정 기록은 끝났어요. 이제 내 나무에게 오늘 어울리는 돌봄 하나를 남길 수 있어요.";
+  treeCareMessageElement.textContent = "하루에 한 번만 선택돼요.";
+}
+
+function chooseTreeCare(care) {
+  if (!treeCareRules[care] || !getTodayRecord() || hasCaredToday()) {
+    renderTreeCareCard();
+    return;
+  }
+
+  const rule = treeCareRules[care];
+  const records = Array.isArray(treeData.careHistory) ? [...treeData.careHistory] : [];
+  records.unshift({
+    date: getTodayKey(),
+    care,
+    label: rule.label,
+    icon: rule.icon,
+    title: rule.title,
+    message: rule.message
+  });
+  treeData.careHistory = records.slice(0, 60);
+  saveTreeData();
+
+  renderTreeCareCard();
+  renderForestEffect(getTodayMoodState(), true);
+  renderMessages(`${rule.message} 오늘의 돌봄도 내 숲의 하루에 함께 남았어요.`);
+  trackForestEvent("tree_care_selected", { care_type: care });
+}
+
 function renderForestBadgeCard() {
   if (!forestBadgeCardElement || !forestBadgeListElement || !forestBadgeMetaElement) {
     return;
@@ -2978,7 +3117,7 @@ function renderVersionLabels() {
   const demoPillElement = document.querySelector(".demo-pill");
 
   if (versionElements[0]) {
-    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 내 숲 배지 1차`;
+    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 오늘의 작은 돌봄 1차`;
   }
 
   if (versionElements[1]) {
@@ -2986,7 +3125,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 성취/수집 1차`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 작은 돌봄 1차`;
   }
 }
 
@@ -3384,7 +3523,7 @@ function renderTestModeStatus() {
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
   const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 성취/수집 1차 · ${shortTreeId}`;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 작은 돌봄 1차 · ${shortTreeId}`;
 }
 
 function setupTestMode() {
@@ -3474,6 +3613,7 @@ function renderAll() {
   renderCompleteCard();
   renderForestDiaryCard();
   renderForestShareCard();
+  renderTreeCareCard();
   renderForestBadgeCard();
   renderVisitorTrace();
   renderVisitorLog();
@@ -3502,6 +3642,12 @@ if (nativeForestShareBtnElement) {
 if (forestInviteStartBtnElement) {
   forestInviteStartBtnElement.addEventListener("click", startFromForestInvite);
 }
+
+treeCareButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    chooseTreeCare(button.dataset.careAction);
+  });
+});
 
 goGardenBtnElement.addEventListener("click", showGardenScreen);
 if (focusMyTreeBtnElement) {

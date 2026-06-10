@@ -8571,7 +8571,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.23 test: 숲 일기장 + 오늘의 숲 문장 공유 */
+/* V1.24 test: 숲 일기장 + 오늘의 숲 문장 공유 */
 .forest-diary-card {
   margin-top: 14px;
   padding: 16px;
@@ -8696,7 +8696,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.23 test: 1차 완성형 유지 — 숲 일기장 기록 전/후 상태 구분 */
+/* V1.24 test: 1차 완성형 유지 — 숲 일기장 기록 전/후 상태 구분 */
 .forest-diary-card.diary-waiting {
   border-color: rgba(223, 255, 180, 0.22);
   background: rgba(21, 47, 34, 0.48);
@@ -8717,7 +8717,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.23 test: 오늘의 숲 문장 공유 1차 */
+/* V1.24 test: 오늘의 숲 문장 공유 1차 */
 .forest-share-card {
   margin-top: 14px;
   padding: 16px;
@@ -8788,7 +8788,7 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.23 test: 숲 초대장 1차 — 공유 문장으로 들어온 방문자를 내 숲 시작으로 연결 */
+/* V1.24 test: 숲 초대장 1차 — 공유 문장으로 들어온 방문자를 내 숲 시작으로 연결 */
 .forest-invite-card {
   margin-top: 12px;
   padding: 16px;
@@ -8836,7 +8836,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 
-/* V1.23 test: 내 숲 배지 1차 — 기록/일기장/나눔이 쌓인 흔적을 수집감으로 표시 */
+/* V1.24 test: 오늘의 작은 돌봄 1차 — 기록/일기장/나눔이 쌓인 흔적을 수집감으로 표시 */
 .forest-badge-card {
   margin-top: 14px;
   padding: 16px;
