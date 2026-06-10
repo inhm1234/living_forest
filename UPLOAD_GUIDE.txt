@@ -1,4 +1,4 @@
-살아있는 숲 V1.25.3 test 업로드 가이드
+살아있는 숲 V1.26 test 업로드 가이드
 
 1. GitHub 저장소로 이동
    inhm1234/living_forest
@@ -23,7 +23,7 @@
    기존 assets 폴더와 업로드된 이미지 파일들은 삭제하지 마세요.
 
 4. 커밋 메시지 추천
-   Fix V1.25.3 make tree care dock non blocking
+   Apply V1.26 test add forest trail walk
 
 5. 업로드 후 확인 주소
    일반 화면:
@@ -33,4 +33,4 @@
    https://inhm1234.github.io/living_forest/admin.html
 
 6. 확인 순서
-   일반 화면 버전 확인 → 감정 기록 → 정원 무대 우측 상단 작은 돌봄 컨트롤 확인 → 버튼이 나무와 메시지를 가리지 않는지 확인 → 기존 기능 유지 확인
+   일반 화면 버전 확인 → 감정 기록 → 오늘의 숲길 산책 카드 확인 → 숲길 선택 → 기존 기능 유지 확인

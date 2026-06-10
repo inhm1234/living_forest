@@ -9074,8 +9074,9 @@ body[data-world-time="day"] .daily-loop-card {
   }
 }
 
-/* V1.25.3 test: 작은 돌봄 버튼 위치 보정 — 정원 화면을 가리지 않는 미니 컨트롤 */
+/* V1.26 test: 작은 돌봄 버튼 위치 보정 — 정원 화면을 가리지 않는 미니 컨트롤 */
 .tree-care-card,
+.forest-trail-card,
 .garden-marker-card {
   margin-top: 14px;
   padding: 16px;
@@ -9083,6 +9084,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 .tree-care-kicker,
+.forest-trail-kicker,
 .garden-marker-kicker {
   display: inline-flex;
   margin-bottom: 6px;
@@ -9093,6 +9095,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 .tree-care-title,
+.forest-trail-title,
 .garden-marker-title {
   margin: 0;
   color: #f4ffe9;
@@ -9102,8 +9105,10 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 .tree-care-text,
+.forest-trail-text,
 .garden-marker-text,
 .tree-care-message,
+.forest-trail-message,
 .garden-marker-message {
   margin: 7px 0 0;
   color: rgba(238, 246, 232, 0.74);
@@ -9113,6 +9118,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 .tree-care-actions,
+.forest-trail-actions,
 .garden-marker-actions {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -9121,6 +9127,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 .tree-care-actions button,
+.forest-trail-actions button,
 .garden-marker-actions button {
   min-height: 66px;
   border: 1px solid rgba(225, 255, 211, 0.14);
@@ -9134,6 +9141,7 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 .tree-care-actions button span,
+.forest-trail-actions button span,
 .garden-marker-actions button span {
   display: block;
   margin-bottom: 5px;
@@ -9141,19 +9149,42 @@ body[data-world-time="day"] .daily-loop-card {
 }
 
 .tree-care-actions button.selected,
+.forest-trail-actions button.selected,
 .garden-marker-actions button.selected {
   border-color: rgba(220, 255, 183, 0.42);
   background: rgba(218, 255, 187, 0.16);
   box-shadow: 0 0 26px rgba(209, 255, 185, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
-.tree-care-actions button:disabled {
+.tree-care-actions button:disabled,
+.forest-trail-actions button:disabled {
   cursor: not-allowed;
   opacity: 0.52;
 }
 
-.tree-care-actions button.selected:disabled {
+.tree-care-actions button.selected:disabled,
+.forest-trail-actions button.selected:disabled {
   opacity: 1;
+}
+
+/* V1.26 test: 숲길 산책 1차 — 기록 후 오늘 걸은 길을 남기는 확장 */
+.forest-trail-card.trail-ready {
+  border-color: rgba(223, 255, 180, 0.2);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(217, 247, 181, 0.1), transparent 36%),
+    rgba(8, 20, 18, 0.54);
+}
+
+.forest-trail-card.trail-done {
+  border-color: rgba(255, 235, 172, 0.25);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 235, 172, 0.12), transparent 38%),
+    rgba(32, 54, 36, 0.48);
+  box-shadow: 0 18px 44px rgba(148, 128, 72, 0.12);
+}
+
+.forest-trail-actions button.selected {
+  background: linear-gradient(135deg, rgba(223, 255, 180, 0.22), rgba(143, 207, 143, 0.18));
 }
 
 .tree-care-stage-dock {
@@ -9271,13 +9302,14 @@ body[data-world-time="day"] .daily-loop-card {
   }
 
   .tree-care-actions,
+  .forest-trail-actions,
   .garden-marker-actions {
     grid-template-columns: 1fr;
   }
 }
 
 
-/* V1.25.3 test: 작은 돌봄 패널 가림 문제 최종 보정
+/* V1.26 test: 작은 돌봄 패널 가림 문제 최종 보정
    - 중앙 하단 오버레이를 없애고, 나무와 메시지를 가리지 않는 우측 상단 미니 컨트롤로 이동 */
 .tree-care-stage-dock {
   left: auto;

@@ -35,7 +35,7 @@
 
   <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.25.3-test" />
+  <link rel="stylesheet" href="style.css?v=1.26-test" />
 <!-- Google tag (gtag.js) - Living Forest GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-YC872G7MH1"></script>
 <script>
@@ -56,10 +56,10 @@
   <main class="app">
     <section id="worldScreen" class="screen screen-active">
       <header class="hero world-hero">
-        <p class="version">살아있는 숲 V1.25.3 test · 내 정원 표식 1차</p>
+        <p class="version">살아있는 숲 V1.26 test · 숲길 산책 1차</p>
         <h1>살아있는 숲</h1>
         <p class="subtitle">하루 한 번 마음을 남기면 내 나무와 숲 일기장이 자라요.</p>
-        <p class="demo-pill">V1.25.3 test · 정원 개인화 확장</p>
+        <p class="demo-pill">V1.26 test · 숲길 산책 확장</p>
       </header>
 
       <section class="world-card visual-card">
@@ -160,7 +160,7 @@
     <section id="gardenScreen" class="screen">
       <header class="hero garden-hero">
         <button id="backToWorldBtnTop" class="ghost-btn small-btn" type="button">← 전체 숲</button>
-        <p class="version">오늘 내 나무 돌보기 · V1.25.3 test</p>
+        <p class="version">오늘 내 나무 돌보기 · V1.26 test</p>
         <h2 id="gardenTitle" class="garden-title">밤 숲속 자리</h2>
         <p class="subtitle">좋음도, 보통도, 피곤함도 모두 성장으로 남아요.</p>
       </header>
@@ -331,7 +331,17 @@
         <p id="treeCareMessage" class="tree-care-message">오늘 기록 후 사용 가능</p>
       </section>
 
-
+      <section id="forestTrailCard" class="forest-trail-card glass-panel" aria-live="polite">
+        <span class="forest-trail-kicker">오늘의 숲길 산책</span>
+        <p id="forestTrailTitle" class="forest-trail-title">오늘 기록 후 숲길 하나를 걸을 수 있어요</p>
+        <p id="forestTrailText" class="forest-trail-text">감정 기록을 마친 뒤, 내 숲에서 오늘 어울리는 길을 하나 골라 짧은 산책 흔적을 남겨요.</p>
+        <div class="forest-trail-actions">
+          <button type="button" data-forest-trail="moss"><span>🌿</span>이끼길</button>
+          <button type="button" data-forest-trail="sunbeam"><span>✨</span>햇살길</button>
+          <button type="button" data-forest-trail="quiet"><span>🍃</span>고요한 길</button>
+        </div>
+        <p id="forestTrailMessage" class="forest-trail-message">오늘 기록 후 사용 가능</p>
+      </section>
 
       <section id="gardenMarkerCard" class="garden-marker-card glass-panel" aria-live="polite">
         <span class="garden-marker-kicker">내 정원 표식</span>
@@ -382,7 +392,7 @@
     </div>
 
     <p class="test-storage-line">저장키: <span id="testModeStorageKey">livingForestV012_TEST</span></p>
-    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.25.3 test · schema 6 · local-only · 내 정원 표식 1차</span></p>
+    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.26 test · schema 7 · local-only · 숲길 산책 1차</span></p>
 
     <div class="test-preset-buttons">
       <button type="button" data-test-preset="first">첫 방문자</button>
@@ -404,6 +414,6 @@
   </aside>
 
 
-  <script src="app.js?v=1.25.3-test"></script>
+  <script src="app.js?v=1.26-test"></script>
 </body>
 </html>

@@ -1,22 +1,22 @@
-// 살아있는 숲 V1.25.3 test
+// 살아있는 숲 V1.26 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.25.3 test
-// 목적: 내 정원 표식 1차 — 내 나무 곁에 개인화 표식을 놓는 확장
+// 버전명: V1.26 test
+// 목적: 숲길 산책 1차 — 감정 기록 후 오늘의 숲길을 골라 짧은 산책 흔적을 남기는 확장
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.25.3 test",
-  dataSchemaVersion: 6,
+  version: "V1.26 test",
+  dataSchemaVersion: 7,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
   serviceTimeZoneOffsetMinutes: 9 * 60
 };
 
 
-// V1.25.3 test: GA4 관리자 데이터 연결 유지 헬퍼
+// V1.26 test: GA4 관리자 데이터 연결 유지 헬퍼
 
-// V1.25.3 test: 관리자 대시보드용 Google Sheets 연결 유지
+// V1.26 test: 관리자 대시보드용 Google Sheets 연결 유지
 // V1.10.31에서 연결한 Apps Script 웹 앱 URL을 유지합니다.
 // 비어 있으면 GA4만 기록되고, Google Sheets 자동 집계는 실행되지 않습니다.
 const ADMIN_TRACKING_CONFIG = {
@@ -457,6 +457,27 @@ const gardenMarkerRules = {
   }
 };
 
+const forestTrailRules = {
+  moss: {
+    label: "이끼길",
+    icon: "🌿",
+    title: "이끼가 부드러운 길",
+    message: "발밑의 이끼가 오늘의 마음을 조용히 받아줬어요. 서두르지 않아도 괜찮은 길을 걸었어요."
+  },
+  sunbeam: {
+    label: "햇살길",
+    icon: "✨",
+    title: "햇살이 내려앉은 길",
+    message: "나무 사이로 들어온 빛을 따라 걸었어요. 오늘의 숲에 작은 밝기가 하나 더 남았어요."
+  },
+  quiet: {
+    label: "고요한 길",
+    icon: "🍃",
+    title: "바람이 낮게 지나간 길",
+    message: "소리가 적은 길을 천천히 걸었어요. 마음이 조용히 가라앉는 시간이 숲에 남았어요."
+  }
+};
+
 const forestEffectRules = {
   "leaf-strong": {
     className: "effect-leaf",
@@ -626,6 +647,11 @@ const treeCareMessageElement = document.querySelector("#treeCareMessage");
 const treeCareStageDockElement = document.querySelector("#treeCareStageDock");
 const treeCareStageTextElement = document.querySelector("#treeCareStageText");
 const treeCareButtons = document.querySelectorAll("[data-care-action]");
+const forestTrailCardElement = document.querySelector("#forestTrailCard");
+const forestTrailTitleElement = document.querySelector("#forestTrailTitle");
+const forestTrailTextElement = document.querySelector("#forestTrailText");
+const forestTrailMessageElement = document.querySelector("#forestTrailMessage");
+const forestTrailButtons = document.querySelectorAll("[data-forest-trail]");
 
 const gardenMarkerLayerElement = document.querySelector("#gardenMarkerLayer");
 const gardenMarkerCardElement = document.querySelector("#gardenMarkerCard");
@@ -729,6 +755,7 @@ function createNewTreeData(overrides = {}) {
     history: [],
     treeName: "",
     careHistory: [],
+    trailHistory: [],
     sharedForestSentenceDates: [],
     inviteStartedAt: null,
     gardenMarker: "",
@@ -896,6 +923,12 @@ function normalizeTreeData(rawData) {
         .filter(Boolean)
         .slice(0, 60)
     : [];
+  const trailHistory = Array.isArray(sourceData.trailHistory)
+    ? sourceData.trailHistory
+        .map((record) => normalizeTrailRecord(record))
+        .filter(Boolean)
+        .slice(0, 60)
+    : [];
   const sharedForestSentenceDates = Array.isArray(sourceData.sharedForestSentenceDates)
     ? [...new Set(sourceData.sharedForestSentenceDates.filter((dateText) => isValidDateKey(dateText)))].slice(0, 60)
     : [];
@@ -920,6 +953,7 @@ function normalizeTreeData(rawData) {
     history,
     treeName,
     careHistory,
+    trailHistory,
     sharedForestSentenceDates,
     inviteStartedAt,
     gardenMarker
@@ -993,6 +1027,44 @@ function hasCaredToday() {
 
 function getLatestCareRecord() {
   const records = Array.isArray(treeData.careHistory) ? treeData.careHistory : [];
+  return records[0] || null;
+}
+
+function normalizeTrailRecord(record) {
+  if (!record || typeof record !== "object") {
+    return null;
+  }
+
+  const trail = forestTrailRules[record.trail] ? record.trail : null;
+  const date = isValidDateKey(record.date) ? record.date : null;
+
+  if (!trail || !date) {
+    return null;
+  }
+
+  const rule = forestTrailRules[trail];
+
+  return {
+    date,
+    trail,
+    label: typeof record.label === "string" && record.label.trim() ? record.label.slice(0, 24) : rule.label,
+    icon: typeof record.icon === "string" && record.icon.trim() ? record.icon.slice(0, 8) : rule.icon,
+    title: typeof record.title === "string" && record.title.trim() ? record.title.slice(0, 40) : rule.title,
+    message: typeof record.message === "string" && record.message.trim() ? record.message.slice(0, 150) : rule.message
+  };
+}
+
+function getTodayTrailRecord() {
+  const records = Array.isArray(treeData.trailHistory) ? treeData.trailHistory : [];
+  return records.find((item) => item.date === getTodayKey()) || null;
+}
+
+function hasWalkedTrailToday() {
+  return Boolean(getTodayTrailRecord());
+}
+
+function getLatestTrailRecord() {
+  const records = Array.isArray(treeData.trailHistory) ? treeData.trailHistory : [];
   return records[0] || null;
 }
 
@@ -3044,6 +3116,72 @@ function chooseTreeCare(care) {
 }
 
 
+function renderForestTrailCard() {
+  if (!forestTrailCardElement || !forestTrailTitleElement || !forestTrailTextElement || !forestTrailMessageElement) {
+    return;
+  }
+
+  const todayRecord = getTodayRecord();
+  const todayTrail = getTodayTrailRecord();
+  const latestTrail = getLatestTrailRecord();
+  const canWalk = Boolean(todayRecord) && !todayTrail;
+
+  forestTrailCardElement.classList.toggle("trail-ready", Boolean(todayRecord));
+  forestTrailCardElement.classList.toggle("trail-done", Boolean(todayTrail));
+
+  forestTrailButtons.forEach((button) => {
+    const trailKey = button.dataset.forestTrail;
+    const selected = todayTrail?.trail === trailKey;
+    button.disabled = !canWalk;
+    button.classList.toggle("selected", selected);
+  });
+
+  if (!todayRecord) {
+    forestTrailTitleElement.textContent = "오늘 기록 후 숲길 하나를 걸을 수 있어요";
+    forestTrailTextElement.textContent = "감정 기록을 마치면 이끼길, 햇살길, 고요한 길 중 하나를 골라 오늘의 산책 흔적을 남길 수 있어요.";
+    forestTrailMessageElement.textContent = latestTrail
+      ? `최근 산책 · ${latestTrail.icon} ${latestTrail.label} — ${latestTrail.title}`
+      : "오늘 기록 후 사용 가능";
+    return;
+  }
+
+  if (todayTrail) {
+    forestTrailTitleElement.textContent = `${todayTrail.icon} ${todayTrail.title}`;
+    forestTrailTextElement.textContent = todayTrail.message;
+    forestTrailMessageElement.textContent = "오늘의 숲길 산책이 내 숲에 남았어요. 내일 다시 다른 길을 걸을 수 있어요.";
+    return;
+  }
+
+  forestTrailTitleElement.textContent = "오늘 걸을 숲길을 골라주세요";
+  forestTrailTextElement.textContent = "기록과 돌봄이 내 나무 주변에 머물렀다면, 이번에는 내 숲길을 한 번 걸으며 오늘의 흔적을 남겨요.";
+  forestTrailMessageElement.textContent = "하루에 한 번만 선택돼요.";
+}
+
+function chooseForestTrail(trail) {
+  if (!forestTrailRules[trail] || !getTodayRecord() || hasWalkedTrailToday()) {
+    renderForestTrailCard();
+    return;
+  }
+
+  const rule = forestTrailRules[trail];
+  const records = Array.isArray(treeData.trailHistory) ? [...treeData.trailHistory] : [];
+  records.unshift({
+    date: getTodayKey(),
+    trail,
+    label: rule.label,
+    icon: rule.icon,
+    title: rule.title,
+    message: rule.message
+  });
+  treeData.trailHistory = records.slice(0, 60);
+  saveTreeData();
+
+  renderForestTrailCard();
+  renderMessages(`${rule.message} 오늘의 숲길 산책도 내 숲의 하루에 함께 남았어요.`);
+  trackForestEvent("forest_trail_selected", { trail_type: trail });
+}
+
+
 function getSelectedGardenMarker() {
   const marker = typeof treeData.gardenMarker === "string" ? treeData.gardenMarker : "";
   return gardenMarkerRules[marker] ? marker : "";
@@ -3251,7 +3389,7 @@ function renderVersionLabels() {
   const demoPillElement = document.querySelector(".demo-pill");
 
   if (versionElements[0]) {
-    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 내 정원 표식 1차`;
+    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 숲길 산책 1차`;
   }
 
   if (versionElements[1]) {
@@ -3259,7 +3397,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 내 정원 표식 1차`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 숲길 산책 1차`;
   }
 }
 
@@ -3657,7 +3795,7 @@ function renderTestModeStatus() {
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
   const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 내 정원 표식 1차 · ${shortTreeId}`;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 숲길 산책 1차 · ${shortTreeId}`;
 }
 
 function setupTestMode() {
@@ -3748,6 +3886,7 @@ function renderAll() {
   renderForestDiaryCard();
   renderForestShareCard();
   renderTreeCareCard();
+  renderForestTrailCard();
   renderGardenMarkerCard();
   renderGardenMarkerLayer();
   renderForestBadgeCard();
@@ -3782,6 +3921,13 @@ if (forestInviteStartBtnElement) {
 treeCareButtons.forEach((button) => {
   button.addEventListener("click", () => {
     chooseTreeCare(button.dataset.careAction);
+  });
+});
+
+
+forestTrailButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    chooseForestTrail(button.dataset.forestTrail);
   });
 });
 
