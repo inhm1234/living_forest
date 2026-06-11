@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.46 test
+// 살아있는 숲 V1.46.1 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.46 test
+// 버전명: V1.46.1 test
 // 목적: 메인 나무 성장 이미지 v2 적용 — 귀여운 웹툰풍 친구 숲으로 첫 화면 전환
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.46 test",
+  version: "V1.46.1 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",

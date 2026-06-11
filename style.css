@@ -10786,3 +10786,79 @@ h1,
   .garden-marker-layer { left: calc(50% - 92px); bottom: 138px; width: 104px; height: 88px; }
   .garden-marker-item { width: 88px; height: 80px; }
 }
+
+
+/* V1.46.1 test · 정원 배경/장식 투명 보정 */
+.garden-stage.garden-time-day {
+  background: url("assets/garden/garden-inner-day-v2.png") center center / cover no-repeat !important;
+}
+
+.garden-stage.garden-time-sunset {
+  background: url("assets/garden/garden-inner-sunset-v2.png") center center / cover no-repeat !important;
+}
+
+.garden-stage.garden-time-night {
+  background: url("assets/garden/garden-inner-night-v2.png") center center / cover no-repeat !important;
+}
+
+.garden-stage .garden-depth,
+.garden-stage .garden-foreground,
+.garden-stage .garden-focus-clearing,
+.garden-stage .tree-planting-ground {
+  opacity: 0.12 !important;
+}
+
+.garden-time-day .garden-dim {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,245,250,0.08)) !important;
+}
+
+.garden-time-sunset .garden-dim {
+  background: linear-gradient(180deg, rgba(255,183,146,0.08), rgba(99,50,74,0.12)) !important;
+}
+
+.garden-time-night .garden-dim {
+  background: linear-gradient(180deg, rgba(36,32,82,0.12), rgba(9,18,44,0.24)) !important;
+}
+
+.bird { width: 70px; height: 66px; top: 132px; }
+.squirrel { width: 76px; height: 64px; bottom: 112px; }
+.world-life-bird { width: 56px; height: 48px; }
+.world-life-squirrel { width: 54px; height: 48px; }
+
+.garden-marker-layer {
+  left: calc(50% - 102px);
+  bottom: 118px;
+  width: 94px;
+  height: 84px;
+}
+
+.garden-marker-item {
+  width: 78px;
+  height: 72px;
+  bottom: 8px;
+}
+
+.garden-marker-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.garden-marker-lantern .garden-marker-image { transform: scale(0.92); }
+.garden-marker-picnic .garden-marker-image { transform: scale(1.04); }
+.garden-marker-garland .garden-marker-image { transform: scale(1.04); }
+.garden-marker-ribbon .garden-marker-image { transform: scale(0.96) rotate(-4deg); }
+
+@media (max-width: 560px) {
+  .garden-marker-layer {
+    left: calc(50% - 82px);
+    bottom: 148px;
+    width: 84px;
+    height: 74px;
+  }
+
+  .garden-marker-item {
+    width: 70px;
+    height: 66px;
+  }
+}
