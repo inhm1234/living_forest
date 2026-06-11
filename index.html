@@ -35,7 +35,7 @@
 
   <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.47-test" />
+  <link rel="stylesheet" href="style.css?v=1.48-test" />
 <!-- Google tag (gtag.js) - Living Forest GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-YC872G7MH1"></script>
 <script>
@@ -59,7 +59,7 @@
         <p class="version">살아있는 숲 V1.44 test · 메인 나무 v2 적용</p>
         <h1>살아있는 숲</h1>
         <p class="subtitle">내 나무를 키우고, 친구들과 함께 숲을 채워가요.</p>
-        <p class="demo-pill">V1.44 test · 메인 나무 v2 적용</p>
+        <p class="demo-pill">V1.48 test · 친구 초대 흐름 1차</p>
       </header>
 
       <section class="world-card visual-card">
@@ -85,6 +85,11 @@
             <span class="world-empty-slot empty-slot-c"></span>
             <span class="world-empty-slot empty-slot-d"></span>
             <span class="world-empty-slot empty-slot-e"></span>
+          </div>
+          <div id="worldStarterFriends" class="world-starter-friends" aria-hidden="true">
+            <span class="starter-friend starter-friend-a"><b>리본새싹</b><small>곧 친구 자리</small></span>
+            <span class="starter-friend starter-friend-b"><b>별꽃잎</b><small>숲 친구 자리</small></span>
+            <span class="starter-friend starter-friend-c"><b>소풍바람</b><small>초대 대기</small></span>
           </div>
           <div id="worldParticleLayer" class="world-particle-layer" aria-hidden="true"></div>
           <div id="worldLifeLayer" class="world-life-layer" aria-hidden="true"></div>
@@ -112,6 +117,11 @@
           <p id="worldSummaryText" class="world-summary-text">오늘의 마음을 하나 고르면 내 나무가 자라고, 친구 숲에도 작은 변화가 생겨요.</p>
           <p id="worldCommunityHint" class="world-community-hint">먼저 숲속 내 자리에서 내 나무를 시작하고, 친구들과 함께 채워질 숲을 떠올려보세요.</p>
           <p id="worldAtmosphereHint" class="world-atmosphere-hint">하루 한 번의 기록이 내 정원과 친구 숲에 작은 흔적으로 남아요.</p>
+          <div class="friend-waiting-row" aria-label="친구가 오기 전 숲 자리 미리보기">
+            <span>🌱 리본새싹 자리</span>
+            <span>✨ 별꽃잎 흔적</span>
+            <span>🧺 소풍바람 대기</span>
+          </div>
         </div>
 
         <div id="forestInviteCard" class="forest-invite-card glass-panel hidden" aria-live="polite">
@@ -134,16 +144,28 @@
 
         <div id="friendForestCard" class="friend-forest-card glass-panel" aria-live="polite">
           <span class="friend-forest-kicker">친구 숲의 움직임</span>
-          <p id="friendForestTitle" class="friend-forest-title">내 자리 주변에 친구 자리가 보여요</p>
-          <p id="friendForestText" class="friend-forest-text">기록이 쌓일수록 빈자리도 친구의 나무와 흔적이 들어올 자리처럼 더 또렷하게 느껴져요.</p>
+          <p id="friendForestTitle" class="friend-forest-title">아직 친구가 없어도 숲은 기다리는 중</p>
+          <p id="friendForestText" class="friend-forest-text">리본새싹, 별꽃잎, 소풍바람 같은 숲 친구가 먼저 빈자리를 지켜줘서 처음 시작해도 외롭지 않게 보여요.</p>
           <ul id="friendForestList" class="friend-forest-list" aria-label="친구 숲 미리보기"></ul>
-          <p id="friendForestMeta" class="friend-forest-meta">로그인 없이도 함께 키우는 기분을 먼저 느낄 수 있도록 보여주는 친구 숲 미리보기예요.</p>
+          <p id="friendForestMeta" class="friend-forest-meta">실제 친구가 생기면 이 자리는 친구의 나무와 방문 흔적으로 자연스럽게 이어질 수 있어요.</p>
+        </div>
+
+        <div id="friendInviteCard" class="friend-invite-card glass-panel" aria-live="polite">
+          <span class="friend-invite-kicker">친구 초대 준비</span>
+          <p id="friendInviteTitle" class="friend-invite-title">친구에게 보낼 숲 초대장을 만들 수 있어요</p>
+          <p id="friendInviteText" class="friend-invite-text">내 나무 이름과 오늘의 숲 문장을 담아 친구에게 보낼 짧은 초대 문구를 준비했어요.</p>
+          <div class="friend-invite-actions">
+            <button id="copyFriendInviteBtn" class="primary-btn" type="button">초대 문구 복사</button>
+            <button id="previewFriendInviteBtn" class="ghost-btn" type="button">문구 미리보기</button>
+          </div>
+          <p id="friendInvitePreview" class="friend-invite-preview">초대 문구를 미리 보려면 버튼을 눌러주세요.</p>
+          <p id="friendInviteMeta" class="friend-invite-meta">아직 실제 친구 계정 연결은 없지만, 공유 링크로 친구가 자기 숲을 시작할 수 있어요.</p>
         </div>
 
         <div id="worldPlaceCard" class="world-place-card glass-panel" aria-live="polite">
           <span class="world-place-kicker">월드 숲 자리 안내</span>
-          <p class="world-place-title">반짝이는 빈자리도 곧 친구 나무가 들어와 함께 숲을 이룰 자리예요.</p>
-          <p class="world-place-text">주변 자리 하나하나가 친구의 나무, 선물, 흔적으로 이어질 수 있도록 먼저 보여주는 친구 숲 지도예요.</p>
+          <p class="world-place-title">아직 친구가 없어도 빈자리는 외로운 공간이 아니라, 숲 친구와 실제 친구가 들어올 예비 자리예요.</p>
+          <p class="world-place-text">지금은 리본새싹, 별꽃잎, 소풍바람 같은 숲 친구 이름으로 먼저 채워두고, 나중에 실제 친구가 생기면 친구 나무 자리로 자연스럽게 바뀔 수 있어요.</p>
         </div>
 
         <div id="firstVisitGuide" class="first-visit-guide glass-panel" aria-live="polite">
@@ -168,7 +190,7 @@
     <section id="gardenScreen" class="screen">
       <header class="hero garden-hero">
         <button id="backToWorldBtnTop" class="ghost-btn small-btn" type="button">← 전체 숲</button>
-        <p class="version">오늘 내 나무 돌보기 · V1.47 test</p>
+        <p class="version">오늘 내 나무 돌보기 · V1.48 test</p>
         <h2 id="gardenTitle" class="garden-title">밤 숲속 자리</h2>
         <p class="subtitle">오늘의 마음이 내 나무와 친구 숲에 귀여운 흔적으로 남아요.</p>
       </header>
@@ -533,6 +555,6 @@
   </aside>
 
 
-  <script src="app.js?v=1.47-test"></script>
+  <script src="app.js?v=1.48-test"></script>
 </body>
 </html>

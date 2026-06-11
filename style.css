@@ -10962,7 +10962,7 @@ h1,
 }
 
 
-/* V1.47 test · 친구 숲 느낌 강화 1차 */
+/* V1.47.1 test · 친구 없는 초기 숲 보정판 */
 .friend-forest-card {
   margin-top: 12px;
   padding: 14px 16px;
@@ -11045,4 +11045,202 @@ h1,
 @media (max-width: 760px) {
   .friend-forest-list { grid-template-columns: 1fr; }
   .friend-forest-item { min-height: 0; }
+}
+
+
+/* V1.47.1 test · 친구 없는 초기 숲 보정판 */
+.world-starter-friends {
+  position: absolute;
+  inset: 0;
+  z-index: 11;
+  pointer-events: none;
+}
+
+.starter-friend {
+  position: absolute;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 82px;
+  padding: 6px 9px 7px;
+  border: 1px solid rgba(255, 193, 214, 0.52);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.68);
+  color: #7d5265;
+  box-shadow: 0 8px 18px rgba(232, 155, 190, 0.16), 0 0 18px rgba(255, 246, 203, 0.28);
+  backdrop-filter: blur(8px);
+  transform: translate(-50%, -50%);
+  animation: starterFriendFloat 5.8s ease-in-out infinite;
+}
+
+.starter-friend b {
+  font-size: 11.5px;
+  font-weight: 950;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+
+.starter-friend small {
+  color: rgba(125, 82, 101, 0.76);
+  font-size: 9.5px;
+  font-weight: 850;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+
+.starter-friend-a { left: 29%; top: 67%; animation-delay: -1.2s; }
+.starter-friend-b { left: 70%; top: 66%; animation-delay: -2.4s; }
+.starter-friend-c { left: 51%; top: 78%; animation-delay: -3.6s; }
+
+.friend-waiting-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.friend-waiting-row span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(244, 127, 166, 0.15);
+  background: rgba(255, 248, 251, 0.88);
+  color: #a65e7c;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 8px 16px rgba(244, 127, 166, 0.08);
+}
+
+.friend-forest-card {
+  border-color: rgba(244, 127, 166, 0.18) !important;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(255, 221, 170, 0.28), transparent 34%),
+    linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,244,250,0.96)) !important;
+}
+
+.friend-forest-kicker::before {
+  content: "🌱";
+  margin-right: 5px;
+}
+
+.friend-forest-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.friend-forest-item::after {
+  content: "";
+  position: absolute;
+  right: -14px;
+  top: -16px;
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background: rgba(255, 193, 214, 0.22);
+}
+
+@keyframes starterFriendFloat {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); opacity: 0.84; }
+  50% { transform: translate(-50%, -50%) translateY(-4px); opacity: 1; }
+}
+
+@media (max-width: 760px) {
+  .starter-friend {
+    min-width: 72px;
+    padding: 5px 7px 6px;
+  }
+
+  .starter-friend b { font-size: 10.5px; }
+  .starter-friend small { font-size: 8.5px; }
+  .starter-friend-a { left: 24%; top: 67%; }
+  .starter-friend-b { left: 76%; top: 67%; }
+  .starter-friend-c { left: 50%; top: 78%; }
+}
+
+@media (max-width: 520px) {
+  .starter-friend-b { display: none; }
+  .friend-waiting-row span { font-size: 11px; padding: 6px 8px; }
+}
+
+
+/* V1.48 test · 친구 초대 흐름 1차 */
+.friend-invite-card {
+  margin-top: 12px;
+  padding: 15px 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(183, 225, 255, 0.35);
+  background:
+    radial-gradient(circle at 14% 16%, rgba(183, 225, 255, 0.34), transparent 36%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 244, 255, 0.95)) !important;
+  box-shadow: 0 18px 42px rgba(164, 183, 224, 0.14);
+}
+
+.friend-invite-kicker {
+  display: inline-flex;
+  margin-bottom: 6px;
+  color: #6d89c8;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.friend-invite-title {
+  margin: 0;
+  color: #5d597c;
+  font-size: 16px;
+  font-weight: 950;
+  line-height: 1.35;
+}
+
+.friend-invite-text,
+.friend-invite-meta {
+  margin: 7px 0 0;
+  color: rgba(91, 58, 50, 0.78);
+  font-size: 13.5px;
+  font-weight: 720;
+  line-height: 1.58;
+}
+
+.friend-invite-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.friend-invite-actions .primary-btn,
+.friend-invite-actions .ghost-btn {
+  min-height: 44px;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
+.friend-invite-preview {
+  margin: 12px 0 0;
+  padding: 12px 13px;
+  border: 1px dashed rgba(244, 127, 166, 0.24);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  color: rgba(91, 58, 50, 0.74);
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+
+.friend-invite-preview-ready {
+  border-style: solid;
+  border-color: rgba(244, 127, 166, 0.34);
+  background: rgba(255, 250, 253, 0.92);
+  color: #70556a;
+}
+
+@media (max-width: 560px) {
+  .friend-invite-actions {
+    grid-template-columns: 1fr;
+  }
 }

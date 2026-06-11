@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.47.1 test
+// 살아있는 숲 V1.48 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.47.1 test
+// 버전명: V1.48 test
 // 목적: 친구 없는 초기 숲 보정판 — 친구가 없어도 숲이 외롭지 않게 보이도록 숲 친구/예비 자리 감각 보강
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.47.1 test",
+  version: "V1.48 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -634,6 +634,13 @@ const friendForestTitleElement = document.querySelector("#friendForestTitle");
 const friendForestTextElement = document.querySelector("#friendForestText");
 const friendForestListElement = document.querySelector("#friendForestList");
 const friendForestMetaElement = document.querySelector("#friendForestMeta");
+const friendInviteCardElement = document.querySelector("#friendInviteCard");
+const friendInviteTitleElement = document.querySelector("#friendInviteTitle");
+const friendInviteTextElement = document.querySelector("#friendInviteText");
+const friendInvitePreviewElement = document.querySelector("#friendInvitePreview");
+const friendInviteMetaElement = document.querySelector("#friendInviteMeta");
+const copyFriendInviteBtnElement = document.querySelector("#copyFriendInviteBtn");
+const previewFriendInviteBtnElement = document.querySelector("#previewFriendInviteBtn");
 const firstVisitGuideElement = document.querySelector("#firstVisitGuide");
 const forestInviteCardElement = document.querySelector("#forestInviteCard");
 const forestInviteTitleElement = document.querySelector("#forestInviteTitle");
@@ -2937,6 +2944,106 @@ function renderWorldGrowthCard() {
   }
 }
 
+
+function getFriendInviteMessage() {
+  const name = treeData.treeName?.trim() || "이름 없는 나무";
+  const days = Array.isArray(treeData.history) ? treeData.history.length : 0;
+  const todayRecord = getTodayRecord();
+  const todayMood = todayRecord ? `${todayRecord.label} 기운` : "오늘의 마음";
+  const inviteUrl = `${window.location.origin}${window.location.pathname}?invite=friend-forest`;
+
+  if (days === 0) {
+    return `🌱 ${name}의 작은 숲이 친구를 기다리고 있어요.\n하루에 한 번 마음을 남기면 내 나무가 자라고, 친구 숲에도 작은 자리가 생겨요.\n나도 같이 숲 시작하기: ${inviteUrl}`;
+  }
+
+  return `🌷 ${name}의 숲에 ${days}일째 기록이 쌓였어요.\n오늘은 ${todayMood}이 숲에 남았고, 친구가 올 자리가 반짝이고 있어요.\n너도 네 나무를 심고 같이 숲 채워볼래?\n${inviteUrl}`;
+}
+
+async function copyTextToClipboard(text) {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    document.body.appendChild(textarea);
+    textarea.select();
+    const copied = document.execCommand("copy");
+    document.body.removeChild(textarea);
+    return copied;
+  } catch (error) {
+    console.warn("Copy skipped:", error);
+    return false;
+  }
+}
+
+function renderFriendInviteCard(messageOnly = false) {
+  if (!friendInviteCardElement) {
+    return;
+  }
+
+  const days = Array.isArray(treeData.history) ? treeData.history.length : 0;
+  const name = treeData.treeName?.trim() || "이름 없는 나무";
+  const message = getFriendInviteMessage();
+
+  if (friendInviteTitleElement) {
+    friendInviteTitleElement.textContent = days === 0
+      ? "첫 친구에게 보낼 숲 초대장이 준비됐어요"
+      : `${name}의 숲 초대장을 보낼 수 있어요`;
+  }
+
+  if (friendInviteTextElement) {
+    friendInviteTextElement.textContent = days === 0
+      ? "아직 친구가 없어도 괜찮아요. 내 숲을 시작하는 순간, 친구가 따라 들어올 수 있는 초대 문구를 만들 수 있어요."
+      : "내 나무 이름과 지금까지 쌓인 기록을 담아, 친구가 자기 나무를 심고 함께 숲을 채울 수 있는 문구를 만들었어요.";
+  }
+
+  if (friendInvitePreviewElement && !messageOnly) {
+    friendInvitePreviewElement.textContent = "초대 문구를 미리 보려면 버튼을 눌러주세요.";
+  }
+
+  if (friendInviteMetaElement) {
+    friendInviteMetaElement.textContent = "공유된 친구는 같은 숲 서버에 연결되는 것은 아니지만, 같은 서비스에서 자기 나무를 시작할 수 있어요.";
+  }
+
+  return message;
+}
+
+function showFriendInvitePreview() {
+  const message = getFriendInviteMessage();
+
+  if (friendInvitePreviewElement) {
+    friendInvitePreviewElement.textContent = message;
+    friendInvitePreviewElement.classList.add("friend-invite-preview-ready");
+  }
+
+  trackForestEvent("friend_invite_preview_opened", {
+    growth_days: Array.isArray(treeData.history) ? treeData.history.length : 0,
+  });
+}
+
+async function copyFriendInviteMessage() {
+  const message = getFriendInviteMessage();
+  const copied = await copyTextToClipboard(message);
+
+  if (friendInvitePreviewElement) {
+    friendInvitePreviewElement.textContent = copied
+      ? "초대 문구를 복사했어요. 친구에게 보내서 같이 숲을 시작해보세요."
+      : message;
+    friendInvitePreviewElement.classList.add("friend-invite-preview-ready");
+  }
+
+  trackForestEvent("friend_invite_copied", {
+    copied: copied ? "yes" : "no",
+    growth_days: Array.isArray(treeData.history) ? treeData.history.length : 0,
+  });
+}
+
 function renderWorld() {
   renderWorldVisualLayers();
 
@@ -2950,6 +3057,7 @@ function renderWorld() {
   renderWorldCommunityHint(todayRecord);
   renderWorldGrowthCard();
   renderFriendForestCard();
+  renderFriendInviteCard();
 
   myWorldSpotElement.className = `my-world-spot ${spotInfo.className} ${myWorldTreeSizeClass}`;
   mySpotVisualElement.innerHTML = `
@@ -5199,3 +5307,12 @@ function handleAnalyticsClickCapture(event) {
 }
 
 document.addEventListener("click", handleAnalyticsClickCapture);
+
+
+if (copyFriendInviteBtnElement) {
+  copyFriendInviteBtnElement.addEventListener("click", copyFriendInviteMessage);
+}
+
+if (previewFriendInviteBtnElement) {
+  previewFriendInviteBtnElement.addEventListener("click", showFriendInvitePreview);
+}
