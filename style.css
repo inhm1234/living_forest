@@ -11624,3 +11624,36 @@ h1,
     grid-template-columns: 1fr;
   }
 }
+
+
+/* V1.51 test · 카카오톡 친구 초대 버튼 */
+.friend-invite-actions-kakao {
+  grid-template-columns: 1fr 1fr;
+}
+
+.friend-invite-actions-kakao .kakao-friend-invite-btn {
+  grid-column: 1 / -1;
+  border-color: rgba(250, 226, 77, 0.82);
+  background: linear-gradient(135deg, #fee95a, #ffd84d) !important;
+  color: #3b3014 !important;
+  box-shadow: 0 14px 30px rgba(226, 184, 38, 0.20);
+}
+
+.friend-invite-actions-kakao .kakao-friend-invite-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 36px rgba(226, 184, 38, 0.24);
+}
+
+.friend-invite-actions-kakao .ghost-btn {
+  background: rgba(255, 255, 255, 0.76);
+}
+
+@media (max-width: 560px) {
+  .friend-invite-actions-kakao {
+    grid-template-columns: 1fr;
+  }
+
+  .friend-invite-actions-kakao .kakao-friend-invite-btn {
+    grid-column: auto;
+  }
+}

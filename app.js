@@ -1,16 +1,21 @@
-// 살아있는 숲 V1.50 test
+// 살아있는 숲 V1.51 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.50 test
-// 목적: 친구 없는 초기 숲 보정판 — 친구가 없어도 숲이 외롭지 않게 보이도록 숲 친구/예비 자리 감각 보강
+// 버전명: V1.51 test
+// 목적: 카카오톡 친구 초대 1차 — 자리별 초대 흐름에 Kakao.Share 공유 버튼을 연결
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.50 test",
+  version: "V1.51 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
   serviceTimeZoneOffsetMinutes: 9 * 60
+};
+
+const KAKAO_SHARE_CONFIG = {
+  javascriptKey: "a8e1dde7570cf9d030b20628c29e75a4",
+  enabled: true
 };
 
 
@@ -655,6 +660,7 @@ const friendInviteTitleElement = document.querySelector("#friendInviteTitle");
 const friendInviteTextElement = document.querySelector("#friendInviteText");
 const friendInvitePreviewElement = document.querySelector("#friendInvitePreview");
 const friendInviteMetaElement = document.querySelector("#friendInviteMeta");
+const kakaoFriendInviteBtnElement = document.querySelector("#kakaoFriendInviteBtn");
 const copyFriendInviteBtnElement = document.querySelector("#copyFriendInviteBtn");
 const previewFriendInviteBtnElement = document.querySelector("#previewFriendInviteBtn");
 const friendSeatOptionsElement = document.querySelector("#friendSeatOptions");
@@ -3294,7 +3300,7 @@ function selectFriendInviteSeat(seatId, source = "option") {
 
   if (friendInvitePreviewElement) {
     const seat = getSelectedFriendInviteSeat();
-    friendInvitePreviewElement.textContent = `${seat.label}을 선택했어요. 문구 미리보기를 누르면 이 자리 전용 초대 문구가 나와요.`;
+    friendInvitePreviewElement.textContent = `${seat.label}을 선택했어요. 카카오톡 초대 버튼을 누르면 이 자리 전용 초대장이 열려요.`;
     friendInvitePreviewElement.classList.add("friend-invite-preview-ready");
   }
 
@@ -3308,13 +3314,56 @@ function selectFriendInviteSeat(seatId, source = "option") {
   });
 }
 
+function getFriendInviteUrl() {
+  const seat = getSelectedFriendInviteSeat();
+  return `${window.location.origin}${window.location.pathname}?invite=friend-forest&forest=${getOrCreateOnlineForestId()}&seat=${seat.id}`;
+}
+
+function getKakaoShareImageUrl() {
+  return `${window.location.origin}${window.location.pathname.replace(/[^/]*$/, "")}assets/share/living-forest-og.png`;
+}
+
+function getKakaoFriendInviteDescription() {
+  const days = Array.isArray(treeData.history) ? treeData.history.length : 0;
+  const todayRecord = getTodayRecord();
+  const todayMood = todayRecord ? `${todayRecord.label} 기운` : "오늘의 마음";
+  const seat = getSelectedFriendInviteSeat();
+
+  if (days === 0) {
+    return `${seat.label}가 비어 있어요. 내 나무를 심고 같이 숲을 채워볼래?`;
+  }
+
+  return `${days}일째 자라는 숲이에요. 오늘은 ${todayMood}이 남았고, ${seat.label}가 친구를 기다려요.`;
+}
+
+function initKakaoShareSdk() {
+  try {
+    if (!KAKAO_SHARE_CONFIG.enabled || !KAKAO_SHARE_CONFIG.javascriptKey) {
+      return false;
+    }
+
+    if (!window.Kakao) {
+      return false;
+    }
+
+    if (!window.Kakao.isInitialized()) {
+      window.Kakao.init(KAKAO_SHARE_CONFIG.javascriptKey);
+    }
+
+    return window.Kakao.isInitialized();
+  } catch (error) {
+    console.warn("Kakao SDK init skipped:", error);
+    return false;
+  }
+}
+
 function getFriendInviteMessage() {
   const name = treeData.treeName?.trim() || "이름 없는 나무";
   const days = Array.isArray(treeData.history) ? treeData.history.length : 0;
   const todayRecord = getTodayRecord();
   const todayMood = todayRecord ? `${todayRecord.label} 기운` : "오늘의 마음";
   const seat = getSelectedFriendInviteSeat();
-  const inviteUrl = `${window.location.origin}${window.location.pathname}?invite=friend-forest&forest=${getOrCreateOnlineForestId()}&seat=${seat.id}`;
+  const inviteUrl = getFriendInviteUrl();
 
   if (days === 0) {
     return `${seat.emoji} ${name}의 숲에서 ${seat.label}가 친구를 기다리고 있어요.\n${seat.description}예요.\n하루에 한 번 마음을 남기면 내 나무가 자라고, 친구 숲에도 작은 자리가 생겨요.\n이 자리에 같이 숲 시작하기: ${inviteUrl}`;
@@ -3363,18 +3412,18 @@ function renderFriendInviteCard(messageOnly = false) {
   }
 
   if (friendInviteTextElement) {
-    friendInviteTextElement.textContent = `${seat.description}예요. 친구에게 이 자리 전용 초대 문구를 보내면, 나중에 ${seat.label} · 친구 닉네임 형태로 확장하기 좋아요.`;
+    friendInviteTextElement.textContent = `${seat.description}예요. 카카오톡으로 이 자리 전용 초대장을 바로 보낼 수 있어요. 나중에는 ${seat.label} · 친구 닉네임 형태로 이어질 수 있어요.`;
   }
 
   syncFriendInviteSeatSelection();
 
   if (friendInvitePreviewElement && !messageOnly) {
-    friendInvitePreviewElement.textContent = "초대 문구를 미리 보려면 버튼을 눌러주세요.";
+    friendInvitePreviewElement.textContent = "카카오톡으로 보낼 초대 내용을 미리 보려면 버튼을 눌러주세요.";
     friendInvitePreviewElement.classList.remove("friend-invite-preview-ready");
   }
 
   if (friendInviteMetaElement) {
-    friendInviteMetaElement.textContent = `현재 선택: ${seat.label} · ${seat.mark}. 초대 링크에는 내 숲 ID와 자리 ID가 들어가고, Apps Script 저장소가 연결되면 친구 나무 정보를 불러올 수 있어요.`;
+    friendInviteMetaElement.textContent = `현재 선택: ${seat.label} · ${seat.mark}. 먼저 카카오톡 초대 버튼으로 보내고, 안 될 때만 초대 링크 복사를 쓰면 돼요.`;
   }
 
   return message;
@@ -3394,20 +3443,85 @@ function showFriendInvitePreview() {
 }
 
 async function copyFriendInviteMessage() {
-  const message = getFriendInviteMessage();
-  const copied = await copyTextToClipboard(message);
+  const inviteUrl = getFriendInviteUrl();
+  const copied = await copyTextToClipboard(inviteUrl);
+  const seat = getSelectedFriendInviteSeat();
 
   if (friendInvitePreviewElement) {
     friendInvitePreviewElement.textContent = copied
-      ? `${getSelectedFriendInviteSeat().label} 초대 문구를 복사했어요. 친구에게 보내서 같이 숲을 시작해보세요.`
-      : message;
+      ? `${seat.label} 초대 링크를 복사했어요. 카카오톡 공유가 안 될 때 이 링크를 직접 보내면 돼요.`
+      : getFriendInviteMessage();
     friendInvitePreviewElement.classList.add("friend-invite-preview-ready");
   }
 
-  trackForestEvent("friend_invite_copied", {
+  trackForestEvent("friend_invite_link_copied", {
     copied: copied ? "yes" : "no",
+    seat_id: seat.id,
     growth_days: Array.isArray(treeData.history) ? treeData.history.length : 0,
   });
+}
+
+async function shareFriendInviteToKakao() {
+  const seat = getSelectedFriendInviteSeat();
+  const inviteUrl = getFriendInviteUrl();
+  const name = treeData.treeName?.trim() || "이름 없는 나무";
+  const ready = initKakaoShareSdk();
+
+  if (!ready || !window.Kakao?.Share?.sendDefault) {
+    const copied = await copyTextToClipboard(inviteUrl);
+    if (friendInvitePreviewElement) {
+      friendInvitePreviewElement.textContent = copied
+        ? "카카오톡 공유 준비가 아직 안 된 것 같아요. 대신 초대 링크를 복사했어요."
+        : "카카오톡 공유 준비가 아직 안 된 것 같아요. 아래 문구를 복사해서 보내주세요.\n\n" + getFriendInviteMessage();
+      friendInvitePreviewElement.classList.add("friend-invite-preview-ready");
+    }
+    trackForestEvent("friend_invite_kakao_fallback", { seat_id: seat.id, copied: copied ? "yes" : "no" });
+    return;
+  }
+
+  try {
+    window.Kakao.Share.sendDefault({
+      objectType: "feed",
+      content: {
+        title: `${seat.emoji} ${name}의 ${seat.label}에 초대받았어요`,
+        description: getKakaoFriendInviteDescription(),
+        imageUrl: getKakaoShareImageUrl(),
+        link: {
+          mobileWebUrl: inviteUrl,
+          webUrl: inviteUrl
+        }
+      },
+      buttons: [
+        {
+          title: "내 나무 심으러 가기",
+          link: {
+            mobileWebUrl: inviteUrl,
+            webUrl: inviteUrl
+          }
+        }
+      ]
+    });
+
+    if (friendInvitePreviewElement) {
+      friendInvitePreviewElement.textContent = `${seat.label} 초대장을 카카오톡으로 보낼 준비를 했어요. 카카오톡 창에서 친구를 골라 보내면 돼요.`;
+      friendInvitePreviewElement.classList.add("friend-invite-preview-ready");
+    }
+
+    trackForestEvent("friend_invite_kakao_shared", {
+      seat_id: seat.id,
+      growth_days: Array.isArray(treeData.history) ? treeData.history.length : 0,
+    });
+  } catch (error) {
+    console.warn("Kakao share skipped:", error);
+    const copied = await copyTextToClipboard(inviteUrl);
+    if (friendInvitePreviewElement) {
+      friendInvitePreviewElement.textContent = copied
+        ? "카카오톡 공유가 열리지 않아서 초대 링크를 대신 복사했어요."
+        : getFriendInviteMessage();
+      friendInvitePreviewElement.classList.add("friend-invite-preview-ready");
+    }
+    trackForestEvent("friend_invite_kakao_error", { seat_id: seat.id, copied: copied ? "yes" : "no" });
+  }
 }
 
 function renderWorld() {
@@ -5698,6 +5812,10 @@ if (friendSeatOptionsElement) {
   });
 }
 
+if (kakaoFriendInviteBtnElement) {
+  kakaoFriendInviteBtnElement.addEventListener("click", shareFriendInviteToKakao);
+}
+
 if (copyFriendInviteBtnElement) {
   copyFriendInviteBtnElement.addEventListener("click", copyFriendInviteMessage);
 }
@@ -5711,4 +5829,5 @@ if (onlineFriendJoinFormElement) {
   onlineFriendJoinFormElement.addEventListener("submit", handleOnlineFriendJoin);
 }
 
+initKakaoShareSdk();
 loadOnlineFriendSeats();
