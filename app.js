@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.51.1 test
+// 살아있는 숲 V1.51.2 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.51.1 test
-// 목적: 초대 링크 안정화와 첫 친구 시작 흐름 — 카카오 공유 메시지에 직접 링크를 포함하고 초대받은 친구가 나무를 만든 뒤 자리에 들어가게 함
+// 버전명: V1.51.2 test
+// 목적: 초대받은 친구 시작 카드 상단 고정 — 초대 링크로 들어온 친구가 바로 닉네임/나무 만들기 카드를 보도록 함
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.51.1 test",
+  version: "V1.51.2 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -89,12 +89,16 @@ const ANALYTICS_CONFIG = {
 
 function getForestInviteSource() {
   const inviteValue = (urlParams.get("invite") || urlParams.get("from") || urlParams.get("source") || "").toLowerCase();
+  const hasOnlineInviteParams = Boolean(
+    (urlParams.get("forest") || urlParams.get("forestId") || urlParams.get("forest_id"))
+    && (urlParams.get("seat") || urlParams.get("seatId") || urlParams.get("seat_id"))
+  );
 
   if (["forest_sentence", "forest-sentence", "forest_share", "forest-share", "sentence_share", "sentence-share"].includes(inviteValue)) {
     return "forest_sentence";
   }
 
-  if (["friend-forest", "friend_forest", "online-friend", "online_friend"].includes(inviteValue)) {
+  if (["friend-forest", "friend_forest", "online-friend", "online_friend"].includes(inviteValue) || hasOnlineInviteParams) {
     return "friend_forest";
   }
 
@@ -3175,25 +3179,57 @@ async function loadOnlineFriendSeats() {
   renderFriendInviteCard(true);
 }
 
-function renderOnlineFriendJoinCard() {
+function syncOnlineFriendInviteMode(active) {
+  document.body.classList.toggle("online-friend-invite-mode", Boolean(active));
+
   if (!onlineFriendJoinCardElement) {
     return;
   }
 
+  const worldCardElement = document.querySelector("#worldScreen .world-card");
+  if (active && worldCardElement && onlineFriendJoinCardElement.previousElementSibling !== worldCardElement.previousElementSibling) {
+    worldCardElement.before(onlineFriendJoinCardElement);
+  }
+}
+
+function focusOnlineFriendJoinCardOnce() {
+  if (!onlineFriendJoinCardElement || window.__livingForestInviteCardFocused) {
+    return;
+  }
+
+  window.__livingForestInviteCardFocused = true;
+  window.setTimeout(() => {
+    try {
+      onlineFriendJoinCardElement.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (error) {
+      onlineFriendJoinCardElement.scrollIntoView();
+    }
+  }, 260);
+}
+
+function renderOnlineFriendJoinCard() {
+  if (!onlineFriendJoinCardElement) {
+    syncOnlineFriendInviteMode(false);
+    return;
+  }
+
   if (!isOnlineFriendInviteVisit()) {
+    syncOnlineFriendInviteMode(false);
     onlineFriendJoinCardElement.classList.add("hidden");
     return;
   }
 
   const seat = getFriendInviteSeatById(getOnlineInviteSeatId());
+  syncOnlineFriendInviteMode(true);
   onlineFriendJoinCardElement.classList.remove("hidden");
+  focusOnlineFriendJoinCardOnce();
 
   if (onlineFriendJoinTitleElement) {
-    onlineFriendJoinTitleElement.textContent = `${seat.label}에 초대받았어요`;
+    onlineFriendJoinTitleElement.textContent = `${seat.label} 초대장이 도착했어요`;
   }
 
   if (onlineFriendJoinTextElement) {
-    onlineFriendJoinTextElement.textContent = `${seat.description}예요. 처음 온 친구라면 먼저 닉네임, 나무 이름, 오늘의 마음을 정하고 이 자리에 들어가요.`;
+    onlineFriendJoinTextElement.textContent = `처음 온 친구라면 여기서 닉네임과 내 나무 이름만 정하면 돼요. 저장되면 초대한 사람의 ${seat.label}에 친구 나무가 들어가요.`;
   }
 
   if (onlineFriendTreeInputElement && !onlineFriendTreeInputElement.value) {

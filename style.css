@@ -11697,3 +11697,73 @@ h1,
   border-color: rgba(244, 127, 166, 0.58);
   box-shadow: 0 0 0 4px rgba(244, 127, 166, 0.12);
 }
+
+
+/* V1.51.2 test · 초대받은 친구 시작 카드 상단 고정 */
+body.online-friend-invite-mode {
+  background: linear-gradient(180deg, #fff7fb 0%, #f3fff8 46%, #e7f7ee 100%);
+}
+
+body.online-friend-invite-mode .world-hero {
+  margin-bottom: 10px;
+}
+
+body.online-friend-invite-mode .world-hero .subtitle {
+  font-weight: 850;
+}
+
+body.online-friend-invite-mode #onlineFriendJoinCard {
+  display: block;
+  margin: 0 0 14px;
+  padding: 18px;
+  border: 2px solid rgba(244, 127, 166, 0.42);
+  background:
+    radial-gradient(circle at 12% 14%, rgba(255, 206, 225, 0.55), transparent 34%),
+    radial-gradient(circle at 88% 0%, rgba(187, 238, 204, 0.5), transparent 32%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 248, 252, 0.98)) !important;
+  box-shadow: 0 20px 48px rgba(201, 103, 141, 0.18), 0 0 0 8px rgba(255, 255, 255, 0.56);
+}
+
+body.online-friend-invite-mode #onlineFriendJoinCard::before {
+  content: "초대 링크로 들어왔어요";
+  display: inline-flex;
+  margin-bottom: 8px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(255, 227, 238, 0.96);
+  color: #c9577e;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+body.online-friend-invite-mode .online-friend-join-title {
+  color: #b84f75;
+  font-size: 20px;
+}
+
+body.online-friend-invite-mode .online-friend-join-text {
+  font-size: 14.5px;
+}
+
+body.online-friend-invite-mode .world-card {
+  margin-top: 10px;
+}
+
+body.online-friend-invite-mode .world-summary {
+  border-color: rgba(244, 127, 166, 0.24);
+}
+
+body.online-friend-invite-mode #friendInviteCard {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  body.online-friend-invite-mode #onlineFriendJoinCard {
+    padding: 16px;
+    border-radius: 22px;
+  }
+
+  body.online-friend-invite-mode .online-friend-join-title {
+    font-size: 18px;
+  }
+}
