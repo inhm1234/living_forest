@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.52 test
+// 살아있는 숲 V1.53 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.52 test
-// 목적: 친구 자리 비우기 1차 — 저장된 온라인 친구 자리를 안전하게 비우는 관리 흐름 추가
+// 버전명: V1.53 test
+// 목적: 기존 나무로 자리 들어가기 — 이미 나무가 있는 친구는 새로 만들지 않고 기존 나무로 초대 자리에 참여
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.52 test",
+  version: "V1.53 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -679,6 +679,10 @@ const onlineFriendNameInputElement = document.querySelector("#onlineFriendNameIn
 const onlineFriendTreeInputElement = document.querySelector("#onlineFriendTreeInput");
 const onlineFriendMoodSelectElement = document.querySelector("#onlineFriendMoodSelect");
 const onlineFriendJoinMessageElement = document.querySelector("#onlineFriendJoinMessage");
+const onlineFriendExistingPanelElement = document.querySelector("#onlineFriendExistingPanel");
+const onlineFriendExistingSummaryElement = document.querySelector("#onlineFriendExistingSummary");
+const onlineFriendUseExistingBtnElement = document.querySelector("#onlineFriendUseExistingBtn");
+const onlineFriendNewTreeToggleBtnElement = document.querySelector("#onlineFriendNewTreeToggleBtn");
 const worldStarterFriendsElement = document.querySelector("#worldStarterFriends");
 const firstVisitGuideElement = document.querySelector("#firstVisitGuide");
 const forestInviteCardElement = document.querySelector("#forestInviteCard");
@@ -3235,6 +3239,126 @@ function focusOnlineFriendJoinCardOnce() {
   }, 260);
 }
 
+
+function hasExistingLocalTreeForOnlineInvite() {
+  return Boolean(treeData.treeName?.trim()) || (Array.isArray(treeData.history) && treeData.history.length > 0);
+}
+
+function getExistingInviteTreeName() {
+  return sanitizeOnlineText(treeData.treeName?.trim(), 16) || "이름 없는 나무";
+}
+
+function guessFriendNameFromExistingTree() {
+  const treeName = getExistingInviteTreeName();
+  const guessed = treeName
+    .replace(/의\s*나무$/u, "")
+    .replace(/나무$/u, "")
+    .replace(/숲$/u, "")
+    .trim();
+
+  return sanitizeOnlineText(guessed || treeName || "친구", 12) || "친구";
+}
+
+function getExistingInviteSummaryText() {
+  const treeName = getExistingInviteTreeName();
+  const days = Array.isArray(treeData.history) ? treeData.history.length : 0;
+  const stageLabel = getTreeImageInfo().label || "새싹";
+  const latestRecord = treeData.history?.[0];
+  const moodText = latestRecord?.label ? ` · 최근 마음 ${latestRecord.label}` : "";
+
+  return `${treeName} · ${days}일째 · ${stageLabel}${moodText}`;
+}
+
+function setOnlineFriendJoinMessage(text, status = "") {
+  if (!onlineFriendJoinMessageElement) return;
+  onlineFriendJoinMessageElement.textContent = text;
+  onlineFriendJoinMessageElement.classList.remove("join-success", "join-error");
+  if (status === "success") {
+    onlineFriendJoinMessageElement.classList.add("join-success");
+  } else if (status === "error") {
+    onlineFriendJoinMessageElement.classList.add("join-error");
+  }
+}
+
+async function saveOnlineFriendSeatJoin({ forestId, seat, friendName, treeName, source }) {
+  const snapshot = getLocalOnlineTreeSnapshot();
+
+  setOnlineFriendJoinMessage("온라인 친구 자리 저장소에 기록하는 중이에요...");
+
+  const result = await requestOnlineForestStorage("join_friend_seat", {
+    forest_id: forestId,
+    seat_id: seat.id,
+    seat_label: seat.label,
+    friend_id: getOrCreateOnlineFriendId(),
+    friend_name: friendName,
+    tree_name: treeName,
+    growth_days: snapshot.days,
+    tree_stage: snapshot.treeStage,
+    mood_label: snapshot.moodLabel,
+    source,
+  });
+
+  if (!result || result.ok === false) {
+    throw new Error(result?.error || "save_failed");
+  }
+
+  setOnlineFriendJoinMessage(`${seat.label}에 ${friendName}님의 나무를 저장했어요. 초대한 사람이 숲을 새로고침하면 이 자리가 채워져 보여요.`, "success");
+
+  trackForestEvent("online_friend_seat_joined", { seat_id: seat.id, source });
+  return result;
+}
+
+async function joinOnlineInviteWithExistingTree() {
+  if (!isOnlineFriendInviteVisit()) return;
+
+  if (!hasExistingLocalTreeForOnlineInvite()) {
+    setOnlineFriendJoinMessage("이 브라우저에는 아직 기존 나무가 없어요. 아래에서 새 나무를 만들어 주세요.", "error");
+    if (onlineFriendJoinFormElement) {
+      onlineFriendJoinFormElement.classList.remove("is-secondary-new-tree");
+      onlineFriendJoinFormElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    return;
+  }
+
+  const forestId = getOnlineInviteForestId();
+  const seat = getFriendInviteSeatById(getOnlineInviteSeatId());
+  const treeName = getExistingInviteTreeName();
+  const friendName = guessFriendNameFromExistingTree();
+
+  if (onlineFriendUseExistingBtnElement) {
+    onlineFriendUseExistingBtnElement.disabled = true;
+    onlineFriendUseExistingBtnElement.textContent = "기존 나무 저장 중...";
+  }
+
+  try {
+    await saveOnlineFriendSeatJoin({
+      forestId,
+      seat,
+      friendName,
+      treeName,
+      source: "friend_invite_existing_tree",
+    });
+
+    if (onlineFriendUseExistingBtnElement) {
+      onlineFriendUseExistingBtnElement.textContent = "기존 나무로 들어갔어요";
+    }
+  } catch (error) {
+    setOnlineFriendJoinMessage(`저장에 실패했어요. Apps Script 배포와 권한을 확인해 주세요. (${error?.message || "unknown"})`, "error");
+    if (onlineFriendUseExistingBtnElement) {
+      onlineFriendUseExistingBtnElement.disabled = false;
+      onlineFriendUseExistingBtnElement.textContent = "기존 내 나무로 이 자리에 들어가기";
+    }
+  }
+}
+
+function revealNewTreeJoinForm() {
+  if (onlineFriendJoinFormElement) {
+    onlineFriendJoinFormElement.classList.remove("is-secondary-new-tree");
+    onlineFriendJoinFormElement.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  setOnlineFriendJoinMessage("새 나무로 시작하려면 닉네임과 나무 이름을 적고 버튼을 눌러주세요.");
+}
+
 function renderOnlineFriendJoinCard() {
   if (!onlineFriendJoinCardElement) {
     syncOnlineFriendInviteMode(false);
@@ -3252,20 +3376,44 @@ function renderOnlineFriendJoinCard() {
   onlineFriendJoinCardElement.classList.remove("hidden");
   focusOnlineFriendJoinCardOnce();
 
+  const hasExistingTree = hasExistingLocalTreeForOnlineInvite();
+
   if (onlineFriendJoinTitleElement) {
     onlineFriendJoinTitleElement.textContent = `${seat.label} 초대장이 도착했어요`;
   }
 
   if (onlineFriendJoinTextElement) {
-    onlineFriendJoinTextElement.textContent = `처음 온 친구라면 여기서 닉네임과 내 나무 이름만 정하면 돼요. 저장되면 초대한 사람의 ${seat.label}에 친구 나무가 들어가요.`;
+    onlineFriendJoinTextElement.textContent = hasExistingTree
+      ? `이 브라우저에 이미 내 나무가 있어요. 새로 만들지 않고 기존 나무로 초대한 사람의 ${seat.label}에 들어갈 수 있어요.`
+      : `처음 온 친구라면 여기서 닉네임과 내 나무 이름만 정하면 돼요. 저장되면 초대한 사람의 ${seat.label}에 친구 나무가 들어가요.`;
   }
 
-  if (onlineFriendTreeInputElement && !onlineFriendTreeInputElement.value) {
-    onlineFriendTreeInputElement.value = treeData.treeName?.trim() || "";
+  if (onlineFriendExistingPanelElement) {
+    onlineFriendExistingPanelElement.classList.toggle("hidden", !hasExistingTree);
+  }
+
+  if (onlineFriendExistingSummaryElement) {
+    onlineFriendExistingSummaryElement.textContent = hasExistingTree
+      ? getExistingInviteSummaryText()
+      : "이 브라우저에는 아직 저장된 내 나무가 없어요.";
+  }
+
+  if (onlineFriendJoinFormElement) {
+    onlineFriendJoinFormElement.classList.toggle("is-secondary-new-tree", hasExistingTree);
+  }
+
+  if (onlineFriendTreeInputElement && !onlineFriendTreeInputElement.value && !hasExistingTree) {
+    onlineFriendTreeInputElement.value = "";
+  }
+
+  if (onlineFriendNameInputElement && !onlineFriendNameInputElement.value && hasExistingTree) {
+    onlineFriendNameInputElement.value = guessFriendNameFromExistingTree();
   }
 
   if (onlineFriendJoinMessageElement) {
-    onlineFriendJoinMessageElement.textContent = "이 버튼을 누르면 내 나무가 만들어지고, 초대한 사람의 친구 자리에 저장돼요.";
+    onlineFriendJoinMessageElement.textContent = hasExistingTree
+      ? "기존 내 나무로 들어가면 새 나무를 만들지 않고 현재 나무 상태가 친구 자리에 저장돼요."
+      : "이 버튼을 누르면 내 나무가 만들어지고, 초대한 사람의 친구 자리에 저장돼요.";
     onlineFriendJoinMessageElement.classList.remove("join-success", "join-error");
   }
 }
@@ -3309,51 +3457,23 @@ async function handleOnlineFriendJoin(event) {
   const selectedMood = moodRules[onlineFriendMoodSelectElement?.value] ? onlineFriendMoodSelectElement.value : "normal";
 
   if (!friendName) {
-    if (onlineFriendJoinMessageElement) {
-      onlineFriendJoinMessageElement.textContent = "친구 닉네임을 먼저 적어주세요.";
-      onlineFriendJoinMessageElement.classList.add("join-error");
-    }
+    setOnlineFriendJoinMessage("친구 닉네임을 먼저 적어주세요.", "error");
     return;
   }
 
   ensureFirstTreeForOnlineInvite(treeName, selectedMood);
-  const snapshot = getLocalOnlineTreeSnapshot();
   renderAll();
 
-  if (onlineFriendJoinMessageElement) {
-    onlineFriendJoinMessageElement.textContent = "온라인 친구 자리 저장소에 기록하는 중이에요...";
-    onlineFriendJoinMessageElement.classList.remove("join-error", "join-success");
-  }
-
   try {
-    const result = await requestOnlineForestStorage("join_friend_seat", {
-      forest_id: forestId,
-      seat_id: seat.id,
-      seat_label: seat.label,
-      friend_id: getOrCreateOnlineFriendId(),
-      friend_name: friendName,
-      tree_name: treeName,
-      growth_days: snapshot.days,
-      tree_stage: snapshot.treeStage,
-      mood_label: snapshot.moodLabel,
-      source: "friend_invite_link",
+    await saveOnlineFriendSeatJoin({
+      forestId,
+      seat,
+      friendName,
+      treeName,
+      source: "friend_invite_new_tree",
     });
-
-    if (!result || result.ok === false) {
-      throw new Error(result?.error || "save_failed");
-    }
-
-    if (onlineFriendJoinMessageElement) {
-      onlineFriendJoinMessageElement.textContent = `${seat.label}에 ${friendName}님의 나무를 저장했어요. 초대한 사람이 숲을 새로고침하면 이 자리가 채워져 보여요.`;
-      onlineFriendJoinMessageElement.classList.add("join-success");
-    }
-
-    trackForestEvent("online_friend_seat_joined", { seat_id: seat.id, source: "invite_link" });
   } catch (error) {
-    if (onlineFriendJoinMessageElement) {
-      onlineFriendJoinMessageElement.textContent = `저장에 실패했어요. Apps Script 배포와 권한을 확인해 주세요. (${error?.message || "unknown"})`;
-      onlineFriendJoinMessageElement.classList.add("join-error");
-    }
+    setOnlineFriendJoinMessage(`저장에 실패했어요. Apps Script 배포와 권한을 확인해 주세요. (${error?.message || "unknown"})`, "error");
   }
 }
 
@@ -6009,6 +6129,14 @@ if (clearFriendSeatBtnElement) {
   clearFriendSeatBtnElement.addEventListener("click", clearSelectedFriendSeat);
 }
 
+
+if (onlineFriendUseExistingBtnElement) {
+  onlineFriendUseExistingBtnElement.addEventListener("click", joinOnlineInviteWithExistingTree);
+}
+
+if (onlineFriendNewTreeToggleBtnElement) {
+  onlineFriendNewTreeToggleBtnElement.addEventListener("click", revealNewTreeJoinForm);
+}
 
 if (onlineFriendJoinFormElement) {
   onlineFriendJoinFormElement.addEventListener("submit", handleOnlineFriendJoin);

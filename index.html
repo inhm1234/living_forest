@@ -35,7 +35,7 @@
 
   <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.52-test" />
+  <link rel="stylesheet" href="style.css?v=1.53-test" />
 <!-- Google tag (gtag.js) - Living Forest GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-YC872G7MH1"></script>
 <script>
@@ -56,10 +56,10 @@
   <main class="app">
     <section id="worldScreen" class="screen screen-active">
       <header class="hero world-hero">
-        <p class="version">살아있는 숲 V1.52 test · 친구 자리 비우기 1차</p>
+        <p class="version">살아있는 숲 V1.53 test · 기존 나무로 자리 들어가기</p>
         <h1>살아있는 숲</h1>
         <p class="subtitle">내 나무를 키우고, 친구들과 함께 숲을 채워가요.</p>
-        <p class="demo-pill">V1.52 test · 친구 자리 비우기 1차</p>
+        <p class="demo-pill">V1.53 test · 기존 나무로 자리 들어가기</p>
       </header>
 
       <section class="world-card visual-card">
@@ -139,9 +139,19 @@
         <div id="onlineFriendJoinCard" class="online-friend-join-card glass-panel hidden" aria-live="polite">
           <span class="online-friend-join-kicker">온라인 친구 자리 초대</span>
           <p id="onlineFriendJoinTitle" class="online-friend-join-title">친구의 숲 자리에 초대받았어요</p>
-          <p id="onlineFriendJoinText" class="online-friend-join-text">처음 온 친구라면 먼저 내 나무를 만들고, 그다음 초대받은 자리에 들어가요.</p>
+          <p id="onlineFriendJoinText" class="online-friend-join-text">이미 내 나무가 있다면 새로 만들지 않고 기존 나무로 바로 들어갈 수 있어요.</p>
+
+          <div id="onlineFriendExistingPanel" class="online-friend-existing-panel hidden">
+            <span class="online-friend-existing-kicker">이미 내 나무가 있어요</span>
+            <p id="onlineFriendExistingSummary" class="online-friend-existing-summary">이 브라우저에 저장된 내 나무를 찾고 있어요.</p>
+            <div class="online-friend-existing-actions">
+              <button id="onlineFriendUseExistingBtn" class="primary-btn" type="button">기존 내 나무로 이 자리에 들어가기</button>
+              <button id="onlineFriendNewTreeToggleBtn" class="ghost-btn" type="button">새 나무로 시작할래요</button>
+            </div>
+          </div>
+
           <ol class="online-friend-join-steps" aria-label="처음 온 친구 시작 순서">
-            <li>닉네임을 적어요.</li>
+            <li>처음이면 닉네임을 적어요.</li>
             <li>내 나무 이름을 정해요.</li>
             <li>오늘의 마음을 하나 고르면 초대받은 자리에 저장돼요.</li>
           </ol>
@@ -162,7 +172,7 @@
                 <option value="tired">피곤</option>
               </select>
             </label>
-            <button id="onlineFriendJoinBtn" class="primary-btn" type="submit">내 나무 만들고 이 자리에 들어가기</button>
+            <button id="onlineFriendJoinBtn" class="primary-btn" type="submit">새 나무 만들고 이 자리에 들어가기</button>
           </form>
           <p id="onlineFriendJoinMessage" class="online-friend-join-message">초대 링크로 들어온 친구만 이 카드가 보여요.</p>
         </div>
@@ -236,7 +246,7 @@
     <section id="gardenScreen" class="screen">
       <header class="hero garden-hero">
         <button id="backToWorldBtnTop" class="ghost-btn small-btn" type="button">← 전체 숲</button>
-        <p class="version">오늘 내 나무 돌보기 · V1.52 test</p>
+        <p class="version">오늘 내 나무 돌보기 · V1.53 test</p>
         <h2 id="gardenTitle" class="garden-title">밤 숲속 자리</h2>
         <p class="subtitle">오늘의 마음이 내 나무와 친구 숲에 귀여운 흔적으로 남아요.</p>
       </header>
@@ -579,7 +589,7 @@
     </div>
 
     <p class="test-storage-line">저장키: <span id="testModeStorageKey">livingForestV012_TEST</span></p>
-    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.52 test · 친구 자리 비우기 1차</span></p>
+    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.53 test · 기존 나무로 자리 들어가기</span></p>
 
     <div class="test-preset-buttons">
       <button type="button" data-test-preset="first">첫 방문자</button>
@@ -602,6 +612,6 @@
 
 
   <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.1/kakao.min.js"></script>
-  <script src="app.js?v=1.52-test"></script>
+  <script src="app.js?v=1.53-test"></script>
 </body>
 </html>

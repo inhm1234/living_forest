@@ -11804,3 +11804,73 @@ body.online-friend-invite-mode #friendInviteCard {
 .friend-seat-options button.seat-filled strong {
   color: #47745a !important;
 }
+
+
+/* V1.53 test · 기존 나무로 초대 자리 들어가기 */
+.online-friend-existing-panel {
+  margin: 14px 0 12px;
+  padding: 14px;
+  border: 1px solid rgba(244, 127, 166, 0.22);
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg, rgba(255, 248, 251, 0.92), rgba(238, 255, 247, 0.86));
+  box-shadow: 0 12px 30px rgba(126, 83, 111, 0.08);
+}
+
+.online-friend-existing-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #d85b91;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.online-friend-existing-kicker::before {
+  content: "🌳";
+}
+
+.online-friend-existing-summary {
+  margin: 6px 0 12px;
+  color: #6d5561;
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.online-friend-existing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.online-friend-join-form.is-secondary-new-tree {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(216, 91, 145, 0.22);
+  opacity: 0.84;
+}
+
+.online-friend-join-form.is-secondary-new-tree::before {
+  content: "처음이거나 새 나무로 시작하고 싶다면 아래를 적어주세요.";
+  display: block;
+  grid-column: 1 / -1;
+  margin-bottom: 2px;
+  color: #9b6c7d;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+@media (max-width: 620px) {
+  .online-friend-existing-actions {
+    flex-direction: column;
+  }
+
+  .online-friend-existing-actions .primary-btn,
+  .online-friend-existing-actions .ghost-btn {
+    width: 100%;
+  }
+}
