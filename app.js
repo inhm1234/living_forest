@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.51.2 test
+// 살아있는 숲 V1.52 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.51.2 test
-// 목적: 초대받은 친구 시작 카드 상단 고정 — 초대 링크로 들어온 친구가 바로 닉네임/나무 만들기 카드를 보도록 함
+// 버전명: V1.52 test
+// 목적: 친구 자리 비우기 1차 — 저장된 온라인 친구 자리를 안전하게 비우는 관리 흐름 추가
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.51.2 test",
+  version: "V1.52 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -668,6 +668,7 @@ const friendInviteMetaElement = document.querySelector("#friendInviteMeta");
 const kakaoFriendInviteBtnElement = document.querySelector("#kakaoFriendInviteBtn");
 const copyFriendInviteBtnElement = document.querySelector("#copyFriendInviteBtn");
 const previewFriendInviteBtnElement = document.querySelector("#previewFriendInviteBtn");
+const clearFriendSeatBtnElement = document.querySelector("#clearFriendSeatBtn");
 const friendSeatOptionsElement = document.querySelector("#friendSeatOptions");
 const selectedFriendSeatTextElement = document.querySelector("#selectedFriendSeatText");
 const onlineFriendJoinCardElement = document.querySelector("#onlineFriendJoinCard");
@@ -3034,6 +3035,10 @@ function getOnlineSeatRecord(seatId) {
   return onlineFriendSeats && onlineFriendSeats[seatId] ? onlineFriendSeats[seatId] : null;
 }
 
+function getSelectedFriendSeatRecord() {
+  return getOnlineSeatRecord(getSelectedFriendInviteSeat().id);
+}
+
 function requestOnlineForestStorage(action, params = {}) {
   return new Promise((resolve, reject) => {
     if (!ADMIN_TRACKING_CONFIG.endpointUrl) {
@@ -3116,6 +3121,27 @@ function getOnlineSeatDisplayText(seat) {
   };
 }
 
+function syncClearFriendSeatButton() {
+  if (!clearFriendSeatBtnElement) {
+    return;
+  }
+
+  const seat = getSelectedFriendInviteSeat();
+  const record = getOnlineSeatRecord(seat.id);
+  const friendName = record
+    ? sanitizeOnlineText(record.friendName || record.friend_name || "친구", 12) || "친구"
+    : "";
+
+  clearFriendSeatBtnElement.disabled = !record;
+  clearFriendSeatBtnElement.textContent = record
+    ? `${seat.label} 비우기`
+    : "선택한 자리 비우기";
+  clearFriendSeatBtnElement.setAttribute(
+    "aria-label",
+    record ? `${seat.label}에 저장된 ${friendName}님 자리를 비우기` : `${seat.label}은 아직 비어 있어요`
+  );
+}
+
 function syncOnlineFriendSeatDisplays() {
   friendInviteSeatSlots.forEach((seat) => {
     const display = getOnlineSeatDisplayText(seat);
@@ -3136,6 +3162,8 @@ function syncOnlineFriendSeatDisplays() {
       button.classList.toggle("seat-filled", display.filled);
     });
   });
+
+  syncClearFriendSeatButton();
 
   if (friendForestMetaElement) {
     const filledCount = Object.keys(onlineFriendSeats || {}).length;
@@ -3360,6 +3388,7 @@ function syncFriendInviteSeatSelection() {
 function selectFriendInviteSeat(seatId, source = "option") {
   selectedFriendInviteSeatId = getFriendInviteSeatById(seatId).id;
   syncFriendInviteSeatSelection();
+  syncClearFriendSeatButton();
   renderFriendInviteCard(true);
 
   if (friendInvitePreviewElement) {
@@ -3480,14 +3509,24 @@ function renderFriendInviteCard(messageOnly = false) {
   const seat = getSelectedFriendInviteSeat();
   const message = getFriendInviteMessage();
 
+  const existingRecord = getOnlineSeatRecord(seat.id);
+  const existingFriendName = existingRecord
+    ? sanitizeOnlineText(existingRecord.friendName || existingRecord.friend_name || "친구", 12) || "친구"
+    : "";
+  const existingTreeName = existingRecord
+    ? sanitizeOnlineText(existingRecord.treeName || existingRecord.tree_name || "친구 나무", 16) || "친구 나무"
+    : "";
+
   if (friendInviteTitleElement) {
-    friendInviteTitleElement.textContent = days === 0
-      ? `${seat.label}에 첫 친구를 초대할 수 있어요`
-      : `${seat.label}에 친구를 초대할 수 있어요`;
+    friendInviteTitleElement.textContent = existingRecord
+      ? `${seat.label}에 ${existingFriendName}님의 나무가 있어요`
+      : (days === 0 ? `${seat.label}에 첫 친구를 초대할 수 있어요` : `${seat.label}에 친구를 초대할 수 있어요`);
   }
 
   if (friendInviteTextElement) {
-    friendInviteTextElement.textContent = `${seat.description}예요. 카카오톡으로 이 자리 전용 초대장을 바로 보낼 수 있어요. 나중에는 ${seat.label} · 친구 닉네임 형태로 이어질 수 있어요.`;
+    friendInviteTextElement.textContent = existingRecord
+      ? `${existingTreeName}가 이 자리에 저장되어 있어요. 필요하면 이 자리를 비우고 다른 친구를 다시 초대할 수 있어요.`
+      : `${seat.description}예요. 카카오톡으로 이 자리 전용 초대장을 바로 보낼 수 있어요. 나중에는 ${seat.label} · 친구 닉네임 형태로 이어질 수 있어요.`;
   }
 
   syncFriendInviteSeatSelection();
@@ -3498,12 +3537,81 @@ function renderFriendInviteCard(messageOnly = false) {
   }
 
   if (friendInviteMetaElement) {
-    friendInviteMetaElement.textContent = `현재 선택: ${seat.label} · ${seat.mark}. 카카오톡 카드가 안 열리면 직접 초대 링크를 보내면 돼요.`;
+    friendInviteMetaElement.textContent = existingRecord
+      ? `현재 선택: ${seat.label}. 자리 비우기는 친구 데이터를 완전히 지우는 대신 숨김 처리해요.`
+      : `현재 선택: ${seat.label} · ${seat.mark}. 카카오톡 카드가 안 열리면 직접 초대 링크를 보내면 돼요.`;
   }
 
+  syncClearFriendSeatButton();
   updateFriendInviteLinkText();
 
   return message;
+}
+
+async function clearSelectedFriendSeat() {
+  const seat = getSelectedFriendInviteSeat();
+  const record = getOnlineSeatRecord(seat.id);
+
+  if (!record) {
+    if (friendInvitePreviewElement) {
+      friendInvitePreviewElement.textContent = `${seat.label}은 아직 비어 있어요. 비울 친구 자리가 없어요.`;
+      friendInvitePreviewElement.classList.add("friend-invite-preview-ready");
+    }
+    syncClearFriendSeatButton();
+    return;
+  }
+
+  const friendName = sanitizeOnlineText(record.friendName || record.friend_name || "친구", 12) || "친구";
+  const ok = window.confirm(`${seat.label}에 저장된 ${friendName}님 자리를 비울까요?`);
+
+  if (!ok) {
+    return;
+  }
+
+  if (clearFriendSeatBtnElement) {
+    clearFriendSeatBtnElement.disabled = true;
+    clearFriendSeatBtnElement.textContent = "비우는 중...";
+  }
+
+  if (friendInvitePreviewElement) {
+    friendInvitePreviewElement.textContent = `${seat.label}의 친구 자리를 비우는 중이에요...`;
+    friendInvitePreviewElement.classList.add("friend-invite-preview-ready");
+  }
+
+  try {
+    const result = await requestOnlineForestStorage("delete_friend_seat", {
+      forest_id: getOrCreateOnlineForestId(),
+      seat_id: seat.id,
+      source: "owner_clear_seat",
+    });
+
+    if (!result || result.ok === false) {
+      throw new Error(result?.error || "delete_failed");
+    }
+
+    delete onlineFriendSeats[seat.id];
+    onlineFriendLoadState = "loaded";
+    syncOnlineFriendSeatDisplays();
+    renderFriendInviteCard(true);
+
+    if (friendInvitePreviewElement) {
+      friendInvitePreviewElement.textContent = `${seat.label}을 비웠어요. 이제 이 자리에 새 친구를 다시 초대할 수 있어요.`;
+      friendInvitePreviewElement.classList.add("friend-invite-preview-ready");
+    }
+
+    trackForestEvent("online_friend_seat_deleted", {
+      seat_id: seat.id,
+      friend_id: record.friendId || record.friend_id || "",
+      source: "owner_clear_seat",
+    });
+  } catch (error) {
+    if (friendInvitePreviewElement) {
+      friendInvitePreviewElement.textContent = `자리를 비우지 못했어요. Apps Script 배포 상태를 확인해 주세요. (${error?.message || "unknown"})`;
+      friendInvitePreviewElement.classList.add("friend-invite-preview-ready");
+    }
+  }
+
+  syncClearFriendSeatButton();
 }
 
 function showFriendInvitePreview() {
@@ -5895,6 +6003,10 @@ if (copyFriendInviteBtnElement) {
 
 if (previewFriendInviteBtnElement) {
   previewFriendInviteBtnElement.addEventListener("click", showFriendInvitePreview);
+}
+
+if (clearFriendSeatBtnElement) {
+  clearFriendSeatBtnElement.addEventListener("click", clearSelectedFriendSeat);
 }
 
 

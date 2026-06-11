@@ -11767,3 +11767,40 @@ body.online-friend-invite-mode #friendInviteCard {
     font-size: 18px;
   }
 }
+
+
+/* V1.52 test · 친구 자리 비우기 1차 */
+.clear-friend-seat-btn {
+  border-color: rgba(180, 122, 146, 0.24) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: #8c5b6f !important;
+}
+
+.clear-friend-seat-btn:not(:disabled) {
+  border-color: rgba(216, 102, 142, 0.42) !important;
+  background: rgba(255, 245, 249, 0.95) !important;
+  color: #a64f73 !important;
+}
+
+.clear-friend-seat-btn:not(:disabled):hover,
+.clear-friend-seat-btn:not(:disabled):focus-visible {
+  background: rgba(255, 236, 244, 0.98) !important;
+  box-shadow: 0 10px 22px rgba(216, 102, 142, 0.14) !important;
+}
+
+.clear-friend-seat-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.starter-friend.seat-filled,
+.friend-seat-options button.seat-filled {
+  border-color: rgba(110, 194, 145, 0.5) !important;
+  background: rgba(240, 255, 246, 0.94) !important;
+  color: #537761 !important;
+}
+
+.starter-friend.seat-filled b,
+.friend-seat-options button.seat-filled strong {
+  color: #47745a !important;
+}

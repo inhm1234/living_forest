@@ -1,0 +1,16 @@
+살아있는 숲 V1.52 test — 친구 자리 비우기 1차
+
+목적:
+- 테스트친구처럼 저장된 친구 자리를 쉽게 비우고 다시 테스트할 수 있게 합니다.
+
+이번에 한 것:
+- 친구 초대 카드에 “선택한 자리 비우기” 버튼 추가
+- 저장된 친구 자리를 선택했을 때만 비우기 버튼 활성화
+- Apps Script에 delete_friend_seat 액션 추가
+- friend_seats 행을 삭제하지 않고 status=deleted로 변경
+- list_friend_seats는 deleted 상태를 숨김 처리
+- 같은 자리에 새 친구가 다시 들어오면 active로 복구 가능
+
+주의:
+- 이 버전은 GitHub 업로드만으로 끝나지 않습니다.
+- APPS_SCRIPT_CODE.txt를 Apps Script에 붙여넣고 새 버전 배포해야 자리 비우기가 작동합니다.

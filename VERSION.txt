@@ -1,12 +1,13 @@
-살아있는 숲 V1.51.2 test
+살아있는 숲 V1.52 test
 
-기준 버전: V1.51.1 test
-작업 내용: 초대받은 친구 시작 카드 상단 고정
+기준 버전: V1.51.2 test
+작업 내용: 친구 자리 비우기 1차
 관리자 페이지: admin.html
 임시 비밀번호: forest2026
 
 변경 요약:
-- 버전 V1.51.2 test 반영
-- 초대 링크 진입 시 온라인 친구 시작 카드를 화면 상단으로 이동
-- 자동 스크롤 보정
-- forest + seat 파라미터만 있어도 친구 초대로 인식
+- 선택한 온라인 친구 자리 비우기 버튼 추가
+- Apps Script delete_friend_seat 액션 추가
+- friend_seats status=deleted 처리
+- deleted 친구 자리는 내 숲에서 숨김 처리
+- 같은 자리에 새 친구 재초대 가능
