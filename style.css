@@ -10753,3 +10753,36 @@ h1,
 .neighbor-tree-image {
   filter: drop-shadow(0 10px 12px rgba(91, 58, 50, 0.18));
 }
+
+
+/* V1.46 test · 방문자/꾸미기 요소 1차 */
+.bird { left: 60%; top: 126px; width: 82px; height: 78px; }
+.squirrel { left: 57%; bottom: 104px; width: 88px; height: 72px; }
+.creature.active { opacity: 0.94; transform: scale(1.02); }
+.creature img { filter: drop-shadow(0 10px 14px rgba(255, 220, 240, 0.18)); }
+.world-life-bird { width: 62px; height: 52px; }
+.world-life-squirrel { width: 60px; height: 54px; }
+
+.garden-marker-actions { grid-template-columns: repeat(2, 1fr); }
+.garden-marker-actions button { min-height: 110px; padding: 10px 8px; color: #7a5366 !important; }
+.garden-marker-actions button img { display: block; width: 68px; height: 68px; margin: 0 auto 6px; object-fit: contain; filter: drop-shadow(0 8px 14px rgba(226, 162, 196, 0.18)); }
+.garden-marker-actions button strong { display: block; font-size: 13px; line-height: 1.25; }
+.garden-marker-actions button span { display: none; }
+
+.garden-marker-layer { left: calc(50% - 122px); bottom: 108px; width: 132px; height: 108px; }
+.garden-marker-ground { width: 100px; height: 28px; background: radial-gradient(ellipse, rgba(255, 232, 171, 0.26), rgba(243, 191, 212, 0.18) 48%, transparent 74%); }
+.garden-marker-item { width: 104px; height: 96px; bottom: 8px; background: none; border-radius: 0; text-shadow: none; animation: gardenMarkerBreath 5s ease-in-out infinite; }
+.garden-marker-image { display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 12px 16px rgba(222, 166, 197, 0.22)); }
+.garden-marker-ribbon .garden-marker-image { transform: rotate(-4deg); }
+.garden-marker-garland .garden-marker-image { transform: scale(0.98); }
+.garden-marker-lantern .garden-marker-image { transform: scale(0.98); }
+.garden-marker-picnic .garden-marker-image { transform: scale(1.02); }
+
+@media (max-width: 560px) {
+  .bird { top: 142px; width: 68px; height: 64px; }
+  .squirrel { bottom: 146px; width: 74px; height: 60px; }
+  .garden-marker-actions button { min-height: 96px; }
+  .garden-marker-actions button img { width: 56px; height: 56px; }
+  .garden-marker-layer { left: calc(50% - 92px); bottom: 138px; width: 104px; height: 88px; }
+  .garden-marker-item { width: 88px; height: 80px; }
+}

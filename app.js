@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.44 test
+// 살아있는 숲 V1.46 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.44 test
+// 버전명: V1.46 test
 // 목적: 메인 나무 성장 이미지 v2 적용 — 귀여운 웹툰풍 친구 숲으로 첫 화면 전환
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.44 test",
+  version: "V1.46 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -434,26 +434,33 @@ const treeCareRules = {
 
 
 const gardenMarkerRules = {
-  wildflower: {
-    label: "들꽃",
-    icon: "🌼",
-    title: "들꽃이 핀 자리",
-    message: "내 나무 곁에 작은 들꽃을 놓았어요. 오늘의 숲이 조금 더 부드럽게 느껴져요.",
-    className: "garden-marker-wildflower"
+  ribbon: {
+    label: "리본 장식",
+    title: "리본과 꽃 장식",
+    message: "내 나무 곁에 리본 장식을 놓았어요. 정원이 조금 더 사랑스럽고 반짝이는 자리로 느껴져요.",
+    className: "garden-marker-ribbon",
+    imageSrc: "assets/garden/deco-ribbon-star-v1.png"
   },
-  pebble: {
-    label: "조약돌",
-    icon: "🪨",
-    title: "조약돌 쉼터",
-    message: "내 나무 곁에 둥근 조약돌을 놓았어요. 마음이 잠시 앉아 쉴 수 있는 자리가 생겼어요.",
-    className: "garden-marker-pebble"
+  garland: {
+    label: "가랜드",
+    title: "꽃과 별 가랜드",
+    message: "내 나무 곁에 꽃과 별 가랜드를 놓았어요. 친구가 놀러오고 싶을 만큼 귀여운 분위기가 생겼어요.",
+    className: "garden-marker-garland",
+    imageSrc: "assets/garden/deco-garland-v1.png"
   },
   lantern: {
-    label: "작은 등불",
-    icon: "🕯️",
-    title: "작은 등불",
-    message: "내 나무 곁에 작은 등불을 밝혔어요. 어두운 날에도 숲의 자리가 조용히 보일 거예요.",
-    className: "garden-marker-lantern"
+    label: "꽃 랜턴",
+    title: "꽃 랜턴 장식",
+    message: "내 나무 곁에 꽃 랜턴을 밝혔어요. 저녁에도 정원이 포근하게 빛나는 느낌이 남아요.",
+    className: "garden-marker-lantern",
+    imageSrc: "assets/garden/deco-lantern-v1.png"
+  },
+  picnic: {
+    label: "소풍 세트",
+    title: "파스텔 소풍 세트",
+    message: "내 나무 곁에 소풍 세트를 펼쳐두었어요. 친구와 함께 놀러 온 것처럼 정원이 더 재미있는 공간이 되었어요.",
+    className: "garden-marker-picnic",
+    imageSrc: "assets/garden/deco-picnic-v1.png"
   }
 };
 
@@ -2662,11 +2669,11 @@ function createWorldLifeMarkup(type, index, seed) {
   const style = getWorldLifeStyle(`${seed}-${type}`, index, zone);
 
   if (type === "bird") {
-    return `<span class="world-life-item world-life-bird" style="${style}" aria-label="${labels[type]}"><img src="assets/garden/bird-silhouette.svg" alt="" /></span>`;
+    return `<span class="world-life-item world-life-bird" style="${style}" aria-label="${labels[type]}"><img src="assets/garden/bird-silhouette-v2.png" alt="" /></span>`;
   }
 
   if (type === "squirrel") {
-    return `<span class="world-life-item world-life-squirrel" style="${style}" aria-label="${labels[type]}"><img src="assets/garden/squirrel-silhouette.svg" alt="" /></span>`;
+    return `<span class="world-life-item world-life-squirrel" style="${style}" aria-label="${labels[type]}"><img src="assets/garden/squirrel-silhouette-v2.png" alt="" /></span>`;
   }
 
   const symbol = type === "butterfly" ? "✧" : type === "firefly" ? "•" : "✦";
@@ -3753,7 +3760,7 @@ function renderGardenMarkerLayer() {
   gardenMarkerLayerElement.className = `garden-marker-layer marker-active ${rule.className}`;
   gardenMarkerLayerElement.innerHTML = `
     <span class="garden-marker-ground" aria-hidden="true"></span>
-    <span class="garden-marker-item" aria-label="${rule.label}">${rule.icon}</span>
+    <span class="garden-marker-item" aria-label="${rule.label}"><img class="garden-marker-image" src="${rule.imageSrc}" alt="" /></span>
   `;
 }
 
@@ -3798,17 +3805,17 @@ gardenMarkerButtons.forEach((button) => {
   });
 
   if (rule) {
-    gardenMarkerTitleElement.textContent = `${rule.icon} ${rule.title}`;
+    gardenMarkerTitleElement.textContent = rule.title;
     gardenMarkerTextElement.textContent = rule.message;
     gardenMarkerMessageElement.textContent = "내 정원 무대에도 선택한 표식이 함께 보여요. 언제든 다른 표식으로 바꿀 수 있어요.";
     return;
   }
 
-  gardenMarkerTitleElement.textContent = "내 정원에 작은 표식을 놓아보세요";
+  gardenMarkerTitleElement.textContent = "내 정원에 귀여운 장식을 놓아보세요";
   gardenMarkerTextElement.textContent = hasRecord
-    ? "기록이 쌓인 정원에 들꽃, 조약돌, 작은 등불 중 하나를 놓아 내 자리의 분위기를 정할 수 있어요."
-    : "첫 기록 전에도 표식을 미리 정할 수 있어요. 내 나무가 자랄 자리의 분위기를 골라보세요.";
-  gardenMarkerMessageElement.textContent = "표식은 성장 수치가 아니라 내 정원을 구분하는 작은 개인화 요소예요.";
+    ? "기록이 쌓인 정원에 리본, 가랜드, 꽃 랜턴, 소풍 세트 중 하나를 놓아 내 자리의 분위기를 정할 수 있어요."
+    : "첫 기록 전에도 장식을 미리 정할 수 있어요. 내 나무가 자랄 자리의 분위기를 골라보세요.";
+  gardenMarkerMessageElement.textContent = "장식은 성장 수치가 아니라 내 정원을 구분하는 작은 개인화 요소예요.";
 }
 
 function chooseGardenMarker(marker) {
