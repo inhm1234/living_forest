@@ -1,11 +1,12 @@
-살아있는 숲 V1.46.1 test 패치 업로드 가이드
+살아있는 숲 V1.46.2 test 패치 업로드 가이드
 
 중요:
 - ZIP 파일 자체를 GitHub에 올리지 않습니다.
-- ZIP을 압축 해제한 뒤, 안의 파일/폴더만 GitHub 저장소에 덮어 업로드합니다.
-- 기존 이미지는 삭제하지 않습니다.
+- ZIP을 컴퓨터에서 먼저 압축 해제한 뒤, 안의 파일과 폴더만 저장소에 덮어 업로드합니다.
+- 기존 이미지 파일은 삭제하지 않습니다.
+- 이번 패치에는 캐시 문제를 피하기 위해 v3/v2 새 파일명이 들어 있습니다.
 
-이번 패치 주요 파일:
+이번 패치에 포함된 주요 파일:
 - index.html
 - style.css
 - app.js
@@ -13,14 +14,18 @@
 - VERSION.txt
 - LAUNCH_CHECKLIST.txt
 - UPLOAD_GUIDE.txt
+- CHANGES_V1.46.2_TEST.txt
 - PUBLIC_SHARE_COPY.txt
-- CHANGES_V1.46.1_TEST.txt
-- assets/garden/garden-inner-day-v2.png
-- assets/garden/garden-inner-sunset-v2.png
-- assets/garden/garden-inner-night-v2.png
-- assets/garden/bird-silhouette-v2.png
-- assets/garden/squirrel-silhouette-v2.png
-- assets/garden/deco-ribbon-star-v1.png
-- assets/garden/deco-garland-v1.png
-- assets/garden/deco-lantern-v1.png
-- assets/garden/deco-picnic-v1.png
+- assets/garden/garden-inner-day-v3.png
+- assets/garden/garden-inner-sunset-v3.png
+- assets/garden/garden-inner-night-v3.png
+- assets/garden/bird-silhouette-v3.png
+- assets/garden/squirrel-silhouette-v3.png
+- assets/garden/deco-ribbon-star-v2.png
+- assets/garden/deco-garland-v2.png
+- assets/garden/deco-lantern-v2.png
+- assets/garden/deco-picnic-v2.png
+
+업로드 후 강력 새로고침:
+- Windows Chrome: Ctrl + F5
+- 또는 주소 뒤에 ?v=1462 를 붙여 확인

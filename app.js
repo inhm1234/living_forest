@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.46.1 test
+// 살아있는 숲 V1.46.2 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.46.1 test
+// 버전명: V1.46.2 test
 // 목적: 메인 나무 성장 이미지 v2 적용 — 귀여운 웹툰풍 친구 숲으로 첫 화면 전환
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.46.1 test",
+  version: "V1.46.2 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -439,28 +439,28 @@ const gardenMarkerRules = {
     title: "리본과 꽃 장식",
     message: "내 나무 곁에 리본 장식을 놓았어요. 정원이 조금 더 사랑스럽고 반짝이는 자리로 느껴져요.",
     className: "garden-marker-ribbon",
-    imageSrc: "assets/garden/deco-ribbon-star-v1.png"
+    imageSrc: "assets/garden/deco-ribbon-star-v2.png"
   },
   garland: {
     label: "가랜드",
     title: "꽃과 별 가랜드",
     message: "내 나무 곁에 꽃과 별 가랜드를 놓았어요. 친구가 놀러오고 싶을 만큼 귀여운 분위기가 생겼어요.",
     className: "garden-marker-garland",
-    imageSrc: "assets/garden/deco-garland-v1.png"
+    imageSrc: "assets/garden/deco-garland-v2.png"
   },
   lantern: {
     label: "꽃 랜턴",
     title: "꽃 랜턴 장식",
     message: "내 나무 곁에 꽃 랜턴을 밝혔어요. 저녁에도 정원이 포근하게 빛나는 느낌이 남아요.",
     className: "garden-marker-lantern",
-    imageSrc: "assets/garden/deco-lantern-v1.png"
+    imageSrc: "assets/garden/deco-lantern-v2.png"
   },
   picnic: {
     label: "소풍 세트",
     title: "파스텔 소풍 세트",
     message: "내 나무 곁에 소풍 세트를 펼쳐두었어요. 친구와 함께 놀러 온 것처럼 정원이 더 재미있는 공간이 되었어요.",
     className: "garden-marker-picnic",
-    imageSrc: "assets/garden/deco-picnic-v1.png"
+    imageSrc: "assets/garden/deco-picnic-v2.png"
   }
 };
 
@@ -2669,11 +2669,11 @@ function createWorldLifeMarkup(type, index, seed) {
   const style = getWorldLifeStyle(`${seed}-${type}`, index, zone);
 
   if (type === "bird") {
-    return `<span class="world-life-item world-life-bird" style="${style}" aria-label="${labels[type]}"><img src="assets/garden/bird-silhouette-v2.png" alt="" /></span>`;
+    return `<span class="world-life-item world-life-bird" style="${style}" aria-label="${labels[type]}"><img src="assets/garden/bird-silhouette-v3.png" alt="" /></span>`;
   }
 
   if (type === "squirrel") {
-    return `<span class="world-life-item world-life-squirrel" style="${style}" aria-label="${labels[type]}"><img src="assets/garden/squirrel-silhouette-v2.png" alt="" /></span>`;
+    return `<span class="world-life-item world-life-squirrel" style="${style}" aria-label="${labels[type]}"><img src="assets/garden/squirrel-silhouette-v3.png" alt="" /></span>`;
   }
 
   const symbol = type === "butterfly" ? "✧" : type === "firefly" ? "•" : "✦";

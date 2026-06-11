@@ -10862,3 +10862,101 @@ h1,
     height: 66px;
   }
 }
+
+
+/* V1.46.2 test · 정원 배경/장식 파일 보정 */
+.garden-stage.garden-time-day {
+  background: url("assets/garden/garden-inner-day-v3.png") center center / cover no-repeat !important;
+}
+
+.garden-stage.garden-time-sunset {
+  background: url("assets/garden/garden-inner-sunset-v3.png") center center / cover no-repeat !important;
+}
+
+.garden-stage.garden-time-night {
+  background: url("assets/garden/garden-inner-night-v3.png") center center / cover no-repeat !important;
+}
+
+.garden-stage .garden-depth,
+.garden-stage .garden-foreground,
+.garden-stage .garden-focus-clearing,
+.garden-stage .tree-planting-ground {
+  opacity: 0.04 !important;
+}
+
+.garden-stage .stage-message {
+  left: 20px;
+  right: 20px;
+  bottom: 18px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 245, 251, 0.72)) !important;
+  color: #7b5363 !important;
+  text-shadow: none !important;
+  box-shadow: 0 12px 22px rgba(140, 86, 108, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.garden-marker-layer {
+  left: calc(50% - 94px);
+  bottom: 104px;
+  width: 74px;
+  height: 70px;
+}
+
+.garden-marker-ground {
+  width: 70px;
+  height: 18px;
+  background: radial-gradient(ellipse, rgba(255, 233, 179, 0.2), rgba(233, 178, 202, 0.12) 44%, transparent 72%);
+}
+
+.garden-marker-item {
+  width: 62px;
+  height: 58px;
+  bottom: 6px;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.garden-marker-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: transparent !important;
+}
+
+.garden-marker-lantern .garden-marker-image { transform: scale(0.82); }
+.garden-marker-picnic .garden-marker-image { transform: scale(0.9); }
+.garden-marker-garland .garden-marker-image { transform: scale(0.88); }
+.garden-marker-ribbon .garden-marker-image { transform: scale(0.86) rotate(-4deg); }
+
+.bird { width: 62px; height: 60px; top: 140px; }
+.squirrel { width: 68px; height: 58px; bottom: 124px; }
+.world-life-bird { width: 52px; height: 46px; }
+.world-life-squirrel { width: 52px; height: 46px; }
+
+@media (max-width: 560px) {
+  .garden-stage .stage-message {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    padding: 9px 11px;
+    font-size: 12px;
+  }
+
+  .garden-marker-layer {
+    left: calc(50% - 72px);
+    bottom: 132px;
+    width: 62px;
+    height: 58px;
+  }
+
+  .garden-marker-item {
+    width: 54px;
+    height: 50px;
+  }
+
+  .bird { width: 54px; height: 52px; top: 146px; }
+  .squirrel { width: 58px; height: 50px; bottom: 148px; }
+}
