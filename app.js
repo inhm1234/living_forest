@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.48.2 test
+// 살아있는 숲 V1.48.3 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.48.2 test
+// 버전명: V1.48.3 test
 // 목적: 친구 없는 초기 숲 보정판 — 친구가 없어도 숲이 외롭지 않게 보이도록 숲 친구/예비 자리 감각 보강
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.48.2 test",
+  version: "V1.48.3 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -547,14 +547,11 @@ const forestEffectRules = {
 };
 
 const friendForestProfiles = [
-  { name: "리본새싹", mood: "아직 비어 있는 자리를 리본으로 밝혀주는 숲 친구", badge: "곧 올 자리" },
-  { name: "별꽃잎", mood: "친구가 오기 전 별빛 흔적을 남겨주는 숲 친구", badge: "흔적 준비" },
-  { name: "민트새소리", mood: "정원이 조용할 때 새소리로 빈자리를 채워주는 숲 친구", badge: "산책 중" },
-  { name: "복숭숲", mood: "초대 전에도 포근한 분위기를 지켜주는 예비 자리", badge: "예비 자리" },
-  { name: "소풍바람", mood: "친구가 오면 같이 앉을 소풍 자리를 먼저 준비하는 숲 친구", badge: "초대 대기" },
-  { name: "달빛가랜드", mood: "밤에도 빈자리가 어둡지 않게 가랜드를 밝혀주는 숲 친구", badge: "밤의 자리" },
-  { name: "꽃리본", mood: "친구 나무가 오기 전까지 꽃 장식으로 자리를 지키는 숲 친구", badge: "장식 자리" },
-  { name: "반짝열매", mood: "언젠가 친구가 남길 선물을 먼저 상상하게 해주는 숲 친구", badge: "선물 대기" }
+  { name: "꽃길 자리", mood: "왼쪽 아래 꽃길 근처에 있는 온라인 친구 자리", badge: "친구 자리 A" },
+  { name: "햇살 자리", mood: "왼쪽 위 밝은 잔디 위에 있는 온라인 친구 자리", badge: "친구 자리 B" },
+  { name: "연못 자리", mood: "가운데 위 물가와 가까운 온라인 친구 자리", badge: "친구 자리 C" },
+  { name: "그네 자리", mood: "오른쪽 중간 그네와 가까운 온라인 친구 자리", badge: "친구 자리 D" },
+  { name: "꽃담 자리", mood: "오른쪽 아래 꽃담 근처에 있는 온라인 친구 자리", badge: "친구 자리 E" }
 ];
 
 const worldForestSlots = [
@@ -2838,25 +2835,25 @@ function renderWorldNeighbors() {
 function getFriendForestPreview() {
   const days = treeData.history.length;
   const startIndex = days % friendForestProfiles.length;
-  const previewCount = 4;
+  const previewCount = 5;
   const profiles = Array.from({ length: previewCount }, (_, index) => friendForestProfiles[(startIndex + index) % friendForestProfiles.length]);
 
   let title = "아직 친구가 없어도 숲은 기다리는 중";
-  let text = "리본새싹, 민트새소리, 별꽃잎, 소풍바람이 내 자리를 제외한 네 곳을 지켜줘서 처음 시작해도 외롭지 않게 보여요.";
+  let text = "꽃길 자리, 햇살 자리, 연못 자리, 그네 자리, 꽃담 자리는 나중에 실제 온라인 친구가 들어올 수 있는 고정 자리예요.";
   let meta = "실제 친구가 생기면 이 자리는 친구의 나무와 방문 흔적으로 자연스럽게 이어질 수 있어요.";
 
   if (days === 0) {
-    title = "친구가 오기 전, 내 자리를 제외한 네 숲 친구가 빈자리를 지키고 있어요";
-    text = "첫 마음을 남기면 내 자리 주변의 네 예비 자리가 숲 친구 이름과 작은 흔적으로 조금 더 생생해져요.";
+    title = "친구가 오기 전, 다섯 온라인 친구 자리가 먼저 준비되어 있어요";
+    text = "첫 마음을 남기면 A~E 다섯 자리도 온라인 친구가 들어올 수 있는 자리처럼 더 또렷하게 보여요.";
     meta = "지금은 실제 친구가 없다는 점을 숨기지 않고, 대신 숲 친구가 빈자리를 외롭지 않게 채워주는 단계예요.";
   } else if (days < 7) {
-    title = `내 자리를 제외한 네 곳에 숲 친구 자리가 보여요`;
-    text = `${days}일째 쌓인 기록 덕분에 네 예비 자리가 친구를 기다리는 작은 숲 친구 자리처럼 선명해지고 있어요.`;
+    title = `월드 숲에 다섯 온라인 친구 자리가 보여요`;
+    text = `${days}일째 쌓인 기록 덕분에 꽃길, 햇살, 연못, 그네, 꽃담 자리가 온라인 친구를 기다리는 자리처럼 선명해지고 있어요.`;
     meta = "오늘도 마음을 남기면 비어 있던 자리가 조금 더 따뜻하게 살아나요.";
   } else if (days < 14) {
-    title = `친구 숲에서 ${previewCount}개의 가까운 자리가 먼저 반응하고 있어요`;
+    title = `친구 숲에서 다섯 온라인 자리가 먼저 반응하고 있어요`;
     text = `${days}일째 이어진 기록 덕분에 내 주변 자리들이 서로 인사하는 숲처럼 보여요. 함께 모일 친구 분위기가 자라고 있어요.`;
-    meta = "실제 친구 로그인 없이도 함께 키우는 감각을 먼저 느껴볼 수 있도록 만든 카드예요.";
+    meta = "지금은 자리 이름만 보이지만, 나중에는 친구 닉네임과 나무가 붙을 수 있는 구조예요.";
   } else {
     title = `친구 숲이 ${days}일의 기록을 따라 더 또렷해졌어요`;
     text = `이제 내 자리 주변의 빈자리도 단순 장식이 아니라 친구의 나무, 선물, 장식이 이어질 자리처럼 느껴져요.`;
@@ -2911,11 +2908,11 @@ function renderWorldCommunityHint(todayRecord) {
   }
 
   if (treeData.history.length === 0) {
-    worldCommunityHintElement.textContent = `멀리 보이는 큰 숲 안에 내 자리와 숲 친구들이 지키는 예비 자리가 함께 기다리고 있어요.`;
+    worldCommunityHintElement.textContent = `멀리 보이는 큰 숲 안에 내 나무와 온라인 친구들이 들어올 다섯 자리가 함께 기다리고 있어요.`;
     return;
   }
 
-  worldCommunityHintElement.textContent = `${treeData.history.length}일의 기록이 월드 숲에 쌓였어요. 숲 친구들이 지키는 예비 자리가 더 또렷해지고 있어요. ${worldInfo.meta}`;
+  worldCommunityHintElement.textContent = `${treeData.history.length}일의 기록이 월드 숲에 쌓였어요. 온라인 친구 자리들이 더 또렷해지고 있어요. ${worldInfo.meta}`;
 }
 
 function renderWorldGrowthCard() {
