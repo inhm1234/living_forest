@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.48.1 test
+// 살아있는 숲 V1.48.2 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.48.1 test
+// 버전명: V1.48.2 test
 // 목적: 친구 없는 초기 숲 보정판 — 친구가 없어도 숲이 외롭지 않게 보이도록 숲 친구/예비 자리 감각 보강
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.48.1 test",
+  version: "V1.48.2 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -2838,20 +2838,20 @@ function renderWorldNeighbors() {
 function getFriendForestPreview() {
   const days = treeData.history.length;
   const startIndex = days % friendForestProfiles.length;
-  const previewCount = 5;
+  const previewCount = 4;
   const profiles = Array.from({ length: previewCount }, (_, index) => friendForestProfiles[(startIndex + index) % friendForestProfiles.length]);
 
   let title = "아직 친구가 없어도 숲은 기다리는 중";
-  let text = "리본새싹, 민트새소리, 별꽃잎, 달빛가랜드, 소풍바람이 다섯 빈자리를 지켜줘서 처음 시작해도 외롭지 않게 보여요.";
+  let text = "리본새싹, 민트새소리, 별꽃잎, 소풍바람이 내 자리를 제외한 네 곳을 지켜줘서 처음 시작해도 외롭지 않게 보여요.";
   let meta = "실제 친구가 생기면 이 자리는 친구의 나무와 방문 흔적으로 자연스럽게 이어질 수 있어요.";
 
   if (days === 0) {
-    title = "친구가 오기 전, 다섯 숲 친구가 빈자리를 지키고 있어요";
-    text = "첫 마음을 남기면 내 자리 주변의 다섯 예비 자리가 숲 친구 이름과 작은 흔적으로 조금 더 생생해져요.";
+    title = "친구가 오기 전, 내 자리를 제외한 네 숲 친구가 빈자리를 지키고 있어요";
+    text = "첫 마음을 남기면 내 자리 주변의 네 예비 자리가 숲 친구 이름과 작은 흔적으로 조금 더 생생해져요.";
     meta = "지금은 실제 친구가 없다는 점을 숨기지 않고, 대신 숲 친구가 빈자리를 외롭지 않게 채워주는 단계예요.";
   } else if (days < 7) {
-    title = `내 자리 주변 다섯 곳에 숲 친구 자리가 보여요`;
-    text = `${days}일째 쌓인 기록 덕분에 다섯 예비 자리가 친구를 기다리는 작은 숲 친구 자리처럼 선명해지고 있어요.`;
+    title = `내 자리를 제외한 네 곳에 숲 친구 자리가 보여요`;
+    text = `${days}일째 쌓인 기록 덕분에 네 예비 자리가 친구를 기다리는 작은 숲 친구 자리처럼 선명해지고 있어요.`;
     meta = "오늘도 마음을 남기면 비어 있던 자리가 조금 더 따뜻하게 살아나요.";
   } else if (days < 14) {
     title = `친구 숲에서 ${previewCount}개의 가까운 자리가 먼저 반응하고 있어요`;

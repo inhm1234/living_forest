@@ -11306,3 +11306,26 @@ h1,
   .starter-friend-c { left: 60%; top: 60%; }
   .starter-friend-e { left: 53%; top: 80%; }
 }
+
+
+/* V1.48.2 test · 내 자리 제외 4자리 보정 */
+.starter-friend-a { left: 33%; top: 70%; animation-delay: -0.8s; }
+.starter-friend-b { left: 46.5%; top: 62.5%; animation-delay: -1.7s; }
+.starter-friend-c { left: 53.5%; top: 62.5%; animation-delay: -2.6s; }
+.starter-friend-d { left: 67%; top: 70%; animation-delay: -3.5s; }
+.starter-friend-e { display: none !important; }
+
+@media (max-width: 760px) {
+  .starter-friend-a { left: 28%; top: 71%; }
+  .starter-friend-b { left: 43%; top: 64%; }
+  .starter-friend-c { left: 57%; top: 64%; }
+  .starter-friend-d { left: 72%; top: 71%; }
+  .starter-friend-e { display: none !important; }
+}
+
+@media (max-width: 520px) {
+  .starter-friend-a { left: 27%; top: 71%; }
+  .starter-friend-b { left: 43%; top: 64%; }
+  .starter-friend-c { left: 57%; top: 64%; }
+  .starter-friend-d { left: 72%; top: 71%; }
+}
