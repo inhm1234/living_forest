@@ -1,49 +1,28 @@
 # 살아있는 숲
 
-현재 테스트판: V1.43 test  
-기준 버전: V1.42 test  
-최근 업데이트: 월드 숲 배경 v2 적용  
-공개 주소: https://inhm1234.github.io/living_forest/
+현재 테스트판: V1.44 test  
+작업명: 메인 나무 성장 이미지 v2 적용
 
-## V1.43 test 핵심 변경점
+## V1.44 test 핵심 변경점
 
-V1.43 test는 V1.42에서 바꾼 파스텔 UI 톤 위에 실제 월드 숲 배경 이미지를 v2로 추가하고 연결한 버전입니다.
-기존 리얼 숲 이미지는 삭제하지 않고 그대로 보관했으며, 새로 만든 낮 / 노을 / 밤 월드 숲 배경 3장을 별도 v2 파일로 추가했습니다.
+V1.44 test는 V1.43에서 적용한 귀여운 월드 숲 배경 위에, 내 나무 성장 이미지를 v2 그림체로 교체한 버전입니다.
 
-## 추가한 이미지
+### 새로 추가된 이미지
 
-- `assets/world/world-overview-day-v2.png`
-- `assets/world/world-overview-sunset-v2.png`
-- `assets/world/world-overview-night-v2.png`
+- `assets/garden/tree-germination-v2.png`
+- `assets/garden/tree-sprout-v2.png`
+- `assets/garden/tree-seedling-v2.png`
+- `assets/garden/tree-sapling-v2.png`
+- `assets/garden/tree-young-v2.png`
+- `assets/garden/tree-hero-v2.png`
 
-## 수정한 것
+### 변경 방향
 
-- 일반 화면과 내 정원의 버전 표기를 V1.43 test로 갱신
-- `style.css`에서 월드 숲 낮 / 노을 / 밤 배경을 v2 이미지로 연결
-- 월드 숲 카드와 월드 시간 배지의 밝은 파스텔 톤 보정
-- 기존 v1 월드 이미지는 삭제하지 않고 유지
-- README / VERSION / 업로드 가이드 / 체크리스트를 V1.43 기준으로 정리
+- 기존 어두운 흙/작은 새싹 느낌을 줄임
+- 꽃밭 기반의 밝고 귀여운 나무로 변경
+- 성장할수록 꽃, 리본, 별빛 장식이 늘어나는 방향 적용
+- 기존 v1 나무 이미지는 삭제하지 않고 보관
 
-## 유지한 것
+## 업로드 방식
 
-- 기존 v1 이미지 파일 전체
-- 월드 숲 / 내 정원 / 감정 기록 구조
-- 하단 패널 기본 흐름
-- 숲 일기장 / 주간 숲 편지 / 오늘의 작은 돌봄 / 정원 표식 / 숲길 산책 / 숲의 소리
-- 내일의 씨앗 / 나를 위한 작은 실천
-- 보관함 / 복원 / 숲 달력 / 기억 찾기
-- 배지 / 공유 / 초대장 / 방문자 시스템
-- 관리자 / GA4 / Google Sheets / Apps Script 구조
-
-## 아직 다음 단계로 남은 것
-
-- 내 정원 배경 v2 3장 적용
-- 메인 나무 성장 이미지 v2 세트 적용
-- 새 / 다람쥐 / 방문자 이미지 v2 적용
-- 꾸미기 아이템 1차 적용
-
-## 주의
-
-- 이번 버전은 실제 친구 로그인 / 실시간 공동 숲 구현판이 아닙니다.
-- 기존 이미지는 백업 및 비교용으로 그대로 유지합니다.
-- Apps Script 재배포는 필요 없습니다.
+이 ZIP은 패치용입니다. ZIP 파일 자체를 GitHub에 올리지 말고, 압축을 푼 뒤 안의 파일과 폴더를 기존 저장소에 덮어 업로드하세요.

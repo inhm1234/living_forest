@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.43 test
+// 살아있는 숲 V1.44 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.43 test
-// 목적: 월드 숲 배경 v2 적용 — 귀여운 웹툰풍 친구 숲으로 첫 화면 전환
+// 버전명: V1.44 test
+// 목적: 메인 나무 성장 이미지 v2 적용 — 귀여운 웹툰풍 친구 숲으로 첫 화면 전환
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.43 test",
+  version: "V1.44 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -271,16 +271,16 @@ const growthStageRules = [
 ];
 
 const treeImageStageRules = [
-  { minDays: 0, maxDays: 0, className: "tree-stage-germination", src: "assets/garden/tree-germination-v1.png", alt: "씨앗이 발아하며 깨어나는 나무" },
-  { minDays: 1, maxDays: 2, className: "tree-stage-sprout", src: "assets/garden/tree-sprout-v1.png", alt: "흙 위로 막 올라온 새싹" },
-  { minDays: 3, maxDays: 4, className: "tree-stage-seedling", src: "assets/garden/tree-seedling-v1.png", alt: "줄기와 잎이 보이기 시작한 어린 새싹" },
-  { minDays: 5, maxDays: 6, className: "tree-stage-leafy-seedling", src: "assets/garden/tree-leafy-seedling-v1.png", alt: "잎이 퍼지기 시작한 새싹" },
-  { minDays: 7, maxDays: 9, className: "tree-stage-sapling", src: "assets/garden/tree-sapling-v1.png", alt: "작은 묘목으로 자라난 나무" },
-  { minDays: 10, maxDays: 13, className: "tree-stage-branching-sapling", src: "assets/garden/tree-branching-sapling-v1.png", alt: "작은 가지가 생기기 시작한 묘목" },
-  { minDays: 14, maxDays: 20, className: "tree-stage-early-tree", src: "assets/garden/tree-early-tree-v1.png", alt: "어린 나무로 넘어가는 중간 단계" },
-  { minDays: 21, maxDays: 29, className: "tree-stage-young-canopy", src: "assets/garden/tree-young-canopy-v1.png", alt: "잎이 풍성해진 어린 나무" },
-  { minDays: 30, maxDays: 59, className: "tree-stage-young", src: "assets/garden/tree-young-v1.png", alt: "안정적으로 자란 어린 나무" },
-  { minDays: 60, maxDays: Infinity, className: "tree-stage-hero", src: "assets/garden/tree-hero-v1.png", alt: "오래 돌본 대표 나무" }
+  { minDays: 0, maxDays: 0, className: "tree-stage-germination", src: "assets/garden/tree-germination-v2.png", alt: "꽃밭 위에서 작게 깨어난 새싹" },
+  { minDays: 1, maxDays: 2, className: "tree-stage-sprout", src: "assets/garden/tree-sprout-v2.png", alt: "반짝이는 잎을 펼친 새싹" },
+  { minDays: 3, maxDays: 4, className: "tree-stage-seedling", src: "assets/garden/tree-seedling-v2.png", alt: "작은 나무 모양으로 자라난 새싹" },
+  { minDays: 5, maxDays: 6, className: "tree-stage-leafy-seedling", src: "assets/garden/tree-seedling-v2.png", alt: "잎이 조금 더 풍성해진 어린 나무" },
+  { minDays: 7, maxDays: 9, className: "tree-stage-sapling", src: "assets/garden/tree-sapling-v2.png", alt: "꽃과 잎이 돋아난 작은 묘목" },
+  { minDays: 10, maxDays: 13, className: "tree-stage-branching-sapling", src: "assets/garden/tree-sapling-v2.png", alt: "작은 가지와 장식이 생긴 묘목" },
+  { minDays: 14, maxDays: 20, className: "tree-stage-early-tree", src: "assets/garden/tree-young-v2.png", alt: "꽃이 피기 시작한 어린 나무" },
+  { minDays: 21, maxDays: 29, className: "tree-stage-young-canopy", src: "assets/garden/tree-young-v2.png", alt: "잎과 꽃이 풍성해진 어린 나무" },
+  { minDays: 30, maxDays: 59, className: "tree-stage-young", src: "assets/garden/tree-young-v2.png", alt: "반짝이는 꽃나무로 자란 내 나무" },
+  { minDays: 60, maxDays: Infinity, className: "tree-stage-hero", src: "assets/garden/tree-hero-v2.png", alt: "리본과 별빛 장식이 있는 대표 나무" }
 ];
 
 const growthMilestoneRules = [
