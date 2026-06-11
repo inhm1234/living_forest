@@ -1,4 +1,4 @@
-살아있는 숲 V1.42 test 업로드 가이드
+살아있는 숲 V1.43 test 업로드 가이드
 
 1. GitHub 저장소로 이동
    inhm1234/living_forest
@@ -17,30 +17,33 @@
    - PUBLIC_SHARE_COPY.txt
    - APPS_SCRIPT_CODE.txt
    - SHEETS_SETUP_GUIDE.txt
-   - CHANGES_V1.42_TEST.txt
-   - ASSET_V2_PREP_GUIDE.txt
+   - CHANGES_V1.43_TEST.txt
    - assets/
 
 3. assets 폴더 구조
    저장소 루트에 아래 구조가 있어야 합니다.
 
    assets/
-     garden/
      world/
+       world-overview-day-v1.png
+       world-overview-sunset-v1.png
+       world-overview-night-v1.png
+       world-overview-day-v2.png
+       world-overview-sunset-v2.png
+       world-overview-night-v2.png
+     garden/
      share/
 
-4. 커밋 메시지 추천
-   Apply V1.42 test cute forest visual refresh phase 1
+4. 기존 이미지 보관
+   기존 v1 이미지는 삭제하지 않습니다.
+   이번 버전은 v2 이미지를 추가하고 코드만 v2로 연결합니다.
 
-5. 업로드 후 확인 주소
+5. 커밋 메시지 추천
+   Apply V1.43 test world forest background v2
+
+6. 업로드 후 확인 주소
    일반 화면:
    https://inhm1234.github.io/living_forest/
 
    관리자 화면:
    https://inhm1234.github.io/living_forest/admin.html
-
-V1.42 확인 포인트:
-- 전체 배경 / 카드 / 버튼이 이전보다 밝고 귀여운 톤으로 바뀌었는지 확인합니다.
-- 월드 숲과 내 정원의 문구가 `함께 만드는 숲` 방향으로 자연스럽게 보이는지 확인합니다.
-- 하단 패널의 작동 안정성은 그대로 유지되는지 확인합니다.
-- assets 구조는 유지하되, 다음 단계에서 v2 이미지 교체가 가능하도록 준비되어 있는지 확인합니다.

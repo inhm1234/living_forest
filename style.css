@@ -10675,3 +10675,45 @@ h1,
     font-size: 12px;
   }
 }
+
+
+/* V1.43 test · 월드 숲 배경 v2 적용 */
+.world-stage.world-time-day {
+  background: url("assets/world/world-overview-day-v2.png") center center / cover no-repeat !important;
+}
+
+.world-stage.world-time-sunset {
+  background: url("assets/world/world-overview-sunset-v2.png") center center / cover no-repeat !important;
+}
+
+.world-stage.world-time-night {
+  background: url("assets/world/world-overview-night-v2.png") center center / cover no-repeat !important;
+}
+
+#worldScreen .world-card.visual-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 246, 251, 0.96)) !important;
+}
+
+.world-stage {
+  border: 1px solid rgba(255, 193, 214, 0.34);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 16px 32px rgba(232, 169, 197, 0.18);
+}
+
+.my-world-spot .my-spot-name {
+  background: rgba(255, 255, 255, 0.72) !important;
+  border: 1px solid rgba(244, 127, 166, 0.2) !important;
+  color: #c85885 !important;
+  box-shadow: 0 8px 16px rgba(244, 127, 166, 0.12);
+}
+
+.my-world-spot .my-spot-status {
+  color: rgba(91, 58, 50, 0.78) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.32);
+}
+
+.world-time-badge {
+  background: rgba(255, 255, 255, 0.76) !important;
+  border-color: rgba(244, 127, 166, 0.22) !important;
+  color: #c85885 !important;
+  box-shadow: 0 8px 18px rgba(244, 127, 166, 0.12);
+}
