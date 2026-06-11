@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.48.3 test
+// 살아있는 숲 V1.49 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.48.3 test
+// 버전명: V1.49 test
 // 목적: 친구 없는 초기 숲 보정판 — 친구가 없어도 숲이 외롭지 않게 보이도록 숲 친구/예비 자리 감각 보강
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.48.3 test",
+  version: "V1.49 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -554,6 +554,16 @@ const friendForestProfiles = [
   { name: "꽃담 자리", mood: "오른쪽 아래 꽃담 근처에 있는 온라인 친구 자리", badge: "친구 자리 E" }
 ];
 
+const friendInviteSeatSlots = [
+  { id: "flower_path", label: "꽃길 자리", mark: "친구 자리 A", emoji: "🌸", description: "왼쪽 아래 꽃길 근처에 있는 온라인 친구 자리" },
+  { id: "sunny_spot", label: "햇살 자리", mark: "친구 자리 B", emoji: "☀️", description: "왼쪽 위 밝은 잔디 위에 있는 온라인 친구 자리" },
+  { id: "pond_spot", label: "연못 자리", mark: "친구 자리 C", emoji: "💧", description: "가운데 위 물가와 가까운 온라인 친구 자리" },
+  { id: "swing_spot", label: "그네 자리", mark: "친구 자리 D", emoji: "🎀", description: "오른쪽 중간 그네와 가까운 온라인 친구 자리" },
+  { id: "flower_fence", label: "꽃담 자리", mark: "친구 자리 E", emoji: "🌷", description: "오른쪽 아래 꽃담 근처에 있는 온라인 친구 자리" }
+];
+
+let selectedFriendInviteSeatId = "flower_path";
+
 const worldForestSlots = [
   { id: "far-left-1", name: "먼 왼언덕", className: "row-far row-left", state: "balanced", days: 6, x: 24, y: 41, scale: 0.26, opacity: 0.22, depth: 2, tilt: -5, lift: -11, groundOpacity: 0.028, mobileX: 22, mobileY: 43, mobileScale: 0.22 },
   { id: "far-left-2", name: "먼 잎자리", className: "row-far row-left", state: "leaf-strong", days: 9, x: 36, y: 42, scale: 0.28, opacity: 0.24, depth: 2, tilt: -3, lift: -11, groundOpacity: 0.028, mobileX: 35, mobileY: 43, mobileScale: 0.24 },
@@ -638,6 +648,9 @@ const friendInvitePreviewElement = document.querySelector("#friendInvitePreview"
 const friendInviteMetaElement = document.querySelector("#friendInviteMeta");
 const copyFriendInviteBtnElement = document.querySelector("#copyFriendInviteBtn");
 const previewFriendInviteBtnElement = document.querySelector("#previewFriendInviteBtn");
+const friendSeatOptionsElement = document.querySelector("#friendSeatOptions");
+const selectedFriendSeatTextElement = document.querySelector("#selectedFriendSeatText");
+const worldStarterFriendsElement = document.querySelector("#worldStarterFriends");
 const firstVisitGuideElement = document.querySelector("#firstVisitGuide");
 const forestInviteCardElement = document.querySelector("#forestInviteCard");
 const forestInviteTitleElement = document.querySelector("#forestInviteTitle");
@@ -2942,18 +2955,68 @@ function renderWorldGrowthCard() {
 }
 
 
+function getFriendInviteSeatById(seatId) {
+  return friendInviteSeatSlots.find((seat) => seat.id === seatId) || friendInviteSeatSlots[0];
+}
+
+function getSelectedFriendInviteSeat() {
+  return getFriendInviteSeatById(selectedFriendInviteSeatId);
+}
+
+function syncFriendInviteSeatSelection() {
+  const seat = getSelectedFriendInviteSeat();
+
+  document.querySelectorAll("[data-friend-seat]").forEach((button) => {
+    const selected = button.dataset.friendSeat === seat.id;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", selected ? "true" : "false");
+  });
+
+  document.querySelectorAll("[data-friend-seat-option]").forEach((button) => {
+    const selected = button.dataset.friendSeatOption === seat.id;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", selected ? "true" : "false");
+  });
+
+  if (selectedFriendSeatTextElement) {
+    selectedFriendSeatTextElement.textContent = `선택된 자리: ${seat.label} · ${seat.mark}`;
+  }
+}
+
+function selectFriendInviteSeat(seatId, source = "option") {
+  selectedFriendInviteSeatId = getFriendInviteSeatById(seatId).id;
+  syncFriendInviteSeatSelection();
+  renderFriendInviteCard(true);
+
+  if (friendInvitePreviewElement) {
+    const seat = getSelectedFriendInviteSeat();
+    friendInvitePreviewElement.textContent = `${seat.label}을 선택했어요. 문구 미리보기를 누르면 이 자리 전용 초대 문구가 나와요.`;
+    friendInvitePreviewElement.classList.add("friend-invite-preview-ready");
+  }
+
+  if (source === "stage" && friendInviteCardElement) {
+    friendInviteCardElement.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  trackForestEvent("friend_invite_seat_selected", {
+    seat_id: selectedFriendInviteSeatId,
+    source,
+  });
+}
+
 function getFriendInviteMessage() {
   const name = treeData.treeName?.trim() || "이름 없는 나무";
   const days = Array.isArray(treeData.history) ? treeData.history.length : 0;
   const todayRecord = getTodayRecord();
   const todayMood = todayRecord ? `${todayRecord.label} 기운` : "오늘의 마음";
-  const inviteUrl = `${window.location.origin}${window.location.pathname}?invite=friend-forest`;
+  const seat = getSelectedFriendInviteSeat();
+  const inviteUrl = `${window.location.origin}${window.location.pathname}?invite=friend-forest&seat=${seat.id}`;
 
   if (days === 0) {
-    return `🌱 ${name}의 작은 숲이 친구를 기다리고 있어요.\n하루에 한 번 마음을 남기면 내 나무가 자라고, 친구 숲에도 작은 자리가 생겨요.\n나도 같이 숲 시작하기: ${inviteUrl}`;
+    return `${seat.emoji} ${name}의 숲에서 ${seat.label}가 친구를 기다리고 있어요.\n${seat.description}예요.\n하루에 한 번 마음을 남기면 내 나무가 자라고, 친구 숲에도 작은 자리가 생겨요.\n이 자리에 같이 숲 시작하기: ${inviteUrl}`;
   }
 
-  return `🌷 ${name}의 숲에 ${days}일째 기록이 쌓였어요.\n오늘은 ${todayMood}이 숲에 남았고, 친구가 올 자리가 반짝이고 있어요.\n너도 네 나무를 심고 같이 숲 채워볼래?\n${inviteUrl}`;
+  return `${seat.emoji} ${name}의 숲에서 ${seat.label}가 비어 있어요.\n${days}일째 기록이 쌓인 숲에 오늘은 ${todayMood}이 남았어요.\n너도 네 나무를 심고 이 자리를 채워볼래?\n${inviteUrl}`;
 }
 
 async function copyTextToClipboard(text) {
@@ -2986,26 +3049,28 @@ function renderFriendInviteCard(messageOnly = false) {
 
   const days = Array.isArray(treeData.history) ? treeData.history.length : 0;
   const name = treeData.treeName?.trim() || "이름 없는 나무";
+  const seat = getSelectedFriendInviteSeat();
   const message = getFriendInviteMessage();
 
   if (friendInviteTitleElement) {
     friendInviteTitleElement.textContent = days === 0
-      ? "첫 친구에게 보낼 숲 초대장이 준비됐어요"
-      : `${name}의 숲 초대장을 보낼 수 있어요`;
+      ? `${seat.label}에 첫 친구를 초대할 수 있어요`
+      : `${seat.label}에 친구를 초대할 수 있어요`;
   }
 
   if (friendInviteTextElement) {
-    friendInviteTextElement.textContent = days === 0
-      ? "아직 친구가 없어도 괜찮아요. 내 숲을 시작하는 순간, 친구가 따라 들어올 수 있는 초대 문구를 만들 수 있어요."
-      : "내 나무 이름과 지금까지 쌓인 기록을 담아, 친구가 자기 나무를 심고 함께 숲을 채울 수 있는 문구를 만들었어요.";
+    friendInviteTextElement.textContent = `${seat.description}예요. 친구에게 이 자리 전용 초대 문구를 보내면, 나중에 ${seat.label} · 친구 닉네임 형태로 확장하기 좋아요.`;
   }
+
+  syncFriendInviteSeatSelection();
 
   if (friendInvitePreviewElement && !messageOnly) {
     friendInvitePreviewElement.textContent = "초대 문구를 미리 보려면 버튼을 눌러주세요.";
+    friendInvitePreviewElement.classList.remove("friend-invite-preview-ready");
   }
 
   if (friendInviteMetaElement) {
-    friendInviteMetaElement.textContent = "공유된 친구는 같은 숲 서버에 연결되는 것은 아니지만, 같은 서비스에서 자기 나무를 시작할 수 있어요.";
+    friendInviteMetaElement.textContent = `현재 선택: ${seat.label} · ${seat.mark}. 아직 같은 서버에 친구 나무가 연결되지는 않지만, 이 자리 기준으로 초대 문구를 만들 수 있어요.`;
   }
 
   return message;
@@ -3030,7 +3095,7 @@ async function copyFriendInviteMessage() {
 
   if (friendInvitePreviewElement) {
     friendInvitePreviewElement.textContent = copied
-      ? "초대 문구를 복사했어요. 친구에게 보내서 같이 숲을 시작해보세요."
+      ? `${getSelectedFriendInviteSeat().label} 초대 문구를 복사했어요. 친구에게 보내서 같이 숲을 시작해보세요.`
       : message;
     friendInvitePreviewElement.classList.add("friend-invite-preview-ready");
   }
@@ -5305,6 +5370,27 @@ function handleAnalyticsClickCapture(event) {
 
 document.addEventListener("click", handleAnalyticsClickCapture);
 
+
+
+if (worldStarterFriendsElement) {
+  worldStarterFriendsElement.addEventListener("click", (event) => {
+    const seatButton = event.target?.closest?.("[data-friend-seat]");
+    if (!seatButton) {
+      return;
+    }
+    selectFriendInviteSeat(seatButton.dataset.friendSeat, "stage");
+  });
+}
+
+if (friendSeatOptionsElement) {
+  friendSeatOptionsElement.addEventListener("click", (event) => {
+    const seatButton = event.target?.closest?.("[data-friend-seat-option]");
+    if (!seatButton) {
+      return;
+    }
+    selectFriendInviteSeat(seatButton.dataset.friendSeatOption, "card");
+  });
+}
 
 if (copyFriendInviteBtnElement) {
   copyFriendInviteBtnElement.addEventListener("click", copyFriendInviteMessage);

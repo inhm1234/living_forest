@@ -35,7 +35,7 @@
 
   <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.48.3-test" />
+  <link rel="stylesheet" href="style.css?v=1.49-test" />
 <!-- Google tag (gtag.js) - Living Forest GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-YC872G7MH1"></script>
 <script>
@@ -56,10 +56,10 @@
   <main class="app">
     <section id="worldScreen" class="screen screen-active">
       <header class="hero world-hero">
-        <p class="version">살아있는 숲 V1.48.3 test · 온라인 친구 자리 5곳 확정</p>
+        <p class="version">살아있는 숲 V1.49 test · 자리별 친구 초대 흐름</p>
         <h1>살아있는 숲</h1>
         <p class="subtitle">내 나무를 키우고, 친구들과 함께 숲을 채워가요.</p>
-        <p class="demo-pill">V1.48.3 test · 온라인 친구 자리 5곳 확정</p>
+        <p class="demo-pill">V1.49 test · 자리별 친구 초대 흐름</p>
       </header>
 
       <section class="world-card visual-card">
@@ -86,12 +86,12 @@
             <span class="world-empty-slot empty-slot-d"></span>
             <span class="world-empty-slot empty-slot-e"></span>
           </div>
-          <div id="worldStarterFriends" class="world-starter-friends" aria-hidden="true">
-            <span class="starter-friend starter-friend-a"><b>꽃길 자리</b><small>친구 자리 A</small></span>
-            <span class="starter-friend starter-friend-b"><b>햇살 자리</b><small>친구 자리 B</small></span>
-            <span class="starter-friend starter-friend-c"><b>연못 자리</b><small>친구 자리 C</small></span>
-            <span class="starter-friend starter-friend-d"><b>그네 자리</b><small>친구 자리 D</small></span>
-            <span class="starter-friend starter-friend-e"><b>꽃담 자리</b><small>친구 자리 E</small></span>
+          <div id="worldStarterFriends" class="world-starter-friends" aria-label="온라인 친구 자리 선택">
+            <button type="button" class="starter-friend starter-friend-a" data-friend-seat="flower_path" aria-pressed="true"><b>꽃길 자리</b><small>친구 자리 A</small></button>
+            <button type="button" class="starter-friend starter-friend-b" data-friend-seat="sunny_spot" aria-pressed="false"><b>햇살 자리</b><small>친구 자리 B</small></button>
+            <button type="button" class="starter-friend starter-friend-c" data-friend-seat="pond_spot" aria-pressed="false"><b>연못 자리</b><small>친구 자리 C</small></button>
+            <button type="button" class="starter-friend starter-friend-d" data-friend-seat="swing_spot" aria-pressed="false"><b>그네 자리</b><small>친구 자리 D</small></button>
+            <button type="button" class="starter-friend starter-friend-e" data-friend-seat="flower_fence" aria-pressed="false"><b>꽃담 자리</b><small>친구 자리 E</small></button>
           </div>
           <div id="worldParticleLayer" class="world-particle-layer" aria-hidden="true"></div>
           <div id="worldLifeLayer" class="world-life-layer" aria-hidden="true"></div>
@@ -158,6 +158,14 @@
           <span class="friend-invite-kicker">친구 초대 준비</span>
           <p id="friendInviteTitle" class="friend-invite-title">친구에게 보낼 숲 초대장을 만들 수 있어요</p>
           <p id="friendInviteText" class="friend-invite-text">내 나무 이름과 오늘의 숲 문장을 담아 친구에게 보낼 짧은 초대 문구를 준비했어요.</p>
+          <div id="friendSeatOptions" class="friend-seat-options" role="group" aria-label="초대할 온라인 친구 자리 선택">
+            <button type="button" data-friend-seat-option="flower_path" aria-pressed="true"><strong>꽃길 자리</strong><span>왼쪽 아래 · 친구 자리 A</span></button>
+            <button type="button" data-friend-seat-option="sunny_spot" aria-pressed="false"><strong>햇살 자리</strong><span>왼쪽 위 · 친구 자리 B</span></button>
+            <button type="button" data-friend-seat-option="pond_spot" aria-pressed="false"><strong>연못 자리</strong><span>가운데 위 · 친구 자리 C</span></button>
+            <button type="button" data-friend-seat-option="swing_spot" aria-pressed="false"><strong>그네 자리</strong><span>오른쪽 중간 · 친구 자리 D</span></button>
+            <button type="button" data-friend-seat-option="flower_fence" aria-pressed="false"><strong>꽃담 자리</strong><span>오른쪽 아래 · 친구 자리 E</span></button>
+          </div>
+          <p id="selectedFriendSeatText" class="selected-friend-seat-text">선택된 자리: 꽃길 자리 · 친구 자리 A</p>
           <div class="friend-invite-actions">
             <button id="copyFriendInviteBtn" class="primary-btn" type="button">초대 문구 복사</button>
             <button id="previewFriendInviteBtn" class="ghost-btn" type="button">문구 미리보기</button>
@@ -168,8 +176,8 @@
 
         <div id="worldPlaceCard" class="world-place-card glass-panel" aria-live="polite">
           <span class="world-place-kicker">월드 숲 자리 안내</span>
-          <p class="world-place-title">아직 친구가 없어도 빈자리는 외로운 공간이 아니라, 숲 친구와 실제 친구가 들어올 예비 자리예요.</p>
-          <p class="world-place-text">지금은 리본새싹, 별꽃잎, 소풍바람 같은 숲 친구 이름으로 먼저 채워두고, 나중에 실제 친구가 생기면 친구 나무 자리로 자연스럽게 바뀔 수 있어요.</p>
+          <p class="world-place-title">빈자리는 이제 실제 온라인 친구가 들어올 수 있는 고정 자리예요.</p>
+          <p class="world-place-text">꽃길, 햇살, 연못, 그네, 꽃담 자리 중 하나를 골라 친구에게 초대 문구를 보낼 수 있어요.</p>
         </div>
 
         <div id="firstVisitGuide" class="first-visit-guide glass-panel" aria-live="polite">
@@ -194,7 +202,7 @@
     <section id="gardenScreen" class="screen">
       <header class="hero garden-hero">
         <button id="backToWorldBtnTop" class="ghost-btn small-btn" type="button">← 전체 숲</button>
-        <p class="version">오늘 내 나무 돌보기 · V1.48.3 test</p>
+        <p class="version">오늘 내 나무 돌보기 · V1.49 test</p>
         <h2 id="gardenTitle" class="garden-title">밤 숲속 자리</h2>
         <p class="subtitle">오늘의 마음이 내 나무와 친구 숲에 귀여운 흔적으로 남아요.</p>
       </header>
@@ -559,6 +567,6 @@
   </aside>
 
 
-  <script src="app.js?v=1.48.3-test"></script>
+  <script src="app.js?v=1.49-test"></script>
 </body>
 </html>

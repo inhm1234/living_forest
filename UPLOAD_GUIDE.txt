@@ -1,4 +1,4 @@
-살아있는 숲 V1.48.3 test 패치 업로드 가이드
+살아있는 숲 V1.49 test 패치 업로드 가이드
 
 중요:
 - ZIP 파일 자체를 GitHub에 올리지 않습니다.
@@ -14,4 +14,4 @@
 - LAUNCH_CHECKLIST.txt
 - UPLOAD_GUIDE.txt
 - PUBLIC_SHARE_COPY.txt
-- CHANGES_V1.48.3_TEST.txt
+- CHANGES_V1.49_TEST.txt
