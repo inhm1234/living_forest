@@ -11874,3 +11874,91 @@ body.online-friend-invite-mode #friendInviteCard {
     width: 100%;
   }
 }
+
+
+/* V1.54.1 test · 친구 관계 저장소 카드 */
+.friend-links-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.friend-links-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #d6538b;
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.friend-links-title {
+  margin: 0 0 8px;
+  color: #7b4f63;
+  font-size: clamp(17px, 2vw, 22px);
+  font-weight: 900;
+}
+
+.friend-links-text,
+.friend-links-meta {
+  margin: 0;
+  color: #8a6373;
+  line-height: 1.65;
+  font-size: 14px;
+}
+
+.friend-links-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.friend-links-item,
+.friend-links-empty {
+  border: 1px solid rgba(244, 127, 166, 0.22);
+  border-radius: 18px;
+  padding: 12px;
+  background: rgba(255, 249, 252, 0.78);
+  box-shadow: 0 10px 26px rgba(172, 108, 133, 0.08);
+}
+
+.friend-links-item strong,
+.friend-links-empty strong {
+  display: block;
+  color: #7d5265;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.friend-links-item span,
+.friend-links-empty span {
+  display: block;
+  color: #957281;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.friend-links-item em {
+  display: inline-flex;
+  margin-top: 8px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(230, 255, 240, 0.86);
+  color: #5c8f68;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.friend-links-empty {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 760px) {
+  .friend-links-list {
+    grid-template-columns: 1fr;
+  }
+}

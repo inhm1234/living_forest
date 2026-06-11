@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.53 test
+// 살아있는 숲 V1.54.1 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.53 test
-// 목적: 기존 나무로 자리 들어가기 — 이미 나무가 있는 친구는 새로 만들지 않고 기존 나무로 초대 자리에 참여
+// 버전명: V1.54.1 test
+// 목적: 친구 관계/자리 분리 1차 — 이미 나무가 있는 친구는 새로 만들지 않고 기존 나무로 초대 자리에 참여
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.53 test",
+  version: "V1.54.1 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -208,6 +208,9 @@ const ONLINE_FRIEND_STORAGE_KEY = `${STORAGE_KEY}_ONLINE_FRIEND_ID_V1`;
 let onlineFriendSeats = {};
 let onlineFriendLoadState = "idle";
 let onlineFriendLastError = "";
+let onlineFriendLinks = [];
+let onlineFriendLinksLoadState = "idle";
+let onlineFriendLinksLastError = "";
 const VISITOR_STORAGE_KEY = `${STORAGE_KEY}_VISITOR_V12`;
 const OWNER_STORAGE_KEY = `${STORAGE_KEY}_OWNER_V15`;
 
@@ -659,6 +662,11 @@ const friendForestTitleElement = document.querySelector("#friendForestTitle");
 const friendForestTextElement = document.querySelector("#friendForestText");
 const friendForestListElement = document.querySelector("#friendForestList");
 const friendForestMetaElement = document.querySelector("#friendForestMeta");
+const friendLinksCardElement = document.querySelector("#friendLinksCard");
+const friendLinksTitleElement = document.querySelector("#friendLinksTitle");
+const friendLinksTextElement = document.querySelector("#friendLinksText");
+const friendLinksListElement = document.querySelector("#friendLinksList");
+const friendLinksMetaElement = document.querySelector("#friendLinksMeta");
 const friendInviteCardElement = document.querySelector("#friendInviteCard");
 const friendInviteTitleElement = document.querySelector("#friendInviteTitle");
 const friendInviteTextElement = document.querySelector("#friendInviteText");
@@ -2941,6 +2949,115 @@ function renderFriendForestCard() {
   }
 }
 
+
+function getFriendLinkPlacementText(link) {
+  const placement = sanitizeOnlineText(link.placementStatus || link.placement_status || "", 24);
+  const seatLabel = sanitizeOnlineText(link.currentSeatLabel || link.current_seat_label || "", 30);
+
+  if (placement === "placed" && seatLabel) {
+    return `${seatLabel}에 배치됨`;
+  }
+
+  if (placement === "unplaced") {
+    return "친구 목록에 있음 · 자리 없음";
+  }
+
+  return seatLabel ? `${seatLabel} 연결됨` : "친구 목록에 있음";
+}
+
+function renderFriendLinksCard() {
+  if (!friendLinksCardElement) {
+    return;
+  }
+
+  const links = Array.isArray(onlineFriendLinks) ? onlineFriendLinks : [];
+  const totalCount = links.length;
+  const placedCount = links.filter((link) => (link.placementStatus || link.placement_status) === "placed").length;
+  const waitingCount = Math.max(0, totalCount - placedCount);
+
+  if (onlineFriendLinksLoadState === "loading") {
+    if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소를 불러오는 중이에요";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "friend_links 시트에서 친구 목록을 확인하고 있어요.";
+    if (friendLinksListElement) friendLinksListElement.innerHTML = "";
+    if (friendLinksMetaElement) friendLinksMetaElement.textContent = "잠시만 기다려 주세요.";
+    return;
+  }
+
+  if (onlineFriendLinksLoadState === "error") {
+    if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script에 V1.54.1 코드가 배포되었는지 확인해 주세요.";
+    if (friendLinksListElement) friendLinksListElement.innerHTML = "";
+    if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
+    return;
+  }
+
+  if (friendLinksTitleElement) {
+    friendLinksTitleElement.textContent = totalCount > 0
+      ? `친구 ${totalCount}명 중 ${placedCount}명이 숲 자리에 보여요`
+      : "아직 친구 목록은 비어 있어요";
+  }
+
+  if (friendLinksTextElement) {
+    friendLinksTextElement.textContent = totalCount > 0
+      ? `친구 관계는 friend_links에 남고, 다섯 숲 자리 배치는 friend_seats가 따로 관리해요. 자리에서 비워도 친구 관계는 바로 끊기지 않아요.`
+      : "친구가 초대 링크로 들어오면 먼저 친구 목록에 저장되고, 빈 숲 자리에는 대표 친구로 배치돼요.";
+  }
+
+  if (friendLinksListElement) {
+    if (totalCount === 0) {
+      friendLinksListElement.innerHTML = `
+        <li class="friend-links-empty">
+          <strong>친구 목록 대기 중</strong>
+          <span>친구가 들어오면 이곳에 관계가 먼저 저장돼요.</span>
+        </li>
+      `;
+    } else {
+      friendLinksListElement.innerHTML = links.slice(0, 6).map((link) => {
+        const friendName = sanitizeOnlineText(link.friendName || link.friend_name || "친구", 12) || "친구";
+        const treeName = sanitizeOnlineText(link.treeName || link.tree_name || "친구 나무", 16) || "친구 나무";
+        const placementText = getFriendLinkPlacementText(link);
+        return `
+          <li class="friend-links-item">
+            <strong>${friendName}</strong>
+            <span>${treeName}</span>
+            <em>${placementText}</em>
+          </li>
+        `;
+      }).join("");
+    }
+  }
+
+  if (friendLinksMetaElement) {
+    friendLinksMetaElement.textContent = totalCount > 0
+      ? `배치됨 ${placedCount}명 · 자리 없음 ${waitingCount}명. 다음 단계에서 친구 목록에서 다시 배치하는 기능을 붙일 수 있어요.`
+      : "친구 관계 저장소는 준비됐어요. 초대 테스트를 하면 friend_links 시트가 생겨야 해요.";
+  }
+}
+
+async function loadOnlineFriendLinks() {
+  onlineFriendLinksLoadState = "loading";
+  onlineFriendLinksLastError = "";
+  renderFriendLinksCard();
+
+  try {
+    const forestId = getOrCreateOnlineForestId();
+    const result = await requestOnlineForestStorage("list_friend_links", { forest_id: forestId });
+
+    if (!result || result.ok === false) {
+      throw new Error(result?.error || "load_links_failed");
+    }
+
+    onlineFriendLinks = Array.isArray(result.links) ? result.links : [];
+    onlineFriendLinksLoadState = "loaded";
+  } catch (error) {
+    onlineFriendLinks = [];
+    onlineFriendLinksLoadState = "error";
+    onlineFriendLinksLastError = error?.message || "unknown";
+  }
+
+  renderFriendLinksCard();
+}
+
 function renderWorldCommunityHint(todayRecord) {
   if (!worldCommunityHintElement) {
     return;
@@ -3290,6 +3407,7 @@ async function saveOnlineFriendSeatJoin({ forestId, seat, friendName, treeName, 
     seat_id: seat.id,
     seat_label: seat.label,
     friend_id: getOrCreateOnlineFriendId(),
+    friend_forest_id: getOrCreateOnlineForestId(),
     friend_name: friendName,
     tree_name: treeName,
     growth_days: snapshot.days,
@@ -3304,6 +3422,7 @@ async function saveOnlineFriendSeatJoin({ forestId, seat, friendName, treeName, 
 
   setOnlineFriendJoinMessage(`${seat.label}에 ${friendName}님의 나무를 저장했어요. 초대한 사람이 숲을 새로고침하면 이 자리가 채워져 보여요.`, "success");
 
+  loadOnlineFriendLinks();
   trackForestEvent("online_friend_seat_joined", { seat_id: seat.id, source });
   return result;
 }
@@ -3712,6 +3831,7 @@ async function clearSelectedFriendSeat() {
     delete onlineFriendSeats[seat.id];
     onlineFriendLoadState = "loaded";
     syncOnlineFriendSeatDisplays();
+    loadOnlineFriendLinks();
     renderFriendInviteCard(true);
 
     if (friendInvitePreviewElement) {
@@ -3838,6 +3958,7 @@ function renderWorld() {
   renderWorldCommunityHint(todayRecord);
   renderWorldGrowthCard();
   renderFriendForestCard();
+  renderFriendLinksCard();
   renderFriendInviteCard();
   renderOnlineFriendJoinCard();
   syncOnlineFriendSeatDisplays();
@@ -6144,3 +6265,4 @@ if (onlineFriendJoinFormElement) {
 
 initKakaoShareSdk();
 loadOnlineFriendSeats();
+loadOnlineFriendLinks();
