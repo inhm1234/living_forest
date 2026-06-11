@@ -35,7 +35,7 @@
 
   <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.51-test" />
+  <link rel="stylesheet" href="style.css?v=1.51.1-test" />
 <!-- Google tag (gtag.js) - Living Forest GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-YC872G7MH1"></script>
 <script>
@@ -56,10 +56,10 @@
   <main class="app">
     <section id="worldScreen" class="screen screen-active">
       <header class="hero world-hero">
-        <p class="version">살아있는 숲 V1.51 test · 카카오톡 친구 초대 1차</p>
+        <p class="version">살아있는 숲 V1.51.1 test · 초대 링크 안정화와 첫 친구 시작 흐름</p>
         <h1>살아있는 숲</h1>
         <p class="subtitle">내 나무를 키우고, 친구들과 함께 숲을 채워가요.</p>
-        <p class="demo-pill">V1.51 test · 카카오톡 친구 초대 1차</p>
+        <p class="demo-pill">V1.51.1 test · 초대 링크 안정화와 첫 친구 시작 흐름</p>
       </header>
 
       <section class="world-card visual-card">
@@ -139,7 +139,12 @@
         <div id="onlineFriendJoinCard" class="online-friend-join-card glass-panel hidden" aria-live="polite">
           <span class="online-friend-join-kicker">온라인 친구 자리 초대</span>
           <p id="onlineFriendJoinTitle" class="online-friend-join-title">친구의 숲 자리에 초대받았어요</p>
-          <p id="onlineFriendJoinText" class="online-friend-join-text">닉네임과 나무 이름을 남기면 초대한 사람의 월드 숲 자리 정보에 저장돼요.</p>
+          <p id="onlineFriendJoinText" class="online-friend-join-text">처음 온 친구라면 먼저 내 나무를 만들고, 그다음 초대받은 자리에 들어가요.</p>
+          <ol class="online-friend-join-steps" aria-label="처음 온 친구 시작 순서">
+            <li>닉네임을 적어요.</li>
+            <li>내 나무 이름을 정해요.</li>
+            <li>오늘의 마음을 하나 고르면 초대받은 자리에 저장돼요.</li>
+          </ol>
           <form id="onlineFriendJoinForm" class="online-friend-join-form">
             <label>
               <span>친구 닉네임</span>
@@ -149,7 +154,15 @@
               <span>내 나무 이름</span>
               <input id="onlineFriendTreeInput" type="text" maxlength="16" placeholder="예: 민지의 나무" autocomplete="off" />
             </label>
-            <button id="onlineFriendJoinBtn" class="primary-btn" type="submit">이 자리에 내 나무 심기</button>
+            <label>
+              <span>오늘의 마음</span>
+              <select id="onlineFriendMoodSelect">
+                <option value="good">좋음</option>
+                <option value="normal" selected>보통</option>
+                <option value="tired">피곤</option>
+              </select>
+            </label>
+            <button id="onlineFriendJoinBtn" class="primary-btn" type="submit">내 나무 만들고 이 자리에 들어가기</button>
           </form>
           <p id="onlineFriendJoinMessage" class="online-friend-join-message">초대 링크로 들어온 친구만 이 카드가 보여요.</p>
         </div>
@@ -190,7 +203,8 @@
             <button id="previewFriendInviteBtn" class="ghost-btn" type="button">문구 미리보기</button>
           </div>
           <p id="friendInvitePreview" class="friend-invite-preview">초대 문구를 미리 보려면 버튼을 눌러주세요.</p>
-          <p id="friendInviteMeta" class="friend-invite-meta">카카오톡으로 쉽게 초대하고, 보조로 초대 링크도 복사할 수 있어요.</p>
+          <p id="friendInviteLinkText" class="friend-invite-link-text">초대 링크는 자리 선택 후 여기에도 표시돼요.</p>
+          <p id="friendInviteMeta" class="friend-invite-meta">카카오톡 초대가 안 열리면, 바로 아래 초대 링크를 길게 눌러 복사해도 돼요.</p>
         </div>
 
         <div id="worldPlaceCard" class="world-place-card glass-panel" aria-live="polite">
@@ -221,7 +235,7 @@
     <section id="gardenScreen" class="screen">
       <header class="hero garden-hero">
         <button id="backToWorldBtnTop" class="ghost-btn small-btn" type="button">← 전체 숲</button>
-        <p class="version">오늘 내 나무 돌보기 · V1.51 test</p>
+        <p class="version">오늘 내 나무 돌보기 · V1.51.1 test</p>
         <h2 id="gardenTitle" class="garden-title">밤 숲속 자리</h2>
         <p class="subtitle">오늘의 마음이 내 나무와 친구 숲에 귀여운 흔적으로 남아요.</p>
       </header>
@@ -564,7 +578,7 @@
     </div>
 
     <p class="test-storage-line">저장키: <span id="testModeStorageKey">livingForestV012_TEST</span></p>
-    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.51 test · 카카오톡 친구 초대 1차</span></p>
+    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.51.1 test · 초대 링크 안정화와 첫 친구 시작 흐름</span></p>
 
     <div class="test-preset-buttons">
       <button type="button" data-test-preset="first">첫 방문자</button>
@@ -587,6 +601,6 @@
 
 
   <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.1/kakao.min.js"></script>
-  <script src="app.js?v=1.51-test"></script>
+  <script src="app.js?v=1.51.1-test"></script>
 </body>
 </html>

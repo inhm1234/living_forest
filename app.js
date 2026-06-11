@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.51 test
+// 살아있는 숲 V1.51.1 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.51 test
-// 목적: 카카오톡 친구 초대 1차 — 자리별 초대 흐름에 Kakao.Share 공유 버튼을 연결
+// 버전명: V1.51.1 test
+// 목적: 초대 링크 안정화와 첫 친구 시작 흐름 — 카카오 공유 메시지에 직접 링크를 포함하고 초대받은 친구가 나무를 만든 뒤 자리에 들어가게 함
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.51 test",
+  version: "V1.51.1 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -659,6 +659,7 @@ const friendInviteCardElement = document.querySelector("#friendInviteCard");
 const friendInviteTitleElement = document.querySelector("#friendInviteTitle");
 const friendInviteTextElement = document.querySelector("#friendInviteText");
 const friendInvitePreviewElement = document.querySelector("#friendInvitePreview");
+const friendInviteLinkTextElement = document.querySelector("#friendInviteLinkText");
 const friendInviteMetaElement = document.querySelector("#friendInviteMeta");
 const kakaoFriendInviteBtnElement = document.querySelector("#kakaoFriendInviteBtn");
 const copyFriendInviteBtnElement = document.querySelector("#copyFriendInviteBtn");
@@ -671,6 +672,7 @@ const onlineFriendJoinTextElement = document.querySelector("#onlineFriendJoinTex
 const onlineFriendJoinFormElement = document.querySelector("#onlineFriendJoinForm");
 const onlineFriendNameInputElement = document.querySelector("#onlineFriendNameInput");
 const onlineFriendTreeInputElement = document.querySelector("#onlineFriendTreeInput");
+const onlineFriendMoodSelectElement = document.querySelector("#onlineFriendMoodSelect");
 const onlineFriendJoinMessageElement = document.querySelector("#onlineFriendJoinMessage");
 const worldStarterFriendsElement = document.querySelector("#worldStarterFriends");
 const firstVisitGuideElement = document.querySelector("#firstVisitGuide");
@@ -3191,7 +3193,7 @@ function renderOnlineFriendJoinCard() {
   }
 
   if (onlineFriendJoinTextElement) {
-    onlineFriendJoinTextElement.textContent = `${seat.description}예요. 닉네임과 나무 이름을 남기면 초대한 사람의 온라인 친구 자리 저장소에 이 정보가 기록돼요.`;
+    onlineFriendJoinTextElement.textContent = `${seat.description}예요. 처음 온 친구라면 먼저 닉네임, 나무 이름, 오늘의 마음을 정하고 이 자리에 들어가요.`;
   }
 
   if (onlineFriendTreeInputElement && !onlineFriendTreeInputElement.value) {
@@ -3199,9 +3201,37 @@ function renderOnlineFriendJoinCard() {
   }
 
   if (onlineFriendJoinMessageElement) {
-    onlineFriendJoinMessageElement.textContent = "저장소 연결 후, 이 자리 정보가 초대한 사람의 숲에 표시될 수 있어요.";
+    onlineFriendJoinMessageElement.textContent = "이 버튼을 누르면 내 나무가 만들어지고, 초대한 사람의 친구 자리에 저장돼요.";
     onlineFriendJoinMessageElement.classList.remove("join-success", "join-error");
   }
+}
+
+function ensureFirstTreeForOnlineInvite(treeName, mood) {
+  const safeMood = moodRules[mood] ? mood : "normal";
+  const rule = moodRules[safeMood] || moodRules.normal;
+
+  if (treeName && !treeData.treeName?.trim()) {
+    treeData.treeName = treeName;
+  }
+
+  if (!hasCheckedToday()) {
+    const diaryNote = createForestDiaryNote(safeMood, getTodayKey());
+    treeData.leaf += rule.leaf;
+    treeData.trunk += rule.trunk;
+    treeData.root += rule.root;
+    treeData.lastCheckDate = getTodayKey();
+    treeData.history.unshift({
+      date: getTodayKey(),
+      mood: safeMood,
+      label: rule.label,
+      icon: rule.icon,
+      message: rule.message,
+      forestTitle: diaryNote.forestTitle,
+      forestSentence: diaryNote.forestSentence
+    });
+  }
+
+  saveTreeData();
 }
 
 async function handleOnlineFriendJoin(event) {
@@ -3212,6 +3242,7 @@ async function handleOnlineFriendJoin(event) {
   const seat = getFriendInviteSeatById(getOnlineInviteSeatId());
   const friendName = sanitizeOnlineText(onlineFriendNameInputElement?.value, 12);
   const treeName = sanitizeOnlineText(onlineFriendTreeInputElement?.value, 16) || `${friendName || "친구"}의 나무`;
+  const selectedMood = moodRules[onlineFriendMoodSelectElement?.value] ? onlineFriendMoodSelectElement.value : "normal";
 
   if (!friendName) {
     if (onlineFriendJoinMessageElement) {
@@ -3221,12 +3252,9 @@ async function handleOnlineFriendJoin(event) {
     return;
   }
 
+  ensureFirstTreeForOnlineInvite(treeName, selectedMood);
   const snapshot = getLocalOnlineTreeSnapshot();
-  if (!treeData.treeName?.trim()) {
-    treeData.treeName = treeName;
-    saveTreeData();
-    renderAll();
-  }
+  renderAll();
 
   if (onlineFriendJoinMessageElement) {
     onlineFriendJoinMessageElement.textContent = "온라인 친구 자리 저장소에 기록하는 중이에요...";
@@ -3252,7 +3280,7 @@ async function handleOnlineFriendJoin(event) {
     }
 
     if (onlineFriendJoinMessageElement) {
-      onlineFriendJoinMessageElement.textContent = `${seat.label}에 ${friendName}님의 나무 정보를 저장했어요. 초대한 사람이 숲을 새로고침하면 이 자리가 채워져 보여요.`;
+      onlineFriendJoinMessageElement.textContent = `${seat.label}에 ${friendName}님의 나무를 저장했어요. 초대한 사람이 숲을 새로고침하면 이 자리가 채워져 보여요.`;
       onlineFriendJoinMessageElement.classList.add("join-success");
     }
 
@@ -3316,11 +3344,22 @@ function selectFriendInviteSeat(seatId, source = "option") {
 
 function getFriendInviteUrl() {
   const seat = getSelectedFriendInviteSeat();
-  return `${window.location.origin}${window.location.pathname}?invite=friend-forest&forest=${getOrCreateOnlineForestId()}&seat=${seat.id}`;
+  const inviteUrl = new URL(window.location.pathname || "/living_forest/", window.location.origin);
+  inviteUrl.searchParams.set("invite", "friend-forest");
+  inviteUrl.searchParams.set("forest", getOrCreateOnlineForestId());
+  inviteUrl.searchParams.set("seat", seat.id);
+  inviteUrl.searchParams.set("join", "1");
+  return inviteUrl.toString();
 }
 
 function getKakaoShareImageUrl() {
-  return `${window.location.origin}${window.location.pathname.replace(/[^/]*$/, "")}assets/share/living-forest-og.png`;
+  return `${window.location.origin}${window.location.pathname.replace(/[^/]*$/, "")}assets/world/world-overview-day-v2.png`;
+}
+
+function updateFriendInviteLinkText() {
+  if (!friendInviteLinkTextElement) return;
+  const inviteUrl = getFriendInviteUrl();
+  friendInviteLinkTextElement.textContent = `직접 초대 링크: ${inviteUrl}`;
 }
 
 function getKakaoFriendInviteDescription() {
@@ -3418,13 +3457,15 @@ function renderFriendInviteCard(messageOnly = false) {
   syncFriendInviteSeatSelection();
 
   if (friendInvitePreviewElement && !messageOnly) {
-    friendInvitePreviewElement.textContent = "카카오톡으로 보낼 초대 내용을 미리 보려면 버튼을 눌러주세요.";
+    friendInvitePreviewElement.textContent = "카카오톡으로 보낼 초대 내용을 미리 보려면 버튼을 눌러주세요. 아래 직접 링크도 같이 준비돼요.";
     friendInvitePreviewElement.classList.remove("friend-invite-preview-ready");
   }
 
   if (friendInviteMetaElement) {
-    friendInviteMetaElement.textContent = `현재 선택: ${seat.label} · ${seat.mark}. 먼저 카카오톡 초대 버튼으로 보내고, 안 될 때만 초대 링크 복사를 쓰면 돼요.`;
+    friendInviteMetaElement.textContent = `현재 선택: ${seat.label} · ${seat.mark}. 카카오톡 카드가 안 열리면 직접 초대 링크를 보내면 돼요.`;
   }
+
+  updateFriendInviteLinkText();
 
   return message;
 }
@@ -3446,10 +3487,11 @@ async function copyFriendInviteMessage() {
   const inviteUrl = getFriendInviteUrl();
   const copied = await copyTextToClipboard(inviteUrl);
   const seat = getSelectedFriendInviteSeat();
+  updateFriendInviteLinkText();
 
   if (friendInvitePreviewElement) {
     friendInvitePreviewElement.textContent = copied
-      ? `${seat.label} 초대 링크를 복사했어요. 카카오톡 공유가 안 될 때 이 링크를 직접 보내면 돼요.`
+      ? `${seat.label} 초대 링크를 복사했어요. 친구에게 이 링크를 보내면 초대받은 시작 화면이 열려요.`
       : getFriendInviteMessage();
     friendInvitePreviewElement.classList.add("friend-invite-preview-ready");
   }
@@ -3466,13 +3508,16 @@ async function shareFriendInviteToKakao() {
   const inviteUrl = getFriendInviteUrl();
   const name = treeData.treeName?.trim() || "이름 없는 나무";
   const ready = initKakaoShareSdk();
+  const directMessage = getFriendInviteMessage();
+
+  updateFriendInviteLinkText();
 
   if (!ready || !window.Kakao?.Share?.sendDefault) {
     const copied = await copyTextToClipboard(inviteUrl);
     if (friendInvitePreviewElement) {
       friendInvitePreviewElement.textContent = copied
         ? "카카오톡 공유 준비가 아직 안 된 것 같아요. 대신 초대 링크를 복사했어요."
-        : "카카오톡 공유 준비가 아직 안 된 것 같아요. 아래 문구를 복사해서 보내주세요.\n\n" + getFriendInviteMessage();
+        : "카카오톡 공유 준비가 아직 안 된 것 같아요. 아래 직접 링크를 복사해서 보내주세요.\n\n" + directMessage;
       friendInvitePreviewElement.classList.add("friend-invite-preview-ready");
     }
     trackForestEvent("friend_invite_kakao_fallback", { seat_id: seat.id, copied: copied ? "yes" : "no" });
@@ -3481,43 +3526,35 @@ async function shareFriendInviteToKakao() {
 
   try {
     window.Kakao.Share.sendDefault({
-      objectType: "feed",
-      content: {
-        title: `${seat.emoji} ${name}의 ${seat.label}에 초대받았어요`,
-        description: getKakaoFriendInviteDescription(),
-        imageUrl: getKakaoShareImageUrl(),
-        link: {
-          mobileWebUrl: inviteUrl,
-          webUrl: inviteUrl
-        }
+      objectType: "text",
+      text: directMessage,
+      link: {
+        mobileWebUrl: inviteUrl,
+        webUrl: inviteUrl
       },
-      buttons: [
-        {
-          title: "내 나무 심으러 가기",
-          link: {
-            mobileWebUrl: inviteUrl,
-            webUrl: inviteUrl
-          }
-        }
-      ]
+      buttonTitle: "초대장 열기"
     });
 
+    const copied = await copyTextToClipboard(inviteUrl);
     if (friendInvitePreviewElement) {
-      friendInvitePreviewElement.textContent = `${seat.label} 초대장을 카카오톡으로 보낼 준비를 했어요. 카카오톡 창에서 친구를 골라 보내면 돼요.`;
+      friendInvitePreviewElement.textContent = copied
+        ? `${seat.label} 초대장을 카카오톡으로 보냈어요. 혹시 카드가 안 열리면, 초대 링크도 복사해뒀어요.`
+        : `${seat.label} 초대장을 카카오톡으로 보냈어요. 친구가 메시지 안의 링크나 초대장 열기를 누르면 돼요.`;
       friendInvitePreviewElement.classList.add("friend-invite-preview-ready");
     }
 
     trackForestEvent("friend_invite_kakao_shared", {
       seat_id: seat.id,
       growth_days: Array.isArray(treeData.history) ? treeData.history.length : 0,
+      share_type: "text_with_direct_url"
     });
   } catch (error) {
     console.warn("Kakao share skipped:", error);
     const copied = await copyTextToClipboard(inviteUrl);
     if (friendInvitePreviewElement) {
       friendInvitePreviewElement.textContent = copied
-        ? "카카오톡 공유가 열리지 않아서 초대 링크를 대신 복사했어요."
-        : getFriendInviteMessage();
+        ? "카카오톡 공유가 열리지 않아서 초대 링크를 대신 복사했어요. 이 링크를 친구에게 보내면 돼요."
+        : directMessage;
       friendInvitePreviewElement.classList.add("friend-invite-preview-ready");
     }
     trackForestEvent("friend_invite_kakao_error", { seat_id: seat.id, copied: copied ? "yes" : "no" });

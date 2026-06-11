@@ -1,23 +1,15 @@
-카카오톡 공유 설정 확인 가이드
+카카오톡 공유 설정 가이드 — V1.51.1 test
 
 이미 완료한 것:
-1. Kakao Developers 앱 생성
-2. JavaScript 키 확인
-3. JavaScript SDK 도메인 등록
-   - https://inhm1234.github.io
+- 카카오 Developers에서 살아있는 숲 앱 생성
+- JavaScript 키 확인
+- JavaScript SDK 도메인에 https://inhm1234.github.io 등록
 
-V1.51에서 필요한 것:
-- app.js에 JavaScript 키 적용 완료
-- index.html에 Kakao JavaScript SDK 스크립트 추가 완료
+V1.51.1 확인 포인트:
+- 카카오톡 공유 메시지 안에 직접 초대 링크가 텍스트로 포함됩니다.
+- 카드 클릭이 안 되는 기기에서도 텍스트 링크를 눌러 들어갈 수 있게 보정했습니다.
 
-테스트 방법:
-1. GitHub에 V1.51 파일 업로드
-2. 사이트에서 Ctrl+F5 새로고침
-3. 월드 숲에서 자리 선택
-4. 카카오톡으로 초대하기 클릭
-5. 카카오톡 공유 창이 뜨는지 확인
-
-안 될 때:
-- JavaScript SDK 도메인이 저장되어 있는지 확인
-- 주소가 https://inhm1234.github.io 로 되어 있는지 확인
-- 카카오톡 공유 창이 막히면 초대 링크 복사 버튼으로 우선 테스트
+문제가 있으면 확인할 것:
+- JavaScript SDK 도메인: https://inhm1234.github.io
+- GitHub Pages 주소: https://inhm1234.github.io/living_forest/
+- 사이트 새로고침: Ctrl + F5

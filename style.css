@@ -11657,3 +11657,43 @@ h1,
     grid-column: auto;
   }
 }
+
+
+/* V1.51.1 test · 초대 링크 안정화와 첫 친구 시작 흐름 */
+.friend-invite-link-text {
+  margin: 8px 0 0;
+  padding: 9px 10px;
+  border: 1px dashed rgba(244, 127, 166, 0.36);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.66);
+  color: #8a5b6d;
+  font-size: 11px;
+  line-height: 1.55;
+  word-break: break-all;
+}
+
+.online-friend-join-steps {
+  margin: 8px 0 12px;
+  padding: 10px 12px 10px 28px;
+  border-radius: 16px;
+  background: rgba(255, 249, 252, 0.72);
+  color: #7a5264;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.online-friend-join-form select {
+  width: 100%;
+  border: 1px solid rgba(244, 127, 166, 0.28);
+  border-radius: 999px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #765267;
+  font-weight: 700;
+  outline: none;
+}
+
+.online-friend-join-form select:focus {
+  border-color: rgba(244, 127, 166, 0.58);
+  box-shadow: 0 0 0 4px rgba(244, 127, 166, 0.12);
+}
