@@ -1,12 +1,11 @@
-// 살아있는 숲 V1.25.2 test 운영 데이터 자동 집계용 Google Apps Script
-// V1.10.31 날짜별 집계 구조와 V1.20 1차 완성형 운영 집계를 그대로 유지합니다.
-// 목적: 관리자 대시보드에서 오늘 / 어제 / 최근 7일 / 전체 기준과 share_click / tree_care_selected 흐름을 안정적으로 보기 위한 전체 코드
-// 참고: 기존 Apps Script가 정상 작동 중이라면 이번 V1.25에서 새로 배포하지 않아도 됩니다.
-// 문제가 있을 때만 이 코드 전체를 붙여넣고 새 버전으로 웹 앱을 다시 배포하세요.
+// 살아있는 숲 V1.50 test 온라인 친구 자리 저장소용 Google Apps Script
+// 기존 운영 데이터 집계(events) + 온라인 친구 자리(friend_seats)를 함께 관리합니다.
+// 배포 방법: Apps Script 편집기에 이 전체 코드를 붙여넣고 저장 → 배포 > 배포 관리 > 새 버전 배포
 
 const SPREADSHEET_ID = "1EQlAMI_pK1DrUL7MC-efcneyLYKEHj0ipWJu077TDFI";
 const PROJECT_KEY = "living_forest_v1";
 const EVENT_SHEET_NAME = "events";
+const FRIEND_SEAT_SHEET_NAME = "friend_seats";
 const SERVICE_TIME_ZONE = "Asia/Seoul";
 
 const SUMMARY_RANGES = {
@@ -31,6 +30,10 @@ const TRACKED_EVENTS = [
   "growth_day_7_reached",
   "focus_my_tree_click",
   "tree_care_selected",
+  "friend_invite_seat_selected",
+  "friend_invite_preview_opened",
+  "friend_invite_copied",
+  "online_friend_seat_joined",
 ];
 
 function doGet(e) {
@@ -42,6 +45,7 @@ function doGet(e) {
   }
 
   ensureSheet_();
+  ensureFriendSeatSheet_();
 
   if (action === "track") {
     return trackEvent_(params);
@@ -49,6 +53,18 @@ function doGet(e) {
 
   if (action === "summary") {
     return outputJson_(buildSummary_(params), params.callback);
+  }
+
+  if (action === "join_friend_seat") {
+    return outputJson_(joinFriendSeat_(params), params.callback);
+  }
+
+  if (action === "list_friend_seats") {
+    return outputJson_(listFriendSeats_(params), params.callback);
+  }
+
+  if (action === "ping") {
+    return outputJson_({ ok: true, service: "living_forest", version: "V1.50", timestamp: new Date().toISOString() }, params.callback);
   }
 
   return outputJson_({ ok: false, error: "unknown_action" }, params.callback);
@@ -75,7 +91,112 @@ function trackEvent_(params) {
     params.p_milestone_day || "",
   ]);
 
-  return outputJson_({ ok: true });
+  return outputJson_({ ok: true }, params.callback);
+}
+
+function joinFriendSeat_(params) {
+  const forestId = cleanText_(params.forest_id, 80);
+  const seatId = cleanText_(params.seat_id, 40);
+  const friendId = cleanText_(params.friend_id, 80);
+
+  if (!forestId || !seatId || !friendId) {
+    return { ok: false, error: "missing_required_fields" };
+  }
+
+  const sheet = ensureFriendSeatSheet_();
+  const now = new Date();
+  const updatedAt = Utilities.formatDate(now, SERVICE_TIME_ZONE, "yyyy-MM-dd HH:mm:ss");
+  const rowValues = [
+    now,
+    updatedAt,
+    forestId,
+    seatId,
+    cleanText_(params.seat_label, 40),
+    friendId,
+    cleanText_(params.friend_name, 30),
+    cleanText_(params.tree_name, 40),
+    cleanText_(params.tree_stage, 30),
+    cleanText_(params.growth_days, 10),
+    cleanText_(params.mood_label, 30),
+    cleanText_(params.app_version, 30),
+    cleanText_(params.is_test_mode, 10),
+    cleanText_(params.source, 40),
+  ];
+
+  const existingRow = findFriendSeatRow_(sheet, forestId, seatId, friendId);
+  if (existingRow > 0) {
+    sheet.getRange(existingRow, 1, 1, rowValues.length).setValues([rowValues]);
+  } else {
+    sheet.appendRow(rowValues);
+  }
+
+  return {
+    ok: true,
+    seat: buildFriendSeatObject_(rowValues),
+  };
+}
+
+function listFriendSeats_(params) {
+  const forestId = cleanText_(params.forest_id, 80);
+  if (!forestId) {
+    return { ok: false, error: "missing_forest_id" };
+  }
+
+  const sheet = ensureFriendSeatSheet_();
+  const values = sheet.getDataRange().getValues();
+  const latestBySeat = {};
+
+  for (let i = 1; i < values.length; i += 1) {
+    const row = values[i];
+    const rowForestId = String(row[2] || "").trim();
+    if (rowForestId !== forestId) {
+      continue;
+    }
+
+    const seat = buildFriendSeatObject_(row);
+    if (!seat.seatId) {
+      continue;
+    }
+
+    latestBySeat[seat.seatId] = seat;
+  }
+
+  return {
+    ok: true,
+    forestId,
+    seats: Object.keys(latestBySeat).map((seatId) => latestBySeat[seatId]),
+    updatedAt: Utilities.formatDate(new Date(), SERVICE_TIME_ZONE, "yyyy-MM-dd HH:mm:ss"),
+  };
+}
+
+function findFriendSeatRow_(sheet, forestId, seatId, friendId) {
+  const values = sheet.getDataRange().getValues();
+  for (let i = 1; i < values.length; i += 1) {
+    const row = values[i];
+    if (String(row[2] || "").trim() === forestId && String(row[3] || "").trim() === seatId && String(row[5] || "").trim() === friendId) {
+      return i + 1;
+    }
+  }
+  return -1;
+}
+
+function buildFriendSeatObject_(row) {
+  return {
+    timestamp: normalizeDateTimeText_(row[0]),
+    updatedAt: String(row[1] || ""),
+    forestId: String(row[2] || ""),
+    seatId: String(row[3] || ""),
+    seatLabel: String(row[4] || ""),
+    friendId: String(row[5] || ""),
+    friendName: String(row[6] || ""),
+    treeName: String(row[7] || ""),
+    treeStage: String(row[8] || ""),
+    growthDays: String(row[9] || ""),
+    moodLabel: String(row[10] || ""),
+    appVersion: String(row[11] || ""),
+    isTestMode: String(row[12] || ""),
+    source: String(row[13] || ""),
+  };
 }
 
 function buildSummary_(params) {
@@ -144,50 +265,24 @@ function getRangeInfo_(range, dateText) {
   const targetDate = normalizeDateKey_(dateText) || today;
 
   if (safeRange === "all") {
-    return {
-      range: "all",
-      label: SUMMARY_RANGES.all,
-      startDate: "",
-      endDate: "",
-    };
+    return { range: "all", label: SUMMARY_RANGES.all, startDate: "", endDate: "" };
   }
 
   if (safeRange === "yesterday") {
     const yesterday = addDaysToDateKey_(targetDate, -1);
-    return {
-      range: "yesterday",
-      label: SUMMARY_RANGES.yesterday,
-      startDate: yesterday,
-      endDate: yesterday,
-    };
+    return { range: "yesterday", label: SUMMARY_RANGES.yesterday, startDate: yesterday, endDate: yesterday };
   }
 
   if (safeRange === "last7") {
-    return {
-      range: "last7",
-      label: SUMMARY_RANGES.last7,
-      startDate: addDaysToDateKey_(targetDate, -6),
-      endDate: targetDate,
-    };
+    return { range: "last7", label: SUMMARY_RANGES.last7, startDate: addDaysToDateKey_(targetDate, -6), endDate: targetDate };
   }
 
-  return {
-    range: "today",
-    label: SUMMARY_RANGES.today,
-    startDate: targetDate,
-    endDate: targetDate,
-  };
+  return { range: "today", label: SUMMARY_RANGES.today, startDate: targetDate, endDate: targetDate };
 }
 
 function isDateInRange_(dateKey, rangeInfo) {
-  if (rangeInfo.range === "all") {
-    return true;
-  }
-
-  if (!dateKey) {
-    return false;
-  }
-
+  if (rangeInfo.range === "all") return true;
+  if (!dateKey) return false;
   return dateKey >= rangeInfo.startDate && dateKey <= rangeInfo.endDate;
 }
 
@@ -200,26 +295,17 @@ function normalizeRowDateKey_(row) {
 }
 
 function normalizeDateKey_(value) {
-  if (value === null || value === undefined || value === "") {
-    return "";
-  }
-
+  if (value === null || value === undefined || value === "") return "";
   if (Object.prototype.toString.call(value) === "[object Date]" && !Number.isNaN(value.getTime())) {
     return Utilities.formatDate(value, SERVICE_TIME_ZONE, "yyyy-MM-dd");
   }
-
   if (typeof value === "number" && Number.isFinite(value)) {
     const excelEpoch = new Date(Date.UTC(1899, 11, 30));
     const dateValue = new Date(excelEpoch.getTime() + value * 24 * 60 * 60 * 1000);
     return Utilities.formatDate(dateValue, SERVICE_TIME_ZONE, "yyyy-MM-dd");
   }
-
   const text = String(value).trim();
-
-  if (!text) {
-    return "";
-  }
-
+  if (!text) return "";
   const directMatch = text.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
   if (directMatch) {
     const year = directMatch[1];
@@ -227,26 +313,23 @@ function normalizeDateKey_(value) {
     const day = String(Number(directMatch[3])).padStart(2, "0");
     return `${year}-${month}-${day}`;
   }
-
   const compactMatch = text.match(/^(\d{4})(\d{2})(\d{2})$/);
-  if (compactMatch) {
-    return `${compactMatch[1]}-${compactMatch[2]}-${compactMatch[3]}`;
-  }
-
+  if (compactMatch) return `${compactMatch[1]}-${compactMatch[2]}-${compactMatch[3]}`;
   const parsed = new Date(text);
-  if (!Number.isNaN(parsed.getTime())) {
-    return Utilities.formatDate(parsed, SERVICE_TIME_ZONE, "yyyy-MM-dd");
-  }
-
+  if (!Number.isNaN(parsed.getTime())) return Utilities.formatDate(parsed, SERVICE_TIME_ZONE, "yyyy-MM-dd");
   return "";
+}
+
+function normalizeDateTimeText_(value) {
+  if (Object.prototype.toString.call(value) === "[object Date]" && !Number.isNaN(value.getTime())) {
+    return Utilities.formatDate(value, SERVICE_TIME_ZONE, "yyyy-MM-dd HH:mm:ss");
+  }
+  return String(value || "");
 }
 
 function addDaysToDateKey_(dateKey, days) {
   const base = normalizeDateKey_(dateKey);
-  if (!base) {
-    return "";
-  }
-
+  if (!base) return "";
   const dateValue = new Date(`${base}T12:00:00+09:00`);
   const nextDateValue = new Date(dateValue.getTime() + days * 24 * 60 * 60 * 1000);
   return Utilities.formatDate(nextDateValue, SERVICE_TIME_ZONE, "yyyy-MM-dd");
@@ -255,42 +338,31 @@ function addDaysToDateKey_(dateKey, days) {
 function ensureSheet_() {
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   let sheet = ss.getSheetByName(EVENT_SHEET_NAME);
-
-  if (!sheet) {
-    sheet = ss.insertSheet(EVENT_SHEET_NAME);
-  }
-
+  if (!sheet) sheet = ss.insertSheet(EVENT_SHEET_NAME);
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow([
-      "timestamp",
-      "date",
-      "event_name",
-      "anon_id",
-      "app_version",
-      "schema",
-      "is_test_mode",
-      "page_path",
-      "growth_days",
-      "tree_stage",
-      "source",
-      "mood_type",
-      "milestone_day",
-    ]);
+    sheet.appendRow(["timestamp", "date", "event_name", "anon_id", "app_version", "schema", "is_test_mode", "page_path", "growth_days", "tree_stage", "source", "mood_type", "milestone_day"]);
   }
-
   return sheet;
+}
+
+function ensureFriendSeatSheet_() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  let sheet = ss.getSheetByName(FRIEND_SEAT_SHEET_NAME);
+  if (!sheet) sheet = ss.insertSheet(FRIEND_SEAT_SHEET_NAME);
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(["timestamp", "updated_at", "forest_id", "seat_id", "seat_label", "friend_id", "friend_name", "tree_name", "tree_stage", "growth_days", "mood_label", "app_version", "is_test_mode", "source"]);
+  }
+  return sheet;
+}
+
+function cleanText_(value, maxLength) {
+  return String(value || "").replace(/[<>]/g, "").trim().slice(0, maxLength || 80);
 }
 
 function outputJson_(data, callback) {
   const json = JSON.stringify(data);
-
   if (callback && /^[a-zA-Z_$][0-9a-zA-Z_$.]*$/.test(callback)) {
-    return ContentService
-      .createTextOutput(`${callback}(${json});`)
-      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    return ContentService.createTextOutput(`${callback}(${json});`).setMimeType(ContentService.MimeType.JAVASCRIPT);
   }
-
-  return ContentService
-    .createTextOutput(json)
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
 }

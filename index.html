@@ -35,7 +35,7 @@
 
   <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.49-test" />
+  <link rel="stylesheet" href="style.css?v=1.50-test" />
 <!-- Google tag (gtag.js) - Living Forest GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-YC872G7MH1"></script>
 <script>
@@ -136,6 +136,24 @@
           <p id="forestInviteMeta" class="forest-invite-meta">초대 링크로 들어왔어요 · 로그인 없이 바로 시작할 수 있어요.</p>
         </div>
 
+        <div id="onlineFriendJoinCard" class="online-friend-join-card glass-panel hidden" aria-live="polite">
+          <span class="online-friend-join-kicker">온라인 친구 자리 초대</span>
+          <p id="onlineFriendJoinTitle" class="online-friend-join-title">친구의 숲 자리에 초대받았어요</p>
+          <p id="onlineFriendJoinText" class="online-friend-join-text">닉네임과 나무 이름을 남기면 초대한 사람의 월드 숲 자리 정보에 저장돼요.</p>
+          <form id="onlineFriendJoinForm" class="online-friend-join-form">
+            <label>
+              <span>친구 닉네임</span>
+              <input id="onlineFriendNameInput" type="text" maxlength="12" placeholder="예: 민지" autocomplete="nickname" />
+            </label>
+            <label>
+              <span>내 나무 이름</span>
+              <input id="onlineFriendTreeInput" type="text" maxlength="16" placeholder="예: 민지의 나무" autocomplete="off" />
+            </label>
+            <button id="onlineFriendJoinBtn" class="primary-btn" type="submit">이 자리에 내 나무 심기</button>
+          </form>
+          <p id="onlineFriendJoinMessage" class="online-friend-join-message">초대 링크로 들어온 친구만 이 카드가 보여요.</p>
+        </div>
+
         <div id="worldGrowthCard" class="world-growth-card glass-panel" aria-live="polite">
           <span class="world-growth-kicker">월드 숲의 내 자리</span>
           <p id="worldGrowthTitle" class="world-growth-title">월드 숲은 첫 흔적을 기다려요</p>
@@ -171,7 +189,7 @@
             <button id="previewFriendInviteBtn" class="ghost-btn" type="button">문구 미리보기</button>
           </div>
           <p id="friendInvitePreview" class="friend-invite-preview">초대 문구를 미리 보려면 버튼을 눌러주세요.</p>
-          <p id="friendInviteMeta" class="friend-invite-meta">아직 실제 친구 계정 연결은 없지만, 공유 링크로 친구가 자기 숲을 시작할 수 있어요.</p>
+          <p id="friendInviteMeta" class="friend-invite-meta">Apps Script 저장소를 연결하면 친구가 이 자리로 들어와 자기 나무 정보를 남길 수 있어요.</p>
         </div>
 
         <div id="worldPlaceCard" class="world-place-card glass-panel" aria-live="polite">
@@ -202,7 +220,7 @@
     <section id="gardenScreen" class="screen">
       <header class="hero garden-hero">
         <button id="backToWorldBtnTop" class="ghost-btn small-btn" type="button">← 전체 숲</button>
-        <p class="version">오늘 내 나무 돌보기 · V1.49 test</p>
+        <p class="version">오늘 내 나무 돌보기 · V1.50 test</p>
         <h2 id="gardenTitle" class="garden-title">밤 숲속 자리</h2>
         <p class="subtitle">오늘의 마음이 내 나무와 친구 숲에 귀여운 흔적으로 남아요.</p>
       </header>
@@ -567,6 +585,6 @@
   </aside>
 
 
-  <script src="app.js?v=1.49-test"></script>
+  <script src="app.js?v=1.50-test"></script>
 </body>
 </html>
