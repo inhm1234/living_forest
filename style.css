@@ -10960,3 +10960,89 @@ h1,
   .bird { width: 54px; height: 52px; top: 146px; }
   .squirrel { width: 58px; height: 50px; bottom: 148px; }
 }
+
+
+/* V1.47 test · 친구 숲 느낌 강화 1차 */
+.friend-forest-card {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(244, 127, 166, 0.14);
+  background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,245,250,0.95)) !important;
+  box-shadow: 0 18px 42px rgba(233, 169, 197, 0.14);
+}
+.friend-forest-kicker {
+  display: inline-flex;
+  margin-bottom: 6px;
+  color: #d56f96;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+.friend-forest-title {
+  margin: 0;
+  color: #7b4f63;
+  font-size: 16px;
+  font-weight: 950;
+  line-height: 1.35;
+}
+.friend-forest-text {
+  margin: 7px 0 0;
+  color: rgba(91, 58, 50, 0.82);
+  font-size: 13.5px;
+  font-weight: 720;
+  line-height: 1.58;
+}
+.friend-forest-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.friend-forest-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 84px;
+  padding: 10px 10px 11px;
+  border-radius: 16px;
+  border: 1px solid rgba(244, 127, 166, 0.12);
+  background: rgba(255,255,255,0.86);
+  box-shadow: 0 8px 18px rgba(244, 127, 166, 0.08);
+}
+.friend-forest-item strong {
+  color: #8a5d73;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.25;
+}
+.friend-forest-item span {
+  color: rgba(91,58,50,0.76);
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.friend-forest-item em {
+  margin-top: auto;
+  align-self: flex-start;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 193, 214, 0.44);
+  color: #b25d7e;
+  font-style: normal;
+  font-size: 10.5px;
+  font-weight: 900;
+}
+.friend-forest-meta {
+  margin: 10px 0 0;
+  color: #ba6a8b;
+  font-size: 12.5px;
+  font-weight: 820;
+  line-height: 1.45;
+}
+@media (max-width: 760px) {
+  .friend-forest-list { grid-template-columns: 1fr; }
+  .friend-forest-item { min-height: 0; }
+}

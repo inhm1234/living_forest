@@ -1,12 +1,12 @@
-// 살아있는 숲 V1.46.2 test
+// 살아있는 숲 V1.47 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.46.2 test
-// 목적: 메인 나무 성장 이미지 v2 적용 — 귀여운 웹툰풍 친구 숲으로 첫 화면 전환
+// 버전명: V1.47 test
+// 목적: 친구 숲 느낌 강화 1차 — 함께 키우는 느낌을 주는 월드 카드와 문구 보강
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.46.2 test",
+  version: "V1.47 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -546,6 +546,17 @@ const forestEffectRules = {
   }
 };
 
+const friendForestProfiles = [
+  { name: "리본새싹", mood: "분홍 리본을 좋아하는 친구 자리", badge: "곧 인사할 친구" },
+  { name: "별꽃잎", mood: "반짝이는 꽃잎을 남기고 가는 친구 자리", badge: "작은 흔적 준비" },
+  { name: "민트새소리", mood: "새소리와 함께 자라는 산뜻한 친구 자리", badge: "산책 온 친구" },
+  { name: "복숭숲", mood: "복숭빛 나무가 잘 어울리는 포근한 친구 자리", badge: "포근한 분위기" },
+  { name: "소풍바람", mood: "소풍 세트와 간식 이야기가 어울리는 친구 자리", badge: "함께 놀 친구" },
+  { name: "달빛가랜드", mood: "저녁이 되면 더 예쁜 가랜드를 걸어둘 친구 자리", badge: "저녁 반짝 친구" },
+  { name: "꽃리본", mood: "꽃과 리본 장식을 좋아하는 사랑스러운 친구 자리", badge: "장식 좋아함" },
+  { name: "반짝열매", mood: "작은 선물처럼 반짝이는 열매를 남길 친구 자리", badge: "선물 같은 자리" }
+];
+
 const worldForestSlots = [
   { id: "far-left-1", name: "먼 왼언덕", className: "row-far row-left", state: "balanced", days: 6, x: 24, y: 41, scale: 0.26, opacity: 0.22, depth: 2, tilt: -5, lift: -11, groundOpacity: 0.028, mobileX: 22, mobileY: 43, mobileScale: 0.22 },
   { id: "far-left-2", name: "먼 잎자리", className: "row-far row-left", state: "leaf-strong", days: 9, x: 36, y: 42, scale: 0.28, opacity: 0.24, depth: 2, tilt: -3, lift: -11, groundOpacity: 0.028, mobileX: 35, mobileY: 43, mobileScale: 0.24 },
@@ -618,6 +629,11 @@ const worldGrowthTitleElement = document.querySelector("#worldGrowthTitle");
 const worldGrowthTextElement = document.querySelector("#worldGrowthText");
 const worldGrowthMetaElement = document.querySelector("#worldGrowthMeta");
 const worldGrowthFillElement = document.querySelector("#worldGrowthFill");
+const friendForestCardElement = document.querySelector("#friendForestCard");
+const friendForestTitleElement = document.querySelector("#friendForestTitle");
+const friendForestTextElement = document.querySelector("#friendForestText");
+const friendForestListElement = document.querySelector("#friendForestList");
+const friendForestMetaElement = document.querySelector("#friendForestMeta");
 const firstVisitGuideElement = document.querySelector("#firstVisitGuide");
 const forestInviteCardElement = document.querySelector("#forestInviteCard");
 const forestInviteTitleElement = document.querySelector("#forestInviteTitle");
@@ -2812,6 +2828,69 @@ function renderWorldNeighbors() {
     .join("");
 }
 
+function getFriendForestPreview() {
+  const days = treeData.history.length;
+  const startIndex = days % friendForestProfiles.length;
+  const previewCount = 3;
+  const profiles = Array.from({ length: previewCount }, (_, index) => friendForestProfiles[(startIndex + index) % friendForestProfiles.length]);
+
+  let title = "내 자리 주변에 친구 자리가 보여요";
+  let text = "기록이 쌓일수록 빈자리도 친구의 나무와 흔적이 들어올 자리처럼 더 또렷하게 느껴져요.";
+  let meta = "로그인 없이도 함께 키우는 기분을 먼저 느낄 수 있도록 보여주는 친구 숲 미리보기예요.";
+
+  if (days === 0) {
+    title = "아직 비어 있는 친구 자리가 반짝이고 있어요";
+    text = "첫 마음을 남기면 내 자리 주변의 빈자리도 친구가 들어올 자리처럼 조금 더 생생해져요.";
+    meta = "지금은 미리보기를 보여주는 단계예요. 다음에는 친구의 흔적처럼 느껴지는 요소를 더 늘릴 수 있어요.";
+  } else if (days < 7) {
+    title = `내 자리 주변에 ${previewCount}개의 친구 자리가 보여요`;
+    text = `${days}일째 쌓인 기록 덕분에 가까운 자리들이 친구의 나무와 소풍 흔적이 들어올 곳처럼 선명해지고 있어요.`;
+    meta = "오늘도 마음을 남기면 친구 숲의 분위기가 조금 더 살아나요.";
+  } else if (days < 14) {
+    title = `친구 숲에서 ${previewCount}개의 가까운 자리가 먼저 반응하고 있어요`;
+    text = `${days}일째 이어진 기록 덕분에 내 주변 자리들이 서로 인사하는 숲처럼 보여요. 함께 모일 친구 분위기가 자라고 있어요.`;
+    meta = "실제 친구 로그인 없이도 함께 키우는 감각을 먼저 느껴볼 수 있도록 만든 카드예요.";
+  } else {
+    title = `친구 숲이 ${days}일의 기록을 따라 더 또렷해졌어요`;
+    text = `이제 내 자리 주변의 빈자리도 단순 장식이 아니라 친구의 나무, 선물, 장식이 이어질 자리처럼 느껴져요.`;
+    meta = "다음 단계에서는 이 분위기를 바탕으로 친구 흔적이나 공동체 느낌을 더 확장할 수 있어요.";
+  }
+
+  return { profiles, title, text, meta };
+}
+
+function renderFriendForestCard() {
+  if (!friendForestCardElement) {
+    return;
+  }
+
+  const preview = getFriendForestPreview();
+
+  if (friendForestTitleElement) {
+    friendForestTitleElement.textContent = preview.title;
+  }
+
+  if (friendForestTextElement) {
+    friendForestTextElement.textContent = preview.text;
+  }
+
+  if (friendForestListElement) {
+    friendForestListElement.innerHTML = preview.profiles
+      .map((profile) => `
+        <li class="friend-forest-item">
+          <strong>${profile.name}</strong>
+          <span>${profile.mood}</span>
+          <em>${profile.badge}</em>
+        </li>
+      `)
+      .join("");
+  }
+
+  if (friendForestMetaElement) {
+    friendForestMetaElement.textContent = preview.meta;
+  }
+}
+
 function renderWorldCommunityHint(todayRecord) {
   if (!worldCommunityHintElement) {
     return;
@@ -2820,16 +2899,16 @@ function renderWorldCommunityHint(todayRecord) {
   const worldInfo = getWorldEvolutionInfo();
 
   if (todayRecord) {
-    worldCommunityHintElement.textContent = `오늘의 ${todayRecord.label} 기운이 내 자리 주변에 남았어요. ${getWorldEvolutionSummaryText()}`;
+    worldCommunityHintElement.textContent = `오늘의 ${todayRecord.label} 기운이 내 자리 주변 친구 자리에 남았어요. ${getWorldEvolutionSummaryText()}`;
     return;
   }
 
   if (treeData.history.length === 0) {
-    worldCommunityHintElement.textContent = `멀리 보이는 큰 숲 안에 내 나무가 들어갈 작은 자리가 기다리고 있어요.`;
+    worldCommunityHintElement.textContent = `멀리 보이는 큰 숲 안에 내 자리와 친구 자리가 함께 기다리고 있어요.`;
     return;
   }
 
-  worldCommunityHintElement.textContent = `${treeData.history.length}일의 기록이 월드 숲에 쌓였어요. ${worldInfo.meta}`;
+  worldCommunityHintElement.textContent = `${treeData.history.length}일의 기록이 월드 숲에 쌓였어요. 친구 자리가 더 또렷해지고 있어요. ${worldInfo.meta}`;
 }
 
 function renderWorldGrowthCard() {
@@ -2870,6 +2949,7 @@ function renderWorld() {
   renderWorldNeighbors();
   renderWorldCommunityHint(todayRecord);
   renderWorldGrowthCard();
+  renderFriendForestCard();
 
   myWorldSpotElement.className = `my-world-spot ${spotInfo.className} ${myWorldTreeSizeClass}`;
   mySpotVisualElement.innerHTML = `
@@ -2894,7 +2974,7 @@ function renderWorld() {
     if (treeData.history.length === 0) {
       worldSummaryTextElement.textContent = treeData.treeName?.trim()
         ? "오늘의 마음을 하나 남기면 내 나무가 큰 숲 안의 작은 자리에서 자라기 시작해요."
-        : "오늘의 마음을 하나 고르면 내 나무가 자라고, 월드 숲에도 작은 변화가 생겨요.";
+        : "오늘의 마음을 하나 고르면 내 나무가 자라고, 친구 숲에도 작은 변화가 생겨요.";
     } else {
       worldSummaryTextElement.textContent = getWorldProgressMessage();
     }

@@ -35,7 +35,7 @@
 
   <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.46.2-test" />
+  <link rel="stylesheet" href="style.css?v=1.47-test" />
 <!-- Google tag (gtag.js) - Living Forest GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-YC872G7MH1"></script>
 <script>
@@ -132,10 +132,18 @@
           <p id="worldGrowthMeta" class="world-growth-meta">첫 월드 변화까지 확인 중</p>
         </div>
 
+        <div id="friendForestCard" class="friend-forest-card glass-panel" aria-live="polite">
+          <span class="friend-forest-kicker">친구 숲의 움직임</span>
+          <p id="friendForestTitle" class="friend-forest-title">내 자리 주변에 친구 자리가 보여요</p>
+          <p id="friendForestText" class="friend-forest-text">기록이 쌓일수록 빈자리도 친구의 나무와 흔적이 들어올 자리처럼 더 또렷하게 느껴져요.</p>
+          <ul id="friendForestList" class="friend-forest-list" aria-label="친구 숲 미리보기"></ul>
+          <p id="friendForestMeta" class="friend-forest-meta">로그인 없이도 함께 키우는 기분을 먼저 느낄 수 있도록 보여주는 친구 숲 미리보기예요.</p>
+        </div>
+
         <div id="worldPlaceCard" class="world-place-card glass-panel" aria-live="polite">
           <span class="world-place-kicker">월드 숲 자리 안내</span>
-          <p class="world-place-title">반짝이는 자리가 내 나무와 친구들의 나무가 함께 자랄 자리예요.</p>
-          <p class="world-place-text">주변의 작은 나무와 빈 자리는 앞으로 더 많은 친구 나무가 채워질 숲의 자리들이에요.</p>
+          <p class="world-place-title">반짝이는 빈자리도 곧 친구 나무가 들어와 함께 숲을 이룰 자리예요.</p>
+          <p class="world-place-text">주변 자리 하나하나가 친구의 나무, 선물, 흔적으로 이어질 수 있도록 먼저 보여주는 친구 숲 지도예요.</p>
         </div>
 
         <div id="firstVisitGuide" class="first-visit-guide glass-panel" aria-live="polite">
@@ -160,7 +168,7 @@
     <section id="gardenScreen" class="screen">
       <header class="hero garden-hero">
         <button id="backToWorldBtnTop" class="ghost-btn small-btn" type="button">← 전체 숲</button>
-        <p class="version">오늘 내 나무 돌보기 · V1.46.2 test</p>
+        <p class="version">오늘 내 나무 돌보기 · V1.47 test</p>
         <h2 id="gardenTitle" class="garden-title">밤 숲속 자리</h2>
         <p class="subtitle">오늘의 마음이 내 나무와 친구 숲에 귀여운 흔적으로 남아요.</p>
       </header>
@@ -525,6 +533,6 @@
   </aside>
 
 
-  <script src="app.js?v=1.46.2-test"></script>
+  <script src="app.js?v=1.47-test"></script>
 </body>
 </html>
