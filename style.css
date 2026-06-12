@@ -13267,3 +13267,80 @@ body.onboarding-open {
     animation: none !important;
   }
 }
+
+
+/* V1.64 test: 정원 화면 상단 제목/설명 가독성 개선 */
+.lf-v164-ux #gardenScreen .garden-hero {
+  position: relative;
+  overflow: hidden;
+  width: min(100%, 680px);
+  margin: 0 auto 14px;
+  padding: 18px 16px 16px;
+  border: 1px solid rgba(203, 167, 186, 0.30);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 14% 0%, rgba(255, 226, 239, 0.96), transparent 34%),
+    radial-gradient(circle at 88% 0%, rgba(226, 249, 203, 0.88), transparent 30%),
+    rgba(255, 252, 254, 0.94);
+  box-shadow: 0 16px 34px rgba(203, 147, 171, 0.14);
+  backdrop-filter: blur(14px);
+}
+
+.lf-v164-ux #gardenScreen .garden-hero::after {
+  content: "";
+  position: absolute;
+  right: -42px;
+  bottom: -54px;
+  width: 128px;
+  height: 128px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 236, 166, 0.42), rgba(255, 236, 166, 0));
+  pointer-events: none;
+}
+
+.lf-v164-ux #gardenScreen .garden-hero .small-btn {
+  position: relative;
+  z-index: 1;
+  margin: 0 4px 10px 0;
+  color: #754f62 !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  border-color: rgba(208, 159, 184, 0.34) !important;
+}
+
+.lf-v164-ux #gardenScreen .garden-hero .version {
+  position: relative;
+  z-index: 1;
+  color: #c26085 !important;
+  background: rgba(255, 255, 255, 0.90) !important;
+  border-color: rgba(208, 159, 184, 0.34) !important;
+  box-shadow: 0 8px 18px rgba(203, 147, 171, 0.10);
+}
+
+.lf-v164-ux #gardenScreen .garden-title {
+  position: relative;
+  z-index: 1;
+  color: #2c352e !important;
+  text-shadow: 0 3px 0 rgba(255, 255, 255, 0.82), 0 12px 22px rgba(126, 91, 108, 0.14) !important;
+}
+
+.lf-v164-ux #gardenScreen .garden-hero .subtitle {
+  position: relative;
+  z-index: 1;
+  max-width: 540px;
+  margin: 10px auto 0;
+  color: #5d6960 !important;
+  font-weight: 900 !important;
+  line-height: 1.55;
+}
+
+@media (max-width: 760px) {
+  .lf-v164-ux #gardenScreen .garden-hero {
+    width: 100%;
+    padding: 16px 13px 14px;
+    border-radius: 24px;
+  }
+
+  .lf-v164-ux #gardenScreen .garden-title {
+    font-size: clamp(26px, 8vw, 36px);
+  }
+}
