@@ -13438,3 +13438,164 @@ body.onboarding-open {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* V1.66 test: 한 화면 한 행동 UX — 10대 타깃용 메시지 최소화 */
+.lf-v166-ux .garden-starter-card,
+.lf-v166-ux .garden-hub-head,
+.lf-v166-ux .garden-hub-nav {
+  display: none !important;
+}
+
+.lf-v166-ux .garden-hub {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 28px;
+}
+
+.lf-v166-ux .garden-hub.is-open {
+  background:
+    radial-gradient(circle at 14% 0%, rgba(255, 227, 240, 0.82), transparent 34%),
+    radial-gradient(circle at 92% 0%, rgba(226, 249, 203, 0.82), transparent 30%),
+    rgba(255, 252, 254, 0.98) !important;
+}
+
+.lf-v166-ux .garden-hub-sheet {
+  margin-top: 0;
+}
+
+.lf-v166-ux .garden-hub-panel.active {
+  display: block;
+}
+
+.lf-v166-ux .garden-hub-panel > section {
+  margin-top: 0 !important;
+}
+
+.lf-v166-ux .one-action-title {
+  margin: 0;
+  color: #2c352e;
+  font-size: clamp(24px, 6vw, 32px);
+  font-weight: 1000;
+  line-height: 1.2;
+  letter-spacing: -0.055em;
+  text-align: center;
+}
+
+.lf-v166-ux .one-action-sub {
+  margin: 8px 0 14px;
+  color: #667169;
+  font-size: 14px;
+  font-weight: 850;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.lf-v166-ux .tree-name-message,
+.lf-v166-ux .today-status,
+.lf-v166-ux .mood-guide,
+.lf-v166-ux .finish-guide-meta {
+  font-size: 13px;
+}
+
+/* 1단계: 이름 정하기만 보여주기 */
+.lf-v166-ux.lf-step-name .mood-card,
+.lf-v166-ux.lf-step-name #returnMemoryCard,
+.lf-v166-ux.lf-step-name #streakRewardCard,
+.lf-v166-ux.lf-step-name #completeCard,
+.lf-v166-ux.lf-step-name #todayChangeCard,
+.lf-v166-ux.lf-step-name #tomorrowPromiseCard,
+.lf-v166-ux.lf-step-name #finishGuideCard,
+.lf-v166-ux.lf-step-name #tomorrowSeedCard,
+.lf-v166-ux.lf-step-name #forestDiaryCard {
+  display: none !important;
+}
+
+/* 2단계: 마음 고르기만 보여주기 */
+.lf-v166-ux.lf-step-mood #nameCard,
+.lf-v166-ux.lf-step-mood #returnMemoryCard,
+.lf-v166-ux.lf-step-mood #streakRewardCard,
+.lf-v166-ux.lf-step-mood #completeCard,
+.lf-v166-ux.lf-step-mood #todayChangeCard,
+.lf-v166-ux.lf-step-mood #tomorrowPromiseCard,
+.lf-v166-ux.lf-step-mood #finishGuideCard,
+.lf-v166-ux.lf-step-mood #tomorrowSeedCard,
+.lf-v166-ux.lf-step-mood #forestDiaryCard {
+  display: none !important;
+}
+
+.lf-v166-ux.lf-step-mood .mood-card {
+  padding: 20px 16px !important;
+}
+
+.lf-v166-ux.lf-step-mood .mood-guide {
+  margin-bottom: 16px;
+  color: #2c352e !important;
+  font-size: clamp(23px, 6vw, 31px);
+  font-weight: 1000 !important;
+  line-height: 1.2;
+  letter-spacing: -0.055em;
+}
+
+.lf-v166-ux.lf-step-mood .today-status {
+  margin-top: 14px;
+  color: #69736c !important;
+}
+
+/* 3단계: 기록 완료 후에는 마무리 카드 하나만 먼저 보여주기 */
+.lf-v166-ux.lf-step-done #nameCard,
+.lf-v166-ux.lf-step-done .mood-card,
+.lf-v166-ux.lf-step-done #returnMemoryCard,
+.lf-v166-ux.lf-step-done #streakRewardCard,
+.lf-v166-ux.lf-step-done #completeCard,
+.lf-v166-ux.lf-step-done #todayChangeCard,
+.lf-v166-ux.lf-step-done #tomorrowPromiseCard,
+.lf-v166-ux.lf-step-done #forestDiaryCard,
+.lf-v166-ux.lf-step-done #tomorrowSeedCard {
+  display: none !important;
+}
+
+.lf-v166-ux.lf-step-done #finishGuideCard {
+  display: block !important;
+}
+
+.lf-v166-ux.lf-step-done.lf-show-seed #tomorrowSeedCard {
+  display: block !important;
+  margin-top: 12px !important;
+}
+
+/* 첫 흐름에서는 숲 이미지는 보조로 내려서, 행동 카드가 먼저 보이게 */
+.lf-v166-ux.lf-step-name .forest-head,
+.lf-v166-ux.lf-step-mood .forest-head {
+  margin-top: 16px;
+}
+
+.lf-v166-ux.lf-step-name .garden-card,
+.lf-v166-ux.lf-step-mood .garden-card {
+  opacity: 0.96;
+}
+
+/* 카드 안의 문장 양을 더 작고 깔끔하게 */
+.lf-v166-ux .finish-guide-title {
+  font-size: clamp(23px, 6vw, 30px);
+}
+
+.lf-v166-ux .finish-guide-text {
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 760px) {
+  .lf-v166-ux .garden-hub {
+    padding: 12px;
+  }
+
+  .lf-v166-ux .mood-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .lf-v166-ux .mood-buttons button {
+    min-height: 64px;
+  }
+}

@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.65 test
+// 살아있는 숲 V1.66 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.65 test
+// 버전명: V1.66 test
 // 목적: 첫 기록 흐름 개선 - 시작 후 기록 패널 자동 열기, 입력 위치 안내 강화
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.65 test",
+  version: "V1.66 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -2656,6 +2656,7 @@ function chooseMood(mood) {
   renderForestCalendarCard();
   renderForestMemoryCard();
   updateTodayStatus();
+  updateOneActionStepUI();
   prepareDailyVisitor({ forcePlay: true, allowCreate: true, allowPlay: true });
   playAfterRecordReward(afterRecordExperience);
 }
@@ -3200,7 +3201,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.65 test는 첫 방문 마무리 안내판이라 기존 V1.55 stable Apps Script로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.66 test는 한 화면 한 행동 UX판이라 기존 V1.55 stable Apps Script로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -5818,6 +5819,37 @@ function renderHeader() {
   }
 }
 
+function updateOneActionStepUI() {
+  const hasName = Boolean(treeData.treeName?.trim());
+  const checkedToday = hasCheckedToday();
+  const step = !hasName ? "name" : checkedToday ? "done" : "mood";
+
+  document.body.classList.remove("lf-step-name", "lf-step-mood", "lf-step-done");
+  document.body.classList.add(`lf-step-${step}`);
+
+  if (step !== "done") {
+    document.body.classList.remove("lf-show-seed");
+  }
+
+  if (gardenHubLayoutBuilt && gardenHubElement) {
+    openGardenHubTab("record");
+  }
+
+  if (gardenPanelTitleElement) {
+    if (step === "name") {
+      gardenPanelTitleElement.textContent = "나무 이름 정하기";
+    } else if (step === "mood") {
+      gardenPanelTitleElement.textContent = "오늘 마음 고르기";
+    } else {
+      gardenPanelTitleElement.textContent = "오늘 기록 완료";
+    }
+  }
+
+  if (closeGardenPanelBtnElement) {
+    closeGardenPanelBtnElement.textContent = "접기";
+  }
+}
+
 function renderTree(animate = false) {
   const state = getTreeState();
   const imageInfo = getTreeImageInfo();
@@ -5942,9 +5974,9 @@ function updateTodayStatus() {
   }
 
   if (!hasName) {
-    todayStatusElement.textContent = "먼저 나무 이름을 정하면 마음 버튼이 열려요.";
+    todayStatusElement.textContent = "이름을 정하면 다음 단계가 열려요.";
     if (moodGuideElement) {
-      moodGuideElement.textContent = "먼저 나무 이름을 정하면 오늘의 마음을 고를 수 있어요.";
+      moodGuideElement.textContent = "오늘 마음 고르기";
     }
     backToWorldBtnBottomElement.textContent = "전체 숲으로 돌아가기";
     return;
@@ -5952,20 +5984,20 @@ function updateTodayStatus() {
 
   if (checked) {
     const label = todayRecord ? todayRecord.label : "기록됨";
-    todayStatusElement.textContent = `오늘(${formatDate(getTodayKey())})은 이미 "${label}" 상태를 기록했어요.`;
+    todayStatusElement.textContent = `오늘은 "${label}" 기록 완료`;
     if (moodGuideElement) {
-      moodGuideElement.textContent = `오늘의 기록은 완료됐어요. 내일 다시 오면 다음 성장이 이어져요. ${getStreakRewardPreviewText()}`;
+      moodGuideElement.textContent = "오늘 기록 완료";
     }
     backToWorldBtnBottomElement.textContent = "전체 숲에서 내 자리 보기";
   } else {
     const returnMemory = getReturnMemoryInfo();
     todayStatusElement.textContent = returnMemory
-      ? `오늘(${formatDate(getTodayKey())})의 마음을 더하면 어제의 성장 위에 새로운 기록이 이어져요.`
+      ? `오늘 마음을 하나 골라주세요.`
       : `이제 오늘의 마음을 하나 골라주세요.`;
     if (moodGuideElement) {
       moodGuideElement.textContent = returnMemory
-        ? `어제의 마음 위에 오늘의 마음을 더해볼까요? 정답은 없어요. 지금과 가장 가까운 상태 하나만 골라주세요.`
-        : `좋음 / 보통 / 피곤 중 지금과 가장 가까운 하나를 골라주세요.`;
+        ? `오늘 마음 고르기`
+        : `오늘 마음 고르기`;
     }
     backToWorldBtnBottomElement.textContent = "전체 숲으로 돌아가기";
   }
@@ -6397,6 +6429,7 @@ function renderAll() {
   renderVisitorTrace();
   renderVisitorLog();
   updateTodayStatus();
+  updateOneActionStepUI();
 }
 
 treeNameFormElement.addEventListener("submit", (event) => {
@@ -6622,6 +6655,7 @@ function buildGardenHubLayout() {
 
   openGardenHubTab("record");
   closeGardenHubPanel();
+  updateOneActionStepUI();
 }
 
 function openGardenHubTab(tabKey) {
@@ -6674,9 +6708,12 @@ function closeGardenHubPanel() {
 
 if (finishSeedBtnElement) {
   finishSeedBtnElement.addEventListener("click", () => {
+    document.body.classList.add("lf-show-seed");
     openGardenHubTab("record");
-    tomorrowSeedCardElement?.scrollIntoView({ behavior: "smooth", block: "center" });
-    tomorrowSeedInputElement?.focus({ preventScroll: true });
+    window.setTimeout(() => {
+      tomorrowSeedCardElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+      tomorrowSeedInputElement?.focus({ preventScroll: true });
+    }, 60);
   });
 }
 
