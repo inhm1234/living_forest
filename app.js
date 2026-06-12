@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.55 test
+// 살아있는 숲 V1.56 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.55 test
-// 목적: 친구 목록에서 원하는 숲 자리로 배치/이동/교체
+// 버전명: V1.56 test
+// 목적: 친구 배치 UX 정리 - 현재 자리/빈 자리/교체 자리 안내 강화
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.55 test",
+  version: "V1.56 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -3008,6 +3008,39 @@ function getFriendSeatOccupantName(seatId) {
   return record ? (sanitizeOnlineText(record.friendName || record.friend_name || "친구", 12) || "친구") : "";
 }
 
+function getFriendSeatStatusClass(seatId) {
+  return getOnlineSeatRecord(seatId) ? "is-filled" : "is-empty";
+}
+
+function getFriendSeatStatusText(seatId) {
+  const record = getOnlineSeatRecord(seatId);
+  if (!record) {
+    return "비어 있음";
+  }
+
+  const friendName = sanitizeOnlineText(record.friendName || record.friend_name || "친구", 12) || "친구";
+  return `${friendName}님 있음`;
+}
+
+function renderFriendSeatStatusGuide() {
+  return `
+    <li class="friend-seat-guide-row" aria-label="현재 친구 자리 현황">
+      <div class="friend-seat-guide-head">
+        <strong>자리 현황</strong>
+        <span>비어 있음은 바로 배치, 누군가 있으면 교체 확인창이 떠요.</span>
+      </div>
+      <div class="friend-seat-guide-chips">
+        ${friendInviteSeatSlots.map((seat) => `
+          <span class="friend-seat-guide-chip ${getFriendSeatStatusClass(seat.id)}">
+            <b>${escapeHtml(seat.emoji)} ${escapeHtml(seat.label)}</b>
+            <small>${escapeHtml(getFriendSeatStatusText(seat.id))}</small>
+          </span>
+        `).join("")}
+      </div>
+    </li>
+  `;
+}
+
 function renderFriendPlacementButtons(link) {
   const friendId = getFriendLinkId(link);
   const currentSeatId = getFriendLinkCurrentSeatId(link);
@@ -3022,18 +3055,24 @@ function renderFriendPlacementButtons(link) {
       ${friendInviteSeatSlots.map((seat) => {
         const occupiedByOther = isSeatOccupiedByOtherFriend(seat.id, friendId);
         const isCurrent = currentSeatId === seat.id;
-        const buttonLabel = isCurrent ? `${seat.label} · 현재` : seat.label;
-        const hint = occupiedByOther && !isCurrent ? "교체" : (isCurrent ? "현재" : "배치");
+        const statusClass = isCurrent ? " is-current" : (occupiedByOther ? " needs-confirm" : " is-open");
+        const hint = isCurrent ? "현재 자리" : (occupiedByOther ? "교체" : "빈 자리");
+        const guide = isCurrent
+          ? "이미 이 친구가 있는 자리예요."
+          : (occupiedByOther ? `${getFriendSeatOccupantName(seat.id)}님과 교체돼요.` : "누르면 이 자리로 배치돼요.");
         return `
           <button
             type="button"
-            class="friend-link-seat-btn${isCurrent ? " is-current" : ""}${occupiedByOther && !isCurrent ? " needs-confirm" : ""}"
+            class="friend-link-seat-btn${statusClass}"
             data-friend-link-id="${escapeHtml(friendId)}"
             data-friend-link-seat="${escapeHtml(seat.id)}"
+            aria-label="${escapeHtml(getFriendLinkName(link))}님을 ${escapeHtml(seat.label)}로 ${occupiedByOther && !isCurrent ? "교체" : "배치"}"
+            ${isCurrent ? 'aria-current="true"' : ""}
             ${isAssigning ? "disabled" : ""}
           >
-            <span>${escapeHtml(buttonLabel)}</span>
+            <span><b>${escapeHtml(seat.emoji)}</b> ${escapeHtml(seat.label)}</span>
             <small>${escapeHtml(hint)}</small>
+            <i>${escapeHtml(guide)}</i>
           </button>
         `;
       }).join("")}
@@ -3061,7 +3100,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script에 V1.55 test 코드가 배포되었는지 확인해 주세요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.56 test는 화면 UX 중심 패치라 기존 V1.55 stable Apps Script로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -3075,34 +3114,45 @@ function renderFriendLinksCard() {
 
   if (friendLinksTextElement) {
     friendLinksTextElement.textContent = totalCount > 0
-      ? "친구 카드에서 꽃길/햇살/연못/그네/꽃담 버튼을 눌러 원하는 자리로 바로 배치하거나 이동할 수 있어요."
+      ? "먼저 자리 현황을 보고, 친구 카드에서 빈 자리/현재 자리/교체 자리를 확인한 뒤 눌러 주세요."
       : "친구가 초대 링크로 들어오면 먼저 친구 목록에 저장되고, 빈 숲 자리에는 대표 친구로 배치돼요.";
   }
 
   if (friendLinksListElement) {
     if (totalCount === 0) {
       friendLinksListElement.innerHTML = `
+        ${renderFriendSeatStatusGuide()}
         <li class="friend-links-empty">
           <strong>친구 목록 대기 중</strong>
           <span>친구가 들어오면 이곳에 관계가 먼저 저장돼요.</span>
         </li>
       `;
     } else {
-      friendLinksListElement.innerHTML = links.slice(0, 12).map((link) => {
-        const friendName = getFriendLinkName(link);
-        const treeName = getFriendLinkTreeName(link);
-        const placementText = getFriendLinkPlacementText(link);
-        return `
-          <li class="friend-links-item">
-            <div class="friend-link-summary">
-              <strong>${escapeHtml(friendName)}</strong>
-              <span>${escapeHtml(treeName)}</span>
-              <em>${escapeHtml(placementText)}</em>
-            </div>
-            ${renderFriendPlacementButtons(link)}
-          </li>
-        `;
-      }).join("");
+      const orderedLinks = links.slice(0, 12).sort((a, b) => {
+        const seatA = getFriendLinkCurrentSeatId(a);
+        const seatB = getFriendLinkCurrentSeatId(b);
+        if (!!seatA !== !!seatB) return seatA ? -1 : 1;
+        return getFriendLinkName(a).localeCompare(getFriendLinkName(b), "ko");
+      });
+      friendLinksListElement.innerHTML = `
+        ${renderFriendSeatStatusGuide()}
+        ${orderedLinks.map((link) => {
+          const friendName = getFriendLinkName(link);
+          const treeName = getFriendLinkTreeName(link);
+          const placementText = getFriendLinkPlacementText(link);
+          const currentSeatId = getFriendLinkCurrentSeatId(link);
+          return `
+            <li class="friend-links-item${currentSeatId ? " is-placed" : " is-unplaced"}">
+              <div class="friend-link-summary">
+                <strong>${escapeHtml(friendName)}</strong>
+                <span>${escapeHtml(treeName)}</span>
+                <em>${escapeHtml(placementText)}</em>
+              </div>
+              ${renderFriendPlacementButtons(link)}
+            </li>
+          `;
+        }).join("")}
+      `;
     }
   }
 
@@ -3115,7 +3165,7 @@ function renderFriendLinksCard() {
       friendLinksMetaElement.textContent = friendLinkAssignMessage || "친구 자리 배치에 실패했어요.";
     } else {
       friendLinksMetaElement.textContent = totalCount > 0
-        ? `배치됨 ${placedCount}명 · 자리 없음 ${waitingCount}명. 이미 친구가 있는 자리에 넣으면 확인창이 먼저 떠요.`
+        ? `배치됨 ${placedCount}명 · 자리 없음 ${waitingCount}명. 초록은 현재/빈 자리, 노랑은 교체 확인이 필요한 자리예요.`
         : "친구 관계 저장소는 준비됐어요. 초대 테스트를 하면 friend_links 시트가 생겨야 해요.";
     }
   }
@@ -3170,8 +3220,10 @@ async function assignFriendLinkToSeat(friendId, seatId) {
 
   if (isSeatOccupiedByOtherFriend(seat.id, friendId)) {
     const occupantName = getFriendSeatOccupantName(seat.id);
-    const ok = window.confirm(`${seat.label}에는 ${occupantName}님이 있어요. ${friendName}님으로 교체할까요?
-교체된 친구는 삭제되지 않고 친구 목록에 남아요.`);
+    const ok = window.confirm(`${seat.label}에는 지금 ${occupantName}님이 있어요.
+
+확인을 누르면 ${friendName}님이 이 자리로 들어가고, ${occupantName}님은 자리에서만 빠져요.
+친구 목록에서는 삭제되지 않아요.`);
     if (!ok) return;
   }
 

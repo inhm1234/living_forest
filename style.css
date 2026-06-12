@@ -11876,7 +11876,7 @@ body.online-friend-invite-mode #friendInviteCard {
 }
 
 
-/* V1.55 test · 친구 관계 저장소 카드 + 자리 배치 버튼 */
+/* V1.56 test · 친구 관계 저장소 카드 + 자리 배치 UX */
 .friend-links-card {
   position: relative;
   overflow: hidden;
@@ -11924,6 +11924,15 @@ body.online-friend-invite-mode #friendInviteCard {
   background: rgba(255, 249, 252, 0.78);
   box-shadow: 0 10px 26px rgba(172, 108, 133, 0.08);
 }
+.friend-links-item.is-placed {
+  border-color: rgba(94, 170, 112, 0.22);
+  background: rgba(249, 255, 252, 0.82);
+}
+
+.friend-links-item.is-unplaced {
+  border-color: rgba(244, 127, 166, 0.18);
+}
+
 
 .friend-links-item strong,
 .friend-links-empty strong {
@@ -11957,14 +11966,106 @@ body.online-friend-invite-mode #friendInviteCard {
   grid-column: 1 / -1;
 }
 
+.friend-seat-guide-row {
+  grid-column: 1 / -1;
+  border: 1px solid rgba(244, 127, 166, 0.2);
+  border-radius: 20px;
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(255, 250, 253, 0.92), rgba(240, 255, 247, 0.78));
+  box-shadow: 0 12px 28px rgba(172, 108, 133, 0.08);
+}
+
+.friend-seat-guide-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.friend-seat-guide-head strong {
+  color: #7d5265;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.friend-seat-guide-head span {
+  color: #957281;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.friend-seat-guide-chips {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.friend-seat-guide-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  border-radius: 14px;
+  padding: 8px 7px;
+  border: 1px solid rgba(244, 127, 166, 0.2);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.friend-seat-guide-chip b {
+  overflow: hidden;
+  color: #7d5265;
+  font-size: 11px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.friend-seat-guide-chip small {
+  overflow: hidden;
+  color: #9a7584;
+  font-size: 10px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.friend-seat-guide-chip.is-empty {
+  background: rgba(235, 255, 244, 0.86);
+  border-color: rgba(94, 170, 112, 0.24);
+}
+
+.friend-seat-guide-chip.is-empty small {
+  color: #5c8f68;
+}
+
+.friend-seat-guide-chip.is-filled {
+  background: rgba(255, 246, 226, 0.9);
+  border-color: rgba(231, 166, 75, 0.3);
+}
+
+.friend-seat-guide-chip.is-filled small {
+  color: #a87631;
+}
+
 @media (max-width: 760px) {
   .friend-links-list {
     grid-template-columns: 1fr;
   }
+
+  .friend-seat-guide-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .friend-seat-guide-chips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 
-/* V1.55 test · 친구 목록에서 자리 배치/이동/교체 */
+/* V1.56 test · 친구 목록에서 자리 배치/이동/교체 UX 정리 */
 .friend-links-item {
   display: flex;
   flex-direction: column;
@@ -11984,27 +12085,41 @@ body.online-friend-invite-mode #friendInviteCard {
 .friend-link-seat-btn {
   border: 1px solid rgba(244, 127, 166, 0.22);
   border-radius: 13px;
-  padding: 7px 5px;
+  padding: 8px 6px;
   background: rgba(255, 255, 255, 0.72);
   color: #7d5265;
   font: inherit;
   font-size: 11px;
   font-weight: 800;
   cursor: pointer;
+  text-align: left;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
 .friend-link-seat-btn span,
-.friend-link-seat-btn small {
+.friend-link-seat-btn small,
+.friend-link-seat-btn i {
   display: block;
   line-height: 1.2;
 }
 
+.friend-link-seat-btn span {
+  white-space: nowrap;
+}
+
 .friend-link-seat-btn small {
-  margin-top: 3px;
+  margin-top: 4px;
   color: #a2788a;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 900;
+}
+
+.friend-link-seat-btn i {
+  margin-top: 4px;
+  color: #a88895;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 700;
 }
 
 .friend-link-seat-btn:hover:not(:disabled) {
@@ -12013,15 +12128,29 @@ body.online-friend-invite-mode #friendInviteCard {
   box-shadow: 0 10px 22px rgba(172, 108, 133, 0.12);
 }
 
+.friend-link-seat-btn.is-open {
+  background: rgba(255, 255, 255, 0.76);
+}
+
 .friend-link-seat-btn.is-current {
   background: rgba(230, 255, 240, 0.9);
   border-color: rgba(94, 170, 112, 0.28);
   color: #4f8b5d;
 }
 
+.friend-link-seat-btn.is-current i,
+.friend-link-seat-btn.is-current small {
+  color: #4f8b5d;
+}
+
 .friend-link-seat-btn.needs-confirm {
   background: rgba(255, 246, 226, 0.9);
   border-color: rgba(231, 166, 75, 0.3);
+}
+
+.friend-link-seat-btn.needs-confirm small,
+.friend-link-seat-btn.needs-confirm i {
+  color: #a87631;
 }
 
 .friend-link-seat-btn:disabled {
@@ -12044,10 +12173,14 @@ body.online-friend-invite-mode #friendInviteCard {
 
 @media (max-width: 520px) {
   .friend-link-seat-actions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 
   .friend-link-seat-btn {
-    min-height: 44px;
+    min-height: 48px;
+  }
+
+  .friend-seat-guide-chips {
+    grid-template-columns: 1fr;
   }
 }
