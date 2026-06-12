@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.66 test
+// 살아있는 숲 V1.67 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.66 test
+// 버전명: V1.67 test
 // 목적: 첫 기록 흐름 개선 - 시작 후 기록 패널 자동 열기, 입력 위치 안내 강화
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.66 test",
+  version: "V1.67 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -3201,7 +3201,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.66 test는 한 화면 한 행동 UX판이라 기존 V1.55 stable Apps Script로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.67 test는 통합 한 화면 UX판이라 기존 V1.55 stable Apps Script로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -5930,7 +5930,7 @@ function renderTreeName() {
     nameCardElement.classList.add("hidden");
   } else {
     treeNameInputElement.value = "";
-    treeNameMessageElement.textContent = "나무 이름을 정하면 바로 오늘의 마음을 고를 수 있어요. 이름은 한 번만 정할 수 있어요.";
+    treeNameMessageElement.textContent = "나중에 바꾸기 어려워요.";
     nameCardElement.classList.remove("hidden");
   }
 }

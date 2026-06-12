@@ -13599,3 +13599,229 @@ body.onboarding-open {
     min-height: 64px;
   }
 }
+
+
+/* V1.67 test: 통합 한 화면 UX — 따로따로 보이던 카드들을 하나의 화면으로 묶기 */
+.lf-v167-ux #gardenScreen.screen-active {
+  display: block;
+  width: min(100%, 760px);
+  margin: 0 auto;
+}
+
+.lf-v167-ux .one-screen-garden-shell {
+  position: relative;
+  overflow: hidden;
+  margin: 0 auto 18px;
+  padding: 14px;
+  border-radius: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.82) !important;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(255, 226, 240, 0.88), transparent 30%),
+    radial-gradient(circle at 94% 0%, rgba(226, 249, 204, 0.82), transparent 28%),
+    linear-gradient(180deg, rgba(255, 252, 254, 0.98), rgba(255, 246, 251, 0.96)) !important;
+  box-shadow: 0 22px 52px rgba(203, 147, 171, 0.18) !important;
+}
+
+.lf-v167-ux .one-screen-garden-shell::after {
+  content: "";
+  position: absolute;
+  right: -52px;
+  top: 62px;
+  width: 150px;
+  height: 150px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 239, 174, 0.42), rgba(255, 239, 174, 0));
+  pointer-events: none;
+}
+
+.lf-v167-ux #gardenScreen .garden-hero {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  margin: 0 0 10px;
+  padding: 2px 0 0;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.lf-v167-ux #gardenScreen .garden-hero::after {
+  display: none !important;
+}
+
+.lf-v167-ux #gardenScreen .garden-hero .small-btn,
+.lf-v167-ux #gardenScreen .garden-hero .version {
+  margin-bottom: 7px;
+  min-height: 34px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.lf-v167-ux #gardenScreen .garden-title {
+  margin-top: 2px;
+  color: #2f3832 !important;
+  font-size: clamp(26px, 5.2vw, 36px);
+  line-height: 1.12;
+  text-shadow: 0 3px 0 rgba(255, 255, 255, 0.72) !important;
+}
+
+.lf-v167-ux #gardenScreen .garden-hero .subtitle {
+  margin-top: 6px;
+  color: #69736c !important;
+  font-size: 13px;
+  font-weight: 850 !important;
+}
+
+.lf-v167-ux .garden-hub {
+  position: relative;
+  z-index: 3;
+  margin: 0 0 10px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.lf-v167-ux .garden-hub-sheet {
+  margin-top: 0 !important;
+}
+
+.lf-v167-ux .garden-hub-panel.active {
+  display: block;
+}
+
+.lf-v167-ux .garden-hub-panel > section {
+  box-shadow: 0 12px 28px rgba(203, 147, 171, 0.11) !important;
+}
+
+.lf-v167-ux .forest-head {
+  display: none !important;
+}
+
+.lf-v167-ux .garden-card {
+  position: relative;
+  z-index: 1;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 26px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.lf-v167-ux .garden-stage {
+  height: clamp(280px, 40vh, 390px) !important;
+  min-height: 280px !important;
+  border-radius: 26px !important;
+  border: 2px solid rgba(255, 255, 255, 0.86) !important;
+  box-shadow: inset 0 0 0 1px rgba(120, 98, 112, 0.16), 0 14px 32px rgba(84, 55, 78, 0.16);
+}
+
+.lf-v167-ux .stage-message {
+  left: 16px;
+  right: 16px;
+  bottom: 14px;
+  padding: 12px 14px;
+  border-radius: 20px;
+}
+
+.lf-v167-ux .message-main {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.lf-v167-ux .message-sub {
+  display: none;
+}
+
+/* 첫 단계 화면은 입력 카드와 숲이 한 카드 안에서 바로 이어져 보이게 */
+.lf-v167-ux.lf-step-name #nameCard,
+.lf-v167-ux.lf-step-mood .mood-card,
+.lf-v167-ux.lf-step-done #finishGuideCard {
+  margin: 0 !important;
+  padding: 16px 14px !important;
+  border-radius: 24px !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+}
+
+.lf-v167-ux .one-action-title,
+.lf-v167-ux .mood-guide,
+.lf-v167-ux .finish-guide-title {
+  font-size: clamp(22px, 5.4vw, 30px) !important;
+}
+
+.lf-v167-ux .one-action-sub {
+  display: none;
+}
+
+.lf-v167-ux .tree-name-message {
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.lf-v167-ux .tree-name-form {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.lf-v167-ux .tree-name-form input,
+.lf-v167-ux .tree-name-form button {
+  min-height: 48px !important;
+}
+
+.lf-v167-ux .mood-buttons button {
+  min-height: 58px;
+}
+
+.lf-v167-ux .finish-guide-actions {
+  margin-top: 12px;
+}
+
+@media (max-height: 760px) and (min-width: 761px) {
+  .lf-v167-ux .one-screen-garden-shell {
+    padding: 12px;
+  }
+
+  .lf-v167-ux #gardenScreen .garden-hero {
+    margin-bottom: 8px;
+  }
+
+  .lf-v167-ux #gardenScreen .garden-title {
+    font-size: 29px;
+  }
+
+  .lf-v167-ux #gardenScreen .garden-hero .subtitle {
+    display: none;
+  }
+
+  .lf-v167-ux .garden-stage {
+    height: 300px !important;
+    min-height: 300px !important;
+  }
+
+  .lf-v167-ux.lf-step-name #nameCard,
+  .lf-v167-ux.lf-step-mood .mood-card,
+  .lf-v167-ux.lf-step-done #finishGuideCard {
+    padding: 13px !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .lf-v167-ux .one-screen-garden-shell {
+    padding: 11px;
+    border-radius: 28px;
+  }
+
+  .lf-v167-ux #gardenScreen .garden-hero .subtitle {
+    display: none;
+  }
+
+  .lf-v167-ux .tree-name-form {
+    grid-template-columns: 1fr;
+  }
+
+  .lf-v167-ux .garden-stage {
+    height: clamp(300px, 44vh, 420px) !important;
+  }
+}
