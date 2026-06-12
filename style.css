@@ -13937,3 +13937,160 @@ body.onboarding-open {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* V1.69 test: 전체 숲 첫 화면 UX — 전체 숲을 입구 화면처럼 가볍게 정리 */
+body:not(.online-friend-invite-mode).lf-v169-ux #worldScreen.screen-active {
+  display: block;
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255, 226, 240, 0.86), transparent 32%),
+    radial-gradient(circle at 92% 0%, rgba(226, 249, 204, 0.82), transparent 30%),
+    linear-gradient(180deg, rgba(255, 252, 254, 0.98), rgba(255, 246, 251, 0.96));
+  box-shadow: 0 22px 52px rgba(203, 147, 171, 0.18);
+}
+
+body:not(.online-friend-invite-mode).lf-v169-ux .world-hero {
+  margin: 0 0 10px;
+  padding: 2px 0 0;
+}
+
+body:not(.online-friend-invite-mode).lf-v169-ux .world-hero h1 {
+  font-size: clamp(34px, 7vw, 48px);
+}
+
+body:not(.online-friend-invite-mode).lf-v169-ux .world-hero .subtitle {
+  margin-top: 6px;
+  color: #69736c !important;
+  font-size: 13px;
+  font-weight: 880;
+}
+
+body:not(.online-friend-invite-mode).lf-v169-ux .world-hero .demo-pill {
+  display: none !important;
+}
+
+body:not(.online-friend-invite-mode).lf-v169-ux #launchGuideCard {
+  margin: 0 0 10px;
+  padding: 16px 14px;
+  border-radius: 26px;
+  text-align: center;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(255, 226, 239, 0.54), transparent 32%),
+    rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(245, 191, 216, 0.42) !important;
+  box-shadow: 0 12px 28px rgba(203, 147, 171, 0.11) !important;
+}
+
+body:not(.online-friend-invite-mode).lf-v169-ux #launchGuideCard::after,
+body:not(.online-friend-invite-mode).lf-v169-ux .launch-step-list,
+body:not(.online-friend-invite-mode).lf-v169-ux .launch-ghost-btn {
+  display: none !important;
+}
+
+body:not(.online-friend-invite-mode).lf-v169-ux .launch-guide-kicker {
+  color: #bd6389 !important;
+  background: #fff1bd !important;
+}
+
+body:not(.online-friend-invite-mode).lf-v169-ux #launchGuideTitle {
+  margin: 8px 0 6px;
+  color: #303832 !important;
+  font-size: clamp(24px, 6vw, 34px);
+  font-weight: 1000;
+  letter-spacing: -0.06em;
+}
+
+body:not(.online-friend-invite-mode).lf-v169-ux .launch-guide-text {
+  max-width: 380px;
+  margin: 0 auto;
+  color: #6c746f !important;
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.5;
+}
+
+body:not(.online-friend-invite-mode).lf-v169-ux .launch-action-row {
+  grid-template-columns: 1fr;
+  max-width: 360px;
+  margin: 14px auto 0;
+}
+
+body:not(.online-friend-invite-mode).lf-v169-ux .launch-primary-btn {
+  min-height: 56px;
+  font-size: 17px;
+  border-radius: 22px;
+}
+
+body:not(.online-friend-invite-mode).lf-v169-ux .world-card.visual-card {
+  margin: 0;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 28px;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body:not(.online-friend-invite-mode).lf-v169-ux .world-stage {
+  height: clamp(330px, 48vh, 480px);
+  min-height: 330px;
+  border: 2px solid rgba(255, 255, 255, 0.86);
+  border-radius: 28px;
+  box-shadow: inset 0 0 0 1px rgba(120, 98, 112, 0.16), 0 14px 32px rgba(84, 55, 78, 0.16);
+}
+
+body:not(.online-friend-invite-mode).lf-v169-ux .world-time-badge {
+  left: 14px;
+  top: 14px;
+  border-color: rgba(255, 255, 255, 0.68);
+  background: rgba(255, 255, 255, 0.82);
+  color: #805a6c;
+  font-size: 12px;
+}
+
+body:not(.online-friend-invite-mode).lf-v169-ux #worldStarterFriends,
+body:not(.online-friend-invite-mode).lf-v169-ux .world-empty-slots,
+body:not(.online-friend-invite-mode).lf-v169-ux .world-summary,
+body:not(.online-friend-invite-mode).lf-v169-ux #forestInviteCard,
+body:not(.online-friend-invite-mode).lf-v169-ux #onlineFriendJoinCard,
+body:not(.online-friend-invite-mode).lf-v169-ux #worldGrowthCard,
+body:not(.online-friend-invite-mode).lf-v169-ux #friendForestCard,
+body:not(.online-friend-invite-mode).lf-v169-ux #friendLinksCard,
+body:not(.online-friend-invite-mode).lf-v169-ux #friendInviteCard,
+body:not(.online-friend-invite-mode).lf-v169-ux #worldPlaceCard,
+body:not(.online-friend-invite-mode).lf-v169-ux #firstVisitGuide,
+body:not(.online-friend-invite-mode).lf-v169-ux #dailyLoopCard {
+  display: none !important;
+}
+
+body:not(.online-friend-invite-mode).lf-v169-ux .my-world-spot {
+  transform: translate(-50%, -50%) scale(1.05);
+}
+
+body:not(.online-friend-invite-mode).lf-v169-ux .my-spot-name {
+  color: #fffafc !important;
+  text-shadow: 0 2px 10px rgba(51, 34, 45, 0.42);
+}
+
+body:not(.online-friend-invite-mode).lf-v169-ux .my-spot-status {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  body:not(.online-friend-invite-mode).lf-v169-ux #worldScreen.screen-active {
+    padding: 11px;
+    border-radius: 28px;
+  }
+
+  body:not(.online-friend-invite-mode).lf-v169-ux .world-stage {
+    height: clamp(340px, 50vh, 470px);
+  }
+
+  body:not(.online-friend-invite-mode).lf-v169-ux .world-hero .subtitle {
+    display: none;
+  }
+}
