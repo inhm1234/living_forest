@@ -14094,3 +14094,68 @@ body:not(.online-friend-invite-mode).lf-v169-ux .my-spot-status {
     display: none;
   }
 }
+
+
+/* V1.69.1 test: 전체 숲 정렬 수정 — 월드 이미지와 하단 버튼 넘침 보정 */
+body:not(.online-friend-invite-mode).lf-v1691-ux #worldScreen.screen-active {
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+body:not(.online-friend-invite-mode).lf-v1691-ux .world-card,
+body:not(.online-friend-invite-mode).lf-v1691-ux .world-card.visual-card,
+body:not(.online-friend-invite-mode).lf-v1691-ux #worldScreen .world-card.visual-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  margin-left: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  border: 0 !important;
+  border-radius: 28px !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body:not(.online-friend-invite-mode).lf-v1691-ux .world-stage,
+body:not(.online-friend-invite-mode).lf-v1691-ux #worldStage {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  transform: none !important;
+  background-position: center center !important;
+}
+
+body:not(.online-friend-invite-mode).lf-v1691-ux .world-action-row {
+  display: none !important;
+}
+
+body:not(.online-friend-invite-mode).lf-v1691-ux .launch-action-row {
+  position: relative;
+  z-index: 5;
+}
+
+@media (max-height: 760px) and (min-width: 761px) {
+  body:not(.online-friend-invite-mode).lf-v1691-ux #worldScreen.screen-active {
+    padding: 12px;
+  }
+
+  body:not(.online-friend-invite-mode).lf-v1691-ux .world-hero h1 {
+    font-size: 38px;
+  }
+
+  body:not(.online-friend-invite-mode).lf-v1691-ux #launchGuideCard {
+    padding: 13px 14px;
+  }
+
+  body:not(.online-friend-invite-mode).lf-v1691-ux #launchGuideTitle {
+    font-size: 28px;
+  }
+
+  body:not(.online-friend-invite-mode).lf-v1691-ux .world-stage {
+    height: clamp(300px, 43vh, 410px) !important;
+    min-height: 300px !important;
+  }
+}
