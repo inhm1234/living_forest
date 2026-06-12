@@ -11876,7 +11876,7 @@ body.online-friend-invite-mode #friendInviteCard {
 }
 
 
-/* V1.54.1 test · 친구 관계 저장소 카드 */
+/* V1.55 test · 친구 관계 저장소 카드 + 자리 배치 버튼 */
 .friend-links-card {
   position: relative;
   overflow: hidden;
@@ -11960,5 +11960,94 @@ body.online-friend-invite-mode #friendInviteCard {
 @media (max-width: 760px) {
   .friend-links-list {
     grid-template-columns: 1fr;
+  }
+}
+
+
+/* V1.55 test · 친구 목록에서 자리 배치/이동/교체 */
+.friend-links-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.friend-link-summary {
+  min-width: 0;
+}
+
+.friend-link-seat-actions {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.friend-link-seat-btn {
+  border: 1px solid rgba(244, 127, 166, 0.22);
+  border-radius: 13px;
+  padding: 7px 5px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #7d5265;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.friend-link-seat-btn span,
+.friend-link-seat-btn small {
+  display: block;
+  line-height: 1.2;
+}
+
+.friend-link-seat-btn small {
+  margin-top: 3px;
+  color: #a2788a;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.friend-link-seat-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(244, 127, 166, 0.46);
+  box-shadow: 0 10px 22px rgba(172, 108, 133, 0.12);
+}
+
+.friend-link-seat-btn.is-current {
+  background: rgba(230, 255, 240, 0.9);
+  border-color: rgba(94, 170, 112, 0.28);
+  color: #4f8b5d;
+}
+
+.friend-link-seat-btn.needs-confirm {
+  background: rgba(255, 246, 226, 0.9);
+  border-color: rgba(231, 166, 75, 0.3);
+}
+
+.friend-link-seat-btn:disabled {
+  opacity: 0.58;
+  cursor: wait;
+}
+
+.friend-link-warning {
+  margin: 8px 0 0;
+  color: #a85d6b;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+@media (max-width: 980px) {
+  .friend-link-seat-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .friend-link-seat-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .friend-link-seat-btn {
+    min-height: 44px;
   }
 }

@@ -1,12 +1,13 @@
-// 살아있는 숲 V1.54.1 test
+// 살아있는 숲 V1.55 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.54.1 test
-// 목적: 친구 관계/자리 분리 1차 — 이미 나무가 있는 친구는 새로 만들지 않고 기존 나무로 초대 자리에 참여
+// 버전명: V1.55 test
+// 목적: 친구 목록에서 원하는 숲 자리로 배치/이동/교체
+// 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.54.1 test",
+  version: "V1.55 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -211,6 +212,8 @@ let onlineFriendLastError = "";
 let onlineFriendLinks = [];
 let onlineFriendLinksLoadState = "idle";
 let onlineFriendLinksLastError = "";
+let friendLinkAssignState = "idle";
+let friendLinkAssignMessage = "";
 const VISITOR_STORAGE_KEY = `${STORAGE_KEY}_VISITOR_V12`;
 const OWNER_STORAGE_KEY = `${STORAGE_KEY}_OWNER_V15`;
 
@@ -2950,6 +2953,22 @@ function renderFriendForestCard() {
 }
 
 
+function getFriendLinkId(link) {
+  return sanitizeOnlineText(link?.friendId || link?.friend_id || "", 80);
+}
+
+function getFriendLinkName(link) {
+  return sanitizeOnlineText(link?.friendName || link?.friend_name || "친구", 12) || "친구";
+}
+
+function getFriendLinkTreeName(link) {
+  return sanitizeOnlineText(link?.treeName || link?.tree_name || "친구 나무", 16) || "친구 나무";
+}
+
+function getFriendLinkCurrentSeatId(link) {
+  return sanitizeOnlineText(link?.currentSeatId || link?.current_seat_id || "", 40);
+}
+
 function getFriendLinkPlacementText(link) {
   const placement = sanitizeOnlineText(link.placementStatus || link.placement_status || "", 24);
   const seatLabel = sanitizeOnlineText(link.currentSeatLabel || link.current_seat_label || "", 30);
@@ -2963,6 +2982,63 @@ function getFriendLinkPlacementText(link) {
   }
 
   return seatLabel ? `${seatLabel} 연결됨` : "친구 목록에 있음";
+}
+
+function getFriendLinkById(friendId) {
+  const safeFriendId = sanitizeOnlineText(friendId, 80);
+  return (Array.isArray(onlineFriendLinks) ? onlineFriendLinks : []).find((link) => getFriendLinkId(link) === safeFriendId) || null;
+}
+
+function isSeatOccupiedByOtherFriend(seatId, friendId) {
+  const record = getOnlineSeatRecord(seatId);
+  if (!record) return false;
+
+  const currentFriendId = sanitizeOnlineText(record.friendId || record.friend_id || "", 80);
+  const safeFriendId = sanitizeOnlineText(friendId, 80);
+
+  if (!currentFriendId) {
+    return true;
+  }
+
+  return currentFriendId !== safeFriendId;
+}
+
+function getFriendSeatOccupantName(seatId) {
+  const record = getOnlineSeatRecord(seatId);
+  return record ? (sanitizeOnlineText(record.friendName || record.friend_name || "친구", 12) || "친구") : "";
+}
+
+function renderFriendPlacementButtons(link) {
+  const friendId = getFriendLinkId(link);
+  const currentSeatId = getFriendLinkCurrentSeatId(link);
+  const isAssigning = friendLinkAssignState === "saving";
+
+  if (!friendId) {
+    return `<p class="friend-link-warning">친구 ID가 없어 자리 배치를 할 수 없어요.</p>`;
+  }
+
+  return `
+    <div class="friend-link-seat-actions" role="group" aria-label="${escapeHtml(getFriendLinkName(link))} 자리 배치">
+      ${friendInviteSeatSlots.map((seat) => {
+        const occupiedByOther = isSeatOccupiedByOtherFriend(seat.id, friendId);
+        const isCurrent = currentSeatId === seat.id;
+        const buttonLabel = isCurrent ? `${seat.label} · 현재` : seat.label;
+        const hint = occupiedByOther && !isCurrent ? "교체" : (isCurrent ? "현재" : "배치");
+        return `
+          <button
+            type="button"
+            class="friend-link-seat-btn${isCurrent ? " is-current" : ""}${occupiedByOther && !isCurrent ? " needs-confirm" : ""}"
+            data-friend-link-id="${escapeHtml(friendId)}"
+            data-friend-link-seat="${escapeHtml(seat.id)}"
+            ${isAssigning ? "disabled" : ""}
+          >
+            <span>${escapeHtml(buttonLabel)}</span>
+            <small>${escapeHtml(hint)}</small>
+          </button>
+        `;
+      }).join("")}
+    </div>
+  `;
 }
 
 function renderFriendLinksCard() {
@@ -2985,7 +3061,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script에 V1.54.1 코드가 배포되었는지 확인해 주세요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script에 V1.55 test 코드가 배포되었는지 확인해 주세요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -2999,7 +3075,7 @@ function renderFriendLinksCard() {
 
   if (friendLinksTextElement) {
     friendLinksTextElement.textContent = totalCount > 0
-      ? `친구 관계는 friend_links에 남고, 다섯 숲 자리 배치는 friend_seats가 따로 관리해요. 자리에서 비워도 친구 관계는 바로 끊기지 않아요.`
+      ? "친구 카드에서 꽃길/햇살/연못/그네/꽃담 버튼을 눌러 원하는 자리로 바로 배치하거나 이동할 수 있어요."
       : "친구가 초대 링크로 들어오면 먼저 친구 목록에 저장되고, 빈 숲 자리에는 대표 친구로 배치돼요.";
   }
 
@@ -3012,15 +3088,18 @@ function renderFriendLinksCard() {
         </li>
       `;
     } else {
-      friendLinksListElement.innerHTML = links.slice(0, 6).map((link) => {
-        const friendName = sanitizeOnlineText(link.friendName || link.friend_name || "친구", 12) || "친구";
-        const treeName = sanitizeOnlineText(link.treeName || link.tree_name || "친구 나무", 16) || "친구 나무";
+      friendLinksListElement.innerHTML = links.slice(0, 12).map((link) => {
+        const friendName = getFriendLinkName(link);
+        const treeName = getFriendLinkTreeName(link);
         const placementText = getFriendLinkPlacementText(link);
         return `
           <li class="friend-links-item">
-            <strong>${friendName}</strong>
-            <span>${treeName}</span>
-            <em>${placementText}</em>
+            <div class="friend-link-summary">
+              <strong>${escapeHtml(friendName)}</strong>
+              <span>${escapeHtml(treeName)}</span>
+              <em>${escapeHtml(placementText)}</em>
+            </div>
+            ${renderFriendPlacementButtons(link)}
           </li>
         `;
       }).join("");
@@ -3028,9 +3107,17 @@ function renderFriendLinksCard() {
   }
 
   if (friendLinksMetaElement) {
-    friendLinksMetaElement.textContent = totalCount > 0
-      ? `배치됨 ${placedCount}명 · 자리 없음 ${waitingCount}명. 다음 단계에서 친구 목록에서 다시 배치하는 기능을 붙일 수 있어요.`
-      : "친구 관계 저장소는 준비됐어요. 초대 테스트를 하면 friend_links 시트가 생겨야 해요.";
+    if (friendLinkAssignState === "saving") {
+      friendLinksMetaElement.textContent = friendLinkAssignMessage || "친구 자리를 저장하는 중이에요.";
+    } else if (friendLinkAssignState === "success") {
+      friendLinksMetaElement.textContent = friendLinkAssignMessage || "친구 자리 배치를 저장했어요.";
+    } else if (friendLinkAssignState === "error") {
+      friendLinksMetaElement.textContent = friendLinkAssignMessage || "친구 자리 배치에 실패했어요.";
+    } else {
+      friendLinksMetaElement.textContent = totalCount > 0
+        ? `배치됨 ${placedCount}명 · 자리 없음 ${waitingCount}명. 이미 친구가 있는 자리에 넣으면 확인창이 먼저 떠요.`
+        : "친구 관계 저장소는 준비됐어요. 초대 테스트를 하면 friend_links 시트가 생겨야 해요.";
+    }
   }
 }
 
@@ -3056,6 +3143,77 @@ async function loadOnlineFriendLinks() {
   }
 
   renderFriendLinksCard();
+}
+
+async function assignFriendLinkToSeat(friendId, seatId) {
+  const link = getFriendLinkById(friendId);
+  const seat = getFriendInviteSeatById(seatId);
+
+  if (!link || !seat) {
+    friendLinkAssignState = "error";
+    friendLinkAssignMessage = "친구나 자리를 찾지 못했어요. 새로고침 후 다시 확인해 주세요.";
+    renderFriendLinksCard();
+    return;
+  }
+
+  const friendName = getFriendLinkName(link);
+  const currentSeatId = getFriendLinkCurrentSeatId(link);
+
+  if (currentSeatId === seat.id) {
+    friendLinkAssignState = "success";
+    friendLinkAssignMessage = `${friendName}님은 이미 ${seat.label}에 있어요.`;
+    selectedFriendInviteSeatId = seat.id;
+    renderFriendLinksCard();
+    renderFriendInviteCard(true);
+    return;
+  }
+
+  if (isSeatOccupiedByOtherFriend(seat.id, friendId)) {
+    const occupantName = getFriendSeatOccupantName(seat.id);
+    const ok = window.confirm(`${seat.label}에는 ${occupantName}님이 있어요. ${friendName}님으로 교체할까요?
+교체된 친구는 삭제되지 않고 친구 목록에 남아요.`);
+    if (!ok) return;
+  }
+
+  friendLinkAssignState = "saving";
+  friendLinkAssignMessage = `${friendName}님을 ${seat.label}에 배치하는 중이에요...`;
+  renderFriendLinksCard();
+
+  try {
+    const result = await requestOnlineForestStorage("assign_friend_seat", {
+      forest_id: getOrCreateOnlineForestId(),
+      friend_id: getFriendLinkId(link),
+      seat_id: seat.id,
+      seat_label: seat.label,
+      source: "owner_assign_friend_link",
+    });
+
+    if (!result || result.ok === false) {
+      throw new Error(result?.error || "assign_failed");
+    }
+
+    selectedFriendInviteSeatId = seat.id;
+    friendLinkAssignState = "success";
+    friendLinkAssignMessage = `${friendName}님을 ${seat.label}에 배치했어요. 교체된 친구도 친구 목록에는 남아요.`;
+
+    await loadOnlineFriendSeats();
+    await loadOnlineFriendLinks();
+    syncFriendInviteSeatSelection();
+    renderFriendInviteCard(true);
+
+    trackForestEvent("online_friend_link_assigned", {
+      seat_id: seat.id,
+      friend_id: getFriendLinkId(link),
+      replaced: result.replaced ? "yes" : "no",
+    });
+
+    friendLinkAssignState = "success";
+    renderFriendLinksCard();
+  } catch (error) {
+    friendLinkAssignState = "error";
+    friendLinkAssignMessage = `친구 자리를 저장하지 못했어요. Apps Script 새 배포를 확인해 주세요. (${error?.message || "unknown"})`;
+    renderFriendLinksCard();
+  }
 }
 
 function renderWorldCommunityHint(todayRecord) {
@@ -3325,6 +3483,7 @@ async function loadOnlineFriendSeats() {
   }
 
   syncOnlineFriendSeatDisplays();
+  renderFriendLinksCard();
   renderFriendInviteCard(true);
 }
 
@@ -3455,7 +3614,7 @@ async function joinOnlineInviteWithExistingTree() {
       seat,
       friendName,
       treeName,
-      source: "friend_invite_existing_tree",
+      source: "friend_invite_existing",
     });
 
     if (onlineFriendUseExistingBtnElement) {
@@ -6231,6 +6390,17 @@ if (friendSeatOptionsElement) {
       return;
     }
     selectFriendInviteSeat(seatButton.dataset.friendSeatOption, "card");
+  });
+}
+
+if (friendLinksListElement) {
+  friendLinksListElement.addEventListener("click", (event) => {
+    const assignButton = event.target?.closest?.("[data-friend-link-seat]");
+    if (!assignButton) {
+      return;
+    }
+
+    assignFriendLinkToSeat(assignButton.dataset.friendLinkId, assignButton.dataset.friendLinkSeat);
   });
 }
 

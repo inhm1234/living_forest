@@ -1,0 +1,35 @@
+# V1.55 test 업로드 안내
+
+이번 버전은 GitHub 업로드와 Apps Script 새 배포가 둘 다 필요합니다.
+
+## 1. GitHub에 업로드할 파일
+
+아래 5개 파일을 GitHub 저장소 루트에 덮어쓰기 업로드합니다.
+
+- index.html
+- app.js
+- style.css
+- README.md
+- VERSION.txt
+
+추가 설명 파일도 같이 올려도 됩니다.
+
+- CHANGES_V1.55_TEST.txt
+
+## 2. Apps Script에 교체할 파일
+
+- APPS_SCRIPT_CODE.txt
+
+Apps Script 편집기에서 기존 코드를 전부 지우고, APPS_SCRIPT_CODE.txt 전체 내용을 붙여넣습니다.
+그다음 저장하고 새 버전으로 배포합니다.
+
+## 3. 업로드 후 확인
+
+- 홈페이지 상단: V1.55 test
+- README.md: V1.55 test
+- VERSION.txt: V1.55 test
+- 친구 관계 저장소 카드에 친구 목록 표시
+- 친구 카드 안에 꽃길/햇살/연못/그네/꽃담 버튼 표시
+- 빈 자리 배치 가능
+- 이미 친구가 있는 자리로 이동 시 교체 확인창 표시
+- 교체된 친구가 친구 목록에 남는지 확인
