@@ -11876,7 +11876,7 @@ body.online-friend-invite-mode #friendInviteCard {
 }
 
 
-/* V1.56 test · 친구 관계 저장소 카드 + 자리 배치 UX */
+/* V1.57 test · 친구 관계 저장소 카드 + 자리 배치 안정화 */
 .friend-links-card {
   position: relative;
   overflow: hidden;
@@ -12065,7 +12065,7 @@ body.online-friend-invite-mode #friendInviteCard {
 }
 
 
-/* V1.56 test · 친구 목록에서 자리 배치/이동/교체 UX 정리 */
+/* V1.57 test · 친구 목록에서 자리 이동/교체 안정화 */
 .friend-links-item {
   display: flex;
   flex-direction: column;
@@ -12093,7 +12093,7 @@ body.online-friend-invite-mode #friendInviteCard {
   font-weight: 800;
   cursor: pointer;
   text-align: left;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
 }
 
 .friend-link-seat-btn span,
@@ -12132,6 +12132,16 @@ body.online-friend-invite-mode #friendInviteCard {
   background: rgba(255, 255, 255, 0.76);
 }
 
+.friend-link-seat-btn.is-move {
+  background: rgba(235, 247, 255, 0.9);
+  border-color: rgba(88, 158, 210, 0.3);
+}
+
+.friend-link-seat-btn.is-move small,
+.friend-link-seat-btn.is-move i {
+  color: #4f7fa3;
+}
+
 .friend-link-seat-btn.is-current {
   background: rgba(230, 255, 240, 0.9);
   border-color: rgba(94, 170, 112, 0.28);
@@ -12154,8 +12164,13 @@ body.online-friend-invite-mode #friendInviteCard {
 }
 
 .friend-link-seat-btn:disabled {
-  opacity: 0.58;
-  cursor: wait;
+  opacity: 0.68;
+  cursor: not-allowed;
+}
+
+.friend-link-seat-btn.is-current:disabled {
+  opacity: 1;
+  cursor: default;
 }
 
 .friend-link-warning {
