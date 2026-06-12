@@ -21,7 +21,7 @@
   <meta property="og:title" content="살아있는 숲 | 하루 한 번, 내 마음이 자라는 숲" />
   <meta
     property="og:description"
-    content="하루에 한 번 지금의 마음을 남기면 내 나무와 월드 숲이 조용히 자라는 작은 체험판입니다."
+    content="처음 온 사람도 바로 시작할 수 있도록 짧은 안내와 오늘의 기록 버튼을 정리한 작은 숲 체험판입니다."
   />
   <meta property="og:image" content="assets/share/living-forest-og.png" />
 
@@ -35,7 +35,7 @@
 
   <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.58-test" />
+  <link rel="stylesheet" href="style.css?v=1.59-test" />
 <!-- Google tag (gtag.js) - Living Forest GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-YC872G7MH1"></script>
 <script>
@@ -49,17 +49,17 @@
 </script>
 
 </head>
-<body class="lf-v158-ux">
+<body class="lf-v159-ux">
   <noscript>
     <div class="noscript-message">살아있는 숲은 JavaScript가 켜져 있어야 이용할 수 있어요.</div>
   </noscript>
   <main class="app">
     <section id="worldScreen" class="screen screen-active">
       <header class="hero world-hero">
-        <p class="version">살아있는 숲 V1.58 test · 첫 방문 UX/UI 개편</p>
+        <p class="version">살아있는 숲 V1.59 test · 첫 방문 UX/UI 2차 정리</p>
         <h1>살아있는 숲</h1>
         <p class="subtitle">내 나무를 키우고, 친구들과 함께 숲을 채워가요.</p>
-        <p class="demo-pill">V1.58 test · 첫 방문 UX/UI</p>
+        <p class="demo-pill">V1.59 test · 온보딩 2차 정리</p>
       </header>
 
       <section id="launchGuideCard" class="launch-guide-card glass-panel" aria-labelledby="launchGuideTitle">
@@ -85,7 +85,7 @@
         </div>
         <div class="launch-action-row">
           <button id="startTodayRecordBtn" class="primary-btn launch-primary-btn" type="button">오늘의 기록 시작하기</button>
-          <button id="openOnboardingBtn" class="ghost-btn launch-ghost-btn" type="button">짧은 안내 보기</button>
+          <button id="openOnboardingBtn" class="ghost-btn launch-ghost-btn" type="button">안내 다시 보기</button>
         </div>
       </section>
 
@@ -281,7 +281,7 @@
     <section id="gardenScreen" class="screen">
       <header class="hero garden-hero">
         <button id="backToWorldBtnTop" class="ghost-btn small-btn" type="button">← 전체 숲</button>
-        <p class="version">오늘 내 나무 돌보기 · V1.58 test</p>
+        <p class="version">오늘 내 나무 돌보기 · V1.59 test</p>
         <h2 id="gardenTitle" class="garden-title">밤 숲속 자리</h2>
         <p class="subtitle">오늘의 마음이 내 나무와 친구 숲에 귀여운 흔적으로 남아요.</p>
       </header>
@@ -630,9 +630,9 @@
   <div id="onboardingOverlay" class="onboarding-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle" aria-describedby="onboardingDesc">
     <div class="onboarding-dialog">
       <button id="closeOnboardingBtn" class="onboarding-close" type="button" aria-label="안내 닫기">×</button>
-      <span class="onboarding-kicker">살아있는 숲 30초 안내</span>
+      <span class="onboarding-kicker">처음이라면 30초만</span>
       <h2 id="onboardingTitle">오늘 할 일은 딱 하나예요</h2>
-      <p id="onboardingDesc" class="onboarding-desc">내 나무 이름을 정하고, 지금의 마음 하나를 고르면 숲이 첫 흔적을 남겨요.</p>
+      <p id="onboardingDesc" class="onboarding-desc">이 화면에서는 딱 하나만 하면 돼요. 내 나무 이름을 정하고 지금의 마음을 골라보세요.</p>
       <div class="onboarding-cards" aria-label="첫 방문 튜토리얼">
         <article>
           <span>🌱</span>
@@ -652,7 +652,7 @@
       </div>
       <div class="onboarding-actions">
         <button id="onboardingStartBtn" class="primary-btn" type="button">내 숲 시작하기</button>
-        <button id="onboardingLaterBtn" class="ghost-btn" type="button">안내 닫기</button>
+        <button id="onboardingLaterBtn" class="ghost-btn" type="button">나중에 볼게요</button>
       </div>
     </div>
   </div>
@@ -667,7 +667,7 @@
     </div>
 
     <p class="test-storage-line">저장키: <span id="testModeStorageKey">livingForestV012_TEST</span></p>
-    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.58 test · 첫 방문 UX/UI</span></p>
+    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.59 test · 온보딩 2차 정리</span></p>
 
     <div class="test-preset-buttons">
       <button type="button" data-test-preset="first">첫 방문자</button>
@@ -690,6 +690,6 @@
 
 
   <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.1/kakao.min.js"></script>
-  <script src="app.js?v=1.58-test"></script>
+  <script src="app.js?v=1.59-test"></script>
 </body>
 </html>

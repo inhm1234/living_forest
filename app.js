@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.58 test
+// 살아있는 숲 V1.59 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.58 test
+// 버전명: V1.59 test
 // 목적: 첫 방문자 UX/UI 개편 - 온보딩, 시작 버튼, 가독성 강화
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.58 test",
+  version: "V1.59 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -712,7 +712,7 @@ const onboardingOverlayElement = document.querySelector("#onboardingOverlay");
 const closeOnboardingBtnElement = document.querySelector("#closeOnboardingBtn");
 const onboardingStartBtnElement = document.querySelector("#onboardingStartBtn");
 const onboardingLaterBtnElement = document.querySelector("#onboardingLaterBtn");
-const ONBOARDING_STORAGE_KEY = isTestMode ? "livingForestOnboardingV158_TEST" : "livingForestOnboardingV158";
+const ONBOARDING_STORAGE_KEY = isTestMode ? "livingForestOnboardingV159_TEST" : "livingForestOnboardingV159";
 const gardenHubElement = document.querySelector("#gardenHub");
 const gardenHubSheetElement = document.querySelector("#gardenHubSheet");
 const gardenPanelTitleElement = document.querySelector("#gardenPanelTitle");
@@ -3151,7 +3151,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.58 test는 첫 방문 UX/UI 패치라 기존 V1.55 stable Apps Script로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.59 test는 첫 방문 UX/UI 패치라 기존 V1.55 stable Apps Script로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -6235,17 +6235,31 @@ function closeFirstVisitOnboarding(markSeen = true) {
   }
 }
 
+function focusFirstRecordStep() {
+  window.setTimeout(() => {
+    if (treeNameInputElement && !treeData.treeName?.trim()) {
+      treeNameInputElement.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      try {
+        treeNameInputElement.focus({ preventScroll: true });
+      } catch (error) {
+        treeNameInputElement.focus();
+      }
+      return;
+    }
+
+    if (moodCardElement) {
+      moodCardElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, 520);
+}
+
 function startTodayRecordFromOnboarding(source = "launch") {
   closeFirstVisitOnboarding(true);
   markFirstVisitOnboardingSeen();
   trackForestEvent("go_garden_click", { source });
   showGardenScreen();
-
-  window.setTimeout(() => {
-    if (treeNameInputElement && !treeData.treeName?.trim()) {
-      treeNameInputElement.focus();
-    }
-  }, 360);
+  focusFirstRecordStep();
 }
 
 function maybeOpenFirstVisitOnboarding() {
@@ -6411,6 +6425,12 @@ if (closeOnboardingBtnElement) {
 if (onboardingOverlayElement) {
   onboardingOverlayElement.addEventListener("click", (event) => {
     if (event.target === onboardingOverlayElement) {
+      closeFirstVisitOnboarding(true);
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !onboardingOverlayElement.classList.contains("hidden")) {
       closeFirstVisitOnboarding(true);
     }
   });
