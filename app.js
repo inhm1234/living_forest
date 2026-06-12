@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.60 test
+// 살아있는 숲 V1.62 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.60 test
+// 버전명: V1.62 test
 // 목적: 첫 기록 흐름 개선 - 시작 후 기록 패널 자동 열기, 입력 위치 안내 강화
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.60 test",
+  version: "V1.62 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -3151,7 +3151,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.60 test는 첫 방문 UX/UI 패치라 기존 V1.55 stable Apps Script로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.62 test는 가독성 최우선 개선판이라 기존 V1.55 stable Apps Script로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -4349,7 +4349,7 @@ function renderFirstVisitGuide() {
   if (!hasName) {
     firstVisitGuideElement.classList.add("guide-ready");
     if (titleElement) titleElement.textContent = "이제 내 나무 이름만 정하면 돼요.";
-    if (textElement) textElement.textContent = "이름을 저장한 뒤 오늘의 마음을 고르면 성장 기록이 남아요.";
+    if (textElement) textElement.textContent = "나무 이름을 정하면 바로 오늘의 마음을 고를 수 있어요.";
     return;
   }
 
@@ -5836,7 +5836,7 @@ function renderTreeName() {
     nameCardElement.classList.add("hidden");
   } else {
     treeNameInputElement.value = "";
-    treeNameMessageElement.textContent = "이름을 정하면 오늘 마음을 남길 수 있어요. 이름은 한 번만 정할 수 있어요.";
+    treeNameMessageElement.textContent = "나무 이름을 정하면 바로 오늘의 마음을 고를 수 있어요. 이름은 한 번만 정할 수 있어요.";
     nameCardElement.classList.remove("hidden");
   }
 }
@@ -5854,6 +5854,14 @@ function saveTreeName() {
   saveTreeData();
   renderTreeName();
   renderAll();
+
+  if (moodCardElement) {
+    moodCardElement.classList.add("mood-ready-highlight");
+    moodCardElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    window.setTimeout(() => {
+      moodCardElement.classList.remove("mood-ready-highlight");
+    }, 1600);
+  }
 }
 
 function updateTodayStatus() {
@@ -5872,9 +5880,9 @@ function updateTodayStatus() {
   }
 
   if (!hasName) {
-    todayStatusElement.textContent = "먼저 나무 이름을 정하면 오늘의 마음을 남길 수 있어요.";
+    todayStatusElement.textContent = "먼저 나무 이름을 정하면 마음 버튼이 열려요.";
     if (moodGuideElement) {
-      moodGuideElement.textContent = "이름을 정한 뒤, 좋음 / 보통 / 피곤 중 하나를 고르면 돼요.";
+      moodGuideElement.textContent = "먼저 나무 이름을 정하면 오늘의 마음을 고를 수 있어요.";
     }
     backToWorldBtnBottomElement.textContent = "전체 숲으로 돌아가기";
     return;
@@ -5891,11 +5899,11 @@ function updateTodayStatus() {
     const returnMemory = getReturnMemoryInfo();
     todayStatusElement.textContent = returnMemory
       ? `오늘(${formatDate(getTodayKey())})의 마음을 더하면 어제의 성장 위에 새로운 기록이 이어져요.`
-      : `오늘(${formatDate(getTodayKey())})의 상태를 아직 기록하지 않았어요.`;
+      : `이제 오늘의 마음을 하나 골라주세요.`;
     if (moodGuideElement) {
       moodGuideElement.textContent = returnMemory
         ? `어제의 마음 위에 오늘의 마음을 더해볼까요? 정답은 없어요. 지금과 가장 가까운 상태 하나만 골라주세요.`
-        : `하루에 한 번, 지금의 나와 가까운 상태를 골라주세요. ${getNextGoalMessage()}`;
+        : `좋음 / 보통 / 피곤 중 지금과 가장 가까운 하나를 골라주세요.`;
     }
     backToWorldBtnBottomElement.textContent = "전체 숲으로 돌아가기";
   }

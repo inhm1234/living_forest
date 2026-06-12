@@ -12928,3 +12928,272 @@ body.onboarding-open {
     grid-template-columns: 1fr;
   }
 }
+
+/* V1.61 test: 첫 기록 완료 UX 개선 — 이름 저장 뒤 마음 선택 활성화/잠긴 카드 가독성 보정 */
+.lf-v161-ux .tree-name-form button {
+  min-width: 142px;
+  padding: 0 18px;
+  background: linear-gradient(135deg, #b9f1a9, #80cc7b) !important;
+  color: #17341b !important;
+  box-shadow: 0 10px 22px rgba(92, 164, 91, 0.2);
+  white-space: nowrap;
+}
+
+.lf-v161-ux .tree-name-message,
+.lf-v161-ux .today-status,
+.lf-v161-ux .mood-guide {
+  color: #4a6250 !important;
+  font-weight: 900;
+}
+
+.lf-v161-ux .mood-card {
+  transition: opacity 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background-color 0.22s ease;
+}
+
+.lf-v161-ux .mood-card:not(.mood-locked) {
+  border-color: rgba(137, 200, 114, 0.34) !important;
+  background: rgba(255, 255, 255, 0.97) !important;
+  box-shadow: 0 16px 36px rgba(109, 168, 108, 0.16);
+}
+
+.lf-v161-ux .mood-card:not(.mood-locked) .mood-guide::before {
+  content: "이제 선택해요 · ";
+  color: #e27698;
+  font-weight: 1000;
+}
+
+.lf-v161-ux .mood-card.mood-locked {
+  border-color: rgba(212, 182, 198, 0.26) !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+}
+
+.lf-v161-ux .mood-card.mood-locked .mood-buttons {
+  opacity: 0.72;
+}
+
+.lf-v161-ux .mood-card.mood-locked .mood-buttons button {
+  background: rgba(255, 255, 255, 0.84) !important;
+  color: #8a837c !important;
+  border-color: rgba(132, 118, 126, 0.12) !important;
+}
+
+.lf-v161-ux .mood-buttons button:not(:disabled) {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(247, 255, 237, 0.96)) !important;
+  color: #2f4635 !important;
+  border-color: rgba(119, 173, 98, 0.24) !important;
+  box-shadow: 0 10px 24px rgba(102, 153, 94, 0.12);
+}
+
+.lf-v161-ux .mood-buttons button:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(102, 153, 94, 0.18);
+}
+
+.lf-v161-ux .mood-ready-highlight {
+  animation: moodReadyV161 1.4s ease-in-out 0s 1;
+}
+
+@keyframes moodReadyV161 {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  45% {
+    transform: translateY(-3px);
+    box-shadow: 0 22px 54px rgba(255, 151, 188, 0.28), 0 0 0 5px rgba(255, 232, 130, 0.4);
+  }
+}
+
+.lf-v161-ux .garden-hub.is-open #tomorrowSeedCard,
+.lf-v161-ux .garden-hub.is-open #forestDiaryCard {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border: 1px solid rgba(148, 122, 137, 0.15) !important;
+  opacity: 1;
+}
+
+.lf-v161-ux .garden-hub.is-open #tomorrowSeedCard:not(.seed-ready):not(.seed-saved):not(.seed-from-yesterday),
+.lf-v161-ux .garden-hub.is-open #forestDiaryCard:not(.diary-ready):not(.diary-done):not(.diary-waiting) {
+  background: rgba(255, 255, 255, 0.78) !important;
+}
+
+.lf-v161-ux .garden-hub.is-open .tomorrow-seed-kicker,
+.lf-v161-ux .garden-hub.is-open .forest-diary-kicker {
+  color: #78a066 !important;
+  font-weight: 1000;
+}
+
+.lf-v161-ux .garden-hub.is-open .tomorrow-seed-title,
+.lf-v161-ux .garden-hub.is-open .forest-diary-title {
+  color: #38483b !important;
+}
+
+.lf-v161-ux .garden-hub.is-open .tomorrow-seed-text,
+.lf-v161-ux .garden-hub.is-open .tomorrow-seed-message,
+.lf-v161-ux .garden-hub.is-open .forest-diary-today,
+.lf-v161-ux .garden-hub.is-open .forest-diary-empty,
+.lf-v161-ux .garden-hub.is-open .forest-diary-flow {
+  color: #667469 !important;
+}
+
+.lf-v161-ux .garden-hub.is-open .tomorrow-seed-form input:disabled,
+.lf-v161-ux .garden-hub.is-open .tomorrow-seed-form button:disabled {
+  opacity: 0.72;
+}
+
+@media (max-width: 760px) {
+  .lf-v161-ux .tree-name-form button {
+    min-width: 0;
+  }
+}
+
+
+/* V1.62 test: 가독성 최우선 개선 — 기록 패널/완료 카드/잠긴 카드 텍스트 대비 강화 */
+.lf-v162-ux .garden-hub-head,
+.lf-v162-ux .garden-hub.is-open,
+.lf-v162-ux .garden-hub.is-open .garden-hub-panel > section,
+.lf-v162-ux .garden-starter-card,
+.lf-v162-ux #nameCard,
+.lf-v162-ux .mood-card,
+.lf-v162-ux .complete-card,
+.lf-v162-ux .today-change-card,
+.lf-v162-ux .tomorrow-promise-card,
+.lf-v162-ux .streak-reward-card,
+.lf-v162-ux #tomorrowSeedCard,
+.lf-v162-ux #forestDiaryCard {
+  color: #2f3b34 !important;
+}
+
+.lf-v162-ux .garden-hub.is-open {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255, 231, 239, 0.92), transparent 32%),
+    radial-gradient(circle at 92% 0%, rgba(228, 249, 205, 0.9), transparent 30%),
+    rgba(255, 252, 253, 0.98) !important;
+  border-color: rgba(196, 147, 171, 0.24) !important;
+  box-shadow: 0 20px 48px rgba(208, 152, 176, 0.16) !important;
+}
+
+.lf-v162-ux .garden-hub-head,
+.lf-v162-ux .garden-hub.is-open .garden-hub-panel > section,
+.lf-v162-ux .complete-card,
+.lf-v162-ux .today-change-card,
+.lf-v162-ux .tomorrow-promise-card,
+.lf-v162-ux .streak-reward-card,
+.lf-v162-ux #tomorrowSeedCard,
+.lf-v162-ux #forestDiaryCard {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 248, 251, 0.97)) !important;
+  border: 1px solid rgba(203, 167, 186, 0.28) !important;
+  box-shadow: 0 14px 28px rgba(203, 147, 171, 0.10) !important;
+}
+
+.lf-v162-ux .garden-hub.is-open #tomorrowSeedCard:not(.seed-ready):not(.seed-saved):not(.seed-from-yesterday),
+.lf-v162-ux .garden-hub.is-open #forestDiaryCard:not(.diary-ready):not(.diary-done):not(.diary-waiting),
+.lf-v162-ux .mood-card.mood-locked {
+  background: linear-gradient(180deg, rgba(252, 248, 250, 0.98), rgba(247, 243, 246, 0.97)) !important;
+  border-color: rgba(192, 181, 188, 0.42) !important;
+  opacity: 1 !important;
+}
+
+.lf-v162-ux .garden-hub-title,
+.lf-v162-ux .garden-starter-card h2,
+.lf-v162-ux .tree-name-display,
+.lf-v162-ux .today-change-title,
+.lf-v162-ux .tomorrow-promise-title,
+.lf-v162-ux .streak-reward-title,
+.lf-v162-ux .tomorrow-seed-title,
+.lf-v162-ux .forest-diary-title,
+.lf-v162-ux .daily-loop-title,
+.lf-v162-ux .first-visit-title {
+  color: #2c352e !important;
+  font-weight: 950 !important;
+}
+
+.lf-v162-ux .garden-hub-title::before {
+  color: #c26085 !important;
+}
+
+.lf-v162-ux .garden-hub-title,
+.lf-v162-ux .garden-starter-card p,
+.lf-v162-ux .tree-name-message,
+.lf-v162-ux .mood-guide,
+.lf-v162-ux .today-status,
+.lf-v162-ux .complete-card p,
+.lf-v162-ux .today-change-text,
+.lf-v162-ux .tomorrow-promise-text,
+.lf-v162-ux .streak-reward-text,
+.lf-v162-ux .tomorrow-seed-text,
+.lf-v162-ux .tomorrow-seed-message,
+.lf-v162-ux .forest-diary-today,
+.lf-v162-ux .forest-diary-empty,
+.lf-v162-ux .forest-diary-flow,
+.lf-v162-ux .forest-diary-item p,
+.lf-v162-ux .daily-loop-text,
+.lf-v162-ux .first-visit-text {
+  color: #58655e !important;
+  font-weight: 820 !important;
+  opacity: 1 !important;
+}
+
+.lf-v162-ux .complete-kicker,
+.lf-v162-ux .today-change-kicker,
+.lf-v162-ux .tomorrow-promise-kicker,
+.lf-v162-ux .streak-reward-kicker,
+.lf-v162-ux .tomorrow-seed-kicker,
+.lf-v162-ux .forest-diary-kicker,
+.lf-v162-ux .garden-hub-kicker {
+  color: #c26085 !important;
+  font-weight: 1000 !important;
+}
+
+.lf-v162-ux .streak-reward-meta,
+.lf-v162-ux .forest-diary-flow {
+  border-color: rgba(203, 167, 186, 0.30) !important;
+  background: rgba(255, 255, 255, 0.90) !important;
+  color: #73606c !important;
+}
+
+.lf-v162-ux .streak-reward-progress,
+.lf-v162-ux .world-growth-progress {
+  background: rgba(218, 182, 255, 0.28) !important;
+}
+
+.lf-v162-ux .forest-diary-today,
+.lf-v162-ux .forest-diary-item,
+.lf-v162-ux .forest-diary-flow {
+  border-color: rgba(203, 167, 186, 0.24) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+}
+
+.lf-v162-ux .forest-diary-date {
+  background: rgba(255, 236, 244, 0.92) !important;
+  color: #805a6c !important;
+}
+
+.lf-v162-ux .forest-diary-item strong {
+  color: #364139 !important;
+}
+
+.lf-v162-ux .mood-card.mood-locked .mood-buttons {
+  opacity: 0.88 !important;
+}
+
+.lf-v162-ux .mood-card.mood-locked .mood-buttons button {
+  background: rgba(255, 255, 255, 0.90) !important;
+  color: #7f6e78 !important;
+}
+
+.lf-v162-ux .tomorrow-seed-form input:disabled,
+.lf-v162-ux .tomorrow-seed-form button:disabled {
+  opacity: 0.88 !important;
+}
+
+.lf-v162-ux .garden-hub.is-open .garden-hub-tab {
+  color: #684d5d !important;
+}
+
+.lf-v162-ux .garden-hub.is-open .garden-hub-tab.active {
+  color: #5d4338 !important;
+}
+
+.lf-v162-ux .garden-hub.is-open .summary-chip,
+.lf-v162-ux .garden-hub.is-open .meta-chip {
+  color: #6a5530 !important;
+}
