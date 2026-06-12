@@ -13825,3 +13825,115 @@ body.onboarding-open {
     height: clamp(300px, 44vh, 420px) !important;
   }
 }
+
+
+/* V1.68 test: 10대 타깃 감성 문구 다이어트 */
+.lf-v168-ux #gardenScreen .garden-title {
+  font-size: clamp(25px, 5vw, 34px);
+  letter-spacing: -0.06em;
+}
+
+.lf-v168-ux #gardenScreen .garden-hero .subtitle {
+  font-size: 12px;
+  color: #758078 !important;
+}
+
+.lf-v168-ux .one-screen-garden-shell {
+  padding-top: 12px;
+}
+
+.lf-v168-ux.lf-step-name #nameCard,
+.lf-v168-ux.lf-step-mood .mood-card,
+.lf-v168-ux.lf-step-done #finishGuideCard,
+.lf-v168-ux.lf-step-done.lf-show-seed #tomorrowSeedCard {
+  border-radius: 26px !important;
+  border-color: rgba(245, 191, 216, 0.38) !important;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(255, 226, 239, 0.52), transparent 30%),
+    rgba(255, 255, 255, 0.97) !important;
+}
+
+.lf-v168-ux .one-action-title,
+.lf-v168-ux .mood-guide,
+.lf-v168-ux .finish-guide-title {
+  color: #303832 !important;
+  font-size: clamp(24px, 5.8vw, 32px) !important;
+}
+
+.lf-v168-ux .tree-name-message,
+.lf-v168-ux .today-status,
+.lf-v168-ux .finish-guide-text,
+.lf-v168-ux .finish-guide-meta,
+.lf-v168-ux .tomorrow-seed-text,
+.lf-v168-ux .tomorrow-seed-message {
+  color: #6c746f !important;
+  font-size: 12px !important;
+  font-weight: 850 !important;
+  line-height: 1.5;
+}
+
+.lf-v168-ux .tree-name-form input {
+  font-size: 15px;
+}
+
+.lf-v168-ux .tree-name-form button {
+  min-width: 118px;
+}
+
+.lf-v168-ux .mood-buttons button {
+  border-radius: 22px !important;
+  font-size: 15px !important;
+}
+
+.lf-v168-ux .mood-buttons button span {
+  font-size: 26px;
+}
+
+.lf-v168-ux .finish-guide-kicker,
+.lf-v168-ux .tomorrow-seed-kicker {
+  color: #bd6389 !important;
+  background: #fff1bd !important;
+}
+
+.lf-v168-ux .finish-guide-title {
+  margin-top: 2px;
+}
+
+.lf-v168-ux .finish-guide-text {
+  max-width: 380px;
+}
+
+.lf-v168-ux .finish-guide-actions {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.lf-v168-ux .finish-guide-actions .primary-btn {
+  font-size: 15px;
+}
+
+.lf-v168-ux .finish-guide-actions .ghost-btn {
+  min-width: 96px;
+  padding-inline: 16px;
+  font-size: 14px;
+}
+
+/* 첫 기록 흐름에서는 숲 안 작은 돌봄 버튼까지 숨겨서 시선 분산 줄이기 */
+.lf-v168-ux #treeCareStageDock {
+  display: none !important;
+}
+
+.lf-v168-ux .stage-message {
+  padding: 11px 13px;
+  background: rgba(255, 255, 255, 0.90) !important;
+}
+
+.lf-v168-ux .message-main {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+@media (max-width: 760px) {
+  .lf-v168-ux .finish-guide-actions {
+    grid-template-columns: 1fr;
+  }
+}

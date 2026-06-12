@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.67 test
+// 살아있는 숲 V1.68 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.67 test
+// 버전명: V1.68 test
 // 목적: 첫 기록 흐름 개선 - 시작 후 기록 패널 자동 열기, 입력 위치 안내 강화
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.67 test",
+  version: "V1.68 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -1270,24 +1270,24 @@ function renderTomorrowSeedCard() {
   }
 
   if (!checked) {
-    tomorrowSeedTitleElement.textContent = "오늘 기록 후 내일의 나에게 씨앗을 남길 수 있어요";
-    tomorrowSeedTextElement.textContent = "짧은 한 문장을 남기면, 다음날 다시 왔을 때 숲이 먼저 보여줘요.";
-    tomorrowSeedMessageElement.textContent = "오늘의 마음을 먼저 기록하면 사용할 수 있어요.";
+    tomorrowSeedTitleElement.textContent = "내일의 나에게 한마디";
+    tomorrowSeedTextElement.textContent = "내일 다시 왔을 때 먼저 보여줄게요.";
+    tomorrowSeedMessageElement.textContent = "오늘 기분을 고르면 열려요.";
     tomorrowSeedInputElement.value = "";
     tomorrowSeedInputElement.disabled = true;
     saveTomorrowSeedBtnElement.disabled = true;
-    saveTomorrowSeedBtnElement.textContent = "씨앗 남기기";
+    saveTomorrowSeedBtnElement.textContent = "남기기";
     return;
   }
 
   if (seedWrittenToday) {
-    tomorrowSeedTitleElement.textContent = "내일의 씨앗을 남겼어요";
+    tomorrowSeedTitleElement.textContent = "내일 한마디 저장!";
     tomorrowSeedTextElement.textContent = `“${seedWrittenToday.text}”`;
     tomorrowSeedMessageElement.textContent = `${formatDate(tomorrow)}에 다시 오면 이 문장이 먼저 보여요.`;
     tomorrowSeedInputElement.value = seedWrittenToday.text;
     tomorrowSeedInputElement.disabled = true;
     saveTomorrowSeedBtnElement.disabled = true;
-    saveTomorrowSeedBtnElement.textContent = "오늘 씨앗 완료";
+    saveTomorrowSeedBtnElement.textContent = "완료";
     return;
   }
 
@@ -1296,7 +1296,7 @@ function renderTomorrowSeedCard() {
   tomorrowSeedMessageElement.textContent = "최대 64자까지 저장돼요. 이 기기에만 남아요.";
   tomorrowSeedInputElement.disabled = false;
   saveTomorrowSeedBtnElement.disabled = false;
-  saveTomorrowSeedBtnElement.textContent = "씨앗 남기기";
+  saveTomorrowSeedBtnElement.textContent = "남기기";
 }
 
 function saveTomorrowSeed() {
@@ -3201,7 +3201,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.67 test는 통합 한 화면 UX판이라 기존 V1.55 stable Apps Script로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.68 test는 타깃 감성 문구 다이어트판이라 기존 V1.55 stable Apps Script로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -4520,7 +4520,7 @@ function renderCompleteCard() {
   afterRecordCards.forEach((element) => element?.classList.remove("hidden"));
 
   if (completeMessageElement) {
-    completeMessageElement.textContent = `${experience.complete} 오늘의 마음은 숲에 남았고, 내일 다시 오면 성장이 이어져요.`;
+    completeMessageElement.textContent = "오늘 마음이 숲에 남았어요.";
   }
 
   if (todayChangeTitleElement) {
@@ -4540,15 +4540,15 @@ function renderCompleteCard() {
   }
 
   if (finishGuideTitleElement) {
-    finishGuideTitleElement.textContent = "오늘 할 일은 완료됐어요";
+    finishGuideTitleElement.textContent = "오늘 숲 완성!";
   }
 
   if (finishGuideTextElement) {
-    finishGuideTextElement.textContent = "첫 기록이 숲에 남았어요. 더 하지 않아도 괜찮고, 내일 다시 오면 이 기록 위에 작은 성장이 이어져요.";
+    finishGuideTextElement.textContent = "오늘 마음이 숲에 남았어요. 내일 다시 오면 나무가 조금 더 자라요.";
   }
 
   if (finishGuideMetaElement) {
-    finishGuideMetaElement.textContent = "조금 더 남기고 싶다면 ‘내일의 씨앗’만 짧게 적어두면 돼요.";
+    finishGuideMetaElement.textContent = "오늘은 기록 하나면 충분해요.";
   }
 }
 
@@ -5837,11 +5837,11 @@ function updateOneActionStepUI() {
 
   if (gardenPanelTitleElement) {
     if (step === "name") {
-      gardenPanelTitleElement.textContent = "나무 이름 정하기";
+      gardenPanelTitleElement.textContent = "나무 이름 짓기";
     } else if (step === "mood") {
-      gardenPanelTitleElement.textContent = "오늘 마음 고르기";
+      gardenPanelTitleElement.textContent = "오늘 기분은?";
     } else {
-      gardenPanelTitleElement.textContent = "오늘 기록 완료";
+      gardenPanelTitleElement.textContent = "오늘 숲 완성!";
     }
   }
 
@@ -5930,7 +5930,7 @@ function renderTreeName() {
     nameCardElement.classList.add("hidden");
   } else {
     treeNameInputElement.value = "";
-    treeNameMessageElement.textContent = "나중에 바꾸기 어려워요.";
+    treeNameMessageElement.textContent = "마음에 드는 이름으로 시작해요.";
     nameCardElement.classList.remove("hidden");
   }
 }
@@ -5974,9 +5974,9 @@ function updateTodayStatus() {
   }
 
   if (!hasName) {
-    todayStatusElement.textContent = "이름을 정하면 다음 단계가 열려요.";
+    todayStatusElement.textContent = "이름을 정하면 기분을 고를 수 있어요.";
     if (moodGuideElement) {
-      moodGuideElement.textContent = "오늘 마음 고르기";
+      moodGuideElement.textContent = "오늘 기분은?";
     }
     backToWorldBtnBottomElement.textContent = "전체 숲으로 돌아가기";
     return;
@@ -5992,8 +5992,8 @@ function updateTodayStatus() {
   } else {
     const returnMemory = getReturnMemoryInfo();
     todayStatusElement.textContent = returnMemory
-      ? `오늘 마음을 하나 골라주세요.`
-      : `이제 오늘의 마음을 하나 골라주세요.`;
+      ? `하나만 골라줘요.`
+      : `하나만 골라줘요.`;
     if (moodGuideElement) {
       moodGuideElement.textContent = returnMemory
         ? `오늘 마음 고르기`
