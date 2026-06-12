@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.69.1 test
+// 살아있는 숲 V1.69.3 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.69.1 test
+// 버전명: V1.69.3 test
 // 목적: 첫 기록 흐름 개선 - 시작 후 기록 패널 자동 열기, 입력 위치 안내 강화
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.69.1 test",
+  version: "V1.69.3 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -3201,7 +3201,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.69.1 test는 전체 숲 첫 화면 UX판이라 기존 V1.55 stable Apps Script로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.69.3 test는 전체 숲 배경 고정판이라 기존 V1.55 stable Apps Script로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -5772,7 +5772,7 @@ function renderVersionLabels() {
   const demoPillElement = document.querySelector(".demo-pill");
 
   if (versionElements[0]) {
-    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 전체 숲 첫 화면 UX`;
+    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 전체 숲 배경 고정`;
   }
 
   if (versionElements[1]) {
@@ -5780,7 +5780,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 전체 숲 첫 화면 UX`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 전체 숲 배경 고정`;
   }
 }
 
@@ -6217,7 +6217,7 @@ function renderTestModeStatus() {
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
   const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 전체 숲 첫 화면 UX · ${shortTreeId}`;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 전체 숲 배경 고정 · ${shortTreeId}`;
 }
 
 function setupTestMode() {
