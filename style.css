@@ -13197,3 +13197,73 @@ body.onboarding-open {
 .lf-v162-ux .garden-hub.is-open .meta-chip {
   color: #6a5530 !important;
 }
+
+
+/* V1.63 test: 첫 기록 보상감 강화 — 기록 직후 숲 반응/강조 연출 */
+.lf-v163-ux .garden-card.after-record-focus {
+  animation: recordGardenFocusV163 1.8s ease-in-out 0s 1;
+}
+
+.lf-v163-ux #sky.after-record-reward {
+  box-shadow:
+    inset 0 0 0 3px rgba(255, 210, 230, 0.55),
+    inset 0 0 48px rgba(255, 236, 167, 0.26),
+    0 18px 42px rgba(216, 140, 176, 0.18) !important;
+}
+
+.lf-v163-ux #tree.after-record-tree {
+  animation: recordTreePopV163 1.4s ease-in-out 0s 1;
+}
+
+.lf-v163-ux #tree.after-record-tree .tree-glow {
+  filter: drop-shadow(0 0 34px rgba(255, 178, 220, 0.62)) drop-shadow(0 0 22px rgba(255, 236, 167, 0.52)) !important;
+  opacity: 1 !important;
+}
+
+.lf-v163-ux .stage-message.after-record-reward {
+  border-color: rgba(244, 127, 166, 0.36) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,241,248,0.98)) !important;
+  animation: recordMessageGlowV163 1.8s ease-in-out 0s 1;
+}
+
+.lf-v163-ux .stage-message.after-record-reward .message-main {
+  color: #5e3d51 !important;
+}
+
+.lf-v163-ux .complete-card.after-record-card,
+.lf-v163-ux .today-change-card.after-record-card {
+  animation: recordCardGlowV163 1.8s ease-in-out 0s 1;
+  border-color: rgba(244, 127, 166, 0.34) !important;
+}
+
+@keyframes recordGardenFocusV163 {
+  0%, 100% { transform: translateY(0); }
+  45% { transform: translateY(-3px); }
+}
+
+@keyframes recordTreePopV163 {
+  0% { transform: translateX(-50%) scale(1); }
+  34% { transform: translateX(-50%) translateY(-6px) scale(1.055); }
+  68% { transform: translateX(-50%) translateY(0) scale(1.02); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+@keyframes recordMessageGlowV163 {
+  0%, 100% { box-shadow: 0 18px 42px rgba(233, 169, 197, 0.16); }
+  45% { box-shadow: 0 22px 52px rgba(244, 127, 166, 0.24), 0 0 0 4px rgba(255, 236, 167, 0.34); }
+}
+
+@keyframes recordCardGlowV163 {
+  0%, 100% { transform: translateY(0); }
+  45% { transform: translateY(-2px); box-shadow: 0 18px 44px rgba(244, 127, 166, 0.20), 0 0 0 4px rgba(255, 236, 167, 0.26) !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lf-v163-ux .garden-card.after-record-focus,
+  .lf-v163-ux #tree.after-record-tree,
+  .lf-v163-ux .stage-message.after-record-reward,
+  .lf-v163-ux .complete-card.after-record-card,
+  .lf-v163-ux .today-change-card.after-record-card {
+    animation: none !important;
+  }
+}

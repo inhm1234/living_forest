@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.62 test
+// 살아있는 숲 V1.63 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.62 test
+// 버전명: V1.63 test
 // 목적: 첫 기록 흐름 개선 - 시작 후 기록 패널 자동 열기, 입력 위치 안내 강화
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.62 test",
+  version: "V1.63 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -720,6 +720,9 @@ const closeGardenPanelBtnElement = document.querySelector("#closeGardenPanelBtn"
 const gardenHubTabButtons = document.querySelectorAll("[data-garden-tab]");
 
 const skyElement = document.querySelector("#sky");
+const gardenCardElement = document.querySelector(".garden-card");
+const forestHeadElement = document.querySelector(".forest-head");
+const stageMessageElement = document.querySelector(".stage-message");
 const gardenTitleElement = document.querySelector("#gardenTitle");
 const effectLayerElement = document.querySelector("#effectLayer");
 const treeElement = document.querySelector("#tree");
@@ -2551,6 +2554,44 @@ function getWorldSpotInfo() {
   };
 }
 
+
+function playAfterRecordReward(experience) {
+  const rewardTargets = [
+    gardenCardElement,
+    skyElement,
+    treeElement,
+    stageMessageElement,
+    completeCardElement,
+    todayChangeCardElement
+  ].filter(Boolean);
+
+  rewardTargets.forEach((element) => {
+    element.classList.remove("after-record-reward", "after-record-focus", "after-record-tree", "after-record-card");
+  });
+
+  window.setTimeout(() => {
+    gardenCardElement?.classList.add("after-record-focus");
+    skyElement?.classList.add("after-record-reward");
+    treeElement?.classList.add("after-record-tree");
+    stageMessageElement?.classList.add("after-record-reward");
+    completeCardElement?.classList.add("after-record-card");
+    todayChangeCardElement?.classList.add("after-record-card");
+
+    const focusTarget = forestHeadElement || gardenCardElement || skyElement;
+    focusTarget?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    if (growthMessageElement && experience?.complete) {
+      growthMessageElement.textContent = `${experience.complete} 방금 고른 마음이 내 나무 주변에 작은 빛으로 남았어요.`;
+    }
+  }, 420);
+
+  window.setTimeout(() => {
+    rewardTargets.forEach((element) => {
+      element.classList.remove("after-record-reward", "after-record-focus", "after-record-tree", "after-record-card");
+    });
+  }, 3600);
+}
+
 function chooseMood(mood) {
   if (!treeData.treeName?.trim()) {
     renderAll();
@@ -2609,6 +2650,7 @@ function chooseMood(mood) {
   renderForestMemoryCard();
   updateTodayStatus();
   prepareDailyVisitor({ forcePlay: true, allowCreate: true, allowPlay: true });
+  playAfterRecordReward(afterRecordExperience);
 }
 
 function getWorldSlotVisual(slot) {
@@ -3151,7 +3193,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.62 test는 가독성 최우선 개선판이라 기존 V1.55 stable Apps Script로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.63 test는 첫 기록 보상감 강화판이라 기존 V1.55 stable Apps Script로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
