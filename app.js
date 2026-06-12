@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.64 test
+// 살아있는 숲 V1.65 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.64 test
+// 버전명: V1.65 test
 // 목적: 첫 기록 흐름 개선 - 시작 후 기록 패널 자동 열기, 입력 위치 안내 강화
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.64 test",
+  version: "V1.65 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -760,6 +760,12 @@ const todayChangeTextElement = document.querySelector("#todayChangeText");
 const tomorrowPromiseCardElement = document.querySelector("#tomorrowPromiseCard");
 const tomorrowPromiseTitleElement = document.querySelector("#tomorrowPromiseTitle");
 const tomorrowPromiseTextElement = document.querySelector("#tomorrowPromiseText");
+const finishGuideCardElement = document.querySelector("#finishGuideCard");
+const finishGuideTitleElement = document.querySelector("#finishGuideTitle");
+const finishGuideTextElement = document.querySelector("#finishGuideText");
+const finishGuideMetaElement = document.querySelector("#finishGuideMeta");
+const finishSeedBtnElement = document.querySelector("#finishSeedBtn");
+const finishForestBtnElement = document.querySelector("#finishForestBtn");
 const tomorrowSeedCardElement = document.querySelector("#tomorrowSeedCard");
 const tomorrowSeedTitleElement = document.querySelector("#tomorrowSeedTitle");
 const tomorrowSeedTextElement = document.querySelector("#tomorrowSeedText");
@@ -2576,6 +2582,7 @@ function playAfterRecordReward(experience) {
     stageMessageElement?.classList.add("after-record-reward");
     completeCardElement?.classList.add("after-record-card");
     todayChangeCardElement?.classList.add("after-record-card");
+    finishGuideCardElement?.classList.add("after-record-card");
 
     const focusTarget = forestHeadElement || gardenCardElement || skyElement;
     focusTarget?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -3193,7 +3200,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.64 test는 상단 제목 가독성 개선판이라 기존 V1.55 stable Apps Script로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.65 test는 첫 방문 마무리 안내판이라 기존 V1.55 stable Apps Script로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -4495,7 +4502,8 @@ function renderCompleteCard() {
   const afterRecordCards = [
     completeCardElement,
     todayChangeCardElement,
-    tomorrowPromiseCardElement
+    tomorrowPromiseCardElement,
+    finishGuideCardElement
   ];
 
   if (!todayRecord) {
@@ -4528,6 +4536,18 @@ function renderCompleteCard() {
 
   if (tomorrowPromiseTextElement) {
     tomorrowPromiseTextElement.textContent = experience.tomorrowText;
+  }
+
+  if (finishGuideTitleElement) {
+    finishGuideTitleElement.textContent = "오늘 할 일은 완료됐어요";
+  }
+
+  if (finishGuideTextElement) {
+    finishGuideTextElement.textContent = "첫 기록이 숲에 남았어요. 더 하지 않아도 괜찮고, 내일 다시 오면 이 기록 위에 작은 성장이 이어져요.";
+  }
+
+  if (finishGuideMetaElement) {
+    finishGuideMetaElement.textContent = "조금 더 남기고 싶다면 ‘내일의 씨앗’만 짧게 적어두면 돼요.";
   }
 }
 
@@ -6523,7 +6543,7 @@ const GARDEN_HUB_CONFIG = {
     title: "오늘의 기록과 숲 일기장",
     ids: [
       "nameCard", "returnMemoryCard", "streakRewardCard", "mood-card", "completeCard",
-      "todayChangeCard", "tomorrowPromiseCard", "tomorrowSeedCard", "forestDiaryCard"
+      "todayChangeCard", "tomorrowPromiseCard", "finishGuideCard", "tomorrowSeedCard", "forestDiaryCard"
     ]
   },
   activity: {
@@ -6649,6 +6669,22 @@ function closeGardenHubPanel() {
   if (gardenPanelTitleElement) {
     gardenPanelTitleElement.textContent = "기록, 활동, 꾸미기, 편지, 보관함을 나무를 보면서 바로 열어볼 수 있어요.";
   }
+}
+
+
+if (finishSeedBtnElement) {
+  finishSeedBtnElement.addEventListener("click", () => {
+    openGardenHubTab("record");
+    tomorrowSeedCardElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+    tomorrowSeedInputElement?.focus({ preventScroll: true });
+  });
+}
+
+if (finishForestBtnElement) {
+  finishForestBtnElement.addEventListener("click", () => {
+    const focusTarget = forestHeadElement || gardenCardElement || document.querySelector("#gardenScreen .garden-hero");
+    focusTarget?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 }
 
 applyGrowthDaysFromUrlForTest();
