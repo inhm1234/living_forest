@@ -12199,3 +12199,485 @@ body.online-friend-invite-mode #friendInviteCard {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* V1.58 test: 첫 방문 UX/UI 개편판 — 자연 유입 사용자가 바로 이해하도록 가독성과 시작 동선을 우선 강화 */
+.lf-v158-ux {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 213, 232, 0.86), transparent 31%),
+    radial-gradient(circle at 88% 8%, rgba(189, 235, 197, 0.78), transparent 28%),
+    linear-gradient(180deg, #fff7e8 0%, #effbdd 42%, #dff4e5 100%);
+  color: #2c3b2f;
+}
+
+.lf-v158-ux .app {
+  padding-top: 18px;
+}
+
+.lf-v158-ux .hero {
+  padding: 18px 16px 4px;
+  margin-bottom: 12px;
+}
+
+.lf-v158-ux h1,
+.lf-v158-ux .garden-title {
+  color: #243626;
+  font-size: clamp(34px, 8vw, 52px);
+  letter-spacing: -0.07em;
+  text-shadow: 0 4px 0 rgba(255, 255, 255, 0.74), 0 14px 28px rgba(92, 137, 88, 0.18);
+}
+
+.lf-v158-ux .garden-title {
+  font-size: clamp(27px, 7vw, 40px);
+}
+
+.lf-v158-ux .subtitle,
+.lf-v158-ux .world-hero .subtitle,
+.lf-v158-ux .storage-note {
+  color: #4f6553;
+  font-weight: 850;
+}
+
+.lf-v158-ux .version,
+.lf-v158-ux .demo-pill {
+  border: 1px solid rgba(89, 146, 84, 0.22);
+  background: rgba(255, 255, 255, 0.78);
+  color: #5b6f42;
+  box-shadow: 0 10px 24px rgba(124, 159, 105, 0.14);
+}
+
+.lf-v158-ux .visual-card,
+.lf-v158-ux .glass-panel,
+.lf-v158-ux .name-card,
+.lf-v158-ux .mood-card,
+.lf-v158-ux .forest-head,
+.lf-v158-ux #worldScreen .glass-panel {
+  border: 1px solid rgba(99, 139, 76, 0.16);
+  background: rgba(255, 255, 255, 0.82);
+  color: #2b3c2f;
+  box-shadow: 0 18px 46px rgba(104, 148, 107, 0.16);
+  backdrop-filter: blur(18px);
+}
+
+.lf-v158-ux .visual-card {
+  padding: 10px;
+  border-radius: 30px;
+}
+
+.lf-v158-ux .world-stage,
+.lf-v158-ux .garden-stage {
+  border: 2px solid rgba(255, 255, 255, 0.66);
+  box-shadow: inset 0 0 0 1px rgba(102, 141, 74, 0.14);
+}
+
+.lf-v158-ux .stage-dim {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 246, 225, 0.12) 42%, rgba(23, 53, 37, 0.3) 100%),
+    radial-gradient(circle at 50% 58%, rgba(255, 248, 190, 0.26), transparent 31%);
+}
+
+.lf-v158-ux .primary-btn,
+.lf-v158-ux .forest-share-actions .primary-btn,
+.lf-v158-ux .forest-archive-actions .primary-btn {
+  min-height: 58px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #ffdf75 0%, #ff9f9f 48%, #8fd48c 100%);
+  color: #243223;
+  font-size: 16px;
+  font-weight: 1000;
+  letter-spacing: -0.035em;
+  box-shadow: 0 16px 30px rgba(255, 142, 126, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+.lf-v158-ux .ghost-btn,
+.lf-v158-ux .small-btn {
+  border: 1px solid rgba(102, 140, 82, 0.22);
+  background: rgba(255, 255, 255, 0.75);
+  color: #426047;
+  font-weight: 900;
+  box-shadow: 0 10px 22px rgba(102, 140, 82, 0.11);
+}
+
+.lf-v158-ux .small-btn {
+  position: relative;
+  left: auto;
+  top: auto;
+  width: auto;
+  min-height: 40px;
+}
+
+.lf-v158-ux .launch-guide-card {
+  position: relative;
+  overflow: hidden;
+  margin: 0 0 14px;
+  padding: 20px 18px 18px;
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(255, 221, 232, 0.96), transparent 30%),
+    radial-gradient(circle at 90% 18%, rgba(210, 244, 184, 0.96), transparent 28%),
+    rgba(255, 255, 255, 0.88) !important;
+}
+
+.lf-v158-ux .launch-guide-card::after {
+  content: "";
+  position: absolute;
+  width: 110px;
+  height: 110px;
+  right: -28px;
+  bottom: -34px;
+  border-radius: 999px;
+  background: rgba(255, 205, 107, 0.28);
+  pointer-events: none;
+}
+
+.lf-v158-ux .launch-guide-kicker,
+.lf-v158-ux .first-visit-kicker,
+.lf-v158-ux .daily-loop-kicker,
+.lf-v158-ux .garden-starter-kicker,
+.lf-v158-ux .garden-hub-kicker,
+.lf-v158-ux .summary-chip,
+.lf-v158-ux .meta-chip {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fff0b9;
+  color: #6a5530;
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: -0.03em;
+}
+
+.lf-v158-ux .launch-guide-card h2 {
+  margin: 10px 0 8px;
+  color: #243626;
+  font-size: clamp(24px, 7vw, 36px);
+  line-height: 1.15;
+  letter-spacing: -0.07em;
+}
+
+.lf-v158-ux .launch-guide-text {
+  margin: 0;
+  color: #526553;
+  font-size: 15px;
+  font-weight: 820;
+  line-height: 1.62;
+}
+
+.lf-v158-ux .launch-step-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.lf-v158-ux .launch-step-card {
+  padding: 13px 12px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(106, 150, 78, 0.13);
+  box-shadow: 0 10px 22px rgba(108, 139, 87, 0.1);
+}
+
+.lf-v158-ux .launch-step-card span {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: #8fd48c;
+  color: #16351d;
+  font-size: 13px;
+  font-weight: 1000;
+}
+
+.lf-v158-ux .launch-step-card strong {
+  display: block;
+  margin-top: 8px;
+  color: #29392c;
+  font-size: 14px;
+  font-weight: 1000;
+  letter-spacing: -0.04em;
+}
+
+.lf-v158-ux .launch-step-card p {
+  margin: 4px 0 0;
+  color: #657468;
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1.45;
+}
+
+.lf-v158-ux .launch-action-row,
+.lf-v158-ux .onboarding-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(136px, 0.38fr);
+  gap: 10px;
+}
+
+.lf-v158-ux .launch-primary-btn {
+  font-size: 18px;
+}
+
+.lf-v158-ux .world-summary,
+.lf-v158-ux .first-visit-guide,
+.lf-v158-ux .daily-loop-card,
+.lf-v158-ux .garden-starter-card,
+.lf-v158-ux .garden-hub {
+  border-radius: 26px;
+}
+
+.lf-v158-ux .summary-name,
+.lf-v158-ux .first-visit-title,
+.lf-v158-ux .daily-loop-title,
+.lf-v158-ux .garden-hub-title,
+.lf-v158-ux .world-growth-title,
+.lf-v158-ux .friend-forest-title,
+.lf-v158-ux .garden-starter-card h2,
+.lf-v158-ux .tree-name-display {
+  color: #263728;
+}
+
+.lf-v158-ux .world-summary-text,
+.lf-v158-ux .world-community-hint,
+.lf-v158-ux .world-atmosphere-hint,
+.lf-v158-ux .first-visit-text,
+.lf-v158-ux .daily-loop-text,
+.lf-v158-ux .garden-starter-card p,
+.lf-v158-ux .garden-hub-title,
+.lf-v158-ux .tree-name-message,
+.lf-v158-ux .mood-guide,
+.lf-v158-ux .today-status {
+  color: #506452;
+  font-weight: 820;
+}
+
+.lf-v158-ux .first-visit-guide.guide-ready {
+  background: #fff7d7 !important;
+  border-color: rgba(239, 178, 88, 0.26) !important;
+}
+
+.lf-v158-ux .first-visit-guide.guide-done,
+.lf-v158-ux .daily-loop-card.done {
+  background: #e9f9e5 !important;
+  border-color: rgba(94, 161, 83, 0.2) !important;
+}
+
+.lf-v158-ux .world-action-row {
+  gap: 10px;
+}
+
+.lf-v158-ux .garden-starter-card {
+  margin: 0 0 14px;
+  padding: 16px;
+}
+
+.lf-v158-ux .garden-starter-card h2 {
+  margin: 8px 0 6px;
+  font-size: 22px;
+  line-height: 1.28;
+  letter-spacing: -0.05em;
+}
+
+.lf-v158-ux .garden-starter-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.lf-v158-ux .garden-starter-steps span {
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: #f1ffe1;
+  color: #426047;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.lf-v158-ux .forest-head {
+  padding: 14px 15px;
+}
+
+.lf-v158-ux .tree-name-form input,
+.lf-v158-ux .tomorrow-seed-form input,
+.lf-v158-ux input,
+.lf-v158-ux select {
+  border: 2px solid rgba(108, 145, 84, 0.22);
+  background: rgba(255, 255, 255, 0.95);
+  color: #263728;
+  font-weight: 900;
+}
+
+.lf-v158-ux .tree-name-form input::placeholder,
+.lf-v158-ux .tomorrow-seed-form input::placeholder {
+  color: rgba(62, 82, 64, 0.5);
+}
+
+.lf-v158-ux .tree-name-form button,
+.lf-v158-ux .tomorrow-seed-form button {
+  background: #8fd48c;
+  color: #18351c;
+  font-weight: 1000;
+}
+
+.lf-v158-ux .mood-buttons button,
+.lf-v158-ux .tree-care-actions button,
+.lf-v158-ux .forest-trail-actions button,
+.lf-v158-ux .self-care-actions button,
+.lf-v158-ux .garden-marker-actions button,
+.lf-v158-ux .forest-sound-actions button,
+.lf-v158-ux .garden-hub-tab {
+  border: 1px solid rgba(102, 140, 82, 0.2);
+  background: rgba(255, 255, 255, 0.86);
+  color: #314736;
+  font-weight: 920;
+}
+
+.lf-v158-ux .garden-hub-tab.active,
+.lf-v158-ux .forest-memory-filters button.active {
+  background: #fff0b9;
+  color: #54442a;
+  border-color: rgba(224, 168, 72, 0.32);
+}
+
+.lf-v158-ux .stage-message {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border-color: rgba(255, 255, 255, 0.64) !important;
+}
+
+.lf-v158-ux .message-main,
+.lf-v158-ux .message-sub {
+  color: #29392c;
+}
+
+.lf-v158-ux .onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(44, 59, 47, 0.34);
+  backdrop-filter: blur(12px);
+}
+
+.lf-v158-ux .onboarding-dialog {
+  position: relative;
+  width: min(100%, 560px);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 22px;
+  border-radius: 32px;
+  border: 1px solid rgba(107, 139, 74, 0.18);
+  background:
+    radial-gradient(circle at 14% 0%, rgba(255, 223, 235, 0.98), transparent 31%),
+    radial-gradient(circle at 86% 0%, rgba(220, 248, 190, 0.96), transparent 30%),
+    #fffdf2;
+  box-shadow: 0 28px 70px rgba(41, 69, 45, 0.22);
+}
+
+.lf-v158-ux .onboarding-close {
+  position: absolute;
+  right: 14px;
+  top: 12px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #4a604e;
+  font-size: 24px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.lf-v158-ux .onboarding-kicker {
+  display: inline-flex;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: #fff0b9;
+  color: #6a5530;
+  font-size: 12px;
+  font-weight: 1000;
+}
+
+.lf-v158-ux .onboarding-dialog h2 {
+  margin: 12px 34px 8px 0;
+  color: #243626;
+  font-size: clamp(28px, 8vw, 40px);
+  line-height: 1.12;
+  letter-spacing: -0.07em;
+}
+
+.lf-v158-ux .onboarding-desc {
+  margin: 0;
+  color: #516756;
+  font-size: 15px;
+  font-weight: 830;
+  line-height: 1.6;
+}
+
+.lf-v158-ux .onboarding-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.lf-v158-ux .onboarding-cards article {
+  padding: 14px 12px;
+  border: 1px solid rgba(110, 145, 80, 0.14);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.lf-v158-ux .onboarding-cards span {
+  font-size: 27px;
+}
+
+.lf-v158-ux .onboarding-cards strong {
+  display: block;
+  margin-top: 8px;
+  color: #2d3e31;
+  font-size: 14px;
+  font-weight: 1000;
+}
+
+.lf-v158-ux .onboarding-cards p {
+  margin: 5px 0 0;
+  color: #66786a;
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1.45;
+}
+
+body.onboarding-open {
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .lf-v158-ux .app {
+    padding: 14px 12px 34px;
+  }
+
+  .lf-v158-ux .launch-step-list,
+  .lf-v158-ux .onboarding-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .lf-v158-ux .launch-action-row,
+  .lf-v158-ux .onboarding-actions,
+  .lf-v158-ux .world-action-row {
+    grid-template-columns: 1fr;
+  }
+
+  .lf-v158-ux .launch-guide-card,
+  .lf-v158-ux .onboarding-dialog {
+    border-radius: 26px;
+  }
+}

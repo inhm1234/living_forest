@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.57 test
+// 살아있는 숲 V1.58 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.57 test
-// 목적: 친구 리배치/교체 안정화 - 중복 클릭 방지, 이동/교체 안내 강화
+// 버전명: V1.58 test
+// 목적: 첫 방문자 UX/UI 개편 - 온보딩, 시작 버튼, 가독성 강화
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.57 test",
+  version: "V1.58 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -704,6 +704,15 @@ const forestInviteMetaElement = document.querySelector("#forestInviteMeta");
 const dailyLoopCardElement = document.querySelector("#dailyLoopCard");
 const dailyLoopTitleElement = document.querySelector("#dailyLoopTitle");
 const dailyLoopTextElement = document.querySelector("#dailyLoopText");
+
+const launchGuideCardElement = document.querySelector("#launchGuideCard");
+const startTodayRecordBtnElement = document.querySelector("#startTodayRecordBtn");
+const openOnboardingBtnElement = document.querySelector("#openOnboardingBtn");
+const onboardingOverlayElement = document.querySelector("#onboardingOverlay");
+const closeOnboardingBtnElement = document.querySelector("#closeOnboardingBtn");
+const onboardingStartBtnElement = document.querySelector("#onboardingStartBtn");
+const onboardingLaterBtnElement = document.querySelector("#onboardingLaterBtn");
+const ONBOARDING_STORAGE_KEY = isTestMode ? "livingForestOnboardingV158_TEST" : "livingForestOnboardingV158";
 const gardenHubElement = document.querySelector("#gardenHub");
 const gardenHubSheetElement = document.querySelector("#gardenHubSheet");
 const gardenPanelTitleElement = document.querySelector("#gardenPanelTitle");
@@ -3142,7 +3151,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.57 test는 화면 안정화 패치라 기존 V1.55 stable Apps Script로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.58 test는 첫 방문 UX/UI 패치라 기존 V1.55 stable Apps Script로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -4266,10 +4275,15 @@ function renderWorld() {
   worldSummaryNameElement.textContent = name;
   myWorldSpotElement.setAttribute("aria-label", `${name}의 월드 숲 자리`);
 
+  if (launchGuideCardElement) {
+    launchGuideCardElement.classList.toggle("launch-done", hasCheckedToday());
+    launchGuideCardElement.classList.toggle("launch-start", !treeData.treeName?.trim() && treeData.history.length === 0);
+  }
+
   if (hasCheckedToday()) {
     goGardenBtnElement.textContent = "내 정원 둘러보기";
   } else if (!treeData.treeName?.trim()) {
-    goGardenBtnElement.textContent = treeData.history.length === 0 ? "내 나무 키우러 가기" : "내 나무 이름 정하기";
+    goGardenBtnElement.textContent = treeData.history.length === 0 ? "오늘의 기록 시작하기" : "내 나무 이름 정하기";
   } else {
     goGardenBtnElement.textContent = "오늘 마음 기록하기";
   }
@@ -5695,7 +5709,7 @@ function renderVersionLabels() {
   const demoPillElement = document.querySelector(".demo-pill");
 
   if (versionElements[0]) {
-    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 내 숲 관리 확장 통합본`;
+    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 첫 방문 UX/UI 개편판`;
   }
 
   if (versionElements[1]) {
@@ -5703,7 +5717,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 내 숲 관리 확장 통합본`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 첫 방문 UX/UI 개편판`;
   }
 }
 
@@ -6101,7 +6115,7 @@ function renderTestModeStatus() {
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
   const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 내 숲 관리 확장 통합본 · ${shortTreeId}`;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 첫 방문 UX/UI 개편판 · ${shortTreeId}`;
 }
 
 function setupTestMode() {
@@ -6175,6 +6189,79 @@ function showGardenScreen() {
     allowCreate: canCheckVisitorAfterCare,
     allowPlay: canCheckVisitorAfterCare
   });
+}
+
+
+function hasSeenFirstVisitOnboarding() {
+  try {
+    return localStorage.getItem(ONBOARDING_STORAGE_KEY) === "seen";
+  } catch (error) {
+    return false;
+  }
+}
+
+function markFirstVisitOnboardingSeen() {
+  try {
+    localStorage.setItem(ONBOARDING_STORAGE_KEY, "seen");
+  } catch (error) {
+    // 저장이 막힌 환경에서도 안내 닫기는 계속 동작해야 해요.
+  }
+}
+
+function openFirstVisitOnboarding(source = "manual") {
+  if (!onboardingOverlayElement) {
+    return;
+  }
+
+  onboardingOverlayElement.classList.remove("hidden");
+  document.body.classList.add("onboarding-open");
+  trackForestEvent("first_visit_onboarding_open", { source });
+
+  window.setTimeout(() => {
+    onboardingStartBtnElement?.focus?.();
+  }, 60);
+}
+
+function closeFirstVisitOnboarding(markSeen = true) {
+  if (!onboardingOverlayElement) {
+    return;
+  }
+
+  onboardingOverlayElement.classList.add("hidden");
+  document.body.classList.remove("onboarding-open");
+
+  if (markSeen) {
+    markFirstVisitOnboardingSeen();
+  }
+}
+
+function startTodayRecordFromOnboarding(source = "launch") {
+  closeFirstVisitOnboarding(true);
+  markFirstVisitOnboardingSeen();
+  trackForestEvent("go_garden_click", { source });
+  showGardenScreen();
+
+  window.setTimeout(() => {
+    if (treeNameInputElement && !treeData.treeName?.trim()) {
+      treeNameInputElement.focus();
+    }
+  }, 360);
+}
+
+function maybeOpenFirstVisitOnboarding() {
+  if (!onboardingOverlayElement || hasSeenFirstVisitOnboarding()) {
+    return;
+  }
+
+  const isFirstLocalVisit = !treeData.treeName?.trim() && Array.isArray(treeData.history) && treeData.history.length === 0;
+
+  if (!isFirstLocalVisit || isForestInviteVisit() || isOnlineFriendInviteVisit()) {
+    return;
+  }
+
+  window.setTimeout(() => {
+    openFirstVisitOnboarding("auto_first_visit");
+  }, 650);
 }
 
 function renderAll() {
@@ -6299,6 +6386,35 @@ gardenMarkerButtons.forEach((button) => {
     chooseGardenMarker(button.dataset.gardenMarker);
   });
 });
+
+
+if (startTodayRecordBtnElement) {
+  startTodayRecordBtnElement.addEventListener("click", () => startTodayRecordFromOnboarding("launch_primary"));
+}
+
+if (openOnboardingBtnElement) {
+  openOnboardingBtnElement.addEventListener("click", () => openFirstVisitOnboarding("launch_help"));
+}
+
+if (onboardingStartBtnElement) {
+  onboardingStartBtnElement.addEventListener("click", () => startTodayRecordFromOnboarding("onboarding_start"));
+}
+
+if (onboardingLaterBtnElement) {
+  onboardingLaterBtnElement.addEventListener("click", () => closeFirstVisitOnboarding(true));
+}
+
+if (closeOnboardingBtnElement) {
+  closeOnboardingBtnElement.addEventListener("click", () => closeFirstVisitOnboarding(true));
+}
+
+if (onboardingOverlayElement) {
+  onboardingOverlayElement.addEventListener("click", (event) => {
+    if (event.target === onboardingOverlayElement) {
+      closeFirstVisitOnboarding(true);
+    }
+  });
+}
 
 goGardenBtnElement.addEventListener("click", showGardenScreen);
 if (focusMyTreeBtnElement) {
@@ -6455,6 +6571,7 @@ setupTestMode();
 renderAll();
 buildGardenHubLayout();
 showWorldScreen();
+maybeOpenFirstVisitOnboarding();
 
 
 function handleAnalyticsClickCapture(event) {
