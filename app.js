@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.59 test
+// 살아있는 숲 V1.60 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.59 test
-// 목적: 첫 방문자 UX/UI 개편 - 온보딩, 시작 버튼, 가독성 강화
+// 버전명: V1.60 test
+// 목적: 첫 기록 흐름 개선 - 시작 후 기록 패널 자동 열기, 입력 위치 안내 강화
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.59 test",
+  version: "V1.60 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -3151,7 +3151,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.59 test는 첫 방문 UX/UI 패치라 기존 V1.55 stable Apps Script로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.60 test는 첫 방문 UX/UI 패치라 기존 V1.55 stable Apps Script로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -6173,16 +6173,25 @@ function showWorldScreen() {
   }
 }
 
-function showGardenScreen() {
-  trackForestEvent("screen_view_garden");
+function showGardenScreen(options = {}) {
+  const shouldOpenRecordPanel = Boolean(options.openRecordPanel);
+  trackForestEvent("screen_view_garden", { openRecordPanel: shouldOpenRecordPanel });
 
   gardenScreenElement.classList.add("screen-active");
   worldScreenElement.classList.remove("screen-active");
   window.scrollTo({ top: 0, behavior: "smooth" });
 
   buildGardenHubLayout();
-  // V1.41.1 test: 내 정원 첫 진입에서는 패널을 얇게 접어 두어 나무/숲 무대를 먼저 보이게 합니다.
-  closeGardenHubPanel();
+  if (shouldOpenRecordPanel) {
+    openGardenHubTab("record");
+    gardenHubElement?.classList.add("first-record-highlight");
+    window.setTimeout(() => {
+      gardenHubElement?.classList.remove("first-record-highlight");
+    }, 2400);
+  } else {
+    // V1.41.1 test: 일반 진입에서는 패널을 얇게 접어 두어 나무/숲 무대를 먼저 보이게 합니다.
+    closeGardenHubPanel();
+  }
 
   const canCheckVisitorAfterCare = hasCheckedToday();
   prepareDailyVisitor({
@@ -6237,28 +6246,35 @@ function closeFirstVisitOnboarding(markSeen = true) {
 
 function focusFirstRecordStep() {
   window.setTimeout(() => {
-    if (treeNameInputElement && !treeData.treeName?.trim()) {
-      treeNameInputElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    openGardenHubTab("record");
+    gardenHubElement?.classList.add("first-record-highlight");
 
+    const hasTreeName = Boolean(treeData.treeName?.trim());
+    const targetElement = !hasTreeName && treeNameInputElement ? treeNameInputElement : moodCardElement;
+
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    if (!hasTreeName && treeNameInputElement) {
       try {
         treeNameInputElement.focus({ preventScroll: true });
       } catch (error) {
         treeNameInputElement.focus();
       }
-      return;
     }
 
-    if (moodCardElement) {
-      moodCardElement.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  }, 520);
+    window.setTimeout(() => {
+      gardenHubElement?.classList.remove("first-record-highlight");
+    }, 2400);
+  }, 220);
 }
 
 function startTodayRecordFromOnboarding(source = "launch") {
   closeFirstVisitOnboarding(true);
   markFirstVisitOnboardingSeen();
   trackForestEvent("go_garden_click", { source });
-  showGardenScreen();
+  showGardenScreen({ openRecordPanel: true });
   focusFirstRecordStep();
 }
 
@@ -6436,7 +6452,7 @@ if (onboardingOverlayElement) {
   });
 }
 
-goGardenBtnElement.addEventListener("click", showGardenScreen);
+goGardenBtnElement.addEventListener("click", () => showGardenScreen({ openRecordPanel: true }));
 if (focusMyTreeBtnElement) {
   focusMyTreeBtnElement.addEventListener("click", focusMyWorldSpot);
 }
