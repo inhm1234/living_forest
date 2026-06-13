@@ -14565,3 +14565,235 @@ body.lf-v1693-ux:not(.online-friend-invite-mode) #worldScreen.screen-active {
     bottom: 48px !important;
   }
 }
+
+
+/* V1.70.2 test: 기존 예쁜 숲 배경 유지 + 실제 나무 오버레이 */
+#worldStage.world-stage,
+#worldStage.world-stage.world-time-day,
+#worldStage.world-stage.world-time-sunset,
+#worldStage.world-stage.world-time-night {
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+}
+
+#worldStage.world-stage.world-time-day {
+  background-image: url("assets/world/world-overview-day-v1.png") !important;
+}
+
+#worldStage.world-stage.world-time-sunset {
+  background-image: url("assets/world/world-overview-sunset-v1.png") !important;
+}
+
+#worldStage.world-stage.world-time-night {
+  background-image: url("assets/world/world-overview-night-v1.png") !important;
+}
+
+/* V1.70.1에서 초록 평면처럼 보이던 강한 오버레이를 제거하고, 배경은 살짝만 보정 */
+#worldStage::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 2 !important;
+  pointer-events: none !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.00) 48%, rgba(0,0,0,0.16) 100%),
+    radial-gradient(ellipse at 50% 76%, rgba(0,0,0,0.10), transparent 58%) !important;
+  opacity: 1 !important;
+  mix-blend-mode: normal !important;
+}
+
+#worldStage.world-time-night::before {
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.00) 44%, rgba(0,0,0,0.24) 100%),
+    radial-gradient(ellipse at 50% 76%, rgba(0,0,0,0.14), transparent 58%) !important;
+}
+
+/* 기존 배경 이미지 위에 나무들이 분명히 얹혀 보이도록 레이어를 올림 */
+#worldNeighborSpots {
+  z-index: 9 !important;
+}
+
+#worldNeighborSpots::before,
+#worldNeighborSpots::after {
+  opacity: 0 !important;
+  background: none !important;
+}
+
+/* 더미 나무도 '빛 점'이 아니라 작은 나무로 보이게 강제 */
+#worldNeighborSpots .neighbor-spot {
+  width: 104px !important;
+  height: 132px !important;
+  opacity: max(0.66, var(--slot-opacity, 0.72)) !important;
+  filter: drop-shadow(0 10px 12px rgba(0,0,0,0.16)) !important;
+}
+
+#worldNeighborSpots .neighbor-tree-wrap {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: 8px !important;
+  width: 96px !important;
+  height: 126px !important;
+  transform: translateX(-50%) !important;
+  overflow: visible !important;
+}
+
+/* 실제 이미지가 작거나 빛처럼 보일 때도, CSS 나무 실루엣이 항상 보이게 함 */
+#worldNeighborSpots .neighbor-tree-wrap::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 50% !important;
+  bottom: 8px !important;
+  width: 12px !important;
+  height: 36px !important;
+  border-radius: 999px !important;
+  transform: translateX(-50%) !important;
+  background: linear-gradient(180deg, rgba(126, 87, 50, 0.78), rgba(88, 57, 34, 0.84)) !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.12) !important;
+  z-index: 1 !important;
+}
+
+#worldNeighborSpots .neighbor-tree-wrap::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 50% !important;
+  bottom: 32px !important;
+  width: 66px !important;
+  height: 58px !important;
+  border-radius: 52% 48% 50% 50% / 58% 58% 42% 42% !important;
+  transform: translateX(-50%) rotate(var(--slot-tilt, 0deg)) !important;
+  background:
+    radial-gradient(circle at 32% 34%, rgba(255, 220, 235, 0.72) 0 10%, transparent 11%),
+    radial-gradient(circle at 68% 30%, rgba(255, 239, 186, 0.62) 0 9%, transparent 10%),
+    radial-gradient(circle at 48% 18%, rgba(211, 249, 178, 0.62) 0 10%, transparent 11%),
+    radial-gradient(circle at 50% 50%, rgba(115, 185, 104, 0.96), rgba(72, 139, 78, 0.96) 64%, rgba(55, 105, 66, 0.92) 100%) !important;
+  box-shadow:
+    -16px 9px 0 -7px rgba(98, 165, 91, 0.90),
+    16px 8px 0 -8px rgba(93, 157, 89, 0.88),
+    0 8px 12px rgba(0,0,0,0.14) !important;
+  z-index: 2 !important;
+}
+
+#worldNeighborSpots .neighbor-tree-image {
+  position: relative !important;
+  z-index: 3 !important;
+  opacity: 0.38 !important;
+  filter: drop-shadow(0 7px 10px rgba(0,0,0,0.16)) saturate(0.92) brightness(0.96) !important;
+}
+
+#worldNeighborSpots .neighbor-tree-shadow {
+  opacity: 0.16 !important;
+}
+
+#worldNeighborSpots .neighbor-ground {
+  width: 70px !important;
+  height: 18px !important;
+  bottom: 6px !important;
+  opacity: 0.36 !important;
+  background: radial-gradient(ellipse, rgba(56, 86, 47, 0.30), rgba(28, 47, 29, 0.16) 58%, transparent 76%) !important;
+}
+
+/* 거리감: 뒤쪽은 작게, 앞쪽은 크게 */
+#worldNeighborSpots .row-far .neighbor-tree-wrap { width: 54px !important; height: 74px !important; }
+#worldNeighborSpots .row-far .neighbor-tree-wrap::after { width: 38px !important; height: 34px !important; bottom: 28px !important; }
+#worldNeighborSpots .row-far .neighbor-tree-wrap::before { width: 7px !important; height: 22px !important; }
+
+#worldNeighborSpots .row-mid .neighbor-tree-wrap { width: 72px !important; height: 94px !important; }
+#worldNeighborSpots .row-mid .neighbor-tree-wrap::after { width: 50px !important; height: 44px !important; bottom: 30px !important; }
+#worldNeighborSpots .row-mid .neighbor-tree-wrap::before { width: 9px !important; height: 28px !important; }
+
+#worldNeighborSpots .row-near .neighbor-tree-wrap { width: 90px !important; height: 116px !important; }
+#worldNeighborSpots .row-near .neighbor-tree-wrap::after { width: 62px !important; height: 54px !important; bottom: 32px !important; }
+#worldNeighborSpots .row-near .neighbor-tree-wrap::before { width: 11px !important; height: 34px !important; }
+
+#worldNeighborSpots .row-front .neighbor-tree-wrap,
+#worldNeighborSpots .row-community .neighbor-tree-wrap {
+  width: 112px !important;
+  height: 142px !important;
+}
+
+#worldNeighborSpots .row-front .neighbor-tree-wrap::after,
+#worldNeighborSpots .row-community .neighbor-tree-wrap::after {
+  width: 76px !important;
+  height: 66px !important;
+  bottom: 36px !important;
+}
+
+#worldNeighborSpots .row-front .neighbor-tree-wrap::before,
+#worldNeighborSpots .row-community .neighbor-tree-wrap::before {
+  width: 13px !important;
+  height: 42px !important;
+}
+
+/* 실제 친구 나무는 더 선명하게 */
+#worldNeighborSpots .neighbor-spot.is-real {
+  opacity: 1 !important;
+  z-index: calc(var(--slot-z, 10) + 12) !important;
+}
+
+#worldNeighborSpots .neighbor-spot.is-real .neighbor-tree-wrap::after {
+  background:
+    radial-gradient(circle at 32% 34%, rgba(255, 196, 225, 0.88) 0 11%, transparent 12%),
+    radial-gradient(circle at 68% 30%, rgba(255, 245, 174, 0.78) 0 10%, transparent 11%),
+    radial-gradient(circle at 50% 50%, rgba(132, 213, 118, 1), rgba(76, 157, 83, 1) 64%, rgba(55, 117, 68, 0.98) 100%) !important;
+  filter: drop-shadow(0 0 10px rgba(255, 246, 185, 0.34)) !important;
+}
+
+#worldNeighborSpots .neighbor-spot.is-real small {
+  display: inline-flex !important;
+  opacity: 1 !important;
+}
+
+/* 더미 라벨은 숨겨서 가짜 사용자 느낌을 줄임 */
+#worldNeighborSpots .neighbor-spot.is-dummy small,
+#worldNeighborSpots .neighbor-spot.is-seat-dummy small {
+  display: none !important;
+}
+
+/* 내 나무는 배경 속 중앙의 주인공으로 */
+#myWorldSpot.my-world-spot {
+  z-index: 18 !important;
+  left: 50% !important;
+  bottom: 52px !important;
+  width: 122px !important;
+  transform: translateX(-50%) !important;
+}
+
+#myWorldSpot .my-spot-name,
+#myWorldSpot .my-spot-status {
+  opacity: 1 !important;
+}
+
+@media (max-width: 640px) {
+  #worldNeighborSpots .neighbor-spot {
+    width: 84px !important;
+    height: 110px !important;
+  }
+
+  #worldNeighborSpots .row-far .neighbor-tree-wrap { width: 42px !important; height: 58px !important; }
+  #worldNeighborSpots .row-far .neighbor-tree-wrap::after { width: 30px !important; height: 28px !important; bottom: 24px !important; }
+
+  #worldNeighborSpots .row-mid .neighbor-tree-wrap { width: 58px !important; height: 78px !important; }
+  #worldNeighborSpots .row-mid .neighbor-tree-wrap::after { width: 42px !important; height: 38px !important; bottom: 26px !important; }
+
+  #worldNeighborSpots .row-near .neighbor-tree-wrap { width: 74px !important; height: 98px !important; }
+  #worldNeighborSpots .row-near .neighbor-tree-wrap::after { width: 54px !important; height: 48px !important; bottom: 29px !important; }
+
+  #worldNeighborSpots .row-front .neighbor-tree-wrap,
+  #worldNeighborSpots .row-community .neighbor-tree-wrap {
+    width: 92px !important;
+    height: 118px !important;
+  }
+
+  #worldNeighborSpots .row-front .neighbor-tree-wrap::after,
+  #worldNeighborSpots .row-community .neighbor-tree-wrap::after {
+    width: 66px !important;
+    height: 58px !important;
+    bottom: 32px !important;
+  }
+
+  #myWorldSpot.my-world-spot {
+    width: 106px !important;
+    bottom: 46px !important;
+  }
+}
