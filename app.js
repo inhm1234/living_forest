@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.70 test
+// 살아있는 숲 V1.70.1 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.70 test
+// 버전명: V1.70.1 test
 // 목적: 전체 숲을 나무 군집으로 보이게 하고, 더미 나무가 실제 친구 나무로 대체되는 구조 추가
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.70 test",
+  version: "V1.70.1 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -3028,7 +3028,7 @@ function renderWorldNeighbors() {
             <img class="neighbor-tree-shadow" src="assets/garden/tree-shadow.svg" alt="" />
             <img class="neighbor-tree-image" src="${imageInfo.src}" alt="" />
           </div>
-          <small>${escapeHtml(slot.source === "real" ? `${slot.ownerName || "친구"}의 나무` : slot.name)}</small>
+          <small>${escapeHtml(slot.source === "real" ? `${slot.ownerName || "친구"}의 나무` : "")}</small>
         </article>
       `;
     })
@@ -3288,7 +3288,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.70 test는 전체 숲 나무 군집판이라 기존 V1.55 stable Apps Script로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.70.1 test는 전체 숲 실나무 표시 강화판이라 기존 V1.55 stable Apps Script로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -5861,7 +5861,7 @@ function renderVersionLabels() {
   const demoPillElement = document.querySelector(".demo-pill");
 
   if (versionElements[0]) {
-    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 전체 숲 배경 고정`;
+    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 전체 숲 나무 모임`;
   }
 
   if (versionElements[1]) {
@@ -5869,7 +5869,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 전체 숲 배경 고정`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 전체 숲 나무 모임`;
   }
 }
 
@@ -6306,7 +6306,7 @@ function renderTestModeStatus() {
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
   const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 전체 숲 배경 고정 · ${shortTreeId}`;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 전체 숲 나무 모임 · ${shortTreeId}`;
 }
 
 function setupTestMode() {

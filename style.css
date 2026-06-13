@@ -14409,3 +14409,159 @@ body.lf-v1693-ux:not(.online-friend-invite-mode) #worldScreen.screen-active {
     font-size: 8.6px !important;
   }
 }
+
+
+/* V1.70.1 test: 전체 숲 실나무 표시 강화 */
+#worldStage.world-stage {
+  background: radial-gradient(circle at 50% 10%, rgba(255,252,210,0.82) 0 9%, rgba(255,248,206,0.25) 16%, transparent 28%),
+              linear-gradient(180deg, #cfe1bb 0%, #b6cf98 24%, #94bb79 46%, #6f9868 66%, #45684e 84%, #254036 100%) !important;
+}
+
+#worldStage .world-layer,
+#worldStage .world-depth,
+#worldStage .world-canopy-shadow,
+#worldStage .stage-dim,
+#worldStage .world-empty-slots,
+#worldStage #worldStarterFriends,
+#worldStage .world-fog,
+#worldStage .world-foreground,
+#worldStage .world-front-leaves {
+  display: none !important;
+}
+
+#worldStage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    radial-gradient(ellipse 82% 18% at 50% 42%, rgba(202,225,171,0.58) 0 42%, rgba(158,196,126,0.18) 66%, transparent 80%),
+    radial-gradient(ellipse 96% 22% at 50% 63%, rgba(122,167,102,0.38) 0 46%, rgba(90,134,86,0.14) 68%, transparent 82%),
+    radial-gradient(ellipse 108% 30% at 50% 89%, rgba(54,86,56,0.58) 0 42%, rgba(36,62,40,0.24) 68%, transparent 84%);
+}
+
+#worldNeighborSpots {
+  z-index: 8 !important;
+}
+
+#worldNeighborSpots::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 13% 83%, rgba(82,126,72,0.18) 0 12px, transparent 13px),
+    radial-gradient(circle at 18% 88%, rgba(86,131,75,0.16) 0 10px, transparent 11px),
+    radial-gradient(circle at 29% 80%, rgba(86,131,75,0.12) 0 8px, transparent 9px),
+    radial-gradient(circle at 71% 80%, rgba(86,131,75,0.12) 0 8px, transparent 9px),
+    radial-gradient(circle at 82% 88%, rgba(86,131,75,0.16) 0 10px, transparent 11px),
+    radial-gradient(circle at 87% 83%, rgba(82,126,72,0.18) 0 12px, transparent 13px);
+}
+
+#worldNeighborSpots .neighbor-spot {
+  pointer-events: none;
+  width: 86px !important;
+  height: 106px !important;
+  opacity: max(0.42, var(--slot-opacity, 0.68)) !important;
+  filter: none !important;
+}
+
+#worldNeighborSpots .neighbor-tree-wrap {
+  width: 72px !important;
+  height: 88px !important;
+  bottom: 10px !important;
+}
+
+#worldNeighborSpots .row-far .neighbor-tree-wrap { width: 32px !important; height: 42px !important; }
+#worldNeighborSpots .row-mid .neighbor-tree-wrap { width: 42px !important; height: 56px !important; }
+#worldNeighborSpots .row-near .neighbor-tree-wrap { width: 52px !important; height: 68px !important; }
+#worldNeighborSpots .row-front .neighbor-tree-wrap { width: 64px !important; height: 80px !important; }
+#worldNeighborSpots .row-community .neighbor-tree-wrap { width: 76px !important; height: 96px !important; }
+#worldNeighborSpots .row-community.is-real .neighbor-tree-wrap { width: 88px !important; height: 112px !important; }
+
+#worldNeighborSpots .neighbor-tree-image {
+  opacity: 1 !important;
+  filter: drop-shadow(0 7px 10px rgba(0,0,0,0.18)) brightness(var(--slot-brightness,1)) saturate(calc(var(--slot-sat,1) * 1.04)) !important;
+}
+
+#worldNeighborSpots .neighbor-ground {
+  width: 52px !important;
+  height: 16px !important;
+  bottom: 7px !important;
+  opacity: calc(var(--slot-ground-opacity, 0.06) * 8) !important;
+}
+
+#worldNeighborSpots .neighbor-spot.is-dummy .neighbor-tree-image,
+#worldNeighborSpots .neighbor-spot.is-seat-dummy .neighbor-tree-image {
+  filter: drop-shadow(0 5px 8px rgba(0,0,0,0.12)) saturate(0.92) brightness(0.98) !important;
+}
+
+#worldNeighborSpots .neighbor-spot.is-dummy small,
+#worldNeighborSpots .neighbor-spot.is-seat-dummy small {
+  display: none !important;
+}
+
+#worldNeighborSpots .neighbor-spot.is-real {
+  opacity: 1 !important;
+  z-index: calc(var(--slot-z, 10) + 8) !important;
+}
+
+#worldNeighborSpots .neighbor-spot.is-real .neighbor-tree-image {
+  filter: drop-shadow(0 10px 16px rgba(0,0,0,0.22)) drop-shadow(0 0 12px rgba(255,248,188,0.32)) saturate(1.06) brightness(1.03) !important;
+}
+
+#worldNeighborSpots .neighbor-spot.is-real small {
+  display: inline-flex !important;
+  opacity: 1 !important;
+  bottom: -2px !important;
+  padding: 3px 7px !important;
+  border-radius: 999px !important;
+  background: rgba(15, 39, 20, 0.52) !important;
+  color: rgba(248,255,241,0.96) !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+}
+
+#myWorldSpot.my-world-spot {
+  z-index: 14 !important;
+  left: 50% !important;
+  bottom: 54px !important;
+  transform: translateX(-50%) !important;
+  width: 120px !important;
+}
+
+#myWorldSpot .my-spot-name,
+#myWorldSpot .my-spot-status {
+  opacity: 1 !important;
+}
+
+#myWorldSpot .my-spot-name {
+  background: rgba(19, 44, 24, 0.54) !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+}
+
+#myWorldSpot .my-spot-ring {
+  opacity: 0.8 !important;
+}
+
+@media (max-width: 640px) {
+  #worldNeighborSpots .neighbor-spot {
+    width: 72px !important;
+    height: 92px !important;
+  }
+
+  #worldNeighborSpots .row-far .neighbor-tree-wrap { width: 26px !important; height: 34px !important; }
+  #worldNeighborSpots .row-mid .neighbor-tree-wrap { width: 36px !important; height: 48px !important; }
+  #worldNeighborSpots .row-near .neighbor-tree-wrap { width: 44px !important; height: 58px !important; }
+  #worldNeighborSpots .row-front .neighbor-tree-wrap { width: 54px !important; height: 70px !important; }
+  #worldNeighborSpots .row-community .neighbor-tree-wrap { width: 62px !important; height: 82px !important; }
+  #worldNeighborSpots .row-community.is-real .neighbor-tree-wrap { width: 72px !important; height: 96px !important; }
+
+  #myWorldSpot.my-world-spot {
+    width: 104px !important;
+    bottom: 48px !important;
+  }
+}
