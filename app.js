@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.69.3 test
+// 살아있는 숲 V1.70 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.69.3 test
-// 목적: 첫 기록 흐름 개선 - 시작 후 기록 패널 자동 열기, 입력 위치 안내 강화
+// 버전명: V1.70 test
+// 목적: 전체 숲을 나무 군집으로 보이게 하고, 더미 나무가 실제 친구 나무로 대체되는 구조 추가
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.69.3 test",
+  version: "V1.70 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -633,6 +633,15 @@ const worldForestSlots = [
   { id: "front-bush-right-1", name: "앞오른 숲덩이", className: "row-front row-right cluster-fill front-bush", state: "leaf-strong", days: 55, x: 95, y: 79, scale: 1.08, opacity: 0.72, depth: 9, tilt: 10, lift: 14, groundOpacity: 0.09, mobileX: 96, mobileY: 80, mobileScale: 0.76 },
   { id: "front-bush-right-2", name: "앞오른 나무무리", className: "row-front row-right cluster-fill front-bush", state: "balanced", days: 40, x: 81, y: 80, scale: 0.98, opacity: 0.70, depth: 9, tilt: 7, lift: 13, groundOpacity: 0.086, mobileX: 82, mobileY: 81, mobileScale: 0.68 },
 ];
+
+
+const worldCommunitySeatSlots = {
+  flower_path: { id: "community-seat-flower_path", name: "기다리는 꽃길나무", className: "row-community community-left", state: "balanced", days: 7, x: 31, y: 70, scale: 0.58, opacity: 0.72, depth: 10, tilt: -5, lift: 10, groundOpacity: 0.09, mobileX: 26, mobileY: 72, mobileScale: 0.48 },
+  sunny_spot: { id: "community-seat-sunny_spot", name: "기다리는 햇살나무", className: "row-community community-back", state: "leaf-strong", days: 12, x: 42, y: 61, scale: 0.50, opacity: 0.66, depth: 9, tilt: -3, lift: 7, groundOpacity: 0.075, mobileX: 41, mobileY: 63, mobileScale: 0.42 },
+  pond_spot: { id: "community-seat-pond_spot", name: "기다리는 연못나무", className: "row-community community-back", state: "root-strong", days: 10, x: 58, y: 61, scale: 0.50, opacity: 0.66, depth: 9, tilt: 3, lift: 7, groundOpacity: 0.075, mobileX: 59, mobileY: 63, mobileScale: 0.42 },
+  swing_spot: { id: "community-seat-swing_spot", name: "기다리는 그네나무", className: "row-community community-right", state: "balanced", days: 8, x: 69, y: 70, scale: 0.58, opacity: 0.72, depth: 10, tilt: 5, lift: 10, groundOpacity: 0.09, mobileX: 74, mobileY: 72, mobileScale: 0.48 },
+  flower_fence: { id: "community-seat-flower_fence", name: "기다리는 꽃담나무", className: "row-community community-front", state: "leaf-strong", days: 5, x: 50, y: 80, scale: 0.54, opacity: 0.68, depth: 10, tilt: 0, lift: 11, groundOpacity: 0.09, mobileX: 50, mobileY: 79, mobileScale: 0.44 }
+};
 
 const worldScreenElement = document.querySelector("#worldScreen");
 const gardenScreenElement = document.querySelector("#gardenScreen");
@@ -2917,31 +2926,109 @@ function focusMyWorldSpot() {
   }, 3600);
 }
 
+function getOnlineSeatDays(record) {
+  const rawDays = Number(record?.growthDays || record?.growth_days || record?.days || 0);
+  if (!Number.isFinite(rawDays) || rawDays < 0) {
+    return 0;
+  }
+  return Math.min(999, Math.round(rawDays));
+}
+
+function getOnlineSeatMoodState(record) {
+  const mood = sanitizeOnlineText(record?.mood || record?.moodType || record?.mood_type || "", 24);
+  if (mood === "good") return "leaf-strong";
+  if (mood === "tired") return "root-strong";
+  return "balanced";
+}
+
+function createWorldCommunitySeatSlot(seat) {
+  const baseSlot = worldCommunitySeatSlots[seat.id];
+  if (!baseSlot) {
+    return null;
+  }
+
+  const record = getOnlineSeatRecord(seat.id);
+  if (!record) {
+    return {
+      ...baseSlot,
+      source: "seat-dummy",
+      seatId: seat.id,
+      seatLabel: seat.label,
+      name: baseSlot.name,
+      ariaSource: `${seat.label}에서 친구를 기다리는 더미 나무`
+    };
+  }
+
+  const friendName = sanitizeOnlineText(record.friendName || record.friend_name || "친구", 12) || "친구";
+  const treeName = sanitizeOnlineText(record.treeName || record.tree_name || `${friendName}의 나무`, 16) || `${friendName}의 나무`;
+  const days = getOnlineSeatDays(record);
+
+  return {
+    ...baseSlot,
+    source: "real",
+    seatId: seat.id,
+    seatLabel: seat.label,
+    name: treeName,
+    ownerName: friendName,
+    state: getOnlineSeatMoodState(record),
+    days,
+    opacity: Math.min(0.96, Math.max(0.82, (baseSlot.opacity || 0.72) + 0.16)),
+    scale: Math.min(0.72, (baseSlot.scale || 0.54) + 0.08),
+    mobileScale: Math.min(0.56, (baseSlot.mobileScale || 0.44) + 0.06),
+    className: `${baseSlot.className || ""} is-occupied-seat`,
+    ariaSource: `${seat.label}에 들어온 ${friendName}님의 실제 나무`
+  };
+}
+
+function getWorldCommunityForestSlots() {
+  const baseSlots = worldForestSlots.map((slot, index) => ({
+    ...slot,
+    source: "dummy",
+    dummyIndex: index,
+    ariaSource: "숲을 채우는 더미 나무"
+  }));
+
+  const communitySlots = friendInviteSeatSlots
+    .map(createWorldCommunitySeatSlot)
+    .filter(Boolean);
+
+  return [...baseSlots, ...communitySlots].sort((a, b) => {
+    if ((a.depth || 0) !== (b.depth || 0)) return (a.depth || 0) - (b.depth || 0);
+    return (a.y || 0) - (b.y || 0);
+  });
+}
+
 function renderWorldNeighbors() {
   if (!worldNeighborSpotsElement) {
     return;
   }
 
-  worldNeighborSpotsElement.innerHTML = worldForestSlots
+  const communitySlots = getWorldCommunityForestSlots();
+
+  worldNeighborSpotsElement.innerHTML = communitySlots
     .map((slot) => {
       const stateLabel = getWorldSlotStateLabel(slot.state);
       const imageInfo = getTreeImageInfoByDays(slot.days);
       const sizeClass = getWorldTreeSizeClass(slot.days);
-
       const extraClass = slot.className || "";
+      const sourceClass = slot.source ? `is-${slot.source}` : "is-dummy";
+      const ownerLabel = slot.ownerName ? `${slot.ownerName} · ` : "";
+      const sourceLabel = slot.ariaSource || "숲의 나무";
 
       return `
         <article
-          class="neighbor-spot slot-${slot.state} ${sizeClass} ${extraClass}"
-          style="--slot-x: ${slot.x}%; --slot-y: ${slot.y}%; --slot-scale: ${slot.scale}; --slot-opacity: ${slot.opacity}; --slot-mobile-x: ${slot.mobileX}%; --slot-mobile-y: ${slot.mobileY}%; --slot-mobile-scale: ${slot.mobileScale}; --slot-depth: ${slot.depth || 4}; --slot-z: ${slot.depth || 4}; --slot-tilt: ${slot.tilt || 0}deg; --slot-lift: ${slot.lift || 0}px; --slot-ground-opacity: ${slot.groundOpacity || 0.1}; --slot-blur: ${(slot.scale < 0.7 ? 1.0 : slot.scale < 0.9 ? 0.55 : slot.scale > 1.2 ? 0.08 : 0.24).toFixed(2)}px; --slot-brightness: ${(slot.depth <= 2 ? 0.88 : slot.depth <= 4 ? 0.95 : slot.depth >= 8 ? 0.99 : 1).toFixed(2)}; --slot-sat: ${(slot.depth <= 2 ? 0.88 : slot.depth <= 4 ? 0.94 : 1).toFixed(2)}; --slot-shadow: ${(slot.depth <= 2 ? 0.16 : slot.depth <= 4 ? 0.2 : slot.depth >= 8 ? 0.24 : 0.22).toFixed(2)};"
-          aria-label="${slot.name}, ${slot.days}일째 자라는 자리, ${stateLabel}"
+          class="neighbor-spot slot-${slot.state} ${sizeClass} ${sourceClass} ${extraClass}"
+          data-world-slot-source="${escapeHtml(slot.source || "dummy")}"
+          data-world-seat-id="${escapeHtml(slot.seatId || "")}"
+          style="--slot-x: ${slot.x}%; --slot-y: ${slot.y}%; --slot-scale: ${slot.scale}; --slot-opacity: ${slot.opacity}; --slot-mobile-x: ${slot.mobileX}%; --slot-mobile-y: ${slot.mobileY}%; --slot-mobile-scale: ${slot.mobileScale}; --slot-depth: ${slot.depth || 4}; --slot-z: ${slot.depth || 4}; --slot-tilt: ${slot.tilt || 0}deg; --slot-lift: ${slot.lift || 0}px; --slot-ground-opacity: ${slot.groundOpacity || 0.1}; --slot-blur: ${(slot.scale < 0.7 ? 0.7 : slot.scale < 0.9 ? 0.35 : slot.scale > 1.2 ? 0.08 : 0.18).toFixed(2)}px; --slot-brightness: ${(slot.source === "real" ? 1.04 : slot.depth <= 2 ? 0.88 : slot.depth <= 4 ? 0.95 : slot.depth >= 8 ? 0.99 : 1).toFixed(2)}; --slot-sat: ${(slot.source === "real" ? 1.08 : slot.depth <= 2 ? 0.88 : slot.depth <= 4 ? 0.94 : 1).toFixed(2)}; --slot-shadow: ${(slot.source === "real" ? 0.28 : slot.depth <= 2 ? 0.16 : slot.depth <= 4 ? 0.2 : slot.depth >= 8 ? 0.24 : 0.22).toFixed(2)};"
+          aria-label="${escapeHtml(ownerLabel)}${escapeHtml(slot.name)}, ${slot.days}일째 자라는 자리, ${stateLabel}, ${escapeHtml(sourceLabel)}"
         >
           <span class="neighbor-ground" aria-hidden="true"></span>
           <div class="neighbor-tree-wrap" aria-hidden="true">
             <img class="neighbor-tree-shadow" src="assets/garden/tree-shadow.svg" alt="" />
             <img class="neighbor-tree-image" src="${imageInfo.src}" alt="" />
           </div>
-          <small>${slot.name}</small>
+          <small>${escapeHtml(slot.source === "real" ? `${slot.ownerName || "친구"}의 나무` : slot.name)}</small>
         </article>
       `;
     })
@@ -3201,7 +3288,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.69.3 test는 전체 숲 배경 고정판이라 기존 V1.55 stable Apps Script로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.70 test는 전체 숲 나무 군집판이라 기존 V1.55 stable Apps Script로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -3395,16 +3482,16 @@ function renderWorldCommunityHint(todayRecord) {
   const worldInfo = getWorldEvolutionInfo();
 
   if (todayRecord) {
-    worldCommunityHintElement.textContent = `오늘의 ${todayRecord.label} 기운이 내 자리 주변 친구 자리에 남았어요. ${getWorldEvolutionSummaryText()}`;
+    worldCommunityHintElement.textContent = `오늘의 ${todayRecord.label} 기운이 내 자리 주변 숲에도 남았어요. 친구가 들어오면 가까운 더미 나무 자리가 실제 친구 나무로 바뀌어요.`;
     return;
   }
 
   if (treeData.history.length === 0) {
-    worldCommunityHintElement.textContent = `멀리 보이는 큰 숲 안에 내 나무와 온라인 친구들이 들어올 다섯 자리가 함께 기다리고 있어요.`;
+    worldCommunityHintElement.textContent = `멀리 보이는 나무들은 초반 더미 나무예요. 실제 친구가 들어오면 가까운 다섯 자리가 친구 나무로 바뀌어요.`;
     return;
   }
 
-  worldCommunityHintElement.textContent = `${treeData.history.length}일의 기록이 월드 숲에 쌓였어요. 온라인 친구 자리들이 더 또렷해지고 있어요. ${worldInfo.meta}`;
+  worldCommunityHintElement.textContent = `${treeData.history.length}일의 기록이 월드 숲에 쌓였어요. 더미 나무 사이에 내 나무와 친구 나무가 함께 자리 잡을 수 있어요. ${worldInfo.meta}`;
 }
 
 function renderWorldGrowthCard() {
@@ -3654,6 +3741,8 @@ async function loadOnlineFriendSeats() {
   }
 
   syncOnlineFriendSeatDisplays();
+  renderWorldNeighbors();
+  renderWorldCommunityHint(getTodayRecord());
   renderFriendLinksCard();
   renderFriendInviteCard(true);
 }
