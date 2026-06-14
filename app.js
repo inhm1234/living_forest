@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.70.3 test
+// 살아있는 숲 V1.70.4 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.70.3 test
-// 목적: 전체 숲을 나무 군집으로 보이게 하고, 더미 나무가 실제 친구 나무로 대체되는 구조 추가
+// 버전명: V1.70.4 test
+// 목적: 정원 화면 크기와 기능 메뉴를 복구하고, 전체 숲 나무 군집 구조 유지
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.70.3 test",
+  version: "V1.70.4 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
