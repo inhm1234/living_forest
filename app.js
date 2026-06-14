@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.70.9 test
+// 살아있는 숲 V1.71.0 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.70.9 test
-// 목적: 접힌 메뉴가 정원 화면 크기에 영향을 주지 않게 하고, 전체 숲 나무 군집 구조 유지
+// 버전명: V1.71.0 test
+// 목적: 메뉴는 선택용으로만 두고 실제 기능은 팝업에서 열어 정원 화면을 고정 유지
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.70.9 test",
+  version: "V1.71.0 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -729,6 +729,11 @@ const gardenHubSheetElement = document.querySelector("#gardenHubSheet");
 const gardenPanelTitleElement = document.querySelector("#gardenPanelTitle");
 const closeGardenPanelBtnElement = document.querySelector("#closeGardenPanelBtn");
 const gardenHubTabButtons = document.querySelectorAll("[data-garden-tab]");
+const gardenActionModalElement = document.querySelector("#gardenActionModal");
+const gardenActionModalTitleElement = document.querySelector("#gardenActionModalTitle");
+const gardenActionModalDescElement = document.querySelector("#gardenActionModalDesc");
+const gardenActionModalBodyElement = document.querySelector("#gardenActionModalBody");
+const closeGardenActionModalBtnElement = document.querySelector("#closeGardenActionModalBtn");
 
 const skyElement = document.querySelector("#sky");
 const gardenCardElement = document.querySelector(".garden-card");
@@ -2620,7 +2625,7 @@ function playAfterRecordReward(experience) {
     todayChangeCardElement?.classList.add("after-record-card");
     finishGuideCardElement?.classList.add("after-record-card");
 
-    // V1.70.9 test: 기록 직후 화면을 자동 스크롤하지 않고, 현재 보던 정원 무대를 유지합니다.
+    // V1.71.0 test: 기록 직후 화면을 자동 스크롤하지 않고, 현재 보던 정원 무대를 유지합니다.
     closeGardenHubPanel();
 
     if (growthMessageElement && experience?.complete) {
@@ -3316,7 +3321,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.70.9 test는 기존 숲 배경/나무 오버레이와 같은 Apps Script 구조로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.71.0 test는 기존 숲 배경/나무 오버레이와 같은 Apps Script 구조로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -5873,7 +5878,7 @@ function renderVersionLabels() {
   const demoPillElement = document.querySelector(".demo-pill");
 
   if (versionElements[0]) {
-    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 완료 로그 + 상태 전환`;
+    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 메뉴 팝업 분리`;
   }
 
   if (versionElements[1]) {
@@ -5881,7 +5886,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 완료 로그 + 상태 전환`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 메뉴 팝업 분리`;
   }
 }
 
@@ -5932,7 +5937,7 @@ function updateOneActionStepUI() {
     document.body.classList.remove("lf-show-seed");
   }
 
-  // V1.70.9 test: 화면 갱신 때마다 패널을 강제로 열지 않습니다.
+  // V1.71.0 test: 화면 갱신 때마다 패널을 강제로 열지 않습니다.
   // 사용자가 누른 버튼/패널 상태를 유지해서 나무 무대가 갑자기 밀리거나 가려지는 느낌을 줄입니다.
 
   if (gardenPanelTitleElement && !gardenHubElement?.classList.contains("is-open")) {
@@ -5946,7 +5951,7 @@ function updateOneActionStepUI() {
   }
 
   if (closeGardenPanelBtnElement) {
-    closeGardenPanelBtnElement.textContent = gardenHubElement?.classList.contains("is-open") ? "패널 접기" : "패널 열기";
+    closeGardenPanelBtnElement.textContent = gardenHubElement?.classList.contains("is-open") ? "메뉴 닫기" : "메뉴 열기";
   }
 }
 
@@ -6324,7 +6329,7 @@ function renderTestModeStatus() {
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
   const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 완료 로그 + 상태 전환 · ${shortTreeId}`;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 메뉴 팝업 분리 · ${shortTreeId}`;
 }
 
 function setupTestMode() {
@@ -6461,7 +6466,7 @@ function focusFirstRecordStep() {
     const hasTreeName = Boolean(treeData.treeName?.trim());
     const targetElement = !hasTreeName && treeNameInputElement ? treeNameInputElement : moodCardElement;
 
-    // V1.70.9 test: 첫 기록 안내도 자동 스크롤 없이 플로팅 패널 안에서만 강조합니다.
+    // V1.71.0 test: 첫 기록 안내도 자동 스크롤 없이 플로팅 패널 안에서만 강조합니다.
 
     if (!hasTreeName && treeNameInputElement) {
       try {
@@ -6711,8 +6716,8 @@ function buildGardenHubLayout() {
   if (!gardenHubElement || gardenHubLayoutBuilt) return;
   gardenHubLayoutBuilt = true;
 
-  // V1.70.9 test: 메뉴를 정원 카드 안으로 이동합니다.
-  // 접힌 상태에서는 레이아웃 공간을 차지하지 않는 작은 플로팅 버튼처럼 보이게 합니다.
+  // V1.71.0 test: 메뉴를 정원 카드 안으로 이동하되 기능 내용은 팝업에서 엽니다.
+  // 접힌 상태와 열린 상태 모두 정원 무대 크기에 영향을 주지 않게 합니다.
   const gardenCardElement = document.querySelector(".garden-card.visual-card") || document.querySelector(".garden-card");
   if (gardenCardElement && gardenHubElement.parentElement !== gardenCardElement) {
     gardenHubElement.classList.remove("garden-stage-hub");
@@ -6759,20 +6764,65 @@ function buildGardenHubLayout() {
     });
   });
 
+  if (closeGardenActionModalBtnElement) {
+    closeGardenActionModalBtnElement.addEventListener("click", closeGardenActionModal);
+  }
+
+  if (gardenActionModalElement) {
+    gardenActionModalElement.addEventListener("click", (event) => {
+      if (event.target === gardenActionModalElement) {
+        closeGardenActionModal();
+      }
+    });
+  }
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && gardenActionModalElement && !gardenActionModalElement.classList.contains("hidden")) {
+      closeGardenActionModal();
+    }
+  });
+
   if (closeGardenPanelBtnElement) {
     closeGardenPanelBtnElement.setAttribute("aria-controls", "gardenHubSheet");
     closeGardenPanelBtnElement.addEventListener("click", () => {
       if (gardenHubElement.classList.contains("is-open")) {
         closeGardenHubPanel();
       } else {
-        openGardenHubTab(activeGardenHubTab || "record");
+        openGardenHubMenu();
       }
     });
   }
 
-  // V1.70.9 test: 첫 진입에서는 나무가 먼저 보이도록 메뉴를 접어 둡니다.
+  // V1.71.0 test: 첫 진입에서는 나무가 먼저 보이도록 메뉴를 접어 둡니다.
   closeGardenHubPanel();
   updateOneActionStepUI();
+}
+
+function openGardenHubMenu() {
+  if (!gardenHubElement) return;
+  gardenHubElement.classList.add("is-open");
+  if (gardenHubSheetElement) {
+    gardenHubSheetElement.hidden = true;
+  }
+  if (closeGardenPanelBtnElement) {
+    closeGardenPanelBtnElement.textContent = "메뉴 닫기";
+    closeGardenPanelBtnElement.setAttribute("aria-expanded", "true");
+  }
+  if (gardenPanelTitleElement) {
+    gardenPanelTitleElement.textContent = "필요한 기능만 골라서 열어요.";
+  }
+}
+
+function restoreGardenPanelsToSheet() {
+  if (!gardenHubSheetElement) return;
+
+  document.querySelectorAll(".garden-hub-panel").forEach((panel) => {
+    panel.classList.remove("active");
+    panel.hidden = true;
+    if (panel.parentElement !== gardenHubSheetElement) {
+      gardenHubSheetElement.appendChild(panel);
+    }
+  });
 }
 
 function openGardenHubTab(tabKey) {
@@ -6780,16 +6830,9 @@ function openGardenHubTab(tabKey) {
   if (!Object.prototype.hasOwnProperty.call(GARDEN_HUB_CONFIG, tabKey)) {
     tabKey = "record";
   }
+
   activeGardenHubTab = tabKey;
-  gardenHubElement.classList.add("is-open");
-  document.body.classList.add("lf-garden-panel-open");
-  if (gardenHubSheetElement) {
-    gardenHubSheetElement.hidden = false;
-  }
-  if (closeGardenPanelBtnElement) {
-    closeGardenPanelBtnElement.textContent = "패널 접기";
-    closeGardenPanelBtnElement.setAttribute("aria-expanded", "true");
-  }
+  openGardenHubMenu();
 
   gardenHubTabButtons.forEach((button) => {
     const isActive = button.dataset.gardenTab === tabKey;
@@ -6797,26 +6840,66 @@ function openGardenHubTab(tabKey) {
     button.setAttribute("aria-selected", isActive ? "true" : "false");
   });
 
-  document.querySelectorAll(".garden-hub-panel").forEach((panel) => {
-    const isActive = panel.dataset.gardenPanel === tabKey;
-    panel.classList.toggle("active", isActive);
-    panel.hidden = !isActive;
-  });
+  openGardenActionModal(tabKey);
+}
 
-  if (gardenPanelTitleElement) {
-    gardenPanelTitleElement.textContent = GARDEN_HUB_CONFIG[tabKey]?.title || "내 정원 메뉴";
+function openGardenActionModal(tabKey) {
+  if (!gardenActionModalElement || !gardenActionModalBodyElement) return;
+  if (!Object.prototype.hasOwnProperty.call(GARDEN_HUB_CONFIG, tabKey)) {
+    tabKey = "record";
   }
+
+  const config = GARDEN_HUB_CONFIG[tabKey];
+  const panel = document.getElementById(`gardenPanel-${tabKey}`);
+  if (!panel) return;
+
+  restoreGardenPanelsToSheet();
+
+  panel.classList.add("active");
+  panel.hidden = false;
+  gardenActionModalBodyElement.appendChild(panel);
+
+  if (gardenActionModalTitleElement) {
+    gardenActionModalTitleElement.textContent = config.title || "내 정원 기능";
+  }
+  if (gardenActionModalDescElement) {
+    const descMap = {
+      record: "오늘 마음, 나무 이름, 내일 한마디를 이 창에서만 정리해요.",
+      activity: "나무 돌봄과 숲 소리처럼 오늘 할 수 있는 작은 활동이에요.",
+      decorate: "내 정원 표식과 배지를 확인해요. 선택하면 정원에 바로 남아요.",
+      letter: "오늘의 숲 문장과 주간 편지를 확인해요.",
+      archive: "보관함, 달력, 기억 찾기는 필요할 때만 열어봐요."
+    };
+    gardenActionModalDescElement.textContent = descMap[tabKey] || "정원 화면은 그대로 두고 필요한 기능만 이 창에서 열어요.";
+  }
+
+  gardenActionModalElement.classList.remove("hidden");
+  document.body.classList.add("lf-garden-action-modal-open");
+
+  window.setTimeout(() => {
+    try {
+      closeGardenActionModalBtnElement?.focus({ preventScroll: true });
+    } catch (error) {
+      closeGardenActionModalBtnElement?.focus?.();
+    }
+  }, 30);
+}
+
+function closeGardenActionModal() {
+  if (!gardenActionModalElement) return;
+  gardenActionModalElement.classList.add("hidden");
+  document.body.classList.remove("lf-garden-action-modal-open");
+  restoreGardenPanelsToSheet();
 }
 
 function closeGardenHubPanel() {
   if (!gardenHubElement) return;
   gardenHubElement.classList.remove("is-open");
-  document.body.classList.remove("lf-garden-panel-open");
   if (gardenHubSheetElement) {
     gardenHubSheetElement.hidden = true;
   }
   if (closeGardenPanelBtnElement) {
-    closeGardenPanelBtnElement.textContent = "패널 열기";
+    closeGardenPanelBtnElement.textContent = "메뉴 열기";
     closeGardenPanelBtnElement.setAttribute("aria-expanded", "false");
   }
   if (gardenPanelTitleElement) {

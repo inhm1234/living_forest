@@ -1,22 +1,9 @@
-살아있는 숲 V1.70.9 test 업로드 가이드
+살아있는 숲 V1.71.0 test 업로드 가이드
 
-이번 버전은 전체숲 표시와 출시 전 정리 중심 패치입니다.
-Apps Script 배포가 이미 완료되어 있다면 Apps Script를 다시 배포하지 않아도 됩니다.
-
-GitHub에 우선 업로드할 핵심 파일:
-- index.html
-- app.js
-- style.css
-- README.md
-- VERSION.txt
-- LAUNCH_CHECKLIST.txt
-- PUBLIC_SHARE_COPY.txt
-- UPLOAD_GUIDE.txt
-
-업로드 방법:
-1. ZIP 압축 풀기
-2. 안의 파일과 assets 폴더를 GitHub 저장소에 덮어 업로드
-3. ZIP 파일 자체는 올리지 않기
-4. 업로드 후 GitHub Pages 배포가 끝날 때까지 1~3분 기다리기
-5. 사이트에서 Ctrl + F5 새로고침
-6. 화면 상단 버전이 V1.70.9 test로 보이는지 확인
+1. ZIP 압축을 푼다.
+2. living_forest-main 폴더 안의 파일들을 GitHub 저장소에 업로드한다.
+3. ZIP 파일 자체를 업로드하지 않는다.
+4. GitHub Pages 배포가 끝날 때까지 1~3분 기다린다.
+5. 사이트에서 Ctrl + F5로 새로고침한다.
+6. 화면 상단 버전이 V1.71.0 test로 보이는지 확인한다.
+7. 정원 메뉴를 열고 기록/활동/꾸미기/편지/보관함이 팝업으로 열리는지 확인한다.

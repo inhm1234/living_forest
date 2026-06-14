@@ -16510,3 +16510,313 @@ body.lf-v1709-ux .garden-marker-card.marker-selected .garden-marker-actions {
     font-size: 11.5px !important;
   }
 }
+
+/* ===== V1.71.0 test: 메뉴와 기능 팝업 분리 =====
+   목표:
+   - 하단 메뉴는 기능 선택용으로만 사용한다.
+   - 실제 입력/상세 기능은 별도 팝업에서 열어 패널 잘림과 페이지 스크롤을 막는다.
+   - 정원 무대 크기는 기능 UI 때문에 줄거나 늘어나지 않는다.
+*/
+body.lf-v1710-ux .garden-card,
+body.lf-v1710-ux .garden-card.visual-card {
+  position: relative !important;
+  height: min(74svh, 690px) !important;
+  min-height: 590px !important;
+  max-height: 720px !important;
+  padding: 8px !important;
+  overflow: hidden !important;
+  border-radius: 32px !important;
+}
+
+body.lf-v1710-ux .garden-stage,
+body.lf-v1710-ux .garden-card .garden-stage {
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+body.lf-v1710-ux .garden-card .garden-hub,
+body.lf-v1710-ux .garden-card .garden-hub.is-open,
+body.lf-v1710-ux .garden-card .garden-hub:not(.is-open) {
+  position: absolute !important;
+  left: 12px !important;
+  right: 12px !important;
+  bottom: 12px !important;
+  top: auto !important;
+  z-index: 76 !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 8px 10px !important;
+  border-radius: 22px !important;
+  background: linear-gradient(180deg, rgba(255, 251, 253, 0.9), rgba(255, 244, 250, 0.94)) !important;
+  box-shadow: 0 12px 28px rgba(126, 67, 100, 0.18) !important;
+  backdrop-filter: blur(14px) saturate(1.05) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.05) !important;
+}
+
+body.lf-v1710-ux .garden-card .garden-hub-head,
+body.lf-v1710-ux .garden-card .garden-hub:not(.is-open) .garden-hub-head,
+body.lf-v1710-ux .garden-card .garden-hub.is-open .garden-hub-head {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  margin: 0 !important;
+}
+
+body.lf-v1710-ux .garden-card .garden-hub-kicker,
+body.lf-v1710-ux .garden-card .garden-hub:not(.is-open) .garden-hub-kicker {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 28px !important;
+  margin: 0 !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 236, 181, 0.84) !important;
+  color: #cf6f94 !important;
+  font-size: 11px !important;
+  font-weight: 950 !important;
+  white-space: nowrap !important;
+}
+
+body.lf-v1710-ux .garden-card .garden-hub-title,
+body.lf-v1710-ux .garden-card .garden-hub:not(.is-open) .garden-hub-title {
+  display: inline !important;
+  margin: 0 !important;
+  color: #936171 !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+}
+
+body.lf-v1710-ux .garden-card .garden-hub-close,
+body.lf-v1710-ux .garden-card .garden-hub:not(.is-open) .garden-hub-close,
+body.lf-v1710-ux .garden-card .garden-hub.is-open .garden-hub-close {
+  align-self: center !important;
+  min-width: 76px !important;
+  min-height: 32px !important;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  white-space: nowrap !important;
+}
+
+body.lf-v1710-ux .garden-card .garden-hub:not(.is-open) .garden-hub-nav {
+  display: none !important;
+}
+
+body.lf-v1710-ux .garden-card .garden-hub.is-open .garden-hub-nav {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 6px !important;
+  margin-top: 8px !important;
+}
+
+body.lf-v1710-ux .garden-card .garden-hub-tab,
+body.lf-v1710-ux .garden-card .garden-hub.is-open .garden-hub-tab,
+body.lf-v1710-ux .garden-card .garden-hub:not(.is-open) .garden-hub-tab {
+  min-height: 34px !important;
+  padding: 0 6px !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+}
+
+body.lf-v1710-ux .garden-card .garden-hub-sheet,
+body.lf-v1710-ux .garden-card .garden-hub.is-open .garden-hub-sheet,
+body.lf-v1710-ux .garden-card .garden-hub:not(.is-open) .garden-hub-sheet {
+  display: none !important;
+  height: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body.lf-v1710-ux .garden-action-modal.hidden {
+  display: none !important;
+}
+
+body.lf-v1710-ux .garden-action-modal {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 18px !important;
+  background: rgba(37, 24, 36, 0.42) !important;
+  backdrop-filter: blur(10px) saturate(1.04) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(1.04) !important;
+}
+
+body.lf-v1710-ux .garden-action-dialog {
+  width: min(620px, calc(100vw - 28px)) !important;
+  max-height: min(84svh, 720px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  padding: 14px !important;
+  border-radius: 28px !important;
+  background: linear-gradient(180deg, rgba(255, 252, 254, 0.96), rgba(255, 245, 250, 0.97)) !important;
+  box-shadow: 0 30px 80px rgba(102, 53, 79, 0.28) !important;
+}
+
+body.lf-v1710-ux .garden-action-head {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 2px 2px 12px !important;
+  border-bottom: 1px solid rgba(244, 127, 166, 0.16) !important;
+}
+
+body.lf-v1710-ux .garden-action-kicker {
+  display: inline-flex !important;
+  margin-bottom: 6px !important;
+  padding: 5px 10px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 236, 181, 0.72) !important;
+  color: #cf6f94 !important;
+  font-size: 11px !important;
+  font-weight: 950 !important;
+}
+
+body.lf-v1710-ux .garden-action-head h2 {
+  margin: 0 !important;
+  color: #73485c !important;
+  font-size: clamp(20px, 3vw, 28px) !important;
+  line-height: 1.12 !important;
+}
+
+body.lf-v1710-ux .garden-action-head p {
+  margin: 6px 0 0 !important;
+  color: #8d6876 !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+body.lf-v1710-ux .garden-action-close {
+  min-width: 64px !important;
+  min-height: 34px !important;
+  border-radius: 999px !important;
+}
+
+body.lf-v1710-ux .garden-action-body {
+  overflow: auto !important;
+  padding: 12px 2px 2px !important;
+  overscroll-behavior: contain !important;
+}
+
+body.lf-v1710-ux .garden-action-body .garden-hub-panel,
+body.lf-v1710-ux .garden-action-body .garden-hub-panel.active {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 0 !important;
+}
+
+body.lf-v1710-ux .garden-action-body .garden-hub-panel > section,
+body.lf-v1710-ux .garden-action-body .garden-hub-panel > div,
+body.lf-v1710-ux .garden-action-body .garden-hub-panel > p,
+body.lf-v1710-ux .garden-action-body .garden-hub-panel > button {
+  margin: 0 !important;
+}
+
+body.lf-v1710-ux .garden-action-body .mood-card,
+body.lf-v1710-ux .garden-action-body .name-card,
+body.lf-v1710-ux .garden-action-body .tomorrow-seed-card,
+body.lf-v1710-ux .garden-action-body .forest-diary-card,
+body.lf-v1710-ux .garden-action-body .tree-care-card,
+body.lf-v1710-ux .garden-action-body .forest-trail-card,
+body.lf-v1710-ux .garden-action-body .self-care-card,
+body.lf-v1710-ux .garden-action-body .garden-marker-card,
+body.lf-v1710-ux .garden-action-body .forest-archive-card,
+body.lf-v1710-ux .garden-action-body .forest-calendar-card,
+body.lf-v1710-ux .garden-action-body .forest-memory-card {
+  width: 100% !important;
+}
+
+body.lf-v1710-ux.lf-garden-panel-open .tree,
+body.lf-v1710-ux.lf-garden-panel-open .tree-stage-seed,
+body.lf-v1710-ux.lf-garden-panel-open .tree-stage-sprout,
+body.lf-v1710-ux.lf-garden-panel-open .tree-stage-young,
+body.lf-v1710-ux.lf-garden-panel-open .tree-stage-hero,
+body.lf-v1710-ux.lf-garden-panel-open .tree-stage-grown {
+  bottom: revert-layer !important;
+}
+
+@media (max-width: 760px) {
+  body.lf-v1710-ux .garden-card,
+  body.lf-v1710-ux .garden-card.visual-card {
+    height: min(74svh, 650px) !important;
+    min-height: 560px !important;
+    border-radius: 28px !important;
+  }
+
+  body.lf-v1710-ux .garden-card .garden-hub,
+  body.lf-v1710-ux .garden-card .garden-hub.is-open,
+  body.lf-v1710-ux .garden-card .garden-hub:not(.is-open) {
+    left: 10px !important;
+    right: 10px !important;
+    bottom: 10px !important;
+    padding: 7px 8px !important;
+    border-radius: 20px !important;
+  }
+
+  body.lf-v1710-ux .garden-card .garden-hub-title,
+  body.lf-v1710-ux .garden-card .garden-hub:not(.is-open) .garden-hub-title {
+    max-width: 160px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  body.lf-v1710-ux .garden-card .garden-hub.is-open .garden-hub-nav {
+    gap: 5px !important;
+  }
+
+  body.lf-v1710-ux .garden-card .garden-hub-tab,
+  body.lf-v1710-ux .garden-card .garden-hub.is-open .garden-hub-tab {
+    min-height: 32px !important;
+    padding: 0 4px !important;
+    font-size: 11px !important;
+  }
+
+  body.lf-v1710-ux .garden-action-modal {
+    align-items: flex-end !important;
+    padding: 10px !important;
+  }
+
+  body.lf-v1710-ux .garden-action-dialog {
+    width: 100% !important;
+    max-height: 78svh !important;
+    padding: 12px !important;
+    border-radius: 26px 26px 22px 22px !important;
+  }
+
+  body.lf-v1710-ux .garden-action-head h2 {
+    font-size: 22px !important;
+  }
+
+  body.lf-v1710-ux .garden-action-head p {
+    font-size: 12px !important;
+  }
+}
+
+@media (max-height: 760px) and (min-width: 761px) {
+  body.lf-v1710-ux .garden-card,
+  body.lf-v1710-ux .garden-card.visual-card {
+    height: 650px !important;
+    min-height: 580px !important;
+  }
+
+  body.lf-v1710-ux .garden-action-dialog {
+    max-height: 82svh !important;
+  }
+}
