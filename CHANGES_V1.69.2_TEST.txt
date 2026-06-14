@@ -1,6 +1,0 @@
-살아있는 숲 V1.69.2 test — 전체 숲 레이아웃 하드 고정판
-
-1. 전체 숲 이미지가 카드 밖으로 튀어나가던 문제를 더 강하게 고정했습니다.
-2. worldScreen, world-card, worldStage의 width/margin/transform을 모두 100% 기준으로 고정했습니다.
-3. HTML inline safeguard까지 추가해 기존 넓은 월드 화면 CSS가 다시 살아나도 넘치지 않게 했습니다.
-4. 하단 중복 버튼/요약 영역은 첫 화면에서 숨김 유지했습니다.
