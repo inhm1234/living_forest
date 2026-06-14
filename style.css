@@ -17254,7 +17254,7 @@ body.lf-v1711-ux #gardenScreen.screen-active .garden-activity-log {
   }
 }
 
-/* ===== V1.71.3 test: 게임 HUD 안정화 최종 정리 =====
+/* ===== V1.71.4 test: 게임 HUD 안정화 최종 정리 =====
    - 정원 화면은 브라우저 안에서 고정된 게임 무대로 유지한다.
    - 페이지 스크롤/하단 패널/큰 내부 카드 제거.
    - HUD 버튼은 최소 노출, 기능은 짧은 전용 팝업으로만 처리.
@@ -17602,7 +17602,7 @@ body.lf-v1712-ux #gardenScreen.screen-active .garden-activity-log {
 }
 
 
-/* V1.71.3 test: MVP에서 실제 기능 없는 HUD 버튼은 HTML에서도 제거하고, 캐시/이전 마크업 대비로 한 번 더 숨깁니다. */
+/* V1.71.4 test: MVP에서 실제 기능 없는 HUD 버튼은 HTML에서도 제거하고, 캐시/이전 마크업 대비로 한 번 더 숨깁니다. */
 body.lf-v1713-ux #gardenScreen.screen-active .garden-card .garden-hub-tab[data-garden-tab="activity"],
 body.lf-v1713-ux #gardenScreen.screen-active .garden-card .garden-hub-tab[data-garden-tab="archive"] {
   display: none !important;
@@ -17620,4 +17620,345 @@ body.lf-v1713-ux #gardenScreen.screen-active .garden-card .garden-hub-tab {
 
 body.lf-v1713-ux #gardenScreen.screen-active .garden-hub-title {
   max-width: 180px !important;
+}
+
+/* ===== V1.71.4 test: 내 정원은 한 화면짜리 게임 무대 =====
+   - 기존 웹페이지형 카드 잔재를 정원 화면에서 완전히 숨긴다.
+   - 정원은 고정된 무대, 버튼은 HUD, 실제 기능은 팝업으로만 연다.
+   - 스크롤로 아래 기능 카드가 보이는 상태를 차단한다.
+*/
+body.lf-v1714-ux.lf-garden-active,
+body.lf-v1714-ux.lf-garden-action-modal-open {
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+}
+
+body.lf-v1714-ux.lf-garden-active .app {
+  width: 100vw !important;
+  height: 100svh !important;
+  overflow: hidden !important;
+}
+
+body.lf-v1714-ux.lf-garden-active #worldScreen:not(.screen-active) {
+  display: none !important;
+}
+
+body.lf-v1714-ux #gardenScreen.screen-active {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 30 !important;
+  display: grid !important;
+  place-items: center !important;
+  width: 100vw !important;
+  height: 100svh !important;
+  min-height: 100svh !important;
+  padding: clamp(8px, 1.5svh, 16px) !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  transform: none !important;
+}
+
+/* 정원 화면의 직접 자식 중 구형 기능 카드/하단 안내/돌아가기 버튼은 MVP 정원에서 표시하지 않는다. */
+body.lf-v1714-ux #gardenScreen.screen-active > :not(#oneScreenGardenShell) {
+  display: none !important;
+}
+
+body.lf-v1714-ux #gardenScreen.screen-active .one-screen-garden-shell {
+  position: relative !important;
+  width: min(100%, 760px) !important;
+  height: min(100%, 760px) !important;
+  max-height: calc(100svh - clamp(16px, 3svh, 32px)) !important;
+  min-height: 0 !important;
+  margin: 0 auto !important;
+  padding: clamp(10px, 1.5svh, 14px) !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+  gap: clamp(8px, 1.15svh, 12px) !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* 정원 무대 안에서는 헤더와 무대만 남긴다. 안내/메타/구형 메뉴는 표시하지 않는다. */
+body.lf-v1714-ux #gardenScreen.screen-active .one-screen-garden-shell > :not(.garden-hero):not(.garden-card) {
+  display: none !important;
+}
+
+body.lf-v1714-ux #gardenScreen.screen-active .garden-hero {
+  position: relative !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-columns: auto 1fr auto !important;
+  grid-template-areas:
+    "back version spacer"
+    "title title title"
+    "subtitle subtitle subtitle" !important;
+  align-items: center !important;
+  gap: 4px 8px !important;
+}
+
+body.lf-v1714-ux #gardenScreen.screen-active #backToWorldBtnTop {
+  grid-area: back !important;
+  justify-self: start !important;
+  min-height: 30px !important;
+  padding: 5px 11px !important;
+  font-size: 11.5px !important;
+  border-radius: 999px !important;
+}
+
+body.lf-v1714-ux #gardenScreen.screen-active .garden-hero .version {
+  grid-area: version !important;
+  justify-self: center !important;
+  margin: 0 !important;
+  min-height: 30px !important;
+  padding: 6px 12px !important;
+  font-size: 11px !important;
+  border-radius: 999px !important;
+}
+
+body.lf-v1714-ux #gardenScreen.screen-active .garden-title {
+  grid-area: title !important;
+  margin: 2px 0 0 !important;
+  font-size: clamp(25px, 4.3svh, 32px) !important;
+  line-height: 1.05 !important;
+}
+
+body.lf-v1714-ux #gardenScreen.screen-active .garden-hero .subtitle {
+  grid-area: subtitle !important;
+  margin: 0 !important;
+  font-size: clamp(11px, 1.55svh, 13px) !important;
+  line-height: 1.2 !important;
+}
+
+body.lf-v1714-ux #gardenScreen.screen-active .garden-card.visual-card {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  border-radius: clamp(22px, 3.2vw, 30px) !important;
+  padding: 0 !important;
+}
+
+body.lf-v1714-ux #gardenScreen.screen-active .garden-stage {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  border-radius: inherit !important;
+}
+
+/* 구형 기능 카드가 어떤 이유로 무대 내부/패널 내부에 남아도 보이지 않게 한다. */
+body.lf-v1714-ux #gardenScreen.screen-active #gardenStarterCard,
+body.lf-v1714-ux #gardenScreen.screen-active .forest-head,
+body.lf-v1714-ux #gardenScreen.screen-active #forestSoundCard,
+body.lf-v1714-ux #gardenScreen.screen-active #nameCard,
+body.lf-v1714-ux #gardenScreen.screen-active #returnMemoryCard,
+body.lf-v1714-ux #gardenScreen.screen-active #streakRewardCard,
+body.lf-v1714-ux #gardenScreen.screen-active .mood-card,
+body.lf-v1714-ux #gardenScreen.screen-active #completeCard,
+body.lf-v1714-ux #gardenScreen.screen-active #todayChangeCard,
+body.lf-v1714-ux #gardenScreen.screen-active #tomorrowPromiseCard,
+body.lf-v1714-ux #gardenScreen.screen-active #finishGuideCard,
+body.lf-v1714-ux #gardenScreen.screen-active #tomorrowSeedCard,
+body.lf-v1714-ux #gardenScreen.screen-active #forestDiaryCard,
+body.lf-v1714-ux #gardenScreen.screen-active #forestShareCard,
+body.lf-v1714-ux #gardenScreen.screen-active #treeCareCard,
+body.lf-v1714-ux #gardenScreen.screen-active #forestTrailCard,
+body.lf-v1714-ux #gardenScreen.screen-active #selfCareCard,
+body.lf-v1714-ux #gardenScreen.screen-active #weeklyForestLetterCard,
+body.lf-v1714-ux #gardenScreen.screen-active #forestArchiveCard,
+body.lf-v1714-ux #gardenScreen.screen-active #forestCalendarCard,
+body.lf-v1714-ux #gardenScreen.screen-active #forestMemoryCard,
+body.lf-v1714-ux #gardenScreen.screen-active #gardenMarkerCard,
+body.lf-v1714-ux #gardenScreen.screen-active #forestBadgeCard,
+body.lf-v1714-ux #gardenScreen.screen-active #visitorTraceCard,
+body.lf-v1714-ux #gardenScreen.screen-active #visitorLogCard,
+body.lf-v1714-ux #gardenScreen.screen-active #backToWorldBtnBottom,
+body.lf-v1714-ux #gardenScreen.screen-active .storage-note {
+  display: none !important;
+}
+
+/* HUD는 패널이 아니라 무대 위 작은 버튼 3개만 보인다. */
+body.lf-v1714-ux #gardenScreen.screen-active .garden-card #gardenHub,
+body.lf-v1714-ux #gardenScreen.screen-active .garden-card #gardenHub.is-open,
+body.lf-v1714-ux #gardenScreen.screen-active .garden-card #gardenHub:not(.is-open) {
+  display: block !important;
+  position: absolute !important;
+  left: auto !important;
+  right: 12px !important;
+  bottom: 12px !important;
+  width: auto !important;
+  max-width: calc(100% - 24px) !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  z-index: 80 !important;
+  overflow: visible !important;
+}
+
+body.lf-v1714-ux #gardenScreen.screen-active .garden-card #gardenHub .garden-hub-head,
+body.lf-v1714-ux #gardenScreen.screen-active .garden-card #gardenHub .garden-hub-sheet,
+body.lf-v1714-ux #gardenScreen.screen-active .garden-card #gardenHub .garden-hub-panel,
+body.lf-v1714-ux #gardenScreen.screen-active .garden-card #gardenHub #closeGardenPanelBtn {
+  display: none !important;
+}
+
+body.lf-v1714-ux #gardenScreen.screen-active .garden-card #gardenHub .garden-hub-nav,
+body.lf-v1714-ux #gardenScreen.screen-active .garden-card #gardenHub:not(.is-open) .garden-hub-nav,
+body.lf-v1714-ux #gardenScreen.screen-active .garden-card #gardenHub.is-open .garden-hub-nav {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 7px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+body.lf-v1714-ux #gardenScreen.screen-active .garden-card #gardenHub .garden-hub-tab {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 58px !important;
+  min-height: 36px !important;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(155, 87, 122, 0.18) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  box-shadow: 0 8px 18px rgba(68, 43, 58, 0.12) !important;
+  color: #594154 !important;
+  font-size: 12px !important;
+  font-weight: 950 !important;
+  white-space: nowrap !important;
+}
+
+body.lf-v1714-ux #gardenScreen.screen-active .garden-card #gardenHub .garden-hub-tab.active {
+  background: linear-gradient(135deg, rgba(247, 168, 210, 0.96), rgba(216, 168, 244, 0.96)) !important;
+  color: #563447 !important;
+}
+
+body.lf-v1714-ux #gardenScreen.screen-active .garden-card #gardenHub .garden-hub-tab[data-garden-tab="activity"],
+body.lf-v1714-ux #gardenScreen.screen-active .garden-card #gardenHub .garden-hub-tab[data-garden-tab="archive"] {
+  display: none !important;
+}
+
+/* 상태 문장은 무대 일부처럼 작게만 남긴다. 길게 늘어진 흰색 바를 금지한다. */
+body.lf-v1714-ux #gardenScreen.screen-active .garden-stage .stage-message {
+  position: absolute !important;
+  left: 12px !important;
+  right: auto !important;
+  bottom: 12px !important;
+  width: auto !important;
+  max-width: min(340px, calc(100% - 232px)) !important;
+  min-height: 0 !important;
+  padding: 7px 11px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.70) !important;
+  box-shadow: 0 8px 18px rgba(67, 42, 58, 0.10) !important;
+  z-index: 70 !important;
+  pointer-events: none !important;
+}
+
+body.lf-v1714-ux #gardenScreen.screen-active .garden-stage .stage-message .message-main {
+  margin: 0 !important;
+  color: #65515d !important;
+  font-size: 11.5px !important;
+  line-height: 1.25 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+body.lf-v1714-ux #gardenScreen.screen-active .garden-stage .stage-message .message-sub {
+  display: none !important;
+}
+
+body.lf-v1714-ux #gardenScreen.screen-active .tree,
+body.lf-v1714-ux #gardenScreen.screen-active .tree-stage-seed,
+body.lf-v1714-ux #gardenScreen.screen-active .tree-stage-sprout,
+body.lf-v1714-ux #gardenScreen.screen-active .tree-stage-seedling,
+body.lf-v1714-ux #gardenScreen.screen-active .tree-stage-leafy-seedling,
+body.lf-v1714-ux #gardenScreen.screen-active .tree-stage-sapling,
+body.lf-v1714-ux #gardenScreen.screen-active .tree-stage-branching-sapling,
+body.lf-v1714-ux #gardenScreen.screen-active .tree-stage-early-tree,
+body.lf-v1714-ux #gardenScreen.screen-active .tree-stage-young-canopy,
+body.lf-v1714-ux #gardenScreen.screen-active .tree-stage-young,
+body.lf-v1714-ux #gardenScreen.screen-active .tree-stage-hero,
+body.lf-v1714-ux #gardenScreen.screen-active .tree-stage-grown {
+  bottom: clamp(48px, 10svh, 78px) !important;
+}
+
+body.lf-v1714-ux #gardenScreen.screen-active .garden-activity-log {
+  top: 12px !important;
+  right: 12px !important;
+  bottom: auto !important;
+  left: auto !important;
+  z-index: 130 !important;
+  max-width: min(270px, calc(100% - 24px)) !important;
+}
+
+body.lf-v1714-ux .garden-action-modal:not(.hidden) {
+  display: grid !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 200 !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  padding: 16px !important;
+  background: rgba(24, 18, 26, 0.48) !important;
+  backdrop-filter: blur(7px) saturate(1.02) !important;
+  -webkit-backdrop-filter: blur(7px) saturate(1.02) !important;
+}
+
+body.lf-v1714-ux .garden-action-dialog {
+  width: min(440px, calc(100vw - 32px)) !important;
+  max-height: min(78svh, 560px) !important;
+  overflow: hidden !important;
+}
+
+@media (max-width: 760px) {
+  body.lf-v1714-ux #gardenScreen.screen-active {
+    padding: 0 !important;
+  }
+
+  body.lf-v1714-ux #gardenScreen.screen-active .one-screen-garden-shell {
+    width: 100vw !important;
+    height: 100svh !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)) !important;
+  }
+}
+
+@media (max-width: 440px) {
+  body.lf-v1714-ux #gardenScreen.screen-active .garden-stage .stage-message {
+    display: none !important;
+  }
+
+  body.lf-v1714-ux #gardenScreen.screen-active .garden-card #gardenHub {
+    right: 10px !important;
+    bottom: max(10px, env(safe-area-inset-bottom)) !important;
+  }
+
+  body.lf-v1714-ux #gardenScreen.screen-active .garden-card #gardenHub .garden-hub-nav {
+    gap: 6px !important;
+  }
+
+  body.lf-v1714-ux #gardenScreen.screen-active .garden-card #gardenHub .garden-hub-tab {
+    min-width: 50px !important;
+    min-height: 34px !important;
+    padding: 0 9px !important;
+    font-size: 11px !important;
+  }
 }
