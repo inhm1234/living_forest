@@ -15525,3 +15525,117 @@ body.lf-v1705-ux .tree-care-stage-dock {
     font-size: 10.5px !important;
   }
 }
+
+/* ===== V1.70.6 test: 첫 화면 접힌 플로팅 메뉴 =====
+   목표:
+   - 내 나무 화면에 처음 들어왔을 때 나무/배경이 먼저 보이게 한다.
+   - 메뉴는 작게 접힌 도크로 시작한다.
+   - 사용자가 메뉴 열기를 누르거나 탭을 누를 때만 패널을 펼친다.
+*/
+body.lf-v1706-ux .garden-stage .garden-hub:not(.is-open),
+body.lf-v1706-ux .garden-stage .garden-stage-hub:not(.is-open) {
+  left: 50% !important;
+  right: auto !important;
+  bottom: 14px !important;
+  width: min(360px, calc(100% - 28px)) !important;
+  min-height: 48px !important;
+  padding: 7px 8px !important;
+  border-radius: 999px !important;
+  transform: translateX(-50%) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  background: rgba(255, 255, 255, 0.80) !important;
+  box-shadow: 0 14px 34px rgba(86, 47, 68, 0.16) !important;
+}
+
+body.lf-v1706-ux .garden-stage .garden-hub:not(.is-open) .garden-hub-head {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+
+body.lf-v1706-ux .garden-stage .garden-hub:not(.is-open) .garden-hub-head > div {
+  min-width: 0 !important;
+}
+
+body.lf-v1706-ux .garden-stage .garden-hub:not(.is-open) .garden-hub-kicker {
+  display: inline-flex !important;
+  align-items: center !important;
+  max-width: 170px !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+  padding-left: 8px !important;
+  color: #bd6389 !important;
+  font-size: 12px !important;
+  font-weight: 1000 !important;
+}
+
+body.lf-v1706-ux .garden-stage .garden-hub:not(.is-open) .garden-hub-kicker::after {
+  content: " · 필요할 때 열기";
+  color: #86707b;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+body.lf-v1706-ux .garden-stage .garden-hub:not(.is-open) .garden-hub-title,
+body.lf-v1706-ux .garden-stage .garden-hub:not(.is-open) .garden-hub-nav,
+body.lf-v1706-ux .garden-stage .garden-hub:not(.is-open) .garden-hub-sheet {
+  display: none !important;
+}
+
+body.lf-v1706-ux .garden-stage .garden-hub:not(.is-open) .garden-hub-close {
+  flex: 0 0 auto !important;
+  min-width: 82px !important;
+  min-height: 34px !important;
+  padding: 7px 12px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(135deg, rgba(247, 178, 215, 0.90), rgba(215, 168, 245, 0.88)) !important;
+  color: #65364f !important;
+  border: 1px solid rgba(255, 255, 255, 0.70) !important;
+  box-shadow: 0 8px 18px rgba(203, 147, 171, 0.22) !important;
+}
+
+body.lf-v1706-ux .garden-stage .garden-hub.is-open {
+  transform: none !important;
+}
+
+body.lf-v1706-ux .garden-stage .stage-message {
+  bottom: 76px !important;
+}
+
+body.lf-v1706-ux.lf-garden-panel-open .garden-stage .stage-message {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(8px) !important;
+}
+
+@media (max-width: 760px) {
+  body.lf-v1706-ux .garden-stage .garden-hub:not(.is-open),
+  body.lf-v1706-ux .garden-stage .garden-stage-hub:not(.is-open) {
+    width: min(330px, calc(100% - 22px)) !important;
+    bottom: 10px !important;
+    min-height: 46px !important;
+  }
+
+  body.lf-v1706-ux .garden-stage .garden-hub:not(.is-open) .garden-hub-kicker {
+    max-width: 150px !important;
+    font-size: 11.5px !important;
+  }
+
+  body.lf-v1706-ux .garden-stage .garden-hub:not(.is-open) .garden-hub-close {
+    min-width: 76px !important;
+    min-height: 32px !important;
+    font-size: 11px !important;
+  }
+
+  body.lf-v1706-ux .garden-stage .stage-message {
+    bottom: 68px !important;
+  }
+}
