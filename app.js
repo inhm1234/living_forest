@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.71.0 test
+// 살아있는 숲 V1.71.1 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.71.0 test
+// 버전명: V1.71.1 test
 // 목적: 메뉴는 선택용으로만 두고 실제 기능은 팝업에서 열어 정원 화면을 고정 유지
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.71.0 test",
+  version: "V1.71.1 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -2625,7 +2625,7 @@ function playAfterRecordReward(experience) {
     todayChangeCardElement?.classList.add("after-record-card");
     finishGuideCardElement?.classList.add("after-record-card");
 
-    // V1.71.0 test: 기록 직후 화면을 자동 스크롤하지 않고, 현재 보던 정원 무대를 유지합니다.
+    // V1.71.1 test: 기록 직후 화면을 자동 스크롤하지 않고, 현재 보던 정원 무대를 유지합니다.
     closeGardenHubPanel();
 
     if (growthMessageElement && experience?.complete) {
@@ -3321,7 +3321,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.71.0 test는 기존 숲 배경/나무 오버레이와 같은 Apps Script 구조로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.71.1 test는 게임 HUD 구조와 기존 Apps Script 저장 구조로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -5937,7 +5937,7 @@ function updateOneActionStepUI() {
     document.body.classList.remove("lf-show-seed");
   }
 
-  // V1.71.0 test: 화면 갱신 때마다 패널을 강제로 열지 않습니다.
+  // V1.71.1 test: 화면 갱신 때마다 패널을 강제로 열지 않습니다.
   // 사용자가 누른 버튼/패널 상태를 유지해서 나무 무대가 갑자기 밀리거나 가려지는 느낌을 줄입니다.
 
   if (gardenPanelTitleElement && !gardenHubElement?.classList.contains("is-open")) {
@@ -6466,7 +6466,7 @@ function focusFirstRecordStep() {
     const hasTreeName = Boolean(treeData.treeName?.trim());
     const targetElement = !hasTreeName && treeNameInputElement ? treeNameInputElement : moodCardElement;
 
-    // V1.71.0 test: 첫 기록 안내도 자동 스크롤 없이 플로팅 패널 안에서만 강조합니다.
+    // V1.71.1 test: 첫 기록 안내도 자동 스크롤 없이 플로팅 패널 안에서만 강조합니다.
 
     if (!hasTreeName && treeNameInputElement) {
       try {
@@ -6716,7 +6716,7 @@ function buildGardenHubLayout() {
   if (!gardenHubElement || gardenHubLayoutBuilt) return;
   gardenHubLayoutBuilt = true;
 
-  // V1.71.0 test: 메뉴를 정원 카드 안으로 이동하되 기능 내용은 팝업에서 엽니다.
+  // V1.71.1 test: 하단 패널 대신 게임 HUD 버튼만 남기고 기능은 팝업에서 엽니다.
   // 접힌 상태와 열린 상태 모두 정원 무대 크기에 영향을 주지 않게 합니다.
   const gardenCardElement = document.querySelector(".garden-card.visual-card") || document.querySelector(".garden-card");
   if (gardenCardElement && gardenHubElement.parentElement !== gardenCardElement) {
@@ -6793,7 +6793,7 @@ function buildGardenHubLayout() {
     });
   }
 
-  // V1.71.0 test: 첫 진입에서는 나무가 먼저 보이도록 메뉴를 접어 둡니다.
+  // V1.71.1 test: 첫 진입에서는 나무가 먼저 보이도록 HUD만 보입니다.
   closeGardenHubPanel();
   updateOneActionStepUI();
 }
@@ -6864,13 +6864,13 @@ function openGardenActionModal(tabKey) {
   }
   if (gardenActionModalDescElement) {
     const descMap = {
-      record: "오늘 마음, 나무 이름, 내일 한마디를 이 창에서만 정리해요.",
-      activity: "나무 돌봄과 숲 소리처럼 오늘 할 수 있는 작은 활동이에요.",
-      decorate: "내 정원 표식과 배지를 확인해요. 선택하면 정원에 바로 남아요.",
-      letter: "오늘의 숲 문장과 주간 편지를 확인해요.",
-      archive: "보관함, 달력, 기억 찾기는 필요할 때만 열어봐요."
+      record: "오늘 마음과 한마디를 여기서만 짧게 남겨요.",
+      activity: "오늘 할 수 있는 작은 돌봄이에요.",
+      decorate: "장식을 고르면 정원에 바로 남아요.",
+      letter: "오늘의 숲 문장과 나눔을 확인해요.",
+      archive: "기록은 필요할 때만 꺼내봐요."
     };
-    gardenActionModalDescElement.textContent = descMap[tabKey] || "정원 화면은 그대로 두고 필요한 기능만 이 창에서 열어요.";
+    gardenActionModalDescElement.textContent = descMap[tabKey] || "정원은 그대로 두고 기능만 잠깐 열어요.";
   }
 
   gardenActionModalElement.classList.remove("hidden");
