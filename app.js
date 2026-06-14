@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.71.1 test
+// 살아있는 숲 V1.71.2 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.71.1 test
-// 목적: 메뉴는 선택용으로만 두고 실제 기능은 팝업에서 열어 정원 화면을 고정 유지
+// 버전명: V1.71.2 test
+// 목적: 정원은 고정 게임 무대로 유지하고 HUD 버튼은 최소화, 실제 기능은 짧은 전용 팝업으로만 실행
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.71.1 test",
+  version: "V1.71.2 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -2625,7 +2625,7 @@ function playAfterRecordReward(experience) {
     todayChangeCardElement?.classList.add("after-record-card");
     finishGuideCardElement?.classList.add("after-record-card");
 
-    // V1.71.1 test: 기록 직후 화면을 자동 스크롤하지 않고, 현재 보던 정원 무대를 유지합니다.
+    // V1.71.2 test: 기록 직후 화면을 자동 스크롤하지 않고, 현재 보던 정원 무대를 유지합니다.
     closeGardenHubPanel();
 
     if (growthMessageElement && experience?.complete) {
@@ -3321,7 +3321,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.71.1 test는 게임 HUD 구조와 기존 Apps Script 저장 구조로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.71.2 test는 게임 HUD 안정화와 기존 Apps Script 저장 구조로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -5937,7 +5937,7 @@ function updateOneActionStepUI() {
     document.body.classList.remove("lf-show-seed");
   }
 
-  // V1.71.1 test: 화면 갱신 때마다 패널을 강제로 열지 않습니다.
+  // V1.71.2 test: 화면 갱신 때마다 패널을 강제로 열지 않습니다.
   // 사용자가 누른 버튼/패널 상태를 유지해서 나무 무대가 갑자기 밀리거나 가려지는 느낌을 줄입니다.
 
   if (gardenPanelTitleElement && !gardenHubElement?.classList.contains("is-open")) {
@@ -6371,6 +6371,7 @@ function highlightWorldSpot() {
 }
 
 function showWorldScreen() {
+  document.body.classList.remove("lf-garden-active");
   trackForestEvent("screen_view_world");
   stopForestSound();
 
@@ -6388,6 +6389,7 @@ function showWorldScreen() {
 }
 
 function showGardenScreen(options = {}) {
+  document.body.classList.add("lf-garden-active");
   const shouldOpenRecordPanel = Boolean(options.openRecordPanel);
   trackForestEvent("screen_view_garden", { openRecordPanel: shouldOpenRecordPanel });
 
@@ -6466,7 +6468,7 @@ function focusFirstRecordStep() {
     const hasTreeName = Boolean(treeData.treeName?.trim());
     const targetElement = !hasTreeName && treeNameInputElement ? treeNameInputElement : moodCardElement;
 
-    // V1.71.1 test: 첫 기록 안내도 자동 스크롤 없이 플로팅 패널 안에서만 강조합니다.
+    // V1.71.2 test: 첫 기록 안내도 자동 스크롤 없이 플로팅 패널 안에서만 강조합니다.
 
     if (!hasTreeName && treeNameInputElement) {
       try {
@@ -6716,7 +6718,7 @@ function buildGardenHubLayout() {
   if (!gardenHubElement || gardenHubLayoutBuilt) return;
   gardenHubLayoutBuilt = true;
 
-  // V1.71.1 test: 하단 패널 대신 게임 HUD 버튼만 남기고 기능은 팝업에서 엽니다.
+  // V1.71.2 test: 하단 패널 대신 게임 HUD 버튼만 남기고 기능은 팝업에서 엽니다.
   // 접힌 상태와 열린 상태 모두 정원 무대 크기에 영향을 주지 않게 합니다.
   const gardenCardElement = document.querySelector(".garden-card.visual-card") || document.querySelector(".garden-card");
   if (gardenCardElement && gardenHubElement.parentElement !== gardenCardElement) {
@@ -6793,7 +6795,9 @@ function buildGardenHubLayout() {
     });
   }
 
-  // V1.71.1 test: 첫 진입에서는 나무가 먼저 보이도록 HUD만 보입니다.
+  bindGardenModalActions();
+
+  // V1.71.2 test: 첫 진입에서는 나무가 먼저 보이도록 HUD만 보입니다.
   closeGardenHubPanel();
   updateOneActionStepUI();
 }
@@ -6843,44 +6847,181 @@ function openGardenHubTab(tabKey) {
   openGardenActionModal(tabKey);
 }
 
+function getModalRecordHtml() {
+  const hasName = Boolean(treeData.treeName?.trim());
+  const checked = hasCheckedToday();
+  const todayRecord = getTodayRecord();
+  const seedWrittenToday = getTomorrowSeedWrittenToday();
+
+  if (!hasName) {
+    return `
+      <div class="garden-modal-mini is-name-step">
+        <span class="garden-modal-step">1분 시작</span>
+        <h3>내 나무 이름을 먼저 정해요.</h3>
+        <p>이름을 정하면 바로 오늘 마음을 고를 수 있어요.</p>
+        <form class="garden-modal-form" data-garden-modal-form="name">
+          <input id="modalTreeNameInput" type="text" maxlength="16" placeholder="예: 반짝이" autocomplete="off" aria-label="나무 이름 입력" />
+          <button type="submit">시작</button>
+        </form>
+      </div>
+    `;
+  }
+
+  if (!checked) {
+    const moodItems = Object.entries(moodRules).map(([key, rule]) => `
+      <button type="button" class="garden-modal-choice" data-garden-modal-action="mood" data-mood="${escapeHtml(key)}">
+        <span>${rule.icon}</span>
+        <strong>${escapeHtml(rule.label)}</strong>
+      </button>
+    `).join("");
+
+    return `
+      <div class="garden-modal-mini is-mood-step">
+        <span class="garden-modal-step">오늘 기록</span>
+        <h3>오늘 마음 하나만 골라요.</h3>
+        <p>고른 마음은 내 나무의 오늘 성장으로 남아요.</p>
+        <div class="garden-modal-choice-grid mood-choice-grid">${moodItems}</div>
+      </div>
+    `;
+  }
+
+  if (!seedWrittenToday) {
+    return `
+      <div class="garden-modal-mini is-complete-step">
+        <span class="garden-modal-step">완료</span>
+        <h3>오늘 마음을 남겼어요.</h3>
+        <p>${todayRecord ? `${escapeHtml(todayRecord.icon)} ${escapeHtml(todayRecord.label)} 기운이 내 나무에 남았어요.` : "내 나무가 오늘의 마음을 기억하고 있어요."}</p>
+        <form class="garden-modal-form stacked" data-garden-modal-form="tomorrow">
+          <label for="modalTomorrowSeedInput">내일의 나에게 한마디</label>
+          <textarea id="modalTomorrowSeedInput" maxlength="64" rows="3" placeholder="예: 내일은 조금 천천히 가자"></textarea>
+          <button type="submit">내일 한마디 남기기</button>
+        </form>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="garden-modal-mini is-done-step">
+      <span class="garden-modal-step">오늘 완료</span>
+      <h3>오늘 할 일은 끝났어요.</h3>
+      <p>내일 다시 오면 남겨둔 한마디를 먼저 보여줄게요.</p>
+      <div class="garden-modal-saved-line">“${escapeHtml(seedWrittenToday.text)}”</div>
+      <button type="button" class="garden-modal-soft-btn" data-garden-modal-action="close">정원 보기</button>
+    </div>
+  `;
+}
+
+function getModalDecorateHtml() {
+  const selected = getSelectedGardenMarker();
+  const items = Object.entries(gardenMarkerRules).map(([key, rule]) => `
+    <button type="button" class="garden-modal-choice ${selected === key ? "selected" : ""}" data-garden-modal-action="marker" data-marker="${escapeHtml(key)}" aria-pressed="${selected === key ? "true" : "false"}">
+      <span>${rule.icon}</span>
+      <strong>${escapeHtml(rule.label)}</strong>
+      <small>${selected === key ? "놓아둠" : "놓기"}</small>
+    </button>
+  `).join("");
+
+  return `
+    <div class="garden-modal-mini is-decorate-step">
+      <span class="garden-modal-step">꾸미기</span>
+      <h3>나무 곁에 하나만 놓아요.</h3>
+      <p>장식은 정원 분위기만 바꾸고, 성장 수치에는 영향을 주지 않아요.</p>
+      <div class="garden-modal-choice-grid decorate-choice-grid">${items}</div>
+    </div>
+  `;
+}
+
+function getModalShareHtml() {
+  const payload = getForestSharePayload();
+  const seat = getSelectedFriendInviteSeat();
+  const inviteUrl = getFriendInviteUrl();
+  return `
+    <div class="garden-modal-mini is-share-step">
+      <span class="garden-modal-step">나눔</span>
+      <h3>친구에게 숲 자리를 전해요.</h3>
+      <p>${escapeHtml(seat.label)} 자리 초대 링크를 복사하거나, 오늘의 숲 문장을 나눌 수 있어요.</p>
+      <div class="garden-modal-action-list">
+        <button type="button" data-garden-modal-action="copy-invite">${escapeHtml(seat.emoji)} 초대 링크 복사</button>
+        <button type="button" data-garden-modal-action="copy-sentence" ${payload ? "" : "disabled"}>오늘 숲 문장 복사</button>
+      </div>
+      <p class="garden-modal-note">${payload ? "복사 후 원하는 곳에 붙여넣으면 돼요." : "오늘 마음을 기록하면 숲 문장을 만들 수 있어요."}</p>
+      <p class="garden-modal-url">${escapeHtml(inviteUrl)}</p>
+    </div>
+  `;
+}
+
+function getModalSimpleHtml(tabKey) {
+  if (tabKey === "activity") {
+    return `
+      <div class="garden-modal-mini">
+        <span class="garden-modal-step">활동</span>
+        <h3>오늘은 기록만 해도 충분해요.</h3>
+        <p>돌보기와 산책은 출시 후 단계에서 더 간단하게 정리할게요.</p>
+        <button type="button" class="garden-modal-soft-btn" data-garden-modal-action="close">닫기</button>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="garden-modal-mini">
+      <span class="garden-modal-step">보관함</span>
+      <h3>기록은 조용히 저장되고 있어요.</h3>
+      <p>처음 사용자는 지금 화면에서 길을 잃지 않도록 보관 기능은 작게 숨겨둬요.</p>
+      <button type="button" class="garden-modal-soft-btn" data-garden-modal-action="close">닫기</button>
+    </div>
+  `;
+}
+
+function renderGardenActionModalContent(tabKey) {
+  if (!gardenActionModalBodyElement) return;
+  const htmlMap = {
+    record: getModalRecordHtml,
+    decorate: getModalDecorateHtml,
+    letter: getModalShareHtml,
+    activity: () => getModalSimpleHtml("activity"),
+    archive: () => getModalSimpleHtml("archive")
+  };
+
+  gardenActionModalBodyElement.innerHTML = (htmlMap[tabKey] || htmlMap.record)();
+}
+
+function getGardenActionModalHeader(tabKey) {
+  const headerMap = {
+    record: { title: "오늘 기록", desc: "이 창에서 한 가지 행동만 끝내요." },
+    decorate: { title: "꾸미기", desc: "나무를 가리지 않고 장식만 고릅니다." },
+    letter: { title: "나눔", desc: "친구 초대와 오늘 문장을 짧게 처리해요." },
+    activity: { title: "활동", desc: "지금은 기록 중심으로 단순하게 유지해요." },
+    archive: { title: "보관함", desc: "필요한 기록만 나중에 꺼내봅니다." }
+  };
+  return headerMap[tabKey] || headerMap.record;
+}
+
 function openGardenActionModal(tabKey) {
   if (!gardenActionModalElement || !gardenActionModalBodyElement) return;
   if (!Object.prototype.hasOwnProperty.call(GARDEN_HUB_CONFIG, tabKey)) {
     tabKey = "record";
   }
 
-  const config = GARDEN_HUB_CONFIG[tabKey];
-  const panel = document.getElementById(`gardenPanel-${tabKey}`);
-  if (!panel) return;
-
   restoreGardenPanelsToSheet();
-
-  panel.classList.add("active");
-  panel.hidden = false;
-  gardenActionModalBodyElement.appendChild(panel);
+  const header = getGardenActionModalHeader(tabKey);
 
   if (gardenActionModalTitleElement) {
-    gardenActionModalTitleElement.textContent = config.title || "내 정원 기능";
+    gardenActionModalTitleElement.textContent = header.title;
   }
   if (gardenActionModalDescElement) {
-    const descMap = {
-      record: "오늘 마음과 한마디를 여기서만 짧게 남겨요.",
-      activity: "오늘 할 수 있는 작은 돌봄이에요.",
-      decorate: "장식을 고르면 정원에 바로 남아요.",
-      letter: "오늘의 숲 문장과 나눔을 확인해요.",
-      archive: "기록은 필요할 때만 꺼내봐요."
-    };
-    gardenActionModalDescElement.textContent = descMap[tabKey] || "정원은 그대로 두고 기능만 잠깐 열어요.";
+    gardenActionModalDescElement.textContent = header.desc;
   }
 
+  renderGardenActionModalContent(tabKey);
   gardenActionModalElement.classList.remove("hidden");
   document.body.classList.add("lf-garden-action-modal-open");
 
   window.setTimeout(() => {
+    const focusTarget = gardenActionModalBodyElement.querySelector("input, textarea, button") || closeGardenActionModalBtnElement;
     try {
-      closeGardenActionModalBtnElement?.focus({ preventScroll: true });
+      focusTarget?.focus({ preventScroll: true });
     } catch (error) {
-      closeGardenActionModalBtnElement?.focus?.();
+      focusTarget?.focus?.();
     }
   }, 30);
 }
@@ -6889,7 +7030,96 @@ function closeGardenActionModal() {
   if (!gardenActionModalElement) return;
   gardenActionModalElement.classList.add("hidden");
   document.body.classList.remove("lf-garden-action-modal-open");
+  if (gardenActionModalBodyElement) {
+    gardenActionModalBodyElement.innerHTML = "";
+  }
   restoreGardenPanelsToSheet();
+}
+
+function saveTreeNameFromGardenModal(name) {
+  const safeName = String(name || "").trim().slice(0, 16);
+  if (!safeName || treeData.treeName?.trim()) {
+    renderGardenActionModalContent("record");
+    return;
+  }
+
+  treeData.treeName = safeName;
+  saveTreeData();
+  renderAll();
+  showGardenActivityLog("나무 이름을 정했어요");
+  renderGardenActionModalContent("record");
+}
+
+function bindGardenModalActions() {
+  if (!gardenActionModalBodyElement || window.__livingForestGardenModalActionsBound) return;
+  window.__livingForestGardenModalActionsBound = true;
+
+  gardenActionModalBodyElement.addEventListener("submit", (event) => {
+    const form = event.target.closest("[data-garden-modal-form]");
+    if (!form) return;
+    event.preventDefault();
+
+    const formType = form.dataset.gardenModalForm;
+    if (formType === "name") {
+      saveTreeNameFromGardenModal(form.querySelector("#modalTreeNameInput")?.value || "");
+      return;
+    }
+
+    if (formType === "tomorrow") {
+      const input = form.querySelector("#modalTomorrowSeedInput");
+      if (tomorrowSeedInputElement && input) {
+        tomorrowSeedInputElement.value = input.value;
+      }
+      saveTomorrowSeed();
+      closeGardenActionModal();
+    }
+  });
+
+  gardenActionModalBodyElement.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-garden-modal-action]");
+    if (!button || button.disabled) return;
+    const action = button.dataset.gardenModalAction;
+
+    if (action === "close") {
+      closeGardenActionModal();
+      return;
+    }
+
+    if (action === "mood") {
+      chooseMood(button.dataset.mood);
+      closeGardenActionModal();
+      return;
+    }
+
+    if (action === "marker") {
+      chooseGardenMarker(button.dataset.marker);
+      closeGardenActionModal();
+      return;
+    }
+
+    if (action === "copy-invite") {
+      const copied = await copyTextToClipboard(getFriendInviteUrl());
+      showGardenActivityLog(copied ? "초대 링크를 복사했어요" : "초대 링크 복사를 다시 시도해 주세요");
+      closeGardenActionModal();
+      trackForestEvent("friend_invite_link_copied", { source: "garden_modal", copied: copied ? "yes" : "no" });
+      return;
+    }
+
+    if (action === "copy-sentence") {
+      const payload = getForestSharePayload();
+      if (!payload) {
+        showGardenActivityLog("오늘 마음을 먼저 기록해 주세요");
+        return;
+      }
+      const copied = await copyTextToClipboard(payload.text);
+      if (copied) {
+        markForestSentenceShared("garden_modal_copy");
+      }
+      showGardenActivityLog(copied ? "오늘 숲 문장을 복사했어요" : "문장 복사를 다시 시도해 주세요");
+      closeGardenActionModal();
+      trackForestEvent("share_click", { source: "garden_modal_copy", copied: copied ? "yes" : "no" });
+    }
+  });
 }
 
 function closeGardenHubPanel() {
