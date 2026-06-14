@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.70.8 test
+// 살아있는 숲 V1.70.9 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.70.8 test
+// 버전명: V1.70.9 test
 // 목적: 접힌 메뉴가 정원 화면 크기에 영향을 주지 않게 하고, 전체 숲 나무 군집 구조 유지
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.70.8 test",
+  version: "V1.70.9 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -852,6 +852,7 @@ const forestSoundButtons = document.querySelectorAll("[data-forest-sound]");
 const stopForestSoundBtnElement = document.querySelector("#stopForestSoundBtn");
 
 const gardenMarkerLayerElement = document.querySelector("#gardenMarkerLayer");
+const gardenActivityLogElement = document.querySelector("#gardenActivityLog");
 const gardenMarkerCardElement = document.querySelector("#gardenMarkerCard");
 const gardenMarkerTitleElement = document.querySelector("#gardenMarkerTitle");
 const gardenMarkerTextElement = document.querySelector("#gardenMarkerText");
@@ -883,6 +884,7 @@ let forestSoundRuntime = {
   activeSound: ""
 };
 let gardenHubLayoutBuilt = false;
+let gardenActivityLogTimer = null;
 let activeGardenHubTab = "record";
 
 function createTreeId() {
@@ -1256,6 +1258,25 @@ function sanitizeTomorrowSeedText(text) {
   return String(text || "").replace(/\s+/g, " ").trim().slice(0, 64);
 }
 
+function showGardenActivityLog(message, options = {}) {
+  if (!gardenActivityLogElement || !message) {
+    return;
+  }
+
+  const prefix = options.prefix || "방금 전";
+  gardenActivityLogElement.textContent = `${prefix} · ${message}`;
+  gardenActivityLogElement.classList.remove("is-visible");
+  window.clearTimeout(gardenActivityLogTimer);
+
+  window.requestAnimationFrame(() => {
+    gardenActivityLogElement.classList.add("is-visible");
+  });
+
+  gardenActivityLogTimer = window.setTimeout(() => {
+    gardenActivityLogElement.classList.remove("is-visible");
+  }, options.duration || 3200);
+}
+
 function renderTomorrowSeedCard() {
   if (!tomorrowSeedCardElement || !tomorrowSeedTitleElement || !tomorrowSeedTextElement || !tomorrowSeedMessageElement || !tomorrowSeedInputElement || !saveTomorrowSeedBtnElement) {
     return;
@@ -1343,6 +1364,8 @@ function saveTomorrowSeed() {
   renderTomorrowSeedCard();
   renderWeeklyForestLetterCard();
   renderForestMemoryCard();
+  showGardenActivityLog("내일 한마디를 남겼어요");
+  closeGardenHubPanel();
   trackForestEvent("tomorrow_seed_saved", { source: "garden", target_date: tomorrow });
 }
 
@@ -2597,7 +2620,7 @@ function playAfterRecordReward(experience) {
     todayChangeCardElement?.classList.add("after-record-card");
     finishGuideCardElement?.classList.add("after-record-card");
 
-    // V1.70.8 test: 기록 직후 화면을 자동 스크롤하지 않고, 현재 보던 정원 무대를 유지합니다.
+    // V1.70.9 test: 기록 직후 화면을 자동 스크롤하지 않고, 현재 보던 정원 무대를 유지합니다.
     closeGardenHubPanel();
 
     if (growthMessageElement && experience?.complete) {
@@ -2671,6 +2694,7 @@ function chooseMood(mood) {
   updateTodayStatus();
   updateOneActionStepUI();
   prepareDailyVisitor({ forcePlay: true, allowCreate: true, allowPlay: true });
+  showGardenActivityLog("오늘 마음이 숲에 남았어요");
   playAfterRecordReward(afterRecordExperience);
 }
 
@@ -3292,7 +3316,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.70.8 test는 기존 숲 배경/나무 오버레이와 같은 Apps Script 구조로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.70.9 test는 기존 숲 배경/나무 오버레이와 같은 Apps Script 구조로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -5345,6 +5369,8 @@ function chooseGardenMarker(marker) {
   renderGardenMarkerCard();
   renderGardenMarkerLayer();
   renderMessages(`${gardenMarkerRules[marker].message} 내 정원이 조금 더 나다운 자리로 남았어요.`);
+  showGardenActivityLog(`${gardenMarkerRules[marker].label}을 놓았어요`);
+  closeGardenHubPanel();
   trackForestEvent("garden_marker_selected", { marker_type: marker });
 }
 
@@ -5847,7 +5873,7 @@ function renderVersionLabels() {
   const demoPillElement = document.querySelector(".demo-pill");
 
   if (versionElements[0]) {
-    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 접힌 메뉴 무영향 + 나무 모임`;
+    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 완료 로그 + 상태 전환`;
   }
 
   if (versionElements[1]) {
@@ -5855,7 +5881,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 접힌 메뉴 무영향 + 나무 모임`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 완료 로그 + 상태 전환`;
   }
 }
 
@@ -5906,7 +5932,7 @@ function updateOneActionStepUI() {
     document.body.classList.remove("lf-show-seed");
   }
 
-  // V1.70.8 test: 화면 갱신 때마다 패널을 강제로 열지 않습니다.
+  // V1.70.9 test: 화면 갱신 때마다 패널을 강제로 열지 않습니다.
   // 사용자가 누른 버튼/패널 상태를 유지해서 나무 무대가 갑자기 밀리거나 가려지는 느낌을 줄입니다.
 
   if (gardenPanelTitleElement && !gardenHubElement?.classList.contains("is-open")) {
@@ -6022,6 +6048,7 @@ function saveTreeName() {
   saveTreeData();
   renderTreeName();
   renderAll();
+  showGardenActivityLog("나무 이름을 정했어요");
 
   if (moodCardElement) {
     openGardenHubTab("record");
@@ -6050,6 +6077,7 @@ function updateTodayStatus() {
 
   if (moodCardElement) {
     moodCardElement.classList.toggle("mood-locked", !hasName && !checked);
+    moodCardElement.classList.toggle("mood-done", checked);
   }
 
   if (!hasName) {
@@ -6296,7 +6324,7 @@ function renderTestModeStatus() {
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
   const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 접힌 메뉴 무영향 + 나무 모임 · ${shortTreeId}`;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 완료 로그 + 상태 전환 · ${shortTreeId}`;
 }
 
 function setupTestMode() {
@@ -6433,7 +6461,7 @@ function focusFirstRecordStep() {
     const hasTreeName = Boolean(treeData.treeName?.trim());
     const targetElement = !hasTreeName && treeNameInputElement ? treeNameInputElement : moodCardElement;
 
-    // V1.70.8 test: 첫 기록 안내도 자동 스크롤 없이 플로팅 패널 안에서만 강조합니다.
+    // V1.70.9 test: 첫 기록 안내도 자동 스크롤 없이 플로팅 패널 안에서만 강조합니다.
 
     if (!hasTreeName && treeNameInputElement) {
       try {
@@ -6683,7 +6711,7 @@ function buildGardenHubLayout() {
   if (!gardenHubElement || gardenHubLayoutBuilt) return;
   gardenHubLayoutBuilt = true;
 
-  // V1.70.8 test: 메뉴를 정원 카드 안으로 이동합니다.
+  // V1.70.9 test: 메뉴를 정원 카드 안으로 이동합니다.
   // 접힌 상태에서는 레이아웃 공간을 차지하지 않는 작은 플로팅 버튼처럼 보이게 합니다.
   const gardenCardElement = document.querySelector(".garden-card.visual-card") || document.querySelector(".garden-card");
   if (gardenCardElement && gardenHubElement.parentElement !== gardenCardElement) {
@@ -6742,7 +6770,7 @@ function buildGardenHubLayout() {
     });
   }
 
-  // V1.70.8 test: 첫 진입에서는 나무가 먼저 보이도록 메뉴를 접어 둡니다.
+  // V1.70.9 test: 첫 진입에서는 나무가 먼저 보이도록 메뉴를 접어 둡니다.
   closeGardenHubPanel();
   updateOneActionStepUI();
 }
