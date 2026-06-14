@@ -17254,7 +17254,7 @@ body.lf-v1711-ux #gardenScreen.screen-active .garden-activity-log {
   }
 }
 
-/* ===== V1.71.2 test: 게임 HUD 안정화 최종 정리 =====
+/* ===== V1.71.3 test: 게임 HUD 안정화 최종 정리 =====
    - 정원 화면은 브라우저 안에서 고정된 게임 무대로 유지한다.
    - 페이지 스크롤/하단 패널/큰 내부 카드 제거.
    - HUD 버튼은 최소 노출, 기능은 짧은 전용 팝업으로만 처리.
@@ -17599,4 +17599,25 @@ body.lf-v1712-ux #gardenScreen.screen-active .garden-activity-log {
     min-height: 64px !important;
     flex-direction: row !important;
   }
+}
+
+
+/* V1.71.3 test: MVP에서 실제 기능 없는 HUD 버튼은 HTML에서도 제거하고, 캐시/이전 마크업 대비로 한 번 더 숨깁니다. */
+body.lf-v1713-ux #gardenScreen.screen-active .garden-card .garden-hub-tab[data-garden-tab="activity"],
+body.lf-v1713-ux #gardenScreen.screen-active .garden-card .garden-hub-tab[data-garden-tab="archive"] {
+  display: none !important;
+}
+
+body.lf-v1713-ux #gardenScreen.screen-active .garden-card .garden-hub-nav {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(54px, 1fr)) !important;
+  gap: 8px !important;
+}
+
+body.lf-v1713-ux #gardenScreen.screen-active .garden-card .garden-hub-tab {
+  min-width: 58px !important;
+}
+
+body.lf-v1713-ux #gardenScreen.screen-active .garden-hub-title {
+  max-width: 180px !important;
 }

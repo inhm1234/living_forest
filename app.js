@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.71.2 test
+// 살아있는 숲 V1.71.3 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.71.2 test
+// 버전명: V1.71.3 test
 // 목적: 정원은 고정 게임 무대로 유지하고 HUD 버튼은 최소화, 실제 기능은 짧은 전용 팝업으로만 실행
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.71.2 test",
+  version: "V1.71.3 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -2625,7 +2625,7 @@ function playAfterRecordReward(experience) {
     todayChangeCardElement?.classList.add("after-record-card");
     finishGuideCardElement?.classList.add("after-record-card");
 
-    // V1.71.2 test: 기록 직후 화면을 자동 스크롤하지 않고, 현재 보던 정원 무대를 유지합니다.
+    // V1.71.3 test: 기록 직후 화면을 자동 스크롤하지 않고, 현재 보던 정원 무대를 유지합니다.
     closeGardenHubPanel();
 
     if (growthMessageElement && experience?.complete) {
@@ -3321,7 +3321,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.71.2 test는 게임 HUD 안정화와 기존 Apps Script 저장 구조로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.71.3 test는 게임 HUD 안정화와 기존 Apps Script 저장 구조로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -5937,7 +5937,7 @@ function updateOneActionStepUI() {
     document.body.classList.remove("lf-show-seed");
   }
 
-  // V1.71.2 test: 화면 갱신 때마다 패널을 강제로 열지 않습니다.
+  // V1.71.3 test: 화면 갱신 때마다 패널을 강제로 열지 않습니다.
   // 사용자가 누른 버튼/패널 상태를 유지해서 나무 무대가 갑자기 밀리거나 가려지는 느낌을 줄입니다.
 
   if (gardenPanelTitleElement && !gardenHubElement?.classList.contains("is-open")) {
@@ -6468,7 +6468,7 @@ function focusFirstRecordStep() {
     const hasTreeName = Boolean(treeData.treeName?.trim());
     const targetElement = !hasTreeName && treeNameInputElement ? treeNameInputElement : moodCardElement;
 
-    // V1.71.2 test: 첫 기록 안내도 자동 스크롤 없이 플로팅 패널 안에서만 강조합니다.
+    // V1.71.3 test: 첫 기록 안내도 자동 스크롤 없이 플로팅 패널 안에서만 강조합니다.
 
     if (!hasTreeName && treeNameInputElement) {
       try {
@@ -6694,23 +6694,13 @@ const GARDEN_HUB_CONFIG = {
       "todayChangeCard", "tomorrowPromiseCard", "finishGuideCard", "tomorrowSeedCard", "forestDiaryCard"
     ]
   },
-  activity: {
-    title: "오늘의 활동",
-    ids: [
-      "forestSoundCard", "treeCareCard", "forestTrailCard", "selfCareCard", "visitorTraceCard", "visitorLogCard"
-    ]
-  },
   decorate: {
     title: "정원 꾸미기",
     ids: ["gardenMarkerCard", "forestBadgeCard"]
   },
   letter: {
-    title: "나누기와 편지",
+    title: "나누기",
     ids: ["forestShareCard", "weeklyForestLetterCard"]
-  },
-  archive: {
-    title: "내 숲 보관함",
-    ids: ["forestArchiveCard", "forestCalendarCard", "forestMemoryCard"]
   }
 };
 
@@ -6718,7 +6708,7 @@ function buildGardenHubLayout() {
   if (!gardenHubElement || gardenHubLayoutBuilt) return;
   gardenHubLayoutBuilt = true;
 
-  // V1.71.2 test: 하단 패널 대신 게임 HUD 버튼만 남기고 기능은 팝업에서 엽니다.
+  // V1.71.3 test: 하단 패널 대신 게임 HUD 버튼만 남기고 기능은 팝업에서 엽니다.
   // 접힌 상태와 열린 상태 모두 정원 무대 크기에 영향을 주지 않게 합니다.
   const gardenCardElement = document.querySelector(".garden-card.visual-card") || document.querySelector(".garden-card");
   if (gardenCardElement && gardenHubElement.parentElement !== gardenCardElement) {
@@ -6797,7 +6787,7 @@ function buildGardenHubLayout() {
 
   bindGardenModalActions();
 
-  // V1.71.2 test: 첫 진입에서는 나무가 먼저 보이도록 HUD만 보입니다.
+  // V1.71.3 test: 첫 진입에서는 나무가 먼저 보이도록 HUD만 보입니다.
   closeGardenHubPanel();
   updateOneActionStepUI();
 }
@@ -6813,7 +6803,7 @@ function openGardenHubMenu() {
     closeGardenPanelBtnElement.setAttribute("aria-expanded", "true");
   }
   if (gardenPanelTitleElement) {
-    gardenPanelTitleElement.textContent = "필요한 기능만 골라서 열어요.";
+    gardenPanelTitleElement.textContent = "기록, 꾸미기, 나눔만 열어요.";
   }
 }
 
@@ -6977,9 +6967,7 @@ function renderGardenActionModalContent(tabKey) {
   const htmlMap = {
     record: getModalRecordHtml,
     decorate: getModalDecorateHtml,
-    letter: getModalShareHtml,
-    activity: () => getModalSimpleHtml("activity"),
-    archive: () => getModalSimpleHtml("archive")
+    letter: getModalShareHtml
   };
 
   gardenActionModalBodyElement.innerHTML = (htmlMap[tabKey] || htmlMap.record)();
@@ -6989,9 +6977,7 @@ function getGardenActionModalHeader(tabKey) {
   const headerMap = {
     record: { title: "오늘 기록", desc: "이 창에서 한 가지 행동만 끝내요." },
     decorate: { title: "꾸미기", desc: "나무를 가리지 않고 장식만 고릅니다." },
-    letter: { title: "나눔", desc: "친구 초대와 오늘 문장을 짧게 처리해요." },
-    activity: { title: "활동", desc: "지금은 기록 중심으로 단순하게 유지해요." },
-    archive: { title: "보관함", desc: "필요한 기록만 나중에 꺼내봅니다." }
+    letter: { title: "나눔", desc: "친구 초대와 오늘 문장을 짧게 처리해요." }
   };
   return headerMap[tabKey] || headerMap.record;
 }
