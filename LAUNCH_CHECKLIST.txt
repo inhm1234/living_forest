@@ -1,8 +1,8 @@
-살아있는 숲 V1.72.2 test 확인 체크리스트
+살아있는 숲 V1.72.3 test 확인 체크리스트
 
 [버전]
-- 화면 상단 버전이 V1.72.2 test로 보인다.
-- README.md, VERSION.txt, UPLOAD_GUIDE.txt가 V1.72.2 test 기준이다.
+- 화면 상단 버전이 V1.72.3 test로 보인다.
+- README.md, VERSION.txt, UPLOAD_GUIDE.txt가 V1.72.3 test 기준이다.
 
 [정원 화면]
 - 정원 화면이 버튼이나 기능 패널 때문에 줄거나 늘어나지 않는다.
