@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.72.8 fix3
+// 살아있는 숲 V1.72.8 fix4
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.72.8 fix3
+// 버전명: V1.72.8 fix4
 // 목적: 정원은 고정 게임 무대로 유지하고 HUD 버튼은 최소화, 실제 기능은 짧은 전용 팝업으로만 실행
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.72.8 fix3",
+  version: "V1.72.8 fix4",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -591,29 +591,23 @@ const friendInviteSeatSlots = [
 let selectedFriendInviteSeatId = "flower_path";
 
 const worldForestSlots = [
-  // 뒤쪽 숲길 주변: 작지만 또렷한 실루엣. 중앙 길 위가 아니라 양옆 수풀 쪽에만 둔다.
-  { id: "back-left-1", name: "먼 왼숲", className: "row-back row-left forest-edge", state: "balanced", days: 14, x: 25, y: 43, scale: 0.26, opacity: 0.64, depth: 2, tilt: -3, lift: 0, groundOpacity: 0.030, mobileX: 23, mobileY: 44, mobileScale: 0.22 },
-  { id: "back-right-1", name: "먼 오른숲", className: "row-back row-right forest-edge", state: "leaf-strong", days: 16, x: 74, y: 43, scale: 0.26, opacity: 0.64, depth: 2, tilt: 3, lift: 0, groundOpacity: 0.030, mobileX: 76, mobileY: 44, mobileScale: 0.22 },
-
-  // 중간 숲 경계: 울타리/꽃밭 라인에 맞춰 배치. 중앙 공터는 침범하지 않는다.
-  { id: "mid-left-1", name: "왼 꽃숲", className: "row-mid row-left forest-edge", state: "root-strong", days: 20, x: 18, y: 58, scale: 0.40, opacity: 0.72, depth: 4, tilt: -4, lift: 1, groundOpacity: 0.046, mobileX: 16, mobileY: 59, mobileScale: 0.32 },
-  { id: "mid-left-2", name: "왼 울타리숲", className: "row-mid row-left forest-edge", state: "balanced", days: 24, x: 30, y: 63, scale: 0.36, opacity: 0.70, depth: 4, tilt: -2, lift: 1, groundOpacity: 0.044, mobileX: 28, mobileY: 64, mobileScale: 0.30 },
-  { id: "mid-right-1", name: "오른 울타리숲", className: "row-mid row-right forest-edge", state: "balanced", days: 23, x: 70, y: 63, scale: 0.36, opacity: 0.70, depth: 4, tilt: 2, lift: 1, groundOpacity: 0.044, mobileX: 72, mobileY: 64, mobileScale: 0.30 },
-  { id: "mid-right-2", name: "오른 꽃숲", className: "row-mid row-right forest-edge", state: "leaf-strong", days: 21, x: 84, y: 58, scale: 0.40, opacity: 0.72, depth: 4, tilt: 4, lift: 1, groundOpacity: 0.046, mobileX: 86, mobileY: 59, mobileScale: 0.32 },
-
-  // 앞쪽 가장자리: 화면 아래 꽃밭 가까이. 크게 두지 않고 배경에 섞일 정도로만 둔다.
-  { id: "front-left-1", name: "왼 앞꽃숲", className: "row-front row-left forest-edge", state: "balanced", days: 32, x: 15, y: 82, scale: 0.54, opacity: 0.78, depth: 6, tilt: -5, lift: 2, groundOpacity: 0.060, mobileX: 13, mobileY: 83, mobileScale: 0.40 },
-  { id: "front-right-1", name: "오른 앞꽃숲", className: "row-front row-right forest-edge", state: "root-strong", days: 34, x: 86, y: 82, scale: 0.54, opacity: 0.78, depth: 6, tilt: 5, lift: 2, groundOpacity: 0.060, mobileX: 88, mobileY: 83, mobileScale: 0.40 }
+  { id: "back-left-1", name: "먼 왼숲", className: "row-back row-left forest-edge", state: "balanced", days: 82, x: 25, y: 43, scale: 0.34, opacity: 1, depth: 2, tilt: -3, lift: 0, groundOpacity: 0.032, mobileX: 23, mobileY: 44, mobileScale: 0.28 },
+  { id: "back-right-1", name: "먼 오른숲", className: "row-back row-right forest-edge", state: "leaf-strong", days: 86, x: 74, y: 43, scale: 0.34, opacity: 1, depth: 2, tilt: 3, lift: 0, groundOpacity: 0.032, mobileX: 76, mobileY: 44, mobileScale: 0.28 },
+  { id: "mid-left-1", name: "왼 꽃숲", className: "row-mid row-left forest-edge", state: "root-strong", days: 92, x: 18, y: 58, scale: 0.46, opacity: 1, depth: 4, tilt: -4, lift: 1, groundOpacity: 0.048, mobileX: 16, mobileY: 59, mobileScale: 0.36 },
+  { id: "mid-left-2", name: "왼 울타리숲", className: "row-mid row-left forest-edge", state: "balanced", days: 96, x: 30, y: 63, scale: 0.42, opacity: 1, depth: 4, tilt: -2, lift: 1, groundOpacity: 0.046, mobileX: 28, mobileY: 64, mobileScale: 0.34 },
+  { id: "mid-right-1", name: "오른 울타리숲", className: "row-mid row-right forest-edge", state: "balanced", days: 94, x: 70, y: 63, scale: 0.42, opacity: 1, depth: 4, tilt: 2, lift: 1, groundOpacity: 0.046, mobileX: 72, mobileY: 64, mobileScale: 0.34 },
+  { id: "mid-right-2", name: "오른 꽃숲", className: "row-mid row-right forest-edge", state: "leaf-strong", days: 90, x: 84, y: 58, scale: 0.46, opacity: 1, depth: 4, tilt: 4, lift: 1, groundOpacity: 0.048, mobileX: 86, mobileY: 59, mobileScale: 0.36 },
+  { id: "front-left-1", name: "왼 앞꽃숲", className: "row-front row-left forest-edge", state: "balanced", days: 110, x: 15, y: 82, scale: 0.62, opacity: 1, depth: 6, tilt: -5, lift: 2, groundOpacity: 0.062, mobileX: 13, mobileY: 83, mobileScale: 0.46 },
+  { id: "front-right-1", name: "오른 앞꽃숲", className: "row-front row-right forest-edge", state: "root-strong", days: 114, x: 86, y: 82, scale: 0.62, opacity: 1, depth: 6, tilt: 5, lift: 2, groundOpacity: 0.062, mobileX: 88, mobileY: 83, mobileScale: 0.46 }
 ];
 
 
 const worldCommunitySeatSlots = {
-  // 친구 자리도 중앙 공터가 아니라 배경의 자연스러운 경계선 위에 둔다.
-  flower_path: { id: "community-seat-flower_path", name: "기다리는 꽃길나무", className: "row-community community-left forest-edge", state: "balanced", days: 7, x: 31, y: 78, scale: 0.48, opacity: 0.92, depth: 9, tilt: -3, lift: 2, groundOpacity: 0.072, mobileX: 29, mobileY: 79, mobileScale: 0.38 },
-  sunny_spot: { id: "community-seat-sunny_spot", name: "기다리는 햇살나무", className: "row-community community-left-mid forest-edge", state: "leaf-strong", days: 12, x: 36, y: 61, scale: 0.34, opacity: 0.86, depth: 7, tilt: -2, lift: 1, groundOpacity: 0.054, mobileX: 34, mobileY: 62, mobileScale: 0.28 },
-  pond_spot: { id: "community-seat-pond_spot", name: "기다리는 연못나무", className: "row-community community-right-mid forest-edge", state: "root-strong", days: 10, x: 64, y: 61, scale: 0.34, opacity: 0.86, depth: 7, tilt: 2, lift: 1, groundOpacity: 0.054, mobileX: 66, mobileY: 62, mobileScale: 0.28 },
-  swing_spot: { id: "community-seat-swing_spot", name: "기다리는 그네나무", className: "row-community community-right forest-edge", state: "balanced", days: 8, x: 73, y: 78, scale: 0.48, opacity: 0.92, depth: 9, tilt: 3, lift: 2, groundOpacity: 0.072, mobileX: 75, mobileY: 79, mobileScale: 0.38 },
-  flower_fence: { id: "community-seat-flower_fence", name: "기다리는 꽃담나무", className: "row-community community-front forest-edge", state: "leaf-strong", days: 5, x: 83, y: 68, scale: 0.40, opacity: 0.88, depth: 8, tilt: 3, lift: 1, groundOpacity: 0.060, mobileX: 85, mobileY: 69, mobileScale: 0.32 }
+  flower_path: { id: "community-seat-flower_path", name: "기다리는 꽃길나무", className: "row-community community-left forest-edge", state: "balanced", days: 90, x: 31, y: 78, scale: 0.56, opacity: 1, depth: 9, tilt: -3, lift: 2, groundOpacity: 0.074, mobileX: 29, mobileY: 79, mobileScale: 0.44 },
+  sunny_spot: { id: "community-seat-sunny_spot", name: "기다리는 햇살나무", className: "row-community community-left-mid forest-edge", state: "leaf-strong", days: 74, x: 36, y: 61, scale: 0.40, opacity: 1, depth: 7, tilt: -2, lift: 1, groundOpacity: 0.056, mobileX: 34, mobileY: 62, mobileScale: 0.32 },
+  pond_spot: { id: "community-seat-pond_spot", name: "기다리는 연못나무", className: "row-community community-right-mid forest-edge", state: "root-strong", days: 74, x: 64, y: 61, scale: 0.40, opacity: 1, depth: 7, tilt: 2, lift: 1, groundOpacity: 0.056, mobileX: 66, mobileY: 62, mobileScale: 0.32 },
+  swing_spot: { id: "community-seat-swing_spot", name: "기다리는 그네나무", className: "row-community community-right forest-edge", state: "balanced", days: 90, x: 73, y: 78, scale: 0.56, opacity: 1, depth: 9, tilt: 3, lift: 2, groundOpacity: 0.074, mobileX: 75, mobileY: 79, mobileScale: 0.44 },
+  flower_fence: { id: "community-seat-flower_fence", name: "기다리는 꽃담나무", className: "row-community community-front forest-edge", state: "leaf-strong", days: 82, x: 83, y: 68, scale: 0.48, opacity: 1, depth: 8, tilt: 3, lift: 1, groundOpacity: 0.062, mobileX: 85, mobileY: 69, mobileScale: 0.38 }
 };
 
 const worldScreenElement = document.querySelector("#worldScreen");
@@ -2980,9 +2974,9 @@ function createWorldCommunitySeatSlot(seat) {
     ownerName: friendName,
     state: getOnlineSeatMoodState(record),
     days,
-    opacity: Math.min(0.96, Math.max(0.82, (baseSlot.opacity || 0.72) + 0.16)),
-    scale: Math.min(0.72, (baseSlot.scale || 0.54) + 0.08),
-    mobileScale: Math.min(0.56, (baseSlot.mobileScale || 0.44) + 0.06),
+    opacity: 1,
+    scale: Math.min(0.66, (baseSlot.scale || 0.54) + 0.06),
+    mobileScale: Math.min(0.50, (baseSlot.mobileScale || 0.44) + 0.05),
     className: `${baseSlot.className || ""} is-occupied-seat`,
     ariaSource: `${seat.label}에 들어온 ${friendName}님의 실제 나무`
   };
@@ -3296,7 +3290,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.72.8 fix3는 시간대별 전체숲 배경과 나무 원근감 보정 구조로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.72.8 fix4는 시간대별 전체숲 배경과 나무 원근감 보정 구조로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
