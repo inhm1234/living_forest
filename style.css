@@ -18928,7 +18928,7 @@ body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .wor
 }
 
 
-/* ===== V1.72.4 test: 숲길 전체숲판 =====
+/* ===== V1.72.5 test: 숲길 전체숲판 =====
    기준: 공터/슬롯 제거, 숲길 중심, 나무 군락은 양옆과 깊이에 자연스럽게 배치.
 */
 body.lf-v1722-ux:not(.lf-garden-active):not(.online-friend-invite-mode) {
@@ -19283,7 +19283,7 @@ body.lf-v1722-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .wor
 }
 
 
-/* ===== V1.72.4 test: 파스텔 전체숲 배경 적용판 =====
+/* ===== V1.72.5 test: 파스텔 전체숲 배경 적용판 =====
    기준:
    - 전체숲은 정원과 같은 아기자기한 파스텔 그림체를 유지한다.
    - 공터 슬롯/관리 카드/사실적인 숲 배경은 사용하지 않는다.
@@ -19666,7 +19666,7 @@ body.lf-v1723-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .wor
   }
 }
 
-/* ===== V1.72.4 test: 가로형 파스텔 전체숲 고정 무대 =====
+/* ===== V1.72.5 test: 가로형 파스텔 전체숲 고정 무대 =====
    기준:
    - 새 가로형 이미지 assets/world/world_forest_pastel_v1_72_4.png 사용.
    - 전체숲은 긴 페이지가 아니라 한 화면짜리 고정 게임 무대.
@@ -19751,7 +19751,7 @@ body.lf-v1724-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .wor
 }
 
 body.lf-v1724-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
-  content: "V1.72.4 test" !important;
+  content: "V1.72.5 test" !important;
   position: absolute !important;
   top: clamp(10px, 1.6vw, 16px) !important;
   right: clamp(10px, 1.6vw, 16px) !important;
@@ -20213,7 +20213,7 @@ body.lf-v1724-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .wor
 }
 
 
-/* ===== V1.72.4 test hotfix: 전체숲 HUD/여백 복구 =====
+/* ===== V1.72.5 test: 전체숲 HUD/여백 복구 =====
    목적:
    - 이전 V1.72.4에서 상단 글씨/하단 버튼이 사라져 보이는 문제 수정
    - 앱 max-width/캐시/기존 월드 CSS 영향과 무관하게 전체숲을 한 화면 고정 무대로 강제
@@ -20357,7 +20357,7 @@ body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.sc
 
 body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
 body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
-  content: "V1.72.4 test" !important;
+  content: "V1.72.5 test" !important;
   position: fixed !important;
   right: max(16px, env(safe-area-inset-right)) !important;
   top: max(16px, env(safe-area-inset-top)) !important;
@@ -20738,5 +20738,89 @@ body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.sc
     min-height: 33px !important;
     padding: 0 9px !important;
     font-size: 10.4px !important;
+  }
+}
+
+
+/* ===== V1.72.5 test: 전체숲 안정화 polish =====
+   목적:
+   - V1.72.4 hotfix의 마음에 드는 전체숲 방향을 유지한다.
+   - 화면 밖 스크롤/긴 카드/관리 카드가 다시 나타나지 않도록 고정한다.
+   - 버튼과 상단 HUD는 살리고, 내 정원 V1.71.6 구조는 건드리지 않는다.
+*/
+html:has(body.lf-v1725-ux.lf-world-active:not(.online-friend-invite-mode)) {
+  width: 100% !important;
+  height: 100svh !important;
+  min-height: 100svh !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+}
+
+body.lf-v1725-ux.lf-world-active:not(.online-friend-invite-mode),
+body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) {
+  touch-action: manipulation !important;
+}
+
+body.lf-v1725-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
+body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
+  content: "V1.72.5 test" !important;
+}
+
+body.lf-v1725-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero,
+body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero {
+  max-width: calc(100vw - 36px) !important;
+}
+
+body.lf-v1725-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .subtitle,
+body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .subtitle {
+  max-width: 31em !important;
+}
+
+body.lf-v1725-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage,
+body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage {
+  background-color: #edf8d8 !important;
+}
+
+body.lf-v1725-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage::before,
+body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage::before {
+  background:
+    radial-gradient(ellipse at 50% 46%, transparent 0 52%, rgba(255,255,255,0.12) 78%, rgba(116, 83, 105, 0.09) 100%),
+    linear-gradient(90deg, rgba(255,255,255,0.14), transparent 16%, transparent 84%, rgba(255,255,255,0.12)) !important;
+}
+
+body.lf-v1725-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row,
+body.lf-v1725-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions,
+body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row,
+body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions {
+  max-width: calc(100vw - 28px) !important;
+}
+
+body.lf-v1725-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row button,
+body.lf-v1725-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions button,
+body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row button,
+body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions button {
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+@media (max-width: 380px) {
+  body.lf-v1725-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero,
+  body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero {
+    width: min(252px, calc(100vw - 24px)) !important;
+  }
+
+  body.lf-v1725-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row,
+  body.lf-v1725-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions,
+  body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row,
+  body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions {
+    gap: 5px !important;
+  }
+
+  body.lf-v1725-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row button,
+  body.lf-v1725-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions button,
+  body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row button,
+  body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions button {
+    min-width: 47px !important;
+    padding: 0 8px !important;
+    font-size: 10px !important;
   }
 }
