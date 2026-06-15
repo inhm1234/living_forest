@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.72.9 fix1
+// 살아있는 숲 V1.73.0 reset test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.72.9 fix1
-// 목적: 정원은 고정 게임 무대로 유지하고 HUD 버튼은 최소화, 실제 기능은 짧은 전용 팝업으로만 실행
+// 버전명: V1.73.0 reset test
+// 목적: 전체숲 시간대별 전용 배경 이미지를 연결하고 오버레이 실험을 원복
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.72.9 fix1",
+  version: "V1.73.0 reset test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -591,19 +591,21 @@ const friendInviteSeatSlots = [
 let selectedFriendInviteSeatId = "flower_path";
 
 const worldForestSlots = [
-  { id: "back-left-1", name: "먼 왼숲", className: "row-back row-left forest-edge", state: "balanced", days: 80, x: 24, y: 45, scale: 0.42, opacity: 1, depth: 2, tilt: -2, lift: 0, groundOpacity: 0.04, mobileX: 23, mobileY: 46, mobileScale: 0.32 },
-  { id: "back-right-1", name: "먼 오른숲", className: "row-back row-right forest-edge", state: "leaf-strong", days: 80, x: 76, y: 45, scale: 0.42, opacity: 1, depth: 2, tilt: 2, lift: 0, groundOpacity: 0.04, mobileX: 77, mobileY: 46, mobileScale: 0.32 },
-  { id: "mid-left-1", name: "왼 울타리숲", className: "row-mid row-left forest-edge", state: "balanced", days: 95, x: 17, y: 66, scale: 0.56, opacity: 1, depth: 4, tilt: -3, lift: 1, groundOpacity: 0.06, mobileX: 15, mobileY: 67, mobileScale: 0.40 },
-  { id: "mid-right-1", name: "오른 울타리숲", className: "row-mid row-right forest-edge", state: "balanced", days: 95, x: 83, y: 66, scale: 0.56, opacity: 1, depth: 4, tilt: 3, lift: 1, groundOpacity: 0.06, mobileX: 85, mobileY: 67, mobileScale: 0.40 }
+  { id: "citizen-back-left", name: "하루의 나무", ownerName: "루나", state: "balanced", days: 60, x: 24, y: 48, scale: 0.36, mobileX: 23, mobileY: 49, mobileScale: 0.30, depth: 2, tilt: -2 },
+  { id: "citizen-back-right", name: "별잎 나무", ownerName: "모모", state: "leaf-strong", days: 72, x: 76, y: 48, scale: 0.36, mobileX: 77, mobileY: 49, mobileScale: 0.30, depth: 2, tilt: 2 },
+  { id: "citizen-mid-left", name: "다정한 나무", ownerName: "나린", state: "root-strong", days: 88, x: 18, y: 65, scale: 0.50, mobileX: 16, mobileY: 66, mobileScale: 0.40, depth: 4, tilt: -3 },
+  { id: "citizen-mid-right", name: "말랑잎 나무", ownerName: "소미", state: "balanced", days: 84, x: 82, y: 65, scale: 0.50, mobileX: 84, mobileY: 66, mobileScale: 0.40, depth: 4, tilt: 3 },
+  { id: "citizen-front-left", name: "햇살 나무", ownerName: "유리", state: "leaf-strong", days: 96, x: 31, y: 80, scale: 0.60, mobileX: 29, mobileY: 81, mobileScale: 0.46, depth: 6, tilt: -2 },
+  { id: "citizen-front-right", name: "꽃잠 나무", ownerName: "하린", state: "balanced", days: 104, x: 70, y: 80, scale: 0.60, mobileX: 72, mobileY: 81, mobileScale: 0.46, depth: 6, tilt: 2 }
 ];
 
 
 const worldCommunitySeatSlots = {
-  flower_path: { id: "community-seat-flower_path", name: "기다리는 꽃길나무", className: "row-community community-left forest-edge", state: "balanced", days: 90, x: 28, y: 80, scale: 0.68, opacity: 1, depth: 8, tilt: -2, lift: 1, groundOpacity: 0.08, mobileX: 27, mobileY: 81, mobileScale: 0.48 },
-  sunny_spot: { id: "community-seat-sunny_spot", name: "기다리는 햇살나무", className: "row-community community-left-mid forest-edge", state: "leaf-strong", days: 80, x: 34, y: 62, scale: 0.50, opacity: 1, depth: 6, tilt: -2, lift: 0, groundOpacity: 0.06, mobileX: 33, mobileY: 63, mobileScale: 0.38 },
-  pond_spot: { id: "community-seat-pond_spot", name: "기다리는 연못나무", className: "row-community community-right-mid forest-edge", state: "root-strong", days: 80, x: 66, y: 62, scale: 0.50, opacity: 1, depth: 6, tilt: 2, lift: 0, groundOpacity: 0.06, mobileX: 67, mobileY: 63, mobileScale: 0.38 },
-  swing_spot: { id: "community-seat-swing_spot", name: "기다리는 그네나무", className: "row-community community-right forest-edge", state: "balanced", days: 90, x: 72, y: 80, scale: 0.68, opacity: 1, depth: 8, tilt: 2, lift: 1, groundOpacity: 0.08, mobileX: 73, mobileY: 81, mobileScale: 0.48 },
-  flower_fence: { id: "community-seat-flower_fence", name: "기다리는 꽃담나무", className: "row-community community-front forest-edge", state: "leaf-strong", days: 88, x: 82, y: 70, scale: 0.58, opacity: 1, depth: 7, tilt: 3, lift: 0, groundOpacity: 0.07, mobileX: 83, mobileY: 71, mobileScale: 0.42 }
+  flower_path: { id: "community-seat-flower_path", name: "기다리는 꽃길나무", className: "row-community community-left trail-edge", state: "balanced", days: 7, x: 27, y: 79, scale: 0.62, opacity: 0.72, depth: 10, tilt: -5, lift: 10, groundOpacity: 0.062, mobileX: 25, mobileY: 80, mobileScale: 0.48 },
+  sunny_spot: { id: "community-seat-sunny_spot", name: "기다리는 햇살나무", className: "row-community community-back trail-edge", state: "leaf-strong", days: 12, x: 38, y: 62, scale: 0.46, opacity: 0.64, depth: 9, tilt: -3, lift: 5, groundOpacity: 0.048, mobileX: 36, mobileY: 64, mobileScale: 0.36 },
+  pond_spot: { id: "community-seat-pond_spot", name: "기다리는 연못나무", className: "row-community community-back trail-edge", state: "root-strong", days: 10, x: 62, y: 62, scale: 0.46, opacity: 0.64, depth: 9, tilt: 3, lift: 5, groundOpacity: 0.048, mobileX: 64, mobileY: 64, mobileScale: 0.36 },
+  swing_spot: { id: "community-seat-swing_spot", name: "기다리는 그네나무", className: "row-community community-right trail-edge", state: "balanced", days: 8, x: 73, y: 79, scale: 0.62, opacity: 0.72, depth: 10, tilt: 5, lift: 10, groundOpacity: 0.062, mobileX: 75, mobileY: 80, mobileScale: 0.48 },
+  flower_fence: { id: "community-seat-flower_fence", name: "기다리는 꽃담나무", className: "row-community community-front trail-edge", state: "leaf-strong", days: 5, x: 51, y: 83, scale: 0.50, opacity: 0.66, depth: 10, tilt: 0, lift: 9, groundOpacity: 0.056, mobileX: 51, mobileY: 82, mobileScale: 0.40 }
 };
 
 const worldScreenElement = document.querySelector("#worldScreen");
@@ -2728,9 +2730,9 @@ function createWorldAtmosphere(key, forced = false) {
 }
 
 function getWorldAtmosphereInfo() {
-  const forcedWorldTime = urlParams.get("worldTime");
+  const forcedWorldTime = (urlParams.get("worldTime") || "").toLowerCase();
 
-  if (isTestMode && ["day", "sunset", "night"].includes(forcedWorldTime)) {
+  if (["day", "sunset", "night"].includes(forcedWorldTime)) {
     return createWorldAtmosphere(forcedWorldTime, true);
   }
 
@@ -2830,76 +2832,21 @@ function getWorldTimeCycleKey() {
 }
 
 function renderWorldLife(atmosphere = getWorldAtmosphereInfo()) {
-  if (!worldLifeLayerElement) {
-    return;
-  }
-
-  const dateKey = getTodayKey();
-  const cycleKey = getWorldTimeCycleKey();
-  const seed = `${treeData.treeId}-${dateKey}-${cycleKey}-${atmosphere.key}-world-life`;
-  const quietMoment = hashStringToUnitInterval(`${seed}-quiet-moment`) < atmosphere.quietChance;
-  const calmFactor = quietMoment ? 0.42 : 1;
-  const lifeConfigsByTime = {
-    day: [
-      { type: "bird", max: 4, chance: 0.56 },
-      { type: "squirrel", max: 2, chance: 0.3 },
-      { type: "butterfly", max: 5, chance: 0.42 },
-      { type: "firefly", max: 0, chance: 0 },
-      { type: "light", max: 8, chance: 0.44 }
-    ],
-    sunset: [
-      { type: "bird", max: 3, chance: 0.38 },
-      { type: "squirrel", max: 2, chance: 0.25 },
-      { type: "butterfly", max: 2, chance: 0.16 },
-      { type: "firefly", max: 4, chance: 0.26 },
-      { type: "light", max: 10, chance: 0.6 }
-    ],
-    night: [
-      { type: "bird", max: 1, chance: 0.08 },
-      { type: "squirrel", max: 1, chance: 0.08 },
-      { type: "butterfly", max: 0, chance: 0 },
-      { type: "firefly", max: 12, chance: 0.74 },
-      { type: "light", max: 10, chance: 0.58 }
-    ]
-  };
-
-  const lifeConfigs = lifeConfigsByTime[atmosphere.key] || lifeConfigsByTime.day;
-
-  worldLifeLayerElement.innerHTML = lifeConfigs
-    .flatMap((config) => {
-      const count = getWorldLifeCount(`${seed}-${config.type}`, config.max, config.chance * calmFactor);
-      return Array.from({ length: count }, (_, index) => createWorldLifeMarkup(config.type, index, seed));
-    })
-    .join("");
-}
-
-function renderWorldParticles(atmosphere = getWorldAtmosphereInfo()) {
-  if (!worldParticleLayerElement) {
-    return;
-  }
-
-  const dateKey = getTodayKey();
-  const seed = `${treeData.treeId}-${dateKey}-${getWorldTimeCycleKey()}-${atmosphere.key}-world-particles`;
-  const particleCount = atmosphere.particleCount;
-
-  worldParticleLayerElement.innerHTML = Array.from({ length: particleCount }, (_, index) => {
-    const x = 6 + hashStringToUnitInterval(`${seed}-x-${index}`) * 88;
-    const y = 10 + hashStringToUnitInterval(`${seed}-y-${index}`) * 70;
-    const size = 3 + hashStringToUnitInterval(`${seed}-size-${index}`) * (atmosphere.key === "night" ? 6 : 5);
-    const delay = hashStringToUnitInterval(`${seed}-delay-${index}`) * -9;
-    const duration = 8 + hashStringToUnitInterval(`${seed}-duration-${index}`) * (atmosphere.key === "night" ? 10 : 8);
-    return `<span style="--particle-x: ${x.toFixed(1)}%; --particle-y: ${y.toFixed(1)}%; --particle-size: ${size.toFixed(1)}px; --particle-delay: ${delay.toFixed(2)}s; --particle-duration: ${duration.toFixed(2)}s;"></span>`;
-  }).join("");
-}
-
-function renderWorldVisualLayers() {
-  // V1.72.9 fix1: 투명한 초록 얼룩 원인 진단을 위해 전체숲의 생명/파티클 레이어를 비움.
   if (worldLifeLayerElement) {
     worldLifeLayerElement.innerHTML = "";
   }
+}
+
+function renderWorldParticles(atmosphere = getWorldAtmosphereInfo()) {
   if (worldParticleLayerElement) {
     worldParticleLayerElement.innerHTML = "";
   }
+}
+
+function renderWorldVisualLayers() {
+  const atmosphere = renderWorldAtmosphere();
+  renderWorldLife(atmosphere);
+  renderWorldParticles(atmosphere);
 }
 
 function focusMyWorldSpot() {
@@ -2974,9 +2921,9 @@ function createWorldCommunitySeatSlot(seat) {
     ownerName: friendName,
     state: getOnlineSeatMoodState(record),
     days,
-    opacity: 1,
-    scale: Math.min(0.66, (baseSlot.scale || 0.54) + 0.06),
-    mobileScale: Math.min(0.50, (baseSlot.mobileScale || 0.44) + 0.05),
+    opacity: Math.min(0.96, Math.max(0.82, (baseSlot.opacity || 0.72) + 0.16)),
+    scale: Math.min(0.72, (baseSlot.scale || 0.54) + 0.08),
+    mobileScale: Math.min(0.56, (baseSlot.mobileScale || 0.44) + 0.06),
     className: `${baseSlot.className || ""} is-occupied-seat`,
     ariaSource: `${seat.label}에 들어온 ${friendName}님의 실제 나무`
   };
@@ -3005,35 +2952,52 @@ function renderWorldNeighbors() {
     return;
   }
 
-  const communitySlots = getWorldCommunityForestSlots();
+  const dummySlots = worldForestSlots.map((slot) => ({
+    ...slot,
+    source: "dummy",
+    treeName: slot.name,
+    displayOwner: slot.ownerName || "숲친구"
+  }));
 
-  worldNeighborSpotsElement.innerHTML = communitySlots
-    .map((slot) => {
-      const stateLabel = getWorldSlotStateLabel(slot.state);
-      const imageInfo = getTreeImageInfoByDays(slot.days);
-      const sizeClass = getWorldTreeSizeClass(slot.days);
-      const extraClass = slot.className || "";
-      const sourceClass = slot.source ? `is-${slot.source}` : "is-dummy";
-      const ownerLabel = slot.ownerName ? `${slot.ownerName} · ` : "";
-      const sourceLabel = slot.ariaSource || "숲의 나무";
-
-      return `
-        <article
-          class="neighbor-spot slot-${slot.state} ${sizeClass} ${sourceClass} ${extraClass}"
-          data-world-slot-source="${escapeHtml(slot.source || "dummy")}"
-          data-world-seat-id="${escapeHtml(slot.seatId || "")}"
-          style="--slot-x: ${slot.x}%; --slot-y: ${slot.y}%; --slot-scale: ${slot.scale}; --slot-mobile-x: ${slot.mobileX}%; --slot-mobile-y: ${slot.mobileY}%; --slot-mobile-scale: ${slot.mobileScale}; --slot-depth: ${slot.depth || 4}; --slot-z: ${slot.depth || 4}; --slot-tilt: ${slot.tilt || 0}deg; --slot-lift: ${slot.lift || 0}px; --slot-ground-opacity: ${slot.groundOpacity || 0.1};"
-          aria-label="${escapeHtml(ownerLabel)}${escapeHtml(slot.name)}, ${slot.days}일째 자라는 자리, ${stateLabel}, ${escapeHtml(sourceLabel)}"
-        >
-          <span class="neighbor-ground" aria-hidden="true"></span>
-          <div class="neighbor-tree-wrap" aria-hidden="true">
-            <img class="neighbor-tree-image" src="${imageInfo.src}" alt="" />
-          </div>
-          <small>${escapeHtml(slot.source === "real" ? `${slot.ownerName || "친구"}의 나무` : "")}</small>
-        </article>
-      `;
+  const realSlots = friendInviteSeatSlots
+    .map((seat) => {
+      const baseSlot = worldCommunitySeatSlots[seat.id];
+      const record = getOnlineSeatRecord(seat.id);
+      if (!baseSlot || !record) return null;
+      const friendName = sanitizeOnlineText(record.friendName || record.friend_name || "친구", 12) || "친구";
+      const treeName = sanitizeOnlineText(record.treeName || record.tree_name || `${friendName}의 나무`, 16) || `${friendName}의 나무`;
+      return {
+        ...baseSlot,
+        source: "real",
+        treeName,
+        displayOwner: friendName,
+        days: Math.max(60, getOnlineSeatDays(record)),
+        scale: Math.max(0.58, baseSlot.scale || 0.58),
+        mobileScale: Math.max(0.44, baseSlot.mobileScale || 0.44),
+        depth: Math.max(7, baseSlot.depth || 7),
+        tilt: baseSlot.tilt || 0
+      };
     })
-    .join("");
+    .filter(Boolean);
+
+  const slots = [...dummySlots, ...realSlots].sort((a, b) => (a.depth || 0) - (b.depth || 0));
+
+  worldNeighborSpotsElement.innerHTML = slots.map((slot) => {
+    const imageInfo = getTreeImageInfoByDays(Math.max(60, slot.days || 60));
+    const label = `${slot.displayOwner || "숲친구"}의 ${slot.treeName || "나무"}`;
+    return `
+      <article
+        class="forest-citizen-tree ${slot.source === "real" ? "is-real" : "is-dummy"}"
+        data-world-slot-source="${escapeHtml(slot.source)}"
+        style="--citizen-x:${slot.x}%; --citizen-y:${slot.y}%; --citizen-scale:${slot.scale}; --citizen-mobile-x:${slot.mobileX || slot.x}%; --citizen-mobile-y:${slot.mobileY || slot.y}%; --citizen-mobile-scale:${slot.mobileScale || slot.scale}; --citizen-z:${slot.depth || 4}; --citizen-tilt:${slot.tilt || 0}deg;"
+        aria-label="${escapeHtml(label)}"
+      >
+        <span class="citizen-tree-ground" aria-hidden="true"></span>
+        <img class="citizen-tree-image" src="${imageInfo.src}" alt="" />
+        <span class="citizen-tree-label">${escapeHtml(slot.source === "real" ? label : "")}</span>
+      </article>
+    `;
+  }).join("");
 }
 
 function getFriendForestPreview() {
@@ -3289,7 +3253,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.72.9 fix1는 시간대별 전체숲 배경과 나무 원근감 보정 구조로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.73.0 reset test는 시간대별 전체숲 배경 이미지와 기존 Apps Script 저장 구조로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -5846,7 +5810,7 @@ function renderVersionLabels() {
   const demoPillElement = document.querySelector(".demo-pill");
 
   if (versionElements[0]) {
-    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 메뉴 팝업 분리`;
+    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 시간대 배경 연결`;
   }
 
   if (versionElements[1]) {
@@ -5854,7 +5818,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 메뉴 팝업 분리`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 시간대 배경 연결`;
   }
 }
 
@@ -6304,7 +6268,7 @@ function renderTestModeStatus() {
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
   const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 메뉴 팝업 분리 · ${shortTreeId}`;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 시간대 배경 연결 · ${shortTreeId}`;
 }
 
 function setupTestMode() {

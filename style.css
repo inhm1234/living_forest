@@ -20825,7 +20825,7 @@ body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldSc
   }
 }
 
-/* ===== V1.72.9 fix1: 전체숲/내 나무 전체숲 나무 배치/원근감 보정 =====
+/* ===== V1.72.6 test: 전체숲/내 나무 시간대 동기화 =====
    목적:
    - 내 정원과 전체숲이 같은 낮/노을/밤 세계처럼 느껴지게 한다.
    - 전체숲 배경과 전체숲의 내 나무가 시간대 톤을 같이 받게 한다.
@@ -20833,7 +20833,7 @@ body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldSc
 */
 body.lf-v1726-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
 body.lf-v1726-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
-  content: "V1.72.9 fix1" !important;
+  content: "V1.72.6 test" !important;
 }
 
 body.lf-v1726-ux.forest-time-day.lf-world-active:not(.online-friend-invite-mode),
@@ -21029,36 +21029,43 @@ body.lf-v1726-ux #gardenScreen.screen-active .garden-stage.garden-time-night .tr
   box-shadow: 0 0 58px rgba(124, 179, 255, 0.13) !important;
 }
 
-
-/* ===== V1.72.8 fix1: V1.72.6 오버레이 원복 + 시간대별 실제 배경 이미지 강제 연결 ===== */
-body.lf-v1728-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
-body.lf-v1728-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
-  content: "V1.72.9 fix1" !important;
+/* ===== V1.73.0 reset test: 전체숲 시간대별 전용 배경 이미지 연결 =====
+   목적:
+   - V1.72.6의 오버레이/필터 실험을 시각적으로 원복한다.
+   - 전체숲은 낮/노을/밤 전용 이미지 자체로 시간대를 표현한다.
+   - 내 정원 V1.71.6 final polish 구조는 건드리지 않는다.
+*/
+body.lf-v1727-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
+body.lf-v1727-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
+  content: "V1.73.0 reset test" !important;
 }
 
-body.lf-v1728-ux.forest-time-day.lf-world-active:not(.online-friend-invite-mode),
-body.lf-v1728-ux.forest-time-day:not(.lf-garden-active):not(.online-friend-invite-mode) {
+body.lf-v1727-ux.forest-time-day.lf-world-active:not(.online-friend-invite-mode),
+body.lf-v1727-ux.forest-time-day:not(.lf-garden-active):not(.online-friend-invite-mode) {
   background:
-    radial-gradient(circle at 50% 7%, rgba(255, 235, 249, 0.66), transparent 34%),
-    linear-gradient(180deg, #fff7fb 0%, #f1ffe9 100%) !important;
+    radial-gradient(circle at 50% 10%, rgba(255, 232, 248, 0.52), transparent 34%),
+    linear-gradient(180deg, #fff7fb 0%, #effde7 100%) !important;
 }
 
-body.lf-v1728-ux.forest-time-sunset.lf-world-active:not(.online-friend-invite-mode),
-body.lf-v1728-ux.forest-time-sunset:not(.lf-garden-active):not(.online-friend-invite-mode) {
+body.lf-v1727-ux.forest-time-sunset.lf-world-active:not(.online-friend-invite-mode),
+body.lf-v1727-ux.forest-time-sunset:not(.lf-garden-active):not(.online-friend-invite-mode) {
   background:
-    radial-gradient(circle at 64% 8%, rgba(255, 178, 118, 0.38), transparent 32%),
-    linear-gradient(180deg, #fff0e6 0%, #f4ead2 55%, #dfe9cf 100%) !important;
+    radial-gradient(circle at 54% 6%, rgba(255, 177, 118, 0.44), transparent 34%),
+    linear-gradient(180deg, #fff0e4 0%, #f5dfc7 58%, #e7ecd0 100%) !important;
 }
 
-body.lf-v1728-ux.forest-time-night.lf-world-active:not(.online-friend-invite-mode),
-body.lf-v1728-ux.forest-time-night:not(.lf-garden-active):not(.online-friend-invite-mode) {
+body.lf-v1727-ux.forest-time-night.lf-world-active:not(.online-friend-invite-mode),
+body.lf-v1727-ux.forest-time-night:not(.lf-garden-active):not(.online-friend-invite-mode) {
   background:
-    radial-gradient(circle at 66% 5%, rgba(160, 203, 255, 0.18), transparent 33%),
-    linear-gradient(180deg, #101b2e 0%, #0d1e26 48%, #07100f 100%) !important;
+    radial-gradient(circle at 54% 6%, rgba(145, 186, 255, 0.20), transparent 34%),
+    linear-gradient(180deg, #0c1930 0%, #07131f 54%, #06100f 100%) !important;
 }
 
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage {
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage,
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage,
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-day,
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset,
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night {
   background-size: cover !important;
   background-position: center center !important;
   background-repeat: no-repeat !important;
@@ -21066,426 +21073,196 @@ body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .wor
   filter: none !important;
 }
 
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-time-day,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-day {
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-time-day,
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-day {
   background-color: #edf8d8 !important;
   background-image: url("assets/world/world_forest_pastel_v1_72_4.png") !important;
 }
 
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-time-sunset,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset {
-  background-color: #e9aa75 !important;
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-time-sunset,
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset {
+  background-color: #d99867 !important;
   background-image: url("assets/world/world_forest_pastel_v1_72_7_sunset.png") !important;
 }
 
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-time-night,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night {
-  background-color: #17294a !important;
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-time-night,
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night {
+  background-color: #18284a !important;
   background-image: url("assets/world/world_forest_pastel_v1_72_7_night.png") !important;
 }
 
-/* 전용 이미지 자체에 빛/시간대가 들어 있으므로 이전 오버레이는 끈다. */
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage::before,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage::after {
+/* 전용 이미지가 시간대를 담당하므로 V1.72.6식 stage 오버레이는 사용하지 않는다. */
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage::before,
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage::after {
+  display: none !important;
+  content: none !important;
   background: none !important;
   opacity: 0 !important;
-}
-
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-day #myWorldSpot .my-spot-tree-image,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-day #worldNeighborSpots .neighbor-tree-image {
-  filter: drop-shadow(0 8px 12px rgba(0,0,0,var(--slot-shadow,0.22))) blur(var(--slot-blur, 0px)) brightness(var(--slot-brightness, 1)) saturate(var(--slot-sat, 1)) !important;
-}
-
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset #myWorldSpot .my-spot-tree-image,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset #worldNeighborSpots .neighbor-tree-image {
-  filter: drop-shadow(0 8px 13px rgba(0,0,0,var(--slot-shadow,0.24))) blur(var(--slot-blur, 0px)) brightness(calc(var(--slot-brightness, 1) - 0.03)) saturate(calc(var(--slot-sat, 1) + 0.02)) sepia(0.04) !important;
-}
-
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night #myWorldSpot .my-spot-tree-image,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night #worldNeighborSpots .neighbor-tree-image {
-  filter: drop-shadow(0 9px 15px rgba(0,0,0,calc(var(--slot-shadow,0.22) + 0.08))) blur(calc(var(--slot-blur, 0px) + 0.10px)) brightness(calc(var(--slot-brightness, 1) - 0.10)) saturate(calc(var(--slot-sat, 1) - 0.04)) !important;
-}
-
-
-/* V1.72.9 fix1: 유령나무 제거 + 배경 원근에 맞춘 자리 재보정 */
-.world-neighbor-spots {
-  z-index: 8;
-  overflow: hidden;
-}
-
-.neighbor-spot {
-  width: 92px;
-  height: 126px;
-  opacity: 1;
-  filter: none;
-  transform: translate(-50%, calc(-100% + 15px)) scale(var(--slot-scale, 1));
-  transform-origin: center bottom;
-  animation: none;
-}
-
-.neighbor-ground {
-  position: absolute;
-  left: 50%;
-  bottom: 5px;
-  width: 64px;
-  height: 18px;
-  border-radius: 50%;
-  transform: translateX(-50%);
-  opacity: var(--slot-ground-opacity, 0.06);
-  background: radial-gradient(ellipse, rgba(42, 54, 28, 0.58), rgba(42, 45, 23, 0.30) 52%, transparent 76%);
-  filter: blur(1px);
-}
-
-.neighbor-tree-wrap {
-  position: absolute;
-  left: 50%;
-  bottom: 9px;
-  width: 76px;
-  height: 96px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  transform: translateX(-50%) translateY(var(--slot-lift, 0px)) rotate(var(--slot-tilt, 0deg));
-}
-
-.neighbor-tree-shadow {
-  position: absolute;
-  left: 50%;
-  bottom: -8px;
-  width: 108%;
-  max-width: none;
-  transform: translateX(-50%);
-  opacity: calc(var(--slot-ground-opacity, 0.06) * 4.4);
-}
-
-.neighbor-tree-image {
-  position: relative;
-  display: block;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  opacity: var(--slot-opacity, 0.86);
-  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, var(--slot-shadow, 0.24))) brightness(var(--slot-brightness, 1)) saturate(var(--slot-sat, 1));
-}
-
-.row-back .neighbor-tree-image {
-  opacity: max(0.62, var(--slot-opacity, 0.64));
-}
-
-.row-mid .neighbor-tree-image {
-  opacity: max(0.70, var(--slot-opacity, 0.72));
-}
-
-.row-front .neighbor-tree-image,
-.row-community .neighbor-tree-image {
-  opacity: max(0.82, var(--slot-opacity, 0.86));
-}
-
-.row-back .neighbor-ground {
-  opacity: max(0.026, var(--slot-ground-opacity, 0.03));
-  filter: blur(1.3px);
-}
-
-.row-mid .neighbor-ground {
-  opacity: max(0.042, var(--slot-ground-opacity, 0.046));
-}
-
-.row-front .neighbor-ground,
-.row-community .neighbor-ground {
-  opacity: max(0.060, var(--slot-ground-opacity, 0.06));
-}
-
-.neighbor-spot.world-tree-seed .neighbor-tree-wrap { width: 28px; height: 34px; }
-.neighbor-spot.world-tree-sprout .neighbor-tree-wrap { width: 36px; height: 44px; }
-.neighbor-spot.world-tree-sapling .neighbor-tree-wrap { width: 48px; height: 58px; }
-.neighbor-spot.world-tree-young .neighbor-tree-wrap { width: 62px; height: 76px; }
-.neighbor-spot.world-tree-hero .neighbor-tree-wrap { width: 72px; height: 88px; }
-
-.neighbor-spot small {
-  top: auto;
-  bottom: -4px;
-  padding: 2px 7px;
-  font-size: 8.5px;
-  line-height: 1.2;
-  opacity: 0;
-  background: rgba(8, 18, 16, 0.40);
-  border-color: rgba(231, 255, 222, 0.12);
-  color: rgba(242, 255, 233, 0.82);
-  transform: translateX(-50%) scale(0.94);
-}
-
-.row-back small,
-.row-mid small,
-.neighbor-spot.is-seat-dummy small,
-.neighbor-spot.is-dummy small {
-  display: none;
-}
-
-.neighbor-spot.is-real small,
-.world-focus-active .neighbor-spot.is-real small,
-.neighbor-spot.is-real:hover small {
-  display: inline-flex;
-  opacity: 0.78;
-  transform: translateX(-50%) scale(1);
-}
-
-.neighbor-spot.is-real .neighbor-tree-image {
-  opacity: 0.96;
-  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.26)) brightness(1.02) saturate(1.04);
-}
-
-.world-time-sunset .neighbor-ground,
-.world-time-sunset .my-spot-ground-shadow {
-  background: radial-gradient(ellipse, rgba(84, 50, 24, 0.54), rgba(60, 36, 18, 0.28) 54%, transparent 76%);
-}
-
-.world-time-sunset .neighbor-tree-image {
-  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, var(--slot-shadow, 0.24))) brightness(0.98) saturate(1.04) sepia(0.02);
-}
-
-.world-time-night .neighbor-tree-image {
-  filter: drop-shadow(0 9px 14px rgba(0, 0, 0, calc(var(--slot-shadow, 0.24) + 0.08))) brightness(0.88) saturate(0.94);
-}
-
-@media (max-width: 560px) {
-  .neighbor-spot {
-    width: 76px;
-    height: 106px;
-    transform: translate(-50%, calc(-100% + 13px)) scale(var(--slot-mobile-scale, var(--slot-scale, 1)));
-  }
-
-  .neighbor-ground {
-    width: 52px;
-    height: 14px;
-    bottom: 4px;
-  }
-
-  .neighbor-tree-wrap {
-    width: 58px;
-    height: 76px;
-    bottom: 8px;
-  }
-
-  .neighbor-spot.world-tree-seed .neighbor-tree-wrap { width: 22px; height: 28px; }
-  .neighbor-spot.world-tree-sprout .neighbor-tree-wrap { width: 28px; height: 36px; }
-  .neighbor-spot.world-tree-sapling .neighbor-tree-wrap { width: 38px; height: 48px; }
-  .neighbor-spot.world-tree-young .neighbor-tree-wrap { width: 48px; height: 60px; }
-  .neighbor-spot.world-tree-hero .neighbor-tree-wrap { width: 56px; height: 70px; }
-}
-
-
-/* V1.72.9 fix1: 주변 나무 선명화 초기화 */
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot {
-  opacity: 1 !important;
-  filter: none !important;
-}
-
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-tree-image,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-dummy .neighbor-tree-image,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-seat-dummy .neighbor-tree-image,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-real .neighbor-tree-image,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-day #worldNeighborSpots .neighbor-tree-image,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset #worldNeighborSpots .neighbor-tree-image,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night #worldNeighborSpots .neighbor-tree-image {
-  opacity: 1 !important;
-  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.20)) !important;
-  backdrop-filter: none !important;
-}
-
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-ground {
-  opacity: max(0.06, var(--slot-ground-opacity, 0.08)) !important;
-  filter: blur(1px) !important;
-}
-
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .row-back .neighbor-tree-image {
-  opacity: 1 !important;
-}
-
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .row-mid .neighbor-tree-image {
-  opacity: 1 !important;
-}
-
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .row-front .neighbor-tree-image,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .row-community .neighbor-tree-image {
-  opacity: 1 !important;
-}
-
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-tree-wrap {
-  transform: translateX(-50%) translateY(var(--slot-lift, 0px)) rotate(var(--slot-tilt, 0deg)) !important;
-}
-
-/* 전체숲 내 나무를 조금 키워서 배경 속 나무와 존재감 균형 맞춤 */
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .my-world-spot.world-tree-young .my-spot-tree-wrap {
-  width: 142px !important;
-  height: 152px !important;
-}
-
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .my-world-spot.world-tree-hero .my-spot-tree-wrap {
-  width: 154px !important;
-  height: 166px !important;
-}
-
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .my-world-spot .my-spot-tree-image {
-  filter: drop-shadow(0 14px 20px rgba(0,0,0,0.30)) !important;
-}
-
-
-/* V1.72.9 fix1: 주변 나무 효과값 0 초기화 */
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots * {
   mix-blend-mode: normal !important;
 }
 
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot {
+/* 전체숲 안의 나무도 전용 배경과 비교할 수 있도록 과한 시간대 필터를 제거한다. */
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot .my-spot-tree-image,
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-tree-image {
+  filter: drop-shadow(0 8px 13px rgba(0, 0, 0, 0.24)) !important;
   opacity: 1 !important;
-  filter: none !important;
 }
 
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-tree-image,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-dummy .neighbor-tree-image,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-seat-dummy .neighbor-tree-image,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-real .neighbor-tree-image,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-day #worldNeighborSpots .neighbor-tree-image,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset #worldNeighborSpots .neighbor-tree-image,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night #worldNeighborSpots .neighbor-tree-image {
-  opacity: 1 !important;
-  filter: drop-shadow(0 8px 12px rgba(0,0,0,0.20)) !important;
+/* 밤 배경에서는 UI만 살짝 읽기 쉽게 조정한다. 이미지 위에 색을 덮는 효과는 주지 않는다. */
+body.lf-v1727-ux.forest-time-night:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero {
+  background: rgba(24, 33, 54, 0.62) !important;
+  border-color: rgba(218, 233, 255, 0.22) !important;
+  box-shadow: 0 10px 24px rgba(5, 11, 22, 0.22) !important;
+}
+
+body.lf-v1727-ux.forest-time-night:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero h1 {
+  color: rgba(249, 242, 255, 0.95) !important;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.38) !important;
+}
+
+body.lf-v1727-ux.forest-time-night:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .subtitle {
+  color: rgba(238, 242, 255, 0.72) !important;
+}
+
+body.lf-v1727-ux.forest-time-night:not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row button,
+body.lf-v1727-ux.forest-time-night:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions button {
+  background: rgba(238, 244, 255, 0.76) !important;
+  color: rgba(37, 43, 63, 0.90) !important;
+  box-shadow: 0 8px 18px rgba(2, 8, 18, 0.22) !important;
+}
+
+
+/* V1.73.0 reset test: 전체숲 시간대/더미나무 복구 */
+body.lf-v1730-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-time-day,
+body.lf-v1730-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-day {
+  background-image: url("assets/world/world_forest_pastel_v1_72_4.png") !important;
+}
+
+body.lf-v1730-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-time-sunset,
+body.lf-v1730-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset {
+  background-image: url("assets/world/world_forest_pastel_v1_72_7_sunset.png") !important;
+}
+
+body.lf-v1730-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-time-night,
+body.lf-v1730-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night {
+  background-image: url("assets/world/world_forest_pastel_v1_72_7_night.png") !important;
+}
+
+body.lf-v1730-ux #worldLifeLayer,
+body.lf-v1730-ux #worldParticleLayer,
+body.lf-v1730-ux .world-life-item,
+body.lf-v1730-ux .world-particle-layer span {
+  display: none !important;
+}
+
+body.lf-v1730-ux #worldNeighborSpots {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 8 !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+}
+
+body.lf-v1730-ux #worldNeighborSpots .neighbor-spot {
+  display: none !important;
+}
+
+body.lf-v1730-ux #worldNeighborSpots .forest-citizen-tree,
+body.lf-v1730-ux #worldNeighborSpots .forest-citizen-tree * {
+  box-sizing: border-box !important;
+  mix-blend-mode: normal !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-tree-wrap,
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-tree-shadow {
+body.lf-v1730-ux #worldNeighborSpots .forest-citizen-tree {
+  position: absolute !important;
+  left: var(--citizen-x) !important;
+  top: var(--citizen-y) !important;
+  z-index: var(--citizen-z, 4) !important;
+  width: 124px !important;
+  height: 156px !important;
   opacity: 1 !important;
   filter: none !important;
+  transform: translate(-50%, -100%) scale(var(--citizen-scale, 1)) rotate(var(--citizen-tilt, 0deg)) !important;
+  transform-origin: center bottom !important;
 }
 
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-ground {
-  opacity: var(--slot-ground-opacity, 0.06) !important;
+body.lf-v1730-ux #worldNeighborSpots .citizen-tree-ground {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: -3px !important;
+  width: 76px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  opacity: 0.18 !important;
+  transform: translateX(-50%) !important;
+  background: radial-gradient(ellipse, rgba(46, 33, 20, 0.58), rgba(46, 33, 20, 0.22) 52%, transparent 76%) !important;
   filter: blur(1px) !important;
 }
 
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .my-world-spot.world-tree-young .my-spot-tree-wrap {
-  width: 158px !important;
-  height: 168px !important;
+body.lf-v1730-ux #worldNeighborSpots .citizen-tree-image {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: 0 !important;
+  display: block !important;
+  width: 118px !important;
+  height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  opacity: 1 !important;
+  filter: drop-shadow(0 10px 14px rgba(0,0,0,0.24)) !important;
+  transform: translateX(-50%) !important;
 }
 
-body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .my-world-spot.world-tree-hero .my-spot-tree-wrap {
+body.lf-v1730-ux #worldNeighborSpots .forest-citizen-tree.is-real .citizen-tree-image {
+  filter: drop-shadow(0 11px 15px rgba(0,0,0,0.28)) drop-shadow(0 0 10px rgba(255,245,190,0.22)) !important;
+}
+
+body.lf-v1730-ux #worldNeighborSpots .citizen-tree-label {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: -18px !important;
+  transform: translateX(-50%) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 18px !important;
+  padding: 2px 7px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 246, 241, 0.82) !important;
+  color: rgba(92, 65, 88, 0.86) !important;
+  font-size: 9px !important;
+  font-weight: 850 !important;
+  white-space: nowrap !important;
+  opacity: 0 !important;
+}
+
+body.lf-v1730-ux #worldNeighborSpots .forest-citizen-tree.is-real .citizen-tree-label {
+  opacity: 1 !important;
+}
+
+body.lf-v1730-ux #worldScreen.screen-active .my-world-spot.world-tree-young .my-spot-tree-wrap,
+body.lf-v1730-ux #worldScreen.screen-active .my-world-spot.world-tree-hero .my-spot-tree-wrap {
   width: 170px !important;
   height: 182px !important;
 }
 
-
-/* V1.72.9 fix1: 전체숲 주변 나무 선명화 재구성 */
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots,
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots * {
-  mix-blend-mode: normal !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-spot {
-  width: 108px !important;
-  height: 144px !important;
+body.lf-v1730-ux #worldScreen.screen-active .my-world-spot .my-spot-tree-image {
   opacity: 1 !important;
-  filter: none !important;
-  transform: translate(-50%, calc(-100% + 16px)) scale(var(--slot-scale, 1)) !important;
-}
-
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-ground {
-  position: absolute !important;
-  left: 50% !important;
-  bottom: 6px !important;
-  width: 70px !important;
-  height: 18px !important;
-  transform: translateX(-50%) !important;
-  opacity: var(--slot-ground-opacity, 0.06) !important;
-  border-radius: 50% !important;
-  background: radial-gradient(ellipse, rgba(56, 42, 28, 0.34), rgba(56, 42, 28, 0.18) 54%, transparent 76%) !important;
-  filter: blur(1px) !important;
-}
-
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-tree-wrap {
-  position: absolute !important;
-  left: 50% !important;
-  bottom: 9px !important;
-  display: flex !important;
-  align-items: flex-end !important;
-  justify-content: center !important;
-  transform: translateX(-50%) rotate(var(--slot-tilt, 0deg)) !important;
-  opacity: 1 !important;
-  filter: none !important;
-}
-
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .row-back .neighbor-tree-wrap {
-  width: 78px !important;
-  height: 92px !important;
-}
-
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .row-mid .neighbor-tree-wrap {
-  width: 92px !important;
-  height: 110px !important;
-}
-
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .row-front .neighbor-tree-wrap,
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .row-community .neighbor-tree-wrap {
-  width: 108px !important;
-  height: 126px !important;
-}
-
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-tree-shadow {
-  display: none !important;
-}
-
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-tree-image,
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .row-back .neighbor-tree-image,
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .row-mid .neighbor-tree-image,
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .row-front .neighbor-tree-image,
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .row-community .neighbor-tree-image,
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-real .neighbor-tree-image,
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-dummy .neighbor-tree-image,
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-seat-dummy .neighbor-tree-image {
-  display: block !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
-  width: auto !important;
-  height: auto !important;
-  object-fit: contain !important;
-  opacity: 1 !important;
-  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.22)) !important;
-}
-
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-spot small {
-  display: none !important;
-}
-
-body.lf-v1728-ux #worldScreen.screen-active .my-world-spot.world-tree-young .my-spot-tree-wrap,
-body.lf-v1728-ux #worldScreen.screen-active .my-world-spot.world-tree-hero .my-spot-tree-wrap {
-  width: 182px !important;
-  height: 194px !important;
-}
-
-body.lf-v1728-ux #worldScreen.screen-active .my-world-spot .my-spot-tree-image {
   filter: drop-shadow(0 14px 20px rgba(0,0,0,0.30)) !important;
 }
 
+@media (max-width: 560px) {
+  body.lf-v1730-ux #worldNeighborSpots .forest-citizen-tree {
+    left: var(--citizen-mobile-x) !important;
+    top: var(--citizen-mobile-y) !important;
+    width: 100px !important;
+    height: 130px !important;
+    transform: translate(-50%, -100%) scale(var(--citizen-mobile-scale, var(--citizen-scale, 1))) rotate(var(--citizen-tilt, 0deg)) !important;
+  }
 
-/* V1.72.9 fix1: 투명 초록 얼룩 원인 진단용 — 전체숲 생명/파티클 레이어 제거 */
-body.lf-v1728-ux #worldScreen.screen-active #worldLifeLayer,
-body.lf-v1728-ux #worldScreen.screen-active #worldParticleLayer,
-body.lf-v1728-ux #worldScreen.screen-active .world-life-layer,
-body.lf-v1728-ux #worldScreen.screen-active .world-particle-layer,
-body.lf-v1728-ux #worldScreen.screen-active .world-life-item,
-body.lf-v1728-ux #worldScreen.screen-active .world-leaf,
-body.lf-v1728-ux #worldScreen.screen-active .world-animal,
-body.lf-v1728-ux #worldScreen.screen-active .world-particle-layer span {
-  display: none !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-}
-
-/* 주변 나무는 장식 레이어와 분리해서 선명하게 유지 */
-body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-tree-image {
-  opacity: 1 !important;
-  filter: drop-shadow(0 8px 12px rgba(0,0,0,0.22)) !important;
+  body.lf-v1730-ux #worldNeighborSpots .citizen-tree-image {
+    width: 96px !important;
+  }
 }

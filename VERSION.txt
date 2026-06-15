@@ -1,5 +1,7 @@
-살아있는 숲 V1.72.9 fix1
-- 전체숲에서 투명한 초록 얼룩처럼 보이던 요소가 실제 주변 나무가 아니라 world life / particle / effect 계열 레이어일 가능성이 높아 해당 레이어를 테스트용으로 제거
-- worldLifeLayer, worldParticleLayer 렌더링을 비우도록 처리
-- CSS에서도 world-life-item, world-particle-layer, decorative particle 계열을 전체숲에서 숨김
-- 주변 나무 선명화 구조는 유지하되, 이번 버전은 투명 오브젝트의 실제 원인이 장식/파티클 레이어인지 확인하는 진단판
+살아있는 숲 V1.73.0 reset test
+- V1.72.7의 전체숲 시간대 배경 구조를 기준으로 복구
+- worldTime=day/sunset/night 쿼리를 test 모드가 아니어도 적용되도록 수정
+- 이상하게 보이던 worldLife/worldParticle 장식 레이어는 전체숲에서 일단 비활성화
+- 기존 neighbor-spot 기반 더미 나무 렌더링을 쓰지 않고, forest-citizen-tree 새 구조로 더미 유저 나무 표시
+- 실제 유저가 없어도 여러 사람이 키우는 숲처럼 더미 나무가 보이도록 복구
+- 내 정원 V1.71.6 성공 구조는 건드리지 않음
