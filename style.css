@@ -21028,3 +21028,105 @@ body.lf-v1726-ux #gardenScreen.screen-active .garden-stage.garden-time-night .tr
   background: radial-gradient(circle, rgba(176, 216, 255, 0.12), transparent 66%) !important;
   box-shadow: 0 0 58px rgba(124, 179, 255, 0.13) !important;
 }
+
+/* ===== V1.72.7 test: 전체숲 시간대별 전용 배경 이미지 연결 =====
+   목적:
+   - V1.72.6의 오버레이/필터 실험을 시각적으로 원복한다.
+   - 전체숲은 낮/노을/밤 전용 이미지 자체로 시간대를 표현한다.
+   - 내 정원 V1.71.6 final polish 구조는 건드리지 않는다.
+*/
+body.lf-v1727-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
+body.lf-v1727-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
+  content: "V1.72.7 test" !important;
+}
+
+body.lf-v1727-ux.forest-time-day.lf-world-active:not(.online-friend-invite-mode),
+body.lf-v1727-ux.forest-time-day:not(.lf-garden-active):not(.online-friend-invite-mode) {
+  background:
+    radial-gradient(circle at 50% 10%, rgba(255, 232, 248, 0.52), transparent 34%),
+    linear-gradient(180deg, #fff7fb 0%, #effde7 100%) !important;
+}
+
+body.lf-v1727-ux.forest-time-sunset.lf-world-active:not(.online-friend-invite-mode),
+body.lf-v1727-ux.forest-time-sunset:not(.lf-garden-active):not(.online-friend-invite-mode) {
+  background:
+    radial-gradient(circle at 54% 6%, rgba(255, 177, 118, 0.44), transparent 34%),
+    linear-gradient(180deg, #fff0e4 0%, #f5dfc7 58%, #e7ecd0 100%) !important;
+}
+
+body.lf-v1727-ux.forest-time-night.lf-world-active:not(.online-friend-invite-mode),
+body.lf-v1727-ux.forest-time-night:not(.lf-garden-active):not(.online-friend-invite-mode) {
+  background:
+    radial-gradient(circle at 54% 6%, rgba(145, 186, 255, 0.20), transparent 34%),
+    linear-gradient(180deg, #0c1930 0%, #07131f 54%, #06100f 100%) !important;
+}
+
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage,
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage,
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-day,
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset,
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night {
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-blend-mode: normal !important;
+  filter: none !important;
+}
+
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-time-day,
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-day {
+  background-color: #edf8d8 !important;
+  background-image: url("assets/world/world_forest_pastel_v1_72_4.png") !important;
+}
+
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-time-sunset,
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset {
+  background-color: #d99867 !important;
+  background-image: url("assets/world/world_forest_pastel_v1_72_7_sunset.png") !important;
+}
+
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-time-night,
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night {
+  background-color: #18284a !important;
+  background-image: url("assets/world/world_forest_pastel_v1_72_7_night.png") !important;
+}
+
+/* 전용 이미지가 시간대를 담당하므로 V1.72.6식 stage 오버레이는 사용하지 않는다. */
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage::before,
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage::after {
+  display: none !important;
+  content: none !important;
+  background: none !important;
+  opacity: 0 !important;
+  mix-blend-mode: normal !important;
+}
+
+/* 전체숲 안의 나무도 전용 배경과 비교할 수 있도록 과한 시간대 필터를 제거한다. */
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot .my-spot-tree-image,
+body.lf-v1727-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-tree-image {
+  filter: drop-shadow(0 8px 13px rgba(0, 0, 0, 0.24)) !important;
+  opacity: 1 !important;
+}
+
+/* 밤 배경에서는 UI만 살짝 읽기 쉽게 조정한다. 이미지 위에 색을 덮는 효과는 주지 않는다. */
+body.lf-v1727-ux.forest-time-night:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero {
+  background: rgba(24, 33, 54, 0.62) !important;
+  border-color: rgba(218, 233, 255, 0.22) !important;
+  box-shadow: 0 10px 24px rgba(5, 11, 22, 0.22) !important;
+}
+
+body.lf-v1727-ux.forest-time-night:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero h1 {
+  color: rgba(249, 242, 255, 0.95) !important;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.38) !important;
+}
+
+body.lf-v1727-ux.forest-time-night:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .subtitle {
+  color: rgba(238, 242, 255, 0.72) !important;
+}
+
+body.lf-v1727-ux.forest-time-night:not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row button,
+body.lf-v1727-ux.forest-time-night:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions button {
+  background: rgba(238, 244, 255, 0.76) !important;
+  color: rgba(37, 43, 63, 0.90) !important;
+  box-shadow: 0 8px 18px rgba(2, 8, 18, 0.22) !important;
+}

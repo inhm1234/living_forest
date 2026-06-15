@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.72.6 test
+// 살아있는 숲 V1.72.7 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.72.6 test
-// 목적: 정원은 고정 게임 무대로 유지하고 HUD 버튼은 최소화, 실제 기능은 짧은 전용 팝업으로만 실행
+// 버전명: V1.72.7 test
+// 목적: 전체숲 시간대별 전용 배경 이미지를 연결하고 오버레이 실험을 원복
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.72.6 test",
+  version: "V1.72.7 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -3305,7 +3305,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.72.6 test는 시간대 동기화판과 기존 Apps Script 저장 구조로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.72.7 test는 시간대별 전체숲 배경 이미지와 기존 Apps Script 저장 구조로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -5862,7 +5862,7 @@ function renderVersionLabels() {
   const demoPillElement = document.querySelector(".demo-pill");
 
   if (versionElements[0]) {
-    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 메뉴 팝업 분리`;
+    versionElements[0].textContent = `${APP_CONFIG.name} ${APP_CONFIG.version} · 시간대 배경 연결`;
   }
 
   if (versionElements[1]) {
@@ -5870,7 +5870,7 @@ function renderVersionLabels() {
   }
 
   if (demoPillElement) {
-    demoPillElement.textContent = `${APP_CONFIG.version} · 메뉴 팝업 분리`;
+    demoPillElement.textContent = `${APP_CONFIG.version} · 시간대 배경 연결`;
   }
 }
 
@@ -6320,7 +6320,7 @@ function renderTestModeStatus() {
 
   const shortTreeId = treeData.treeId ? treeData.treeId.slice(0, 22) : "tree-id 없음";
   const storageMode = treeData.storageInfo?.mode || STORAGE_CONFIG.mode;
-  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 메뉴 팝업 분리 · ${shortTreeId}`;
+  testModeDataInfoElement.textContent = `${APP_CONFIG.version} · schema ${treeData.dataSchemaVersion} · ${storageMode} · 시간대 배경 연결 · ${shortTreeId}`;
 }
 
 function setupTestMode() {
