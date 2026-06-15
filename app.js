@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.72.8 fix2
+// 살아있는 숲 V1.72.8 fix3
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.72.8 fix2
+// 버전명: V1.72.8 fix3
 // 목적: 정원은 고정 게임 무대로 유지하고 HUD 버튼은 최소화, 실제 기능은 짧은 전용 팝업으로만 실행
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.72.8 fix2",
+  version: "V1.72.8 fix3",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -3028,7 +3028,7 @@ function renderWorldNeighbors() {
           class="neighbor-spot slot-${slot.state} ${sizeClass} ${sourceClass} ${extraClass}"
           data-world-slot-source="${escapeHtml(slot.source || "dummy")}"
           data-world-seat-id="${escapeHtml(slot.seatId || "")}"
-          style="--slot-x: ${slot.x}%; --slot-y: ${slot.y}%; --slot-scale: ${slot.scale}; --slot-opacity: ${slot.opacity}; --slot-mobile-x: ${slot.mobileX}%; --slot-mobile-y: ${slot.mobileY}%; --slot-mobile-scale: ${slot.mobileScale}; --slot-depth: ${slot.depth || 4}; --slot-z: ${slot.depth || 4}; --slot-tilt: ${slot.tilt || 0}deg; --slot-lift: ${slot.lift || 0}px; --slot-ground-opacity: ${slot.groundOpacity || 0.1}; --slot-blur: ${(slot.scale < 0.7 ? 0.7 : slot.scale < 0.9 ? 0.35 : slot.scale > 1.2 ? 0.08 : 0.18).toFixed(2)}px; --slot-brightness: ${(slot.source === "real" ? 1.04 : slot.depth <= 2 ? 0.88 : slot.depth <= 4 ? 0.95 : slot.depth >= 8 ? 0.99 : 1).toFixed(2)}; --slot-sat: ${(slot.source === "real" ? 1.08 : slot.depth <= 2 ? 0.88 : slot.depth <= 4 ? 0.94 : 1).toFixed(2)}; --slot-shadow: ${(slot.source === "real" ? 0.28 : slot.depth <= 2 ? 0.16 : slot.depth <= 4 ? 0.2 : slot.depth >= 8 ? 0.24 : 0.22).toFixed(2)};"
+          style="--slot-x: ${slot.x}%; --slot-y: ${slot.y}%; --slot-scale: ${slot.scale}; --slot-opacity: 1; --slot-mobile-x: ${slot.mobileX}%; --slot-mobile-y: ${slot.mobileY}%; --slot-mobile-scale: ${slot.mobileScale}; --slot-depth: ${slot.depth || 4}; --slot-z: ${slot.depth || 4}; --slot-tilt: ${slot.tilt || 0}deg; --slot-lift: ${slot.lift || 0}px; --slot-ground-opacity: ${slot.groundOpacity || 0.1}; --slot-blur: 0px; --slot-brightness: 1; --slot-sat: 1; --slot-shadow: ${(slot.source === "real" ? 0.28 : slot.depth <= 2 ? 0.16 : slot.depth <= 4 ? 0.2 : slot.depth >= 8 ? 0.24 : 0.22).toFixed(2)};"
           aria-label="${escapeHtml(ownerLabel)}${escapeHtml(slot.name)}, ${slot.days}일째 자라는 자리, ${stateLabel}, ${escapeHtml(sourceLabel)}"
         >
           <span class="neighbor-ground" aria-hidden="true"></span>
@@ -3296,7 +3296,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.72.8 fix2는 시간대별 전체숲 배경과 나무 원근감 보정 구조로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.72.8 fix3는 시간대별 전체숲 배경과 나무 원근감 보정 구조로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
