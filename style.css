@@ -20824,3 +20824,207 @@ body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldSc
     font-size: 10px !important;
   }
 }
+
+/* ===== V1.72.6 test: 전체숲/내 나무 시간대 동기화 =====
+   목적:
+   - 내 정원과 전체숲이 같은 낮/노을/밤 세계처럼 느껴지게 한다.
+   - 전체숲 배경과 전체숲의 내 나무가 시간대 톤을 같이 받게 한다.
+   - 내 정원 레이아웃은 건드리지 않고, 나무 이미지 톤만 시간대에 맞춘다.
+*/
+body.lf-v1726-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
+body.lf-v1726-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
+  content: "V1.72.6 test" !important;
+}
+
+body.lf-v1726-ux.forest-time-day.lf-world-active:not(.online-friend-invite-mode),
+body.lf-v1726-ux.forest-time-day:not(.lf-garden-active):not(.online-friend-invite-mode) {
+  background:
+    radial-gradient(circle at 50% 7%, rgba(255, 235, 249, 0.72), transparent 34%),
+    radial-gradient(circle at 15% 86%, rgba(217, 246, 255, 0.34), transparent 34%),
+    linear-gradient(180deg, #fff7fb 0%, #f1ffe9 100%) !important;
+}
+
+body.lf-v1726-ux.forest-time-sunset.lf-world-active:not(.online-friend-invite-mode),
+body.lf-v1726-ux.forest-time-sunset:not(.lf-garden-active):not(.online-friend-invite-mode) {
+  background:
+    radial-gradient(circle at 64% 8%, rgba(255, 173, 112, 0.48), transparent 32%),
+    radial-gradient(circle at 15% 86%, rgba(255, 196, 214, 0.24), transparent 35%),
+    linear-gradient(180deg, #fff0e6 0%, #f4ead2 55%, #dfe9cf 100%) !important;
+}
+
+body.lf-v1726-ux.forest-time-night.lf-world-active:not(.online-friend-invite-mode),
+body.lf-v1726-ux.forest-time-night:not(.lf-garden-active):not(.online-friend-invite-mode) {
+  background:
+    radial-gradient(circle at 66% 5%, rgba(160, 203, 255, 0.20), transparent 33%),
+    radial-gradient(circle at 14% 84%, rgba(130, 112, 196, 0.14), transparent 36%),
+    linear-gradient(180deg, #101b2e 0%, #0d1e26 48%, #07100f 100%) !important;
+}
+
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-time-day,
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-day {
+  background-color: #edf8d8 !important;
+  background-image:
+    radial-gradient(circle at 50% 12%, rgba(255, 255, 228, 0.16), transparent 29%),
+    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)),
+    url("assets/world/world_forest_pastel_v1_72_4.png") !important;
+  background-blend-mode: screen, soft-light, normal !important;
+  filter: none !important;
+}
+
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-time-sunset,
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset {
+  background-color: #e1a174 !important;
+  background-image:
+    radial-gradient(circle at 68% 16%, rgba(255, 198, 116, 0.48), transparent 31%),
+    linear-gradient(180deg, rgba(255, 159, 95, 0.30) 0%, rgba(210, 95, 93, 0.18) 48%, rgba(122, 83, 72, 0.20) 100%),
+    url("assets/world/world_forest_pastel_v1_72_4.png") !important;
+  background-blend-mode: screen, soft-light, normal !important;
+  filter: none !important;
+}
+
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-time-night,
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night {
+  background-color: #1b2d4c !important;
+  background-image:
+    radial-gradient(circle at 70% 13%, rgba(209, 232, 255, 0.28), transparent 27%),
+    linear-gradient(180deg, rgba(37, 63, 112, 0.48) 0%, rgba(21, 44, 68, 0.46) 50%, rgba(6, 14, 22, 0.54) 100%),
+    url("assets/world/world_forest_pastel_v1_72_4.png") !important;
+  background-blend-mode: screen, multiply, normal !important;
+  filter: none !important;
+}
+
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-day::before {
+  background:
+    radial-gradient(ellipse at 50% 45%, transparent 0 50%, rgba(255, 255, 255, 0.12) 78%, rgba(116, 83, 105, 0.09) 100%),
+    linear-gradient(90deg, rgba(255,255,255,0.14), transparent 16%, transparent 84%, rgba(255,255,255,0.12)) !important;
+  opacity: 1 !important;
+}
+
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset::before {
+  background:
+    radial-gradient(circle at 68% 18%, rgba(255, 183, 109, 0.28), transparent 35%),
+    radial-gradient(ellipse at 50% 46%, transparent 0 44%, rgba(255, 199, 159, 0.20) 72%, rgba(135, 72, 83, 0.18) 100%),
+    linear-gradient(90deg, rgba(255, 222, 195, 0.18), transparent 18%, transparent 82%, rgba(255, 180, 170, 0.16)) !important;
+  opacity: 1 !important;
+}
+
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night::before {
+  background:
+    radial-gradient(circle at 70% 13%, rgba(204, 231, 255, 0.20), transparent 31%),
+    radial-gradient(ellipse at 50% 48%, transparent 0 40%, rgba(44, 66, 103, 0.28) 70%, rgba(7, 14, 28, 0.42) 100%),
+    linear-gradient(90deg, rgba(136, 173, 220, 0.10), transparent 20%, transparent 80%, rgba(104, 135, 190, 0.12)) !important;
+  opacity: 1 !important;
+}
+
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-day::after {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 36%, rgba(255, 246, 252, 0.07) 100%),
+    radial-gradient(ellipse at 50% 102%, rgba(106, 73, 96, 0.09), transparent 48%) !important;
+}
+
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset::after {
+  background:
+    linear-gradient(180deg, rgba(255, 227, 195, 0.12) 0%, rgba(255, 168, 124, 0.08) 36%, rgba(81, 45, 52, 0.20) 100%),
+    radial-gradient(ellipse at 50% 104%, rgba(120, 61, 78, 0.18), transparent 50%) !important;
+}
+
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night::after {
+  background:
+    linear-gradient(180deg, rgba(168, 207, 255, 0.06) 0%, rgba(30, 49, 82, 0.18) 42%, rgba(2, 8, 16, 0.42) 100%),
+    radial-gradient(ellipse at 50% 104%, rgba(2, 8, 16, 0.38), transparent 54%) !important;
+}
+
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset .world-hero,
+body.lf-v1726-ux.forest-time-sunset:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero {
+  background: rgba(255, 239, 228, 0.64) !important;
+  border-color: rgba(255, 255, 255, 0.62) !important;
+}
+
+body.lf-v1726-ux.forest-time-night:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero {
+  background: rgba(24, 33, 54, 0.62) !important;
+  border-color: rgba(218, 233, 255, 0.22) !important;
+  box-shadow: 0 10px 24px rgba(5, 11, 22, 0.22) !important;
+}
+
+body.lf-v1726-ux.forest-time-night:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero h1 {
+  color: rgba(249, 242, 255, 0.95) !important;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.38) !important;
+}
+
+body.lf-v1726-ux.forest-time-night:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .subtitle {
+  color: rgba(238, 242, 255, 0.72) !important;
+}
+
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-day #myWorldSpot .my-spot-tree-image,
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-day #worldNeighborSpots .neighbor-tree-image {
+  filter: drop-shadow(0 6px 10px rgba(94, 66, 80, 0.16)) brightness(1.02) saturate(1.02) !important;
+}
+
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset #myWorldSpot .my-spot-tree-image {
+  filter: drop-shadow(0 7px 12px rgba(86, 55, 58, 0.26)) brightness(0.88) saturate(0.82) sepia(0.22) hue-rotate(-12deg) !important;
+}
+
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset #worldNeighborSpots .neighbor-tree-image {
+  filter: drop-shadow(0 6px 10px rgba(86, 55, 58, 0.20)) brightness(0.90) saturate(0.82) sepia(0.18) hue-rotate(-10deg) !important;
+}
+
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night #myWorldSpot .my-spot-tree-image {
+  filter: drop-shadow(0 8px 14px rgba(2, 8, 18, 0.46)) brightness(0.62) saturate(0.74) sepia(0.10) hue-rotate(172deg) !important;
+  opacity: 0.94 !important;
+}
+
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night #worldNeighborSpots .neighbor-tree-image {
+  filter: drop-shadow(0 7px 12px rgba(2, 8, 18, 0.40)) brightness(0.60) saturate(0.68) sepia(0.10) hue-rotate(172deg) !important;
+  opacity: 0.86 !important;
+}
+
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset #myWorldSpot .my-spot-name,
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset #worldNeighborSpots .neighbor-spot.is-real small,
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset #worldNeighborSpots .neighbor-spot.is-occupied-seat small {
+  background: rgba(255, 238, 223, 0.76) !important;
+  color: rgba(82, 55, 58, 0.88) !important;
+}
+
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night #myWorldSpot .my-spot-name,
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night #worldNeighborSpots .neighbor-spot.is-real small,
+body.lf-v1726-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night #worldNeighborSpots .neighbor-spot.is-occupied-seat small {
+  background: rgba(31, 43, 64, 0.72) !important;
+  border-color: rgba(222, 238, 255, 0.28) !important;
+  color: rgba(242, 247, 255, 0.86) !important;
+  box-shadow: 0 7px 14px rgba(2, 8, 18, 0.24) !important;
+}
+
+body.lf-v1726-ux.forest-time-sunset:not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row button,
+body.lf-v1726-ux.forest-time-sunset:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions button {
+  background: rgba(255, 238, 224, 0.78) !important;
+  color: rgba(84, 57, 61, 0.88) !important;
+}
+
+body.lf-v1726-ux.forest-time-night:not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row button,
+body.lf-v1726-ux.forest-time-night:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions button {
+  background: rgba(238, 244, 255, 0.76) !important;
+  color: rgba(37, 43, 63, 0.90) !important;
+  box-shadow: 0 8px 18px rgba(2, 8, 18, 0.22) !important;
+}
+
+body.lf-v1726-ux #gardenScreen.screen-active .garden-stage.garden-time-day .tree-image {
+  filter: drop-shadow(0 16px 24px rgba(32, 52, 27, 0.26)) brightness(1.02) saturate(1.02) !important;
+}
+
+body.lf-v1726-ux #gardenScreen.screen-active .garden-stage.garden-time-sunset .tree-image {
+  filter: drop-shadow(0 17px 25px rgba(71, 38, 27, 0.32)) brightness(0.90) saturate(0.84) sepia(0.20) hue-rotate(-12deg) !important;
+}
+
+body.lf-v1726-ux #gardenScreen.screen-active .garden-stage.garden-time-night .tree-image {
+  filter: drop-shadow(0 18px 28px rgba(0, 8, 18, 0.48)) brightness(0.66) saturate(0.72) sepia(0.10) hue-rotate(172deg) !important;
+}
+
+body.lf-v1726-ux #gardenScreen.screen-active .garden-stage.garden-time-sunset .tree-glow {
+  background: radial-gradient(circle, rgba(255, 198, 129, 0.17), transparent 66%) !important;
+  box-shadow: 0 0 62px rgba(255, 170, 110, 0.16) !important;
+}
+
+body.lf-v1726-ux #gardenScreen.screen-active .garden-stage.garden-time-night .tree-glow {
+  background: radial-gradient(circle, rgba(176, 216, 255, 0.12), transparent 66%) !important;
+  box-shadow: 0 0 58px rgba(124, 179, 255, 0.13) !important;
+}

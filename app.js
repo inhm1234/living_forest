@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.72.5 test
+// 살아있는 숲 V1.72.6 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.72.5 test
+// 버전명: V1.72.6 test
 // 목적: 정원은 고정 게임 무대로 유지하고 HUD 버튼은 최소화, 실제 기능은 짧은 전용 팝업으로만 실행
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.72.5 test",
+  version: "V1.72.6 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -2778,6 +2778,9 @@ function renderWorldAtmosphere() {
 
   if (document.body) {
     document.body.dataset.worldTime = atmosphere.key;
+    document.body.dataset.forestTime = atmosphere.key;
+    document.body.classList.remove("forest-time-day", "forest-time-sunset", "forest-time-night");
+    document.body.classList.add(`forest-time-${atmosphere.key}`);
   }
 
   if (worldTimeBadgeElement) {
@@ -3302,7 +3305,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.72.5 test는 HUD 마감판과 기존 Apps Script 저장 구조로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.72.6 test는 시간대 동기화판과 기존 Apps Script 저장 구조로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -5880,6 +5883,13 @@ function renderGardenAtmosphere() {
     skyElement.classList.add(`garden-time-${atmosphere.key}`);
     skyElement.dataset.gardenTime = atmosphere.key;
     skyElement.setAttribute("aria-label", `내 ${gardenPlaceLabel}`);
+  }
+
+  if (document.body) {
+    document.body.dataset.gardenTime = atmosphere.key;
+    document.body.dataset.forestTime = atmosphere.key;
+    document.body.classList.remove("forest-time-day", "forest-time-sunset", "forest-time-night");
+    document.body.classList.add(`forest-time-${atmosphere.key}`);
   }
 
   if (gardenTitleElement) {
