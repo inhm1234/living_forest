@@ -18609,3 +18609,320 @@ body.lf-v1720-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .nei
     font-size: 10px !important;
   }
 }
+
+/* ===== V1.72.1 test: 전체숲 밀도/고정 무대 보정 =====
+   합격 기준: 스크롤 없음, 한 화면, 여러 나무 밀도, 구형 카드 비노출.
+*/
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active {
+  --world-stage-size: min(760px, calc(100vw - 28px), calc(100svh - 86px));
+  display: grid !important;
+  grid-template-rows: auto auto !important;
+  place-content: center !important;
+  place-items: center !important;
+  width: 100% !important;
+  height: 100svh !important;
+  min-height: 0 !important;
+  max-height: 100svh !important;
+  overflow: hidden !important;
+  padding: clamp(7px, 1svh, 12px) clamp(8px, 1.6vw, 16px) !important;
+  gap: clamp(5px, 0.8svh, 8px) !important;
+  box-sizing: border-box !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero {
+  width: var(--world-stage-size) !important;
+  max-width: calc(100vw - 28px) !important;
+  min-width: 0 !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  display: grid !important;
+  grid-template-columns: 1fr auto !important;
+  grid-template-areas:
+    "title version"
+    "subtitle version" !important;
+  align-items: center !important;
+  gap: 1px 8px !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  text-align: left !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero h1 {
+  grid-area: title !important;
+  margin: 0 !important;
+  font-size: clamp(22px, 3.45svh, 30px) !important;
+  line-height: 0.98 !important;
+  letter-spacing: -0.055em !important;
+  color: #493a49 !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .subtitle {
+  grid-area: subtitle !important;
+  margin: 0 !important;
+  font-size: clamp(10.2px, 1.25svh, 12px) !important;
+  line-height: 1.05 !important;
+  font-weight: 750 !important;
+  color: rgba(74, 57, 72, 0.72) !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .version,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .demo-pill {
+  grid-area: version !important;
+  justify-self: end !important;
+  align-self: center !important;
+  margin: 0 !important;
+  min-height: 25px !important;
+  padding: 4px 10px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,0.52) !important;
+  background: rgba(255,255,255,0.70) !important;
+  box-shadow: 0 5px 12px rgba(66,42,58,0.07) !important;
+  color: rgba(76,53,70,0.74) !important;
+  font-size: 10.2px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .version {
+  display: none !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card.visual-card {
+  position: relative !important;
+  width: var(--world-stage-size) !important;
+  height: auto !important;
+  aspect-ratio: 1 / 1 !important;
+  max-width: calc(100vw - 28px) !important;
+  max-height: calc(100svh - 72px) !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border-radius: clamp(24px, 3vw, 32px) !important;
+  border: 1px solid rgba(255,255,255,0.58) !important;
+  background: rgba(255,255,255,0.20) !important;
+  box-shadow: 0 22px 56px rgba(13,10,22,0.24), inset 0 1px 0 rgba(255,255,255,0.56) !important;
+  transform: none !important;
+  box-sizing: border-box !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  border-radius: inherit !important;
+  overflow: hidden !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  box-sizing: border-box !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #launchGuideCard,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldGrowthCard,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #friendForestCard,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #friendLinksCard,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #friendInviteCard,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldPlaceCard,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #firstVisitGuide,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #dailyLoopCard,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #forestInviteCard,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #onlineFriendJoinCard,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStarterFriends,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-empty-slots {
+  display: none !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-density-fallback {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 8 !important;
+  pointer-events: none !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-fill-tree {
+  position: absolute !important;
+  left: var(--fill-x, 50%) !important;
+  top: var(--fill-y, 62%) !important;
+  width: var(--fill-w, 58px) !important;
+  height: calc(var(--fill-w, 58px) * 1.22) !important;
+  transform: translate(-50%, -50%) rotate(var(--fill-r, 0deg)) scale(var(--fill-s, 1)) !important;
+  transform-origin: bottom center !important;
+  background: var(--fill-img, url("assets/garden/tree-young-v2.png")) center bottom / contain no-repeat !important;
+  opacity: var(--fill-o, 0.82) !important;
+  filter: drop-shadow(0 7px 10px rgba(31, 45, 33, 0.16)) saturate(0.94) brightness(0.98) !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-fill-tree::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 50% !important;
+  bottom: 2px !important;
+  width: 72% !important;
+  height: 14% !important;
+  border-radius: 999px !important;
+  transform: translateX(-50%) !important;
+  background: radial-gradient(ellipse, rgba(73, 83, 52, 0.18), transparent 68%) !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .fill-a { --fill-x: 18%; --fill-y: 55%; --fill-w: 54px; --fill-s: .86; --fill-r: -7deg; --fill-o: .70; }
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .fill-b { --fill-x: 30%; --fill-y: 52%; --fill-w: 48px; --fill-s: .82; --fill-r: -3deg; --fill-o: .64; --fill-img: url("assets/garden/tree-sapling-v2.png"); }
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .fill-c { --fill-x: 43%; --fill-y: 56%; --fill-w: 50px; --fill-s: .80; --fill-r: 2deg; --fill-o: .64; --fill-img: url("assets/garden/tree-young-v1.png"); }
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .fill-d { --fill-x: 58%; --fill-y: 56%; --fill-w: 50px; --fill-s: .80; --fill-r: -2deg; --fill-o: .64; --fill-img: url("assets/garden/tree-sapling-v1.png"); }
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .fill-e { --fill-x: 70%; --fill-y: 52%; --fill-w: 48px; --fill-s: .82; --fill-r: 4deg; --fill-o: .64; --fill-img: url("assets/garden/tree-young-v1.png"); }
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .fill-f { --fill-x: 83%; --fill-y: 55%; --fill-w: 54px; --fill-s: .86; --fill-r: 7deg; --fill-o: .70; }
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .fill-g { --fill-x: 14%; --fill-y: 70%; --fill-w: 70px; --fill-s: .95; --fill-r: -8deg; --fill-o: .78; --fill-img: url("assets/garden/tree-early-tree-v1.png"); }
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .fill-h { --fill-x: 27%; --fill-y: 74%; --fill-w: 76px; --fill-s: 1; --fill-r: -5deg; --fill-o: .82; --fill-img: url("assets/garden/tree-young-canopy-v1.png"); }
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .fill-i { --fill-x: 39%; --fill-y: 71%; --fill-w: 62px; --fill-s: .92; --fill-r: -2deg; --fill-o: .74; --fill-img: url("assets/garden/tree-sapling-v2.png"); }
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .fill-j { --fill-x: 61%; --fill-y: 71%; --fill-w: 62px; --fill-s: .92; --fill-r: 2deg; --fill-o: .74; --fill-img: url("assets/garden/tree-sapling-v1.png"); }
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .fill-k { --fill-x: 74%; --fill-y: 74%; --fill-w: 76px; --fill-s: 1; --fill-r: 5deg; --fill-o: .82; --fill-img: url("assets/garden/tree-young-canopy-v1.png"); }
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .fill-l { --fill-x: 87%; --fill-y: 70%; --fill-w: 70px; --fill-s: .95; --fill-r: 8deg; --fill-o: .78; --fill-img: url("assets/garden/tree-early-tree-v1.png"); }
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .fill-m { --fill-x: 48%; --fill-y: 66%; --fill-w: 52px; --fill-s: .82; --fill-r: -1deg; --fill-o: .56; --fill-img: url("assets/garden/tree-sprout-v2.png"); }
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .fill-n { --fill-x: 52%; --fill-y: 73%; --fill-w: 56px; --fill-s: .86; --fill-r: 1deg; --fill-o: .56; --fill-img: url("assets/garden/tree-sprout-v1.png"); }
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots {
+  z-index: 12 !important;
+  pointer-events: none !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot {
+  display: block !important;
+  opacity: min(1, calc(var(--slot-opacity, 0.72) * 1.18)) !important;
+  transform: translate(-50%, -50%) translateY(var(--slot-lift, 0px)) rotate(var(--slot-tilt, 0deg)) scale(calc(var(--slot-scale, 1) * 1.18)) !important;
+  filter: drop-shadow(0 8px 12px rgba(33, 45, 34, var(--slot-shadow, 0.18))) !important;
+  overflow: visible !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-tree-image {
+  display: block !important;
+  opacity: 1 !important;
+  filter: drop-shadow(0 6px 9px rgba(34, 45, 34, 0.14)) brightness(0.98) saturate(0.94) !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .row-far .neighbor-tree-wrap { width: 40px !important; height: 54px !important; }
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .row-mid .neighbor-tree-wrap { width: 54px !important; height: 74px !important; }
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .row-near .neighbor-tree-wrap { width: 72px !important; height: 96px !important; }
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .row-front .neighbor-tree-wrap { width: 88px !important; height: 116px !important; }
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .row-community .neighbor-tree-wrap { width: 78px !important; height: 104px !important; }
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .row-community.is-real .neighbor-tree-wrap,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-real .neighbor-tree-wrap { width: 90px !important; height: 120px !important; }
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-dummy,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-seat-dummy {
+  opacity: max(0.70, calc(var(--slot-opacity, 0.72) * 1.02)) !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-dummy small,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-seat-dummy small {
+  display: none !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-real small,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-occupied-seat small {
+  display: inline-flex !important;
+  opacity: 1 !important;
+  bottom: -3px !important;
+  background: rgba(255,255,255,0.72) !important;
+  color: rgba(73,48,66,0.88) !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot.my-world-spot {
+  left: 50% !important;
+  bottom: clamp(38px, 6.2%, 54px) !important;
+  z-index: 18 !important;
+  width: clamp(88px, 15%, 112px) !important;
+  transform: translateX(-50%) !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot .my-spot-name {
+  opacity: 0.82 !important;
+  font-size: 10.5px !important;
+  padding: 3px 8px !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot .my-spot-status {
+  display: none !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-summary {
+  left: 13px !important;
+  bottom: 13px !important;
+  max-width: min(285px, calc(100% - 245px)) !important;
+  padding: 5px 9px !important;
+  background: rgba(255,255,255,0.58) !important;
+  border-color: rgba(255,255,255,0.42) !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-summary-text {
+  font-size: 10.2px !important;
+  line-height: 1.12 !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions {
+  right: 13px !important;
+  bottom: 13px !important;
+  gap: 7px !important;
+}
+
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row button,
+body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions button {
+  min-width: 48px !important;
+  min-height: 31px !important;
+  padding: 0 10px !important;
+  font-size: 10.8px !important;
+}
+
+@media (max-height: 760px) {
+  body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active {
+    --world-stage-size: min(700px, calc(100vw - 20px), calc(100svh - 76px));
+  }
+}
+
+@media (max-width: 520px) {
+  body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active {
+    --world-stage-size: min(calc(100vw - 12px), calc(100svh - 68px));
+    padding: max(6px, env(safe-area-inset-top)) 6px max(6px, env(safe-area-inset-bottom)) !important;
+    gap: 4px !important;
+  }
+
+  body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero {
+    grid-template-columns: 1fr !important;
+    grid-template-areas: "title" "subtitle" !important;
+    width: var(--world-stage-size) !important;
+  }
+
+  body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .demo-pill,
+  body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .version {
+    display: none !important;
+  }
+
+  body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-summary {
+    left: 10px !important;
+    bottom: 50px !important;
+    max-width: calc(100% - 20px) !important;
+  }
+
+  body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row,
+  body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions {
+    right: 10px !important;
+    bottom: max(10px, env(safe-area-inset-bottom)) !important;
+    gap: 6px !important;
+  }
+
+  body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-fill-tree {
+    width: calc(var(--fill-w, 58px) * 0.82) !important;
+  }
+
+  body.lf-v1721-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot {
+    transform: translate(-50%, -50%) translateY(var(--slot-lift, 0px)) rotate(var(--slot-tilt, 0deg)) scale(calc(var(--slot-mobile-scale, var(--slot-scale, 1)) * 1.18)) !important;
+    left: var(--slot-mobile-x, var(--slot-x, 50%)) !important;
+    top: var(--slot-mobile-y, var(--slot-y, 50%)) !important;
+  }
+}
