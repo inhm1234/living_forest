@@ -17962,3 +17962,153 @@ body.lf-v1714-ux .garden-action-dialog {
     font-size: 11px !important;
   }
 }
+
+/* ===== V1.71.5 test: 고정 게임 무대 1차 미세조정 =====
+   구조는 V1.71.4 그대로 유지하고, 상하 여백/헤더/HUD만 다듬습니다.
+*/
+body.lf-v1715-ux #gardenScreen.screen-active {
+  place-items: start center !important;
+  padding-top: clamp(4px, 0.7svh, 10px) !important;
+  padding-bottom: clamp(6px, 1svh, 12px) !important;
+}
+
+body.lf-v1715-ux #gardenScreen.screen-active .one-screen-garden-shell {
+  width: min(100%, 760px) !important;
+  height: min(100%, 780px) !important;
+  max-height: calc(100svh - clamp(10px, 1.7svh, 18px)) !important;
+  padding: clamp(8px, 1.15svh, 12px) !important;
+  gap: clamp(5px, 0.85svh, 8px) !important;
+}
+
+body.lf-v1715-ux #gardenScreen.screen-active .garden-hero {
+  gap: 2px 7px !important;
+  align-content: start !important;
+}
+
+body.lf-v1715-ux #gardenScreen.screen-active #backToWorldBtnTop {
+  min-height: 27px !important;
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+}
+
+body.lf-v1715-ux #gardenScreen.screen-active .garden-hero .version {
+  min-height: 27px !important;
+  padding: 5px 10px !important;
+  font-size: 10.5px !important;
+}
+
+body.lf-v1715-ux #gardenScreen.screen-active .garden-title {
+  margin-top: 0 !important;
+  font-size: clamp(23px, 3.75svh, 30px) !important;
+  line-height: 1 !important;
+  letter-spacing: -0.04em !important;
+}
+
+body.lf-v1715-ux #gardenScreen.screen-active .garden-hero .subtitle {
+  font-size: clamp(10.5px, 1.38svh, 12.2px) !important;
+  line-height: 1.1 !important;
+  opacity: 0.82 !important;
+}
+
+body.lf-v1715-ux #gardenScreen.screen-active .garden-card.visual-card {
+  border-radius: clamp(24px, 3.2vw, 32px) !important;
+}
+
+body.lf-v1715-ux #gardenScreen.screen-active .garden-stage .stage-message {
+  left: 14px !important;
+  bottom: 14px !important;
+  max-width: min(292px, calc(100% - 250px)) !important;
+  padding: 6px 10px !important;
+  background: rgba(255, 255, 255, 0.66) !important;
+  box-shadow: 0 7px 15px rgba(67, 42, 58, 0.09) !important;
+}
+
+body.lf-v1715-ux #gardenScreen.screen-active .garden-stage .stage-message .message-main {
+  font-size: 11px !important;
+  line-height: 1.18 !important;
+}
+
+body.lf-v1715-ux #gardenScreen.screen-active .garden-card #gardenHub,
+body.lf-v1715-ux #gardenScreen.screen-active .garden-card #gardenHub.is-open,
+body.lf-v1715-ux #gardenScreen.screen-active .garden-card #gardenHub:not(.is-open) {
+  right: 14px !important;
+  bottom: 14px !important;
+  max-width: calc(100% - 28px) !important;
+}
+
+body.lf-v1715-ux #gardenScreen.screen-active .garden-card #gardenHub .garden-hub-nav,
+body.lf-v1715-ux #gardenScreen.screen-active .garden-card #gardenHub:not(.is-open) .garden-hub-nav,
+body.lf-v1715-ux #gardenScreen.screen-active .garden-card #gardenHub.is-open .garden-hub-nav {
+  gap: 8px !important;
+}
+
+body.lf-v1715-ux #gardenScreen.screen-active .garden-card #gardenHub .garden-hub-tab {
+  min-width: 54px !important;
+  min-height: 33px !important;
+  padding: 0 10px !important;
+  font-size: 11.5px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  border-color: rgba(155, 87, 122, 0.15) !important;
+  box-shadow: 0 7px 15px rgba(68, 43, 58, 0.10) !important;
+}
+
+body.lf-v1715-ux #gardenScreen.screen-active .garden-card #gardenHub .garden-hub-tab.active {
+  background: linear-gradient(135deg, rgba(247, 168, 210, 0.92), rgba(216, 168, 244, 0.92)) !important;
+}
+
+body.lf-v1715-ux #gardenScreen.screen-active .tree,
+body.lf-v1715-ux #gardenScreen.screen-active .tree-stage-seed,
+body.lf-v1715-ux #gardenScreen.screen-active .tree-stage-sprout,
+body.lf-v1715-ux #gardenScreen.screen-active .tree-stage-seedling,
+body.lf-v1715-ux #gardenScreen.screen-active .tree-stage-leafy-seedling,
+body.lf-v1715-ux #gardenScreen.screen-active .tree-stage-sapling,
+body.lf-v1715-ux #gardenScreen.screen-active .tree-stage-branching-sapling,
+body.lf-v1715-ux #gardenScreen.screen-active .tree-stage-early-tree,
+body.lf-v1715-ux #gardenScreen.screen-active .tree-stage-young-canopy,
+body.lf-v1715-ux #gardenScreen.screen-active .tree-stage-young,
+body.lf-v1715-ux #gardenScreen.screen-active .tree-stage-hero,
+body.lf-v1715-ux #gardenScreen.screen-active .tree-stage-grown {
+  bottom: clamp(52px, 10.5svh, 82px) !important;
+}
+
+@media (max-width: 760px) {
+  body.lf-v1715-ux #gardenScreen.screen-active {
+    padding: 0 !important;
+  }
+
+  body.lf-v1715-ux #gardenScreen.screen-active .one-screen-garden-shell {
+    width: 100vw !important;
+    height: 100svh !important;
+    max-height: none !important;
+    padding: max(7px, env(safe-area-inset-top)) 7px max(7px, env(safe-area-inset-bottom)) !important;
+    gap: 5px !important;
+  }
+
+  body.lf-v1715-ux #gardenScreen.screen-active .garden-title {
+    font-size: clamp(22px, 3.7svh, 29px) !important;
+  }
+
+  body.lf-v1715-ux #gardenScreen.screen-active #backToWorldBtnTop,
+  body.lf-v1715-ux #gardenScreen.screen-active .garden-hero .version {
+    min-height: 26px !important;
+  }
+}
+
+@media (max-width: 440px) {
+  body.lf-v1715-ux #gardenScreen.screen-active .garden-card #gardenHub {
+    right: 9px !important;
+    bottom: max(9px, env(safe-area-inset-bottom)) !important;
+  }
+
+  body.lf-v1715-ux #gardenScreen.screen-active .garden-card #gardenHub .garden-hub-nav {
+    gap: 6px !important;
+  }
+
+  body.lf-v1715-ux #gardenScreen.screen-active .garden-card #gardenHub .garden-hub-tab {
+    min-width: 48px !important;
+    min-height: 32px !important;
+    padding: 0 8px !important;
+    font-size: 10.8px !important;
+  }
+}
