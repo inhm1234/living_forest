@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.72.9 test
+// 살아있는 숲 V1.72.9 fix1
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.72.9 test
+// 버전명: V1.72.9 fix1
 // 목적: 정원은 고정 게임 무대로 유지하고 HUD 버튼은 최소화, 실제 기능은 짧은 전용 팝업으로만 실행
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.72.9 test",
+  version: "V1.72.9 fix1",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -2893,9 +2893,13 @@ function renderWorldParticles(atmosphere = getWorldAtmosphereInfo()) {
 }
 
 function renderWorldVisualLayers() {
-  const atmosphere = renderWorldAtmosphere();
-  renderWorldLife(atmosphere);
-  renderWorldParticles(atmosphere);
+  // V1.72.9 fix1: 투명한 초록 얼룩 원인 진단을 위해 전체숲의 생명/파티클 레이어를 비움.
+  if (worldLifeLayerElement) {
+    worldLifeLayerElement.innerHTML = "";
+  }
+  if (worldParticleLayerElement) {
+    worldParticleLayerElement.innerHTML = "";
+  }
 }
 
 function focusMyWorldSpot() {
@@ -3285,7 +3289,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.72.9 test는 시간대별 전체숲 배경과 나무 원근감 보정 구조로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.72.9 fix1는 시간대별 전체숲 배경과 나무 원근감 보정 구조로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;

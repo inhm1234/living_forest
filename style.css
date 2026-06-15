@@ -20825,7 +20825,7 @@ body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldSc
   }
 }
 
-/* ===== V1.72.9 test: 전체숲/내 나무 전체숲 나무 배치/원근감 보정 =====
+/* ===== V1.72.9 fix1: 전체숲/내 나무 전체숲 나무 배치/원근감 보정 =====
    목적:
    - 내 정원과 전체숲이 같은 낮/노을/밤 세계처럼 느껴지게 한다.
    - 전체숲 배경과 전체숲의 내 나무가 시간대 톤을 같이 받게 한다.
@@ -20833,7 +20833,7 @@ body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldSc
 */
 body.lf-v1726-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
 body.lf-v1726-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
-  content: "V1.72.9 test" !important;
+  content: "V1.72.9 fix1" !important;
 }
 
 body.lf-v1726-ux.forest-time-day.lf-world-active:not(.online-friend-invite-mode),
@@ -21033,7 +21033,7 @@ body.lf-v1726-ux #gardenScreen.screen-active .garden-stage.garden-time-night .tr
 /* ===== V1.72.8 fix1: V1.72.6 오버레이 원복 + 시간대별 실제 배경 이미지 강제 연결 ===== */
 body.lf-v1728-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
 body.lf-v1728-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
-  content: "V1.72.9 test" !important;
+  content: "V1.72.9 fix1" !important;
 }
 
 body.lf-v1728-ux.forest-time-day.lf-world-active:not(.online-friend-invite-mode),
@@ -21107,7 +21107,7 @@ body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .wor
 }
 
 
-/* V1.72.9 test: 유령나무 제거 + 배경 원근에 맞춘 자리 재보정 */
+/* V1.72.9 fix1: 유령나무 제거 + 배경 원근에 맞춘 자리 재보정 */
 .world-neighbor-spots {
   z-index: 8;
   overflow: hidden;
@@ -21274,7 +21274,7 @@ body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .wor
 }
 
 
-/* V1.72.9 test: 주변 나무 선명화 초기화 */
+/* V1.72.9 fix1: 주변 나무 선명화 초기화 */
 body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot {
   opacity: 1 !important;
   filter: none !important;
@@ -21330,7 +21330,7 @@ body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .my-
 }
 
 
-/* V1.72.9 test: 주변 나무 효과값 0 초기화 */
+/* V1.72.9 fix1: 주변 나무 효과값 0 초기화 */
 body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots,
 body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots * {
   mix-blend-mode: normal !important;
@@ -21376,7 +21376,7 @@ body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .my-
 }
 
 
-/* V1.72.9 test: 전체숲 주변 나무 선명화 재구성 */
+/* V1.72.9 fix1: 전체숲 주변 나무 선명화 재구성 */
 body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots,
 body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots * {
   mix-blend-mode: normal !important;
@@ -21467,4 +21467,25 @@ body.lf-v1728-ux #worldScreen.screen-active .my-world-spot.world-tree-hero .my-s
 
 body.lf-v1728-ux #worldScreen.screen-active .my-world-spot .my-spot-tree-image {
   filter: drop-shadow(0 14px 20px rgba(0,0,0,0.30)) !important;
+}
+
+
+/* V1.72.9 fix1: 투명 초록 얼룩 원인 진단용 — 전체숲 생명/파티클 레이어 제거 */
+body.lf-v1728-ux #worldScreen.screen-active #worldLifeLayer,
+body.lf-v1728-ux #worldScreen.screen-active #worldParticleLayer,
+body.lf-v1728-ux #worldScreen.screen-active .world-life-layer,
+body.lf-v1728-ux #worldScreen.screen-active .world-particle-layer,
+body.lf-v1728-ux #worldScreen.screen-active .world-life-item,
+body.lf-v1728-ux #worldScreen.screen-active .world-leaf,
+body.lf-v1728-ux #worldScreen.screen-active .world-animal,
+body.lf-v1728-ux #worldScreen.screen-active .world-particle-layer span {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* 주변 나무는 장식 레이어와 분리해서 선명하게 유지 */
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-tree-image {
+  opacity: 1 !important;
+  filter: drop-shadow(0 8px 12px rgba(0,0,0,0.22)) !important;
 }
