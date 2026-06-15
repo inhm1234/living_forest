@@ -20825,7 +20825,7 @@ body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldSc
   }
 }
 
-/* ===== V1.72.8 test: 전체숲/내 나무 전체숲 나무 배치/원근감 보정 =====
+/* ===== V1.72.8 fix2: 전체숲/내 나무 전체숲 나무 배치/원근감 보정 =====
    목적:
    - 내 정원과 전체숲이 같은 낮/노을/밤 세계처럼 느껴지게 한다.
    - 전체숲 배경과 전체숲의 내 나무가 시간대 톤을 같이 받게 한다.
@@ -20833,7 +20833,7 @@ body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldSc
 */
 body.lf-v1726-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
 body.lf-v1726-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
-  content: "V1.72.8 test" !important;
+  content: "V1.72.8 fix2" !important;
 }
 
 body.lf-v1726-ux.forest-time-day.lf-world-active:not(.online-friend-invite-mode),
@@ -21033,7 +21033,7 @@ body.lf-v1726-ux #gardenScreen.screen-active .garden-stage.garden-time-night .tr
 /* ===== V1.72.8 fix1: V1.72.6 오버레이 원복 + 시간대별 실제 배경 이미지 강제 연결 ===== */
 body.lf-v1728-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
 body.lf-v1728-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
-  content: "V1.72.8 test" !important;
+  content: "V1.72.8 fix2" !important;
 }
 
 body.lf-v1728-ux.forest-time-day.lf-world-active:not(.online-friend-invite-mode),
@@ -21104,4 +21104,171 @@ body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .wor
 body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night #myWorldSpot .my-spot-tree-image,
 body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night #worldNeighborSpots .neighbor-tree-image {
   filter: drop-shadow(0 9px 15px rgba(0,0,0,calc(var(--slot-shadow,0.22) + 0.08))) blur(calc(var(--slot-blur, 0px) + 0.10px)) brightness(calc(var(--slot-brightness, 1) - 0.10)) saturate(calc(var(--slot-sat, 1) - 0.04)) !important;
+}
+
+
+/* V1.72.8 fix2: 유령나무 제거 + 배경 원근에 맞춘 자리 재보정 */
+.world-neighbor-spots {
+  z-index: 8;
+  overflow: hidden;
+}
+
+.neighbor-spot {
+  width: 92px;
+  height: 126px;
+  opacity: 1;
+  filter: none;
+  transform: translate(-50%, calc(-100% + 15px)) scale(var(--slot-scale, 1));
+  transform-origin: center bottom;
+  animation: none;
+}
+
+.neighbor-ground {
+  position: absolute;
+  left: 50%;
+  bottom: 5px;
+  width: 64px;
+  height: 18px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  opacity: var(--slot-ground-opacity, 0.06);
+  background: radial-gradient(ellipse, rgba(42, 54, 28, 0.58), rgba(42, 45, 23, 0.30) 52%, transparent 76%);
+  filter: blur(1px);
+}
+
+.neighbor-tree-wrap {
+  position: absolute;
+  left: 50%;
+  bottom: 9px;
+  width: 76px;
+  height: 96px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  transform: translateX(-50%) translateY(var(--slot-lift, 0px)) rotate(var(--slot-tilt, 0deg));
+}
+
+.neighbor-tree-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 108%;
+  max-width: none;
+  transform: translateX(-50%);
+  opacity: calc(var(--slot-ground-opacity, 0.06) * 4.4);
+}
+
+.neighbor-tree-image {
+  position: relative;
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  opacity: var(--slot-opacity, 0.86);
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, var(--slot-shadow, 0.24))) brightness(var(--slot-brightness, 1)) saturate(var(--slot-sat, 1));
+}
+
+.row-back .neighbor-tree-image {
+  opacity: max(0.62, var(--slot-opacity, 0.64));
+}
+
+.row-mid .neighbor-tree-image {
+  opacity: max(0.70, var(--slot-opacity, 0.72));
+}
+
+.row-front .neighbor-tree-image,
+.row-community .neighbor-tree-image {
+  opacity: max(0.82, var(--slot-opacity, 0.86));
+}
+
+.row-back .neighbor-ground {
+  opacity: max(0.026, var(--slot-ground-opacity, 0.03));
+  filter: blur(1.3px);
+}
+
+.row-mid .neighbor-ground {
+  opacity: max(0.042, var(--slot-ground-opacity, 0.046));
+}
+
+.row-front .neighbor-ground,
+.row-community .neighbor-ground {
+  opacity: max(0.060, var(--slot-ground-opacity, 0.06));
+}
+
+.neighbor-spot.world-tree-seed .neighbor-tree-wrap { width: 28px; height: 34px; }
+.neighbor-spot.world-tree-sprout .neighbor-tree-wrap { width: 36px; height: 44px; }
+.neighbor-spot.world-tree-sapling .neighbor-tree-wrap { width: 48px; height: 58px; }
+.neighbor-spot.world-tree-young .neighbor-tree-wrap { width: 62px; height: 76px; }
+.neighbor-spot.world-tree-hero .neighbor-tree-wrap { width: 72px; height: 88px; }
+
+.neighbor-spot small {
+  top: auto;
+  bottom: -4px;
+  padding: 2px 7px;
+  font-size: 8.5px;
+  line-height: 1.2;
+  opacity: 0;
+  background: rgba(8, 18, 16, 0.40);
+  border-color: rgba(231, 255, 222, 0.12);
+  color: rgba(242, 255, 233, 0.82);
+  transform: translateX(-50%) scale(0.94);
+}
+
+.row-back small,
+.row-mid small,
+.neighbor-spot.is-seat-dummy small,
+.neighbor-spot.is-dummy small {
+  display: none;
+}
+
+.neighbor-spot.is-real small,
+.world-focus-active .neighbor-spot.is-real small,
+.neighbor-spot.is-real:hover small {
+  display: inline-flex;
+  opacity: 0.78;
+  transform: translateX(-50%) scale(1);
+}
+
+.neighbor-spot.is-real .neighbor-tree-image {
+  opacity: 0.96;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.26)) brightness(1.02) saturate(1.04);
+}
+
+.world-time-sunset .neighbor-ground,
+.world-time-sunset .my-spot-ground-shadow {
+  background: radial-gradient(ellipse, rgba(84, 50, 24, 0.54), rgba(60, 36, 18, 0.28) 54%, transparent 76%);
+}
+
+.world-time-sunset .neighbor-tree-image {
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, var(--slot-shadow, 0.24))) brightness(0.98) saturate(1.04) sepia(0.02);
+}
+
+.world-time-night .neighbor-tree-image {
+  filter: drop-shadow(0 9px 14px rgba(0, 0, 0, calc(var(--slot-shadow, 0.24) + 0.08))) brightness(0.88) saturate(0.94);
+}
+
+@media (max-width: 560px) {
+  .neighbor-spot {
+    width: 76px;
+    height: 106px;
+    transform: translate(-50%, calc(-100% + 13px)) scale(var(--slot-mobile-scale, var(--slot-scale, 1)));
+  }
+
+  .neighbor-ground {
+    width: 52px;
+    height: 14px;
+    bottom: 4px;
+  }
+
+  .neighbor-tree-wrap {
+    width: 58px;
+    height: 76px;
+    bottom: 8px;
+  }
+
+  .neighbor-spot.world-tree-seed .neighbor-tree-wrap { width: 22px; height: 28px; }
+  .neighbor-spot.world-tree-sprout .neighbor-tree-wrap { width: 28px; height: 36px; }
+  .neighbor-spot.world-tree-sapling .neighbor-tree-wrap { width: 38px; height: 48px; }
+  .neighbor-spot.world-tree-young .neighbor-tree-wrap { width: 48px; height: 60px; }
+  .neighbor-spot.world-tree-hero .neighbor-tree-wrap { width: 56px; height: 70px; }
 }

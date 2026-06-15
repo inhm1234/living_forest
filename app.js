@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.72.8 test
+// 살아있는 숲 V1.72.8 fix2
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.72.8 test
+// 버전명: V1.72.8 fix2
 // 목적: 정원은 고정 게임 무대로 유지하고 HUD 버튼은 최소화, 실제 기능은 짧은 전용 팝업으로만 실행
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.72.8 test",
+  version: "V1.72.8 fix2",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -591,38 +591,29 @@ const friendInviteSeatSlots = [
 let selectedFriendInviteSeatId = "flower_path";
 
 const worldForestSlots = [
-  { id: "far-left-1", name: "먼 왼숲", className: "row-far row-left forest-wall", state: "balanced", days: 10, x: 18, y: 34, scale: 0.30, opacity: 0.34, depth: 2, tilt: -6, lift: -12, groundOpacity: 0.018, mobileX: 15, mobileY: 36, mobileScale: 0.24 },
-  { id: "far-left-2", name: "먼 잎그늘", className: "row-far row-left forest-wall", state: "leaf-strong", days: 12, x: 29, y: 37, scale: 0.34, opacity: 0.38, depth: 2, tilt: -3, lift: -10, groundOpacity: 0.020, mobileX: 25, mobileY: 39, mobileScale: 0.26 },
-  { id: "far-right-1", name: "먼 오른숲", className: "row-far row-right forest-wall", state: "root-strong", days: 11, x: 71, y: 37, scale: 0.34, opacity: 0.38, depth: 2, tilt: 3, lift: -10, groundOpacity: 0.020, mobileX: 75, mobileY: 39, mobileScale: 0.26 },
-  { id: "far-right-2", name: "먼 가지그늘", className: "row-far row-right forest-wall", state: "balanced", days: 14, x: 82, y: 34, scale: 0.30, opacity: 0.34, depth: 2, tilt: 6, lift: -12, groundOpacity: 0.018, mobileX: 85, mobileY: 36, mobileScale: 0.24 },
+  // 뒤쪽 숲길 주변: 작지만 또렷한 실루엣. 중앙 길 위가 아니라 양옆 수풀 쪽에만 둔다.
+  { id: "back-left-1", name: "먼 왼숲", className: "row-back row-left forest-edge", state: "balanced", days: 14, x: 25, y: 43, scale: 0.26, opacity: 0.64, depth: 2, tilt: -3, lift: 0, groundOpacity: 0.030, mobileX: 23, mobileY: 44, mobileScale: 0.22 },
+  { id: "back-right-1", name: "먼 오른숲", className: "row-back row-right forest-edge", state: "leaf-strong", days: 16, x: 74, y: 43, scale: 0.26, opacity: 0.64, depth: 2, tilt: 3, lift: 0, groundOpacity: 0.030, mobileX: 76, mobileY: 44, mobileScale: 0.22 },
 
-  { id: "mid-left-1", name: "왼 숲벽", className: "row-mid row-left forest-wall", state: "leaf-strong", days: 18, x: 10, y: 49, scale: 0.58, opacity: 0.56, depth: 4, tilt: -8, lift: -3, groundOpacity: 0.040, mobileX: 8, mobileY: 50, mobileScale: 0.42 },
-  { id: "mid-left-2", name: "길왼 그늘", className: "row-mid row-left forest-wall", state: "balanced", days: 20, x: 22, y: 52, scale: 0.50, opacity: 0.50, depth: 4, tilt: -5, lift: -2, groundOpacity: 0.036, mobileX: 19, mobileY: 53, mobileScale: 0.38 },
-  { id: "mid-left-3", name: "숲길 왼나무", className: "row-mid row-left trail-edge", state: "root-strong", days: 16, x: 34, y: 57, scale: 0.42, opacity: 0.48, depth: 4, tilt: -2, lift: 0, groundOpacity: 0.034, mobileX: 32, mobileY: 58, mobileScale: 0.32 },
-  { id: "mid-right-1", name: "숲길 오른나무", className: "row-mid row-right trail-edge", state: "balanced", days: 17, x: 66, y: 57, scale: 0.42, opacity: 0.48, depth: 4, tilt: 2, lift: 0, groundOpacity: 0.034, mobileX: 68, mobileY: 58, mobileScale: 0.32 },
-  { id: "mid-right-2", name: "길오른 그늘", className: "row-mid row-right forest-wall", state: "leaf-strong", days: 22, x: 78, y: 52, scale: 0.50, opacity: 0.50, depth: 4, tilt: 5, lift: -2, groundOpacity: 0.036, mobileX: 81, mobileY: 53, mobileScale: 0.38 },
-  { id: "mid-right-3", name: "오른 숲벽", className: "row-mid row-right forest-wall", state: "root-strong", days: 19, x: 90, y: 49, scale: 0.58, opacity: 0.56, depth: 4, tilt: 8, lift: -3, groundOpacity: 0.040, mobileX: 92, mobileY: 50, mobileScale: 0.42 },
+  // 중간 숲 경계: 울타리/꽃밭 라인에 맞춰 배치. 중앙 공터는 침범하지 않는다.
+  { id: "mid-left-1", name: "왼 꽃숲", className: "row-mid row-left forest-edge", state: "root-strong", days: 20, x: 18, y: 58, scale: 0.40, opacity: 0.72, depth: 4, tilt: -4, lift: 1, groundOpacity: 0.046, mobileX: 16, mobileY: 59, mobileScale: 0.32 },
+  { id: "mid-left-2", name: "왼 울타리숲", className: "row-mid row-left forest-edge", state: "balanced", days: 24, x: 30, y: 63, scale: 0.36, opacity: 0.70, depth: 4, tilt: -2, lift: 1, groundOpacity: 0.044, mobileX: 28, mobileY: 64, mobileScale: 0.30 },
+  { id: "mid-right-1", name: "오른 울타리숲", className: "row-mid row-right forest-edge", state: "balanced", days: 23, x: 70, y: 63, scale: 0.36, opacity: 0.70, depth: 4, tilt: 2, lift: 1, groundOpacity: 0.044, mobileX: 72, mobileY: 64, mobileScale: 0.30 },
+  { id: "mid-right-2", name: "오른 꽃숲", className: "row-mid row-right forest-edge", state: "leaf-strong", days: 21, x: 84, y: 58, scale: 0.40, opacity: 0.72, depth: 4, tilt: 4, lift: 1, groundOpacity: 0.046, mobileX: 86, mobileY: 59, mobileScale: 0.32 },
 
-  { id: "near-left-1", name: "왼 앞숲", className: "row-near row-left forest-wall", state: "balanced", days: 28, x: 7, y: 69, scale: 0.86, opacity: 0.70, depth: 6, tilt: -9, lift: 7, groundOpacity: 0.060, mobileX: 5, mobileY: 70, mobileScale: 0.58 },
-  { id: "near-left-2", name: "길왼 가까운나무", className: "row-near row-left trail-edge", state: "leaf-strong", days: 31, x: 22, y: 72, scale: 0.72, opacity: 0.64, depth: 6, tilt: -6, lift: 8, groundOpacity: 0.056, mobileX: 20, mobileY: 73, mobileScale: 0.50 },
-  { id: "near-left-3", name: "왼 길목나무", className: "row-near row-left trail-edge", state: "root-strong", days: 24, x: 35, y: 75, scale: 0.56, opacity: 0.54, depth: 6, tilt: -3, lift: 8, groundOpacity: 0.048, mobileX: 34, mobileY: 76, mobileScale: 0.40 },
-  { id: "near-right-1", name: "오른 길목나무", className: "row-near row-right trail-edge", state: "balanced", days: 25, x: 65, y: 75, scale: 0.56, opacity: 0.54, depth: 6, tilt: 3, lift: 8, groundOpacity: 0.048, mobileX: 66, mobileY: 76, mobileScale: 0.40 },
-  { id: "near-right-2", name: "길오른 가까운나무", className: "row-near row-right trail-edge", state: "leaf-strong", days: 32, x: 78, y: 72, scale: 0.72, opacity: 0.64, depth: 6, tilt: 6, lift: 8, groundOpacity: 0.056, mobileX: 80, mobileY: 73, mobileScale: 0.50 },
-  { id: "near-right-3", name: "오른 앞숲", className: "row-near row-right forest-wall", state: "root-strong", days: 29, x: 93, y: 69, scale: 0.86, opacity: 0.70, depth: 6, tilt: 9, lift: 7, groundOpacity: 0.060, mobileX: 95, mobileY: 70, mobileScale: 0.58 },
-
-  { id: "front-left-1", name: "왼 앞 큰숲", className: "row-front row-left forest-wall front-bush", state: "balanced", days: 46, x: 3, y: 88, scale: 1.16, opacity: 0.80, depth: 8, tilt: -10, lift: 14, groundOpacity: 0.078, mobileX: 2, mobileY: 88, mobileScale: 0.74 },
-  { id: "front-left-2", name: "앞왼 나무무리", className: "row-front row-left forest-wall front-bush", state: "leaf-strong", days: 38, x: 18, y: 87, scale: 1.00, opacity: 0.76, depth: 8, tilt: -7, lift: 14, groundOpacity: 0.074, mobileX: 16, mobileY: 87, mobileScale: 0.66 },
-  { id: "front-right-1", name: "앞오른 나무무리", className: "row-front row-right forest-wall front-bush", state: "leaf-strong", days: 39, x: 82, y: 87, scale: 1.00, opacity: 0.76, depth: 8, tilt: 7, lift: 14, groundOpacity: 0.074, mobileX: 84, mobileY: 87, mobileScale: 0.66 },
-  { id: "front-right-2", name: "오른 앞 큰숲", className: "row-front row-right forest-wall front-bush", state: "root-strong", days: 49, x: 97, y: 88, scale: 1.16, opacity: 0.80, depth: 8, tilt: 10, lift: 14, groundOpacity: 0.078, mobileX: 98, mobileY: 88, mobileScale: 0.74 }
+  // 앞쪽 가장자리: 화면 아래 꽃밭 가까이. 크게 두지 않고 배경에 섞일 정도로만 둔다.
+  { id: "front-left-1", name: "왼 앞꽃숲", className: "row-front row-left forest-edge", state: "balanced", days: 32, x: 15, y: 82, scale: 0.54, opacity: 0.78, depth: 6, tilt: -5, lift: 2, groundOpacity: 0.060, mobileX: 13, mobileY: 83, mobileScale: 0.40 },
+  { id: "front-right-1", name: "오른 앞꽃숲", className: "row-front row-right forest-edge", state: "root-strong", days: 34, x: 86, y: 82, scale: 0.54, opacity: 0.78, depth: 6, tilt: 5, lift: 2, groundOpacity: 0.060, mobileX: 88, mobileY: 83, mobileScale: 0.40 }
 ];
 
 
 const worldCommunitySeatSlots = {
-  flower_path: { id: "community-seat-flower_path", name: "기다리는 꽃길나무", className: "row-community community-left trail-edge", state: "balanced", days: 7, x: 27, y: 79, scale: 0.62, opacity: 0.72, depth: 10, tilt: -5, lift: 10, groundOpacity: 0.062, mobileX: 25, mobileY: 80, mobileScale: 0.48 },
-  sunny_spot: { id: "community-seat-sunny_spot", name: "기다리는 햇살나무", className: "row-community community-back trail-edge", state: "leaf-strong", days: 12, x: 38, y: 62, scale: 0.46, opacity: 0.64, depth: 9, tilt: -3, lift: 5, groundOpacity: 0.048, mobileX: 36, mobileY: 64, mobileScale: 0.36 },
-  pond_spot: { id: "community-seat-pond_spot", name: "기다리는 연못나무", className: "row-community community-back trail-edge", state: "root-strong", days: 10, x: 62, y: 62, scale: 0.46, opacity: 0.64, depth: 9, tilt: 3, lift: 5, groundOpacity: 0.048, mobileX: 64, mobileY: 64, mobileScale: 0.36 },
-  swing_spot: { id: "community-seat-swing_spot", name: "기다리는 그네나무", className: "row-community community-right trail-edge", state: "balanced", days: 8, x: 73, y: 79, scale: 0.62, opacity: 0.72, depth: 10, tilt: 5, lift: 10, groundOpacity: 0.062, mobileX: 75, mobileY: 80, mobileScale: 0.48 },
-  flower_fence: { id: "community-seat-flower_fence", name: "기다리는 꽃담나무", className: "row-community community-front trail-edge", state: "leaf-strong", days: 5, x: 51, y: 83, scale: 0.50, opacity: 0.66, depth: 10, tilt: 0, lift: 9, groundOpacity: 0.056, mobileX: 51, mobileY: 82, mobileScale: 0.40 }
+  // 친구 자리도 중앙 공터가 아니라 배경의 자연스러운 경계선 위에 둔다.
+  flower_path: { id: "community-seat-flower_path", name: "기다리는 꽃길나무", className: "row-community community-left forest-edge", state: "balanced", days: 7, x: 31, y: 78, scale: 0.48, opacity: 0.92, depth: 9, tilt: -3, lift: 2, groundOpacity: 0.072, mobileX: 29, mobileY: 79, mobileScale: 0.38 },
+  sunny_spot: { id: "community-seat-sunny_spot", name: "기다리는 햇살나무", className: "row-community community-left-mid forest-edge", state: "leaf-strong", days: 12, x: 36, y: 61, scale: 0.34, opacity: 0.86, depth: 7, tilt: -2, lift: 1, groundOpacity: 0.054, mobileX: 34, mobileY: 62, mobileScale: 0.28 },
+  pond_spot: { id: "community-seat-pond_spot", name: "기다리는 연못나무", className: "row-community community-right-mid forest-edge", state: "root-strong", days: 10, x: 64, y: 61, scale: 0.34, opacity: 0.86, depth: 7, tilt: 2, lift: 1, groundOpacity: 0.054, mobileX: 66, mobileY: 62, mobileScale: 0.28 },
+  swing_spot: { id: "community-seat-swing_spot", name: "기다리는 그네나무", className: "row-community community-right forest-edge", state: "balanced", days: 8, x: 73, y: 78, scale: 0.48, opacity: 0.92, depth: 9, tilt: 3, lift: 2, groundOpacity: 0.072, mobileX: 75, mobileY: 79, mobileScale: 0.38 },
+  flower_fence: { id: "community-seat-flower_fence", name: "기다리는 꽃담나무", className: "row-community community-front forest-edge", state: "leaf-strong", days: 5, x: 83, y: 68, scale: 0.40, opacity: 0.88, depth: 8, tilt: 3, lift: 1, groundOpacity: 0.060, mobileX: 85, mobileY: 69, mobileScale: 0.32 }
 };
 
 const worldScreenElement = document.querySelector("#worldScreen");
@@ -3305,7 +3296,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.72.8 test는 시간대별 전체숲 배경과 나무 원근감 보정 구조로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.72.8 fix2는 시간대별 전체숲 배경과 나무 원근감 보정 구조로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
