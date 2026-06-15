@@ -21366,10 +21366,10 @@ body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.sc
 }
 
 
-/* V1.73.3 focus hotfix: 전체숲 '내 자리' 버튼이 눌렸다는 것이 확실히 보이도록 최종 오버라이드 */
+/* V1.73.4 focus position hotfix: 전체숲 '내 자리' 버튼이 눌렸다는 것이 확실히 보이도록 최종 오버라이드 */
 body.lf-v1733-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
 body.lf-v1733-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
-  content: "V1.73.3 focus hotfix" !important;
+  content: "V1.73.4 focus position hotfix" !important;
 }
 
 body.lf-v1733-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-stage.world-focus-active #myWorldSpot.my-world-spot,
@@ -21478,4 +21478,79 @@ body.lf-v1733-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldSc
   0% { transform: translateY(0) scale(1); }
   44% { transform: translateY(-6px) scale(1.045); }
   100% { transform: translateY(0) scale(1); }
+}
+
+
+/* V1.73.4 focus position hotfix: '내 자리' 강조 시 좌표가 바뀌지 않도록 부모 위치를 고정한다. */
+body.lf-v1734-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
+body.lf-v1734-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
+  content: "V1.73.4 focus position hotfix" !important;
+}
+
+body.lf-v1734-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-stage.world-focus-active #myWorldSpot.my-world-spot,
+body.lf-v1734-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-stage.world-focus-active #myWorldSpot.my-world-spot,
+body.lf-v1734-ux.world-focus-running #worldScreen.screen-active #myWorldSpot.my-world-spot {
+  left: 36% !important;
+  top: 74% !important;
+  bottom: auto !important;
+  z-index: 260 !important;
+  opacity: 1 !important;
+  transform: translate(-50%, -50%) !important;
+  transition: filter 220ms ease, opacity 220ms ease !important;
+  filter: drop-shadow(0 10px 16px rgba(58, 44, 42, 0.28)) drop-shadow(0 0 14px rgba(255, 252, 170, 0.42)) !important;
+  pointer-events: auto !important;
+}
+
+body.lf-v1734-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-stage.world-focus-active #myWorldSpot .my-spot-tree-wrap,
+body.lf-v1734-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-stage.world-focus-active #myWorldSpot .my-spot-tree-wrap,
+body.lf-v1734-ux.world-focus-running #worldScreen.screen-active #myWorldSpot .my-spot-tree-wrap {
+  transform: translateX(-50%) scale(1.08) !important;
+  transform-origin: center bottom !important;
+}
+
+body.lf-v1734-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-stage.world-focus-active #myWorldSpot .my-spot-tree-image,
+body.lf-v1734-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-stage.world-focus-active #myWorldSpot .my-spot-tree-image,
+body.lf-v1734-ux.world-focus-running #worldScreen.screen-active #myWorldSpot .my-spot-tree-image {
+  opacity: 1 !important;
+  filter: drop-shadow(0 10px 14px rgba(47, 42, 36, 0.28)) drop-shadow(0 0 10px rgba(255, 252, 176, 0.44)) !important;
+  animation: worldMySeatNod 0.62s ease both !important;
+}
+
+body.lf-v1734-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-stage.world-focus-active #myWorldSpot .my-spot-name,
+body.lf-v1734-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-stage.world-focus-active #myWorldSpot .my-spot-name,
+body.lf-v1734-ux.world-focus-running #worldScreen.screen-active #myWorldSpot .my-spot-name {
+  display: inline-flex !important;
+  opacity: 1 !important;
+  transform: translateX(-50%) !important;
+  background: rgba(255, 255, 255, 0.90) !important;
+  color: rgba(66, 62, 68, 0.96) !important;
+  border: 1px solid rgba(255, 236, 170, 0.92) !important;
+  box-shadow: 0 8px 18px rgba(87, 59, 61, 0.17), 0 0 20px rgba(255, 249, 188, 0.34) !important;
+}
+
+body.lf-v1734-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-focus-toast,
+body.lf-v1734-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-focus-toast {
+  left: 36% !important;
+  bottom: auto !important;
+  top: calc(74% + 74px) !important;
+  transform: translateX(-50%) translateY(8px) !important;
+}
+
+body.lf-v1734-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-focus-toast.show,
+body.lf-v1734-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-focus-toast.show {
+  transform: translateX(-50%) translateY(0) !important;
+}
+
+@media (max-width: 620px) {
+  body.lf-v1734-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-stage.world-focus-active #myWorldSpot.my-world-spot,
+  body.lf-v1734-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-stage.world-focus-active #myWorldSpot.my-world-spot,
+  body.lf-v1734-ux.world-focus-running #worldScreen.screen-active #myWorldSpot.my-world-spot {
+    top: 73% !important;
+  }
+
+  body.lf-v1734-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-focus-toast,
+  body.lf-v1734-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-focus-toast {
+    left: 36% !important;
+    top: calc(73% + 62px) !important;
+  }
 }

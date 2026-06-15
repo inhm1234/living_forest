@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.73.3 focus hotfix
+// 살아있는 숲 V1.73.4 focus position hotfix
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.73.3 focus hotfix
+// 버전명: V1.73.4 focus position hotfix
 // 목적: 전체숲 시간대별 전용 배경 이미지를 연결하고 오버레이 실험을 원복
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.73.3 focus hotfix",
+  version: "V1.73.4 focus position hotfix",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
