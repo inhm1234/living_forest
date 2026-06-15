@@ -1,9 +1,11 @@
-살아있는 숲 V1.72.3 test 업로드 가이드
+살아있는 숲 V1.72.4 test 업로드 가이드
 
 1. ZIP을 압축 해제한다.
 2. living_forest-main 폴더 안의 파일들을 GitHub 저장소 루트에 업로드한다.
 3. 기존 파일 덮어쓰기를 허용한다.
-4. Commit message 예시: Update to V1.72.3 test
-5. GitHub Pages 배포 완료 후 Ctrl+F5로 새로고침한다.
-6. 화면 상단 버전이 V1.72.3 test로 보이는지 확인한다.
-7. 정원 화면에서 긴 하단 패널이 사라지고, 작은 HUD 버튼만 남았는지 확인한다.
+4. assets/world/world_forest_pastel_v1_72_4.png 파일이 포함되어 있는지 확인한다.
+5. Commit message 예시: Update to V1.72.4 test
+6. GitHub Pages 배포 완료 후 Ctrl+F5로 새로고침한다.
+7. 전체숲 화면 안쪽 작은 버전 표시가 V1.72.4 test로 보이는지 확인한다.
+8. 전체숲이 한 화면 안에서 끝나고, 아래로 긴 설명 카드가 남지 않는지 확인한다.
+9. 내 정원 화면의 기존 HUD 구조가 유지되는지 확인한다.
