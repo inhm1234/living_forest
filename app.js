@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.73.2 whitepaper hotfix
+// 살아있는 숲 V1.73.3 focus hotfix
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.73.2 whitepaper hotfix
+// 버전명: V1.73.3 focus hotfix
 // 목적: 전체숲 시간대별 전용 배경 이미지를 연결하고 오버레이 실험을 원복
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.73.2 whitepaper hotfix",
+  version: "V1.73.3 focus hotfix",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -2853,17 +2853,67 @@ function renderWorldVisualLayers() {
   renderWorldParticles(atmosphere);
 }
 
+let worldFocusTimer = null;
+let worldFocusButtonTimer = null;
+
+function showWorldFocusToast(message = "여기가 내 자리예요") {
+  const host = worldStageElement || worldScreenElement || document.body;
+  if (!host) return;
+
+  let toast = document.querySelector("#worldFocusToast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "worldFocusToast";
+    toast.className = "world-focus-toast";
+    toast.setAttribute("role", "status");
+    toast.setAttribute("aria-live", "polite");
+    host.appendChild(toast);
+  }
+
+  toast.textContent = message;
+  toast.classList.remove("show");
+  void toast.offsetWidth;
+  toast.classList.add("show");
+}
+
 function focusMyWorldSpot() {
   trackForestEvent("focus_my_tree_click", { source: "focus_my_tree_button" });
 
   if (!worldStageElement || !myWorldSpotElement) {
     highlightWorldSpot();
+    showWorldFocusToast();
     return;
   }
 
+  if (worldFocusTimer) {
+    window.clearTimeout(worldFocusTimer);
+  }
+  if (worldFocusButtonTimer) {
+    window.clearTimeout(worldFocusButtonTimer);
+  }
+
+  worldStageElement.classList.remove("world-focus-active");
+  myWorldSpotElement.classList.remove("world-spot-highlight");
+  void worldStageElement.offsetWidth;
+
+  document.body.classList.add("world-focus-running");
   worldStageElement.classList.add("world-focus-active");
-  myWorldSpotElement.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+  myWorldSpotElement.classList.add("world-spot-highlight");
+
+  try {
+    myWorldSpotElement.setAttribute("tabindex", "-1");
+    myWorldSpotElement.focus({ preventScroll: true });
+  } catch (error) {
+    myWorldSpotElement.focus?.();
+  }
+
   highlightWorldSpot();
+  showWorldFocusToast(getWorldFocusMessage() || "여기가 내 자리예요");
+
+  if (focusMyTreeBtnElement) {
+    focusMyTreeBtnElement.setAttribute("aria-pressed", "true");
+    focusMyTreeBtnElement.textContent = "내 자리 ✓";
+  }
 
   if (worldCommunityHintElement) {
     worldCommunityHintElement.textContent = getWorldFocusMessage();
@@ -2873,10 +2923,20 @@ function focusMyWorldSpot() {
     worldSummaryTextElement.textContent = getWorldEvolutionSummaryText();
   }
 
-  window.setTimeout(() => {
+  worldFocusTimer = window.setTimeout(() => {
     worldStageElement.classList.remove("world-focus-active");
-    renderWorld();
-  }, 3600);
+    document.body.classList.remove("world-focus-running");
+    myWorldSpotElement.classList.remove("world-spot-highlight");
+    const toast = document.querySelector("#worldFocusToast");
+    toast?.classList.remove("show");
+  }, 3200);
+
+  worldFocusButtonTimer = window.setTimeout(() => {
+    if (focusMyTreeBtnElement) {
+      focusMyTreeBtnElement.setAttribute("aria-pressed", "false");
+      focusMyTreeBtnElement.textContent = "내 자리";
+    }
+  }, 1800);
 }
 
 function getOnlineSeatDays(record) {
