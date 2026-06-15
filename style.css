@@ -20825,7 +20825,7 @@ body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldSc
   }
 }
 
-/* ===== V1.72.8 fix4: 전체숲/내 나무 전체숲 나무 배치/원근감 보정 =====
+/* ===== V1.72.9 test: 전체숲/내 나무 전체숲 나무 배치/원근감 보정 =====
    목적:
    - 내 정원과 전체숲이 같은 낮/노을/밤 세계처럼 느껴지게 한다.
    - 전체숲 배경과 전체숲의 내 나무가 시간대 톤을 같이 받게 한다.
@@ -20833,7 +20833,7 @@ body.lf-v1725-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldSc
 */
 body.lf-v1726-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
 body.lf-v1726-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
-  content: "V1.72.8 fix4" !important;
+  content: "V1.72.9 test" !important;
 }
 
 body.lf-v1726-ux.forest-time-day.lf-world-active:not(.online-friend-invite-mode),
@@ -21033,7 +21033,7 @@ body.lf-v1726-ux #gardenScreen.screen-active .garden-stage.garden-time-night .tr
 /* ===== V1.72.8 fix1: V1.72.6 오버레이 원복 + 시간대별 실제 배경 이미지 강제 연결 ===== */
 body.lf-v1728-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
 body.lf-v1728-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
-  content: "V1.72.8 fix4" !important;
+  content: "V1.72.9 test" !important;
 }
 
 body.lf-v1728-ux.forest-time-day.lf-world-active:not(.online-friend-invite-mode),
@@ -21107,7 +21107,7 @@ body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .wor
 }
 
 
-/* V1.72.8 fix4: 유령나무 제거 + 배경 원근에 맞춘 자리 재보정 */
+/* V1.72.9 test: 유령나무 제거 + 배경 원근에 맞춘 자리 재보정 */
 .world-neighbor-spots {
   z-index: 8;
   overflow: hidden;
@@ -21274,7 +21274,7 @@ body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .wor
 }
 
 
-/* V1.72.8 fix4: 주변 나무 선명화 초기화 */
+/* V1.72.9 test: 주변 나무 선명화 초기화 */
 body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot {
   opacity: 1 !important;
   filter: none !important;
@@ -21330,7 +21330,7 @@ body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .my-
 }
 
 
-/* V1.72.8 fix4: 주변 나무 효과값 0 초기화 */
+/* V1.72.9 test: 주변 나무 효과값 0 초기화 */
 body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots,
 body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots * {
   mix-blend-mode: normal !important;
@@ -21373,4 +21373,98 @@ body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .my-
 body.lf-v1728-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .my-world-spot.world-tree-hero .my-spot-tree-wrap {
   width: 170px !important;
   height: 182px !important;
+}
+
+
+/* V1.72.9 test: 전체숲 주변 나무 선명화 재구성 */
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots,
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots * {
+  mix-blend-mode: normal !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-spot {
+  width: 108px !important;
+  height: 144px !important;
+  opacity: 1 !important;
+  filter: none !important;
+  transform: translate(-50%, calc(-100% + 16px)) scale(var(--slot-scale, 1)) !important;
+}
+
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-ground {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: 6px !important;
+  width: 70px !important;
+  height: 18px !important;
+  transform: translateX(-50%) !important;
+  opacity: var(--slot-ground-opacity, 0.06) !important;
+  border-radius: 50% !important;
+  background: radial-gradient(ellipse, rgba(56, 42, 28, 0.34), rgba(56, 42, 28, 0.18) 54%, transparent 76%) !important;
+  filter: blur(1px) !important;
+}
+
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-tree-wrap {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: 9px !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  transform: translateX(-50%) rotate(var(--slot-tilt, 0deg)) !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .row-back .neighbor-tree-wrap {
+  width: 78px !important;
+  height: 92px !important;
+}
+
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .row-mid .neighbor-tree-wrap {
+  width: 92px !important;
+  height: 110px !important;
+}
+
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .row-front .neighbor-tree-wrap,
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .row-community .neighbor-tree-wrap {
+  width: 108px !important;
+  height: 126px !important;
+}
+
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-tree-shadow {
+  display: none !important;
+}
+
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-tree-image,
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .row-back .neighbor-tree-image,
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .row-mid .neighbor-tree-image,
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .row-front .neighbor-tree-image,
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .row-community .neighbor-tree-image,
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-real .neighbor-tree-image,
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-dummy .neighbor-tree-image,
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-seat-dummy .neighbor-tree-image {
+  display: block !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain !important;
+  opacity: 1 !important;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.22)) !important;
+}
+
+body.lf-v1728-ux #worldScreen.screen-active #worldNeighborSpots .neighbor-spot small {
+  display: none !important;
+}
+
+body.lf-v1728-ux #worldScreen.screen-active .my-world-spot.world-tree-young .my-spot-tree-wrap,
+body.lf-v1728-ux #worldScreen.screen-active .my-world-spot.world-tree-hero .my-spot-tree-wrap {
+  width: 182px !important;
+  height: 194px !important;
+}
+
+body.lf-v1728-ux #worldScreen.screen-active .my-world-spot .my-spot-tree-image {
+  filter: drop-shadow(0 14px 20px rgba(0,0,0,0.30)) !important;
 }

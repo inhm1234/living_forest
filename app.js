@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.72.8 fix4
+// 살아있는 숲 V1.72.9 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.72.8 fix4
+// 버전명: V1.72.9 test
 // 목적: 정원은 고정 게임 무대로 유지하고 HUD 버튼은 최소화, 실제 기능은 짧은 전용 팝업으로만 실행
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.72.8 fix4",
+  version: "V1.72.9 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -591,23 +591,19 @@ const friendInviteSeatSlots = [
 let selectedFriendInviteSeatId = "flower_path";
 
 const worldForestSlots = [
-  { id: "back-left-1", name: "먼 왼숲", className: "row-back row-left forest-edge", state: "balanced", days: 82, x: 25, y: 43, scale: 0.34, opacity: 1, depth: 2, tilt: -3, lift: 0, groundOpacity: 0.032, mobileX: 23, mobileY: 44, mobileScale: 0.28 },
-  { id: "back-right-1", name: "먼 오른숲", className: "row-back row-right forest-edge", state: "leaf-strong", days: 86, x: 74, y: 43, scale: 0.34, opacity: 1, depth: 2, tilt: 3, lift: 0, groundOpacity: 0.032, mobileX: 76, mobileY: 44, mobileScale: 0.28 },
-  { id: "mid-left-1", name: "왼 꽃숲", className: "row-mid row-left forest-edge", state: "root-strong", days: 92, x: 18, y: 58, scale: 0.46, opacity: 1, depth: 4, tilt: -4, lift: 1, groundOpacity: 0.048, mobileX: 16, mobileY: 59, mobileScale: 0.36 },
-  { id: "mid-left-2", name: "왼 울타리숲", className: "row-mid row-left forest-edge", state: "balanced", days: 96, x: 30, y: 63, scale: 0.42, opacity: 1, depth: 4, tilt: -2, lift: 1, groundOpacity: 0.046, mobileX: 28, mobileY: 64, mobileScale: 0.34 },
-  { id: "mid-right-1", name: "오른 울타리숲", className: "row-mid row-right forest-edge", state: "balanced", days: 94, x: 70, y: 63, scale: 0.42, opacity: 1, depth: 4, tilt: 2, lift: 1, groundOpacity: 0.046, mobileX: 72, mobileY: 64, mobileScale: 0.34 },
-  { id: "mid-right-2", name: "오른 꽃숲", className: "row-mid row-right forest-edge", state: "leaf-strong", days: 90, x: 84, y: 58, scale: 0.46, opacity: 1, depth: 4, tilt: 4, lift: 1, groundOpacity: 0.048, mobileX: 86, mobileY: 59, mobileScale: 0.36 },
-  { id: "front-left-1", name: "왼 앞꽃숲", className: "row-front row-left forest-edge", state: "balanced", days: 110, x: 15, y: 82, scale: 0.62, opacity: 1, depth: 6, tilt: -5, lift: 2, groundOpacity: 0.062, mobileX: 13, mobileY: 83, mobileScale: 0.46 },
-  { id: "front-right-1", name: "오른 앞꽃숲", className: "row-front row-right forest-edge", state: "root-strong", days: 114, x: 86, y: 82, scale: 0.62, opacity: 1, depth: 6, tilt: 5, lift: 2, groundOpacity: 0.062, mobileX: 88, mobileY: 83, mobileScale: 0.46 }
+  { id: "back-left-1", name: "먼 왼숲", className: "row-back row-left forest-edge", state: "balanced", days: 80, x: 24, y: 45, scale: 0.42, opacity: 1, depth: 2, tilt: -2, lift: 0, groundOpacity: 0.04, mobileX: 23, mobileY: 46, mobileScale: 0.32 },
+  { id: "back-right-1", name: "먼 오른숲", className: "row-back row-right forest-edge", state: "leaf-strong", days: 80, x: 76, y: 45, scale: 0.42, opacity: 1, depth: 2, tilt: 2, lift: 0, groundOpacity: 0.04, mobileX: 77, mobileY: 46, mobileScale: 0.32 },
+  { id: "mid-left-1", name: "왼 울타리숲", className: "row-mid row-left forest-edge", state: "balanced", days: 95, x: 17, y: 66, scale: 0.56, opacity: 1, depth: 4, tilt: -3, lift: 1, groundOpacity: 0.06, mobileX: 15, mobileY: 67, mobileScale: 0.40 },
+  { id: "mid-right-1", name: "오른 울타리숲", className: "row-mid row-right forest-edge", state: "balanced", days: 95, x: 83, y: 66, scale: 0.56, opacity: 1, depth: 4, tilt: 3, lift: 1, groundOpacity: 0.06, mobileX: 85, mobileY: 67, mobileScale: 0.40 }
 ];
 
 
 const worldCommunitySeatSlots = {
-  flower_path: { id: "community-seat-flower_path", name: "기다리는 꽃길나무", className: "row-community community-left forest-edge", state: "balanced", days: 90, x: 31, y: 78, scale: 0.56, opacity: 1, depth: 9, tilt: -3, lift: 2, groundOpacity: 0.074, mobileX: 29, mobileY: 79, mobileScale: 0.44 },
-  sunny_spot: { id: "community-seat-sunny_spot", name: "기다리는 햇살나무", className: "row-community community-left-mid forest-edge", state: "leaf-strong", days: 74, x: 36, y: 61, scale: 0.40, opacity: 1, depth: 7, tilt: -2, lift: 1, groundOpacity: 0.056, mobileX: 34, mobileY: 62, mobileScale: 0.32 },
-  pond_spot: { id: "community-seat-pond_spot", name: "기다리는 연못나무", className: "row-community community-right-mid forest-edge", state: "root-strong", days: 74, x: 64, y: 61, scale: 0.40, opacity: 1, depth: 7, tilt: 2, lift: 1, groundOpacity: 0.056, mobileX: 66, mobileY: 62, mobileScale: 0.32 },
-  swing_spot: { id: "community-seat-swing_spot", name: "기다리는 그네나무", className: "row-community community-right forest-edge", state: "balanced", days: 90, x: 73, y: 78, scale: 0.56, opacity: 1, depth: 9, tilt: 3, lift: 2, groundOpacity: 0.074, mobileX: 75, mobileY: 79, mobileScale: 0.44 },
-  flower_fence: { id: "community-seat-flower_fence", name: "기다리는 꽃담나무", className: "row-community community-front forest-edge", state: "leaf-strong", days: 82, x: 83, y: 68, scale: 0.48, opacity: 1, depth: 8, tilt: 3, lift: 1, groundOpacity: 0.062, mobileX: 85, mobileY: 69, mobileScale: 0.38 }
+  flower_path: { id: "community-seat-flower_path", name: "기다리는 꽃길나무", className: "row-community community-left forest-edge", state: "balanced", days: 90, x: 28, y: 80, scale: 0.68, opacity: 1, depth: 8, tilt: -2, lift: 1, groundOpacity: 0.08, mobileX: 27, mobileY: 81, mobileScale: 0.48 },
+  sunny_spot: { id: "community-seat-sunny_spot", name: "기다리는 햇살나무", className: "row-community community-left-mid forest-edge", state: "leaf-strong", days: 80, x: 34, y: 62, scale: 0.50, opacity: 1, depth: 6, tilt: -2, lift: 0, groundOpacity: 0.06, mobileX: 33, mobileY: 63, mobileScale: 0.38 },
+  pond_spot: { id: "community-seat-pond_spot", name: "기다리는 연못나무", className: "row-community community-right-mid forest-edge", state: "root-strong", days: 80, x: 66, y: 62, scale: 0.50, opacity: 1, depth: 6, tilt: 2, lift: 0, groundOpacity: 0.06, mobileX: 67, mobileY: 63, mobileScale: 0.38 },
+  swing_spot: { id: "community-seat-swing_spot", name: "기다리는 그네나무", className: "row-community community-right forest-edge", state: "balanced", days: 90, x: 72, y: 80, scale: 0.68, opacity: 1, depth: 8, tilt: 2, lift: 1, groundOpacity: 0.08, mobileX: 73, mobileY: 81, mobileScale: 0.48 },
+  flower_fence: { id: "community-seat-flower_fence", name: "기다리는 꽃담나무", className: "row-community community-front forest-edge", state: "leaf-strong", days: 88, x: 82, y: 70, scale: 0.58, opacity: 1, depth: 7, tilt: 3, lift: 0, groundOpacity: 0.07, mobileX: 83, mobileY: 71, mobileScale: 0.42 }
 };
 
 const worldScreenElement = document.querySelector("#worldScreen");
@@ -3022,12 +3018,11 @@ function renderWorldNeighbors() {
           class="neighbor-spot slot-${slot.state} ${sizeClass} ${sourceClass} ${extraClass}"
           data-world-slot-source="${escapeHtml(slot.source || "dummy")}"
           data-world-seat-id="${escapeHtml(slot.seatId || "")}"
-          style="--slot-x: ${slot.x}%; --slot-y: ${slot.y}%; --slot-scale: ${slot.scale}; --slot-opacity: 1; --slot-mobile-x: ${slot.mobileX}%; --slot-mobile-y: ${slot.mobileY}%; --slot-mobile-scale: ${slot.mobileScale}; --slot-depth: ${slot.depth || 4}; --slot-z: ${slot.depth || 4}; --slot-tilt: ${slot.tilt || 0}deg; --slot-lift: ${slot.lift || 0}px; --slot-ground-opacity: ${slot.groundOpacity || 0.1}; --slot-blur: 0px; --slot-brightness: 1; --slot-sat: 1; --slot-shadow: ${(slot.source === "real" ? 0.28 : slot.depth <= 2 ? 0.16 : slot.depth <= 4 ? 0.2 : slot.depth >= 8 ? 0.24 : 0.22).toFixed(2)};"
+          style="--slot-x: ${slot.x}%; --slot-y: ${slot.y}%; --slot-scale: ${slot.scale}; --slot-mobile-x: ${slot.mobileX}%; --slot-mobile-y: ${slot.mobileY}%; --slot-mobile-scale: ${slot.mobileScale}; --slot-depth: ${slot.depth || 4}; --slot-z: ${slot.depth || 4}; --slot-tilt: ${slot.tilt || 0}deg; --slot-lift: ${slot.lift || 0}px; --slot-ground-opacity: ${slot.groundOpacity || 0.1};"
           aria-label="${escapeHtml(ownerLabel)}${escapeHtml(slot.name)}, ${slot.days}일째 자라는 자리, ${stateLabel}, ${escapeHtml(sourceLabel)}"
         >
           <span class="neighbor-ground" aria-hidden="true"></span>
           <div class="neighbor-tree-wrap" aria-hidden="true">
-            <img class="neighbor-tree-shadow" src="assets/garden/tree-shadow.svg" alt="" />
             <img class="neighbor-tree-image" src="${imageInfo.src}" alt="" />
           </div>
           <small>${escapeHtml(slot.source === "real" ? `${slot.ownerName || "친구"}의 나무` : "")}</small>
@@ -3290,7 +3285,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.72.8 fix4는 시간대별 전체숲 배경과 나무 원근감 보정 구조로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.72.9 test는 시간대별 전체숲 배경과 나무 원근감 보정 구조로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
