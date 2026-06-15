@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.73.0 reset test
+// 살아있는 숲 V1.73.1 whitepaper
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.73.0 reset test
+// 버전명: V1.73.1 whitepaper
 // 목적: 전체숲 시간대별 전용 배경 이미지를 연결하고 오버레이 실험을 원복
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.73.0 reset test",
+  version: "V1.73.1 whitepaper",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -3253,7 +3253,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.73.0 reset test는 시간대별 전체숲 배경 이미지와 기존 Apps Script 저장 구조로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.73.1 whitepaper는 시간대별 전체숲 배경 이미지, 백서 페이지 연결, 기존 Apps Script 저장 구조로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;

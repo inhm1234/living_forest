@@ -21266,3 +21266,64 @@ body.lf-v1730-ux #worldScreen.screen-active .my-world-spot .my-spot-tree-image {
     width: 96px !important;
   }
 }
+
+/* V1.73.1 whitepaper: 홈페이지에서 오늘의숲 백서를 언제든 볼 수 있게 연결 */
+.world-story-nav {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 0;
+}
+
+.world-story-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 8px 14px;
+  border: 1px solid rgba(111, 138, 103, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #45604b;
+  font-size: 13px;
+  font-weight: 950;
+  text-decoration: none;
+  box-shadow: 0 10px 22px rgba(203, 147, 171, 0.12);
+  backdrop-filter: blur(12px);
+}
+
+.world-story-link::before {
+  content: "📘";
+  margin-right: 6px;
+  font-size: 14px;
+}
+
+.site-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 18px auto 0;
+  color: rgba(78, 91, 82, 0.72);
+  font-size: 12px;
+  font-weight: 850;
+  text-align: center;
+}
+
+.site-footer-links a {
+  color: #4d7658;
+  text-decoration: none;
+  font-weight: 950;
+}
+
+@media (max-width: 640px) {
+  .world-story-nav {
+    margin-top: 8px;
+  }
+
+  .world-story-link {
+    min-height: 32px;
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+}

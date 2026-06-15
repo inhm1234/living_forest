@@ -35,7 +35,7 @@
 
   <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.73.0-reset" />
+  <link rel="stylesheet" href="style.css?v=1.73.1-whitepaper" />
 <!-- Google tag (gtag.js) - Living Forest GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-YC872G7MH1"></script>
 <script>
@@ -56,10 +56,13 @@
   <main class="app">
     <section id="worldScreen" class="screen screen-active">
       <header class="hero world-hero">
-        <p class="version">살아있는 숲 V1.73.0 reset test · 시간대 배경 연결</p>
+        <p class="version">살아있는 숲 V1.73.1 whitepaper · 백서 연결</p>
         <h1>살아있는 숲</h1>
         <p class="subtitle">사람들이 남긴 나무가 모여 숲이 되는 곳.</p>
-        <p class="demo-pill">V1.73.0 reset test · 시간대 배경 연결</p>
+        <nav class="world-story-nav" aria-label="오늘의숲 안내">
+          <a class="world-story-link" href="whitepaper.html">오늘의숲 백서</a>
+        </nav>
+        <p class="demo-pill">V1.73.1 whitepaper · 백서 연결</p>
       </header>
 
       <section id="launchGuideCard" class="launch-guide-card glass-panel" aria-labelledby="launchGuideTitle">
@@ -652,6 +655,12 @@
       <button id="backToWorldBtnBottom" class="primary-btn return-btn" type="button">전체 숲으로 돌아가기</button>
       <p class="storage-note">지금은 기록이 이 기기에만 저장돼요. 친구 숲 감각은 먼저 보여주고, 실제 확장 기능은 다음 단계에서 이어갈 예정이에요.</p>
     </section>
+
+    <footer class="site-footer-links" aria-label="오늘의숲 문서 링크">
+      <a href="whitepaper.html">오늘의숲 백서</a>
+      <span aria-hidden="true">·</span>
+      <span>마음이 나무가 되는 작은 숲</span>
+    </footer>
   </main>
 
   <div id="gardenActionModal" class="garden-action-modal hidden" role="dialog" aria-modal="true" aria-labelledby="gardenActionModalTitle" aria-describedby="gardenActionModalDesc">
@@ -711,7 +720,7 @@
     </div>
 
     <p class="test-storage-line">저장키: <span id="testModeStorageKey">livingForestV012_TEST</span></p>
-    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.73.0 reset test · 시간대 배경 연결</span></p>
+    <p class="test-storage-line">데이터: <span id="testModeDataInfo">V1.73.1 whitepaper · 백서 연결</span></p>
 
     <div class="test-preset-buttons">
       <button type="button" data-test-preset="first">첫 방문자</button>
@@ -734,6 +743,6 @@
 
 
   <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.1/kakao.min.js"></script>
-  <script src="app.js?v=1.73.0-reset"></script>
+  <script src="app.js?v=1.73.1-whitepaper"></script>
 </body>
 </html>
