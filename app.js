@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.71.6 test
+// 살아있는 숲 V1.72.0 test
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.71.6 test
+// 버전명: V1.72.0 test
 // 목적: 정원은 고정 게임 무대로 유지하고 HUD 버튼은 최소화, 실제 기능은 짧은 전용 팝업으로만 실행
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.71.6 test",
+  version: "V1.72.0 test",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -658,6 +658,7 @@ const worldAtmosphereHintElement = document.querySelector("#worldAtmosphereHint"
 const worldLifeLayerElement = document.querySelector("#worldLifeLayer");
 const worldParticleLayerElement = document.querySelector("#worldParticleLayer");
 const focusMyTreeBtnElement = document.querySelector("#focusMyTreeBtn");
+const worldInviteBtnElement = document.querySelector("#worldInviteBtn");
 const mySpotAuraElement = document.querySelector("#mySpotAura");
 const mySpotVisualElement = document.querySelector("#mySpotVisual");
 const mySpotNameElement = document.querySelector("#mySpotName");
@@ -2625,7 +2626,7 @@ function playAfterRecordReward(experience) {
     todayChangeCardElement?.classList.add("after-record-card");
     finishGuideCardElement?.classList.add("after-record-card");
 
-    // V1.71.6 test: 기록 직후 화면을 자동 스크롤하지 않고, 현재 보던 정원 무대를 유지합니다.
+    // V1.72.0 test: 기록 직후 화면을 자동 스크롤하지 않고, 현재 보던 정원 무대를 유지합니다.
     closeGardenHubPanel();
 
     if (growthMessageElement && experience?.complete) {
@@ -3321,7 +3322,7 @@ function renderFriendLinksCard() {
 
   if (onlineFriendLinksLoadState === "error") {
     if (friendLinksTitleElement) friendLinksTitleElement.textContent = "친구 관계 저장소 확인이 필요해요";
-    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.71.6 test는 HUD 마감판과 기존 Apps Script 저장 구조로 동작해요.";
+    if (friendLinksTextElement) friendLinksTextElement.textContent = "Apps Script 배포 상태를 확인해 주세요. V1.72.0 test는 HUD 마감판과 기존 Apps Script 저장 구조로 동작해요.";
     if (friendLinksListElement) friendLinksListElement.innerHTML = "";
     if (friendLinksMetaElement) friendLinksMetaElement.textContent = `불러오기 실패: ${onlineFriendLinksLastError || "unknown"}`;
     return;
@@ -4453,11 +4454,11 @@ function renderWorld() {
   }
 
   if (hasCheckedToday()) {
-    goGardenBtnElement.textContent = "내 정원 둘러보기";
+    goGardenBtnElement.textContent = "내 정원";
   } else if (!treeData.treeName?.trim()) {
-    goGardenBtnElement.textContent = treeData.history.length === 0 ? "오늘의 기록 시작하기" : "내 나무 이름 정하기";
+    goGardenBtnElement.textContent = "내 정원";
   } else {
-    goGardenBtnElement.textContent = "오늘 마음 기록하기";
+    goGardenBtnElement.textContent = "내 정원";
   }
 }
 
@@ -5937,7 +5938,7 @@ function updateOneActionStepUI() {
     document.body.classList.remove("lf-show-seed");
   }
 
-  // V1.71.6 test: 화면 갱신 때마다 패널을 강제로 열지 않습니다.
+  // V1.72.0 test: 화면 갱신 때마다 패널을 강제로 열지 않습니다.
   // 사용자가 누른 버튼/패널 상태를 유지해서 나무 무대가 갑자기 밀리거나 가려지는 느낌을 줄입니다.
 
   if (gardenPanelTitleElement && !gardenHubElement?.classList.contains("is-open")) {
@@ -6472,7 +6473,7 @@ function focusFirstRecordStep() {
     const hasTreeName = Boolean(treeData.treeName?.trim());
     const targetElement = !hasTreeName && treeNameInputElement ? treeNameInputElement : moodCardElement;
 
-    // V1.71.6 test: 첫 기록 안내도 자동 스크롤 없이 플로팅 패널 안에서만 강조합니다.
+    // V1.72.0 test: 첫 기록 안내도 자동 스크롤 없이 플로팅 패널 안에서만 강조합니다.
 
     if (!hasTreeName && treeNameInputElement) {
       try {
@@ -6678,6 +6679,9 @@ goGardenBtnElement.addEventListener("click", () => showGardenScreen());
 if (focusMyTreeBtnElement) {
   focusMyTreeBtnElement.addEventListener("click", focusMyWorldSpot);
 }
+if (worldInviteBtnElement) {
+  worldInviteBtnElement.addEventListener("click", () => openGardenActionModal("letter"));
+}
 backToWorldBtnTopElement.addEventListener("click", showWorldScreen);
 backToWorldBtnBottomElement.addEventListener("click", showWorldScreen);
 
@@ -6712,7 +6716,7 @@ function buildGardenHubLayout() {
   if (!gardenHubElement || gardenHubLayoutBuilt) return;
   gardenHubLayoutBuilt = true;
 
-  // V1.71.6 test: 하단 패널 대신 게임 HUD 버튼만 남기고 기능은 팝업에서 엽니다.
+  // V1.72.0 test: 하단 패널 대신 게임 HUD 버튼만 남기고 기능은 팝업에서 엽니다.
   // 접힌 상태와 열린 상태 모두 정원 무대 크기에 영향을 주지 않게 합니다.
   const gardenCardElement = document.querySelector(".garden-card.visual-card") || document.querySelector(".garden-card");
   if (gardenCardElement && gardenHubElement.parentElement !== gardenCardElement) {
@@ -6791,7 +6795,7 @@ function buildGardenHubLayout() {
 
   bindGardenModalActions();
 
-  // V1.71.6 test: 첫 진입에서는 나무가 먼저 보이도록 HUD만 보입니다.
+  // V1.72.0 test: 첫 진입에서는 나무가 먼저 보이도록 HUD만 보입니다.
   closeGardenHubPanel();
   updateOneActionStepUI();
 }
