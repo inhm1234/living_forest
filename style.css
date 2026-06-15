@@ -21327,3 +21327,40 @@ body.lf-v1730-ux #worldScreen.screen-active .my-world-spot .my-spot-tree-image {
     font-size: 12px;
   }
 }
+
+
+/* V1.73.2 hotfix: 상단 HUD 안의 백서 링크 클릭 가능 처리 */
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero {
+  pointer-events: auto !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero h1,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .subtitle,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero h1,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .subtitle {
+  pointer-events: none !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-story-nav,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-story-link,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-story-nav,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-story-link {
+  pointer-events: auto !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-story-nav,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-story-nav {
+  display: flex !important;
+  justify-content: flex-start !important;
+  margin-top: 8px !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-story-link,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-story-link {
+  position: relative !important;
+  z-index: 2 !important;
+  min-height: 30px !important;
+  padding: 6px 12px !important;
+  cursor: pointer !important;
+}

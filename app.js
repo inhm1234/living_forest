@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.73.1 whitepaper
+// 살아있는 숲 V1.73.2 whitepaper hotfix
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.73.1 whitepaper
+// 버전명: V1.73.2 whitepaper hotfix
 // 목적: 전체숲 시간대별 전용 배경 이미지를 연결하고 오버레이 실험을 원복
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.73.1 whitepaper",
+  version: "V1.73.2 whitepaper hotfix",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -2731,8 +2731,12 @@ function createWorldAtmosphere(key, forced = false) {
 
 function getWorldAtmosphereInfo() {
   const forcedWorldTime = (urlParams.get("worldTime") || "").toLowerCase();
+  const isExplicitTestMode = ["1", "true", "yes"].includes((urlParams.get("test") || "").toLowerCase());
 
-  if (["day", "sunset", "night"].includes(forcedWorldTime)) {
+  // V1.73.2 hotfix:
+  // worldTime은 테스트 링크에서만 강제 적용한다.
+  // 일반 방문 URL에 worldTime=sunset/night 값이 남아 있으면 실제 시간대와 어긋나므로 무시한다.
+  if (isExplicitTestMode && ["day", "sunset", "night"].includes(forcedWorldTime)) {
     return createWorldAtmosphere(forcedWorldTime, true);
   }
 
