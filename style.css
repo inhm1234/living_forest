@@ -20212,3 +20212,531 @@ body.lf-v1724-ux:not(.online-friend-invite-mode) #worldScreen.screen-active .wor
   }
 }
 
+
+/* ===== V1.72.4 test hotfix: 전체숲 HUD/여백 복구 =====
+   목적:
+   - 이전 V1.72.4에서 상단 글씨/하단 버튼이 사라져 보이는 문제 수정
+   - 앱 max-width/캐시/기존 월드 CSS 영향과 무관하게 전체숲을 한 화면 고정 무대로 강제
+   - 내 정원 V1.71.6 구조에는 적용하지 않음
+*/
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode),
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) {
+  width: 100vw !important;
+  height: 100svh !important;
+  min-height: 100svh !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  background:
+    radial-gradient(circle at 50% 7%, rgba(255, 226, 244, 0.72), transparent 34%),
+    radial-gradient(circle at 15% 86%, rgba(217, 246, 255, 0.34), transparent 34%),
+    linear-gradient(180deg, #fff7fb 0%, #f1ffe9 100%) !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) .app,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) .app {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100svh !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 80 !important;
+  display: block !important;
+  width: 100vw !important;
+  height: 100svh !important;
+  max-height: 100svh !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: max(6px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left)) !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  background: transparent !important;
+}
+
+/* 긴 설명/관리 카드는 계속 숨기되, 상단 제목 HUD와 하단 버튼 HUD는 살린다. */
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active > :not(.world-card):not(.world-hero),
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active > :not(.world-card):not(.world-hero) {
+  display: none !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero {
+  position: fixed !important;
+  left: max(18px, env(safe-area-inset-left)) !important;
+  top: max(16px, env(safe-area-inset-top)) !important;
+  z-index: 220 !important;
+  display: block !important;
+  width: min(390px, calc(100vw - 36px)) !important;
+  margin: 0 !important;
+  padding: 10px 14px 11px !important;
+  border-radius: 22px !important;
+  border: 1px solid rgba(255, 255, 255, 0.66) !important;
+  background: rgba(255, 255, 255, 0.58) !important;
+  box-shadow: 0 10px 24px rgba(115, 79, 100, 0.11) !important;
+  backdrop-filter: blur(12px) saturate(1.06) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(1.06) !important;
+  text-align: left !important;
+  pointer-events: none !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .version,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .demo-pill,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .version,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .demo-pill {
+  display: none !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero h1,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero h1 {
+  display: block !important;
+  margin: 0 !important;
+  color: rgba(74, 48, 69, 0.95) !important;
+  font-size: clamp(22px, 3.2svh, 31px) !important;
+  line-height: 1 !important;
+  letter-spacing: -0.06em !important;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.56), 0 8px 20px rgba(120, 78, 102, 0.10) !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .subtitle,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .subtitle {
+  display: block !important;
+  margin: 5px 0 0 !important;
+  color: rgba(84, 60, 78, 0.70) !important;
+  font-size: clamp(11px, 1.45svh, 13px) !important;
+  font-weight: 800 !important;
+  line-height: 1.18 !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card.visual-card,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card.visual-card {
+  position: fixed !important;
+  left: max(6px, env(safe-area-inset-left)) !important;
+  top: max(6px, env(safe-area-inset-top)) !important;
+  right: max(6px, env(safe-area-inset-right)) !important;
+  bottom: max(6px, env(safe-area-inset-bottom)) !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border-radius: clamp(22px, 3vw, 34px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.74) !important;
+  background: #eff8da !important;
+  box-shadow: 0 18px 46px rgba(116, 83, 105, 0.18), inset 0 1px 0 rgba(255,255,255,0.70) !important;
+  transform: none !important;
+  box-sizing: border-box !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::before,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 36 !important;
+  pointer-events: none !important;
+  background:
+    linear-gradient(180deg, rgba(255, 250, 253, 0.16) 0%, rgba(255, 250, 253, 0.02) 34%, rgba(255, 245, 250, 0.07) 100%),
+    radial-gradient(ellipse at 50% 104%, rgba(116, 74, 102, 0.09), transparent 44%) !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
+  content: "V1.72.4 test" !important;
+  position: fixed !important;
+  right: max(16px, env(safe-area-inset-right)) !important;
+  top: max(16px, env(safe-area-inset-top)) !important;
+  z-index: 222 !important;
+  min-height: 28px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 11px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,0.64) !important;
+  background: rgba(255,255,255,0.60) !important;
+  color: rgba(122, 83, 106, 0.74) !important;
+  font-size: 10.5px !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.02em !important;
+  box-shadow: 0 8px 17px rgba(116, 83, 105, 0.09) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  pointer-events: none !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-day,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-day,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  border-radius: inherit !important;
+  overflow: hidden !important;
+  background-color: #edf8d8 !important;
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.02)),
+    url("assets/world/world_forest_pastel_v1_72_4.png") !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  filter: none !important;
+  transform: none !important;
+  perspective: none !important;
+  transform-style: flat !important;
+  isolation: isolate !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-sunset {
+  background-image:
+    linear-gradient(180deg, rgba(255, 225, 185, 0.12), rgba(255, 192, 220, 0.04)),
+    url("assets/world/world_forest_pastel_v1_72_4.png") !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage.world-time-night {
+  background-image:
+    linear-gradient(180deg, rgba(85, 111, 158, 0.18), rgba(75, 54, 96, 0.16)),
+    url("assets/world/world_forest_pastel_v1_72_4.png") !important;
+  filter: saturate(0.92) brightness(0.90) !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage::before,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 30 !important;
+  pointer-events: none !important;
+  background:
+    radial-gradient(ellipse at 50% 46%, transparent 0 52%, rgba(255,255,255,0.13) 78%, rgba(116, 83, 105, 0.10) 100%),
+    linear-gradient(90deg, rgba(255,255,255,0.16), transparent 16%, transparent 84%, rgba(255,255,255,0.14)) !important;
+  opacity: 1 !important;
+  mix-blend-mode: normal !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage::after,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-stage::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 32 !important;
+  pointer-events: none !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 34%, rgba(255, 246, 252, 0.06) 100%) !important;
+  mix-blend-mode: normal !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-time-badge,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-time-badge {
+  position: fixed !important;
+  left: max(18px, env(safe-area-inset-left)) !important;
+  top: calc(max(16px, env(safe-area-inset-top)) + 78px) !important;
+  z-index: 224 !important;
+  display: inline-flex !important;
+  min-height: 27px !important;
+  padding: 0 11px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,0.60) !important;
+  background: rgba(255,255,255,0.58) !important;
+  color: rgba(95, 73, 88, 0.76) !important;
+  font-size: 10.5px !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  box-shadow: 0 8px 17px rgba(116, 83, 105, 0.09) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-backdrop,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-dim,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-depth,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-depth-back,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-canopy-shadow,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-far-trees,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-mid-trees,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-forest-trail,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-clearing,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-spot-ground,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-foreground,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-front-leaves,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-empty-slots,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-density-fallback,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #worldStarterFriends,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-summary,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-growth-card,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-place-card,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .first-visit-guide,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .daily-loop-card,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .friend-forest-card,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .friend-links-card,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .friend-invite-card,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .forest-invite-card,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .online-friend-join-card,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-backdrop,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-dim,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-depth,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-depth-back,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-canopy-shadow,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-far-trees,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-mid-trees,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-forest-trail,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-clearing,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-spot-ground,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-foreground,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-front-leaves,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-empty-slots,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-density-fallback,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStarterFriends,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-summary,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-growth-card,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-place-card,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .first-visit-guide,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .daily-loop-card,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .friend-forest-card,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .friend-links-card,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .friend-invite-card,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .forest-invite-card,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .online-friend-join-card {
+  display: none !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 24 !important;
+  display: block !important;
+  pointer-events: none !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot {
+  display: block !important;
+  left: var(--slot-x, 50%) !important;
+  top: var(--slot-y, 50%) !important;
+  width: 86px !important;
+  height: 112px !important;
+  opacity: calc(var(--slot-opacity, 0.64) * 0.62) !important;
+  z-index: var(--slot-z, 4) !important;
+  transform: translate(-50%, -50%) translateY(var(--slot-lift, 0px)) rotate(var(--slot-tilt, 0deg)) scale(var(--slot-scale, 1)) !important;
+  transform-origin: center bottom !important;
+  filter: blur(var(--slot-blur, 0.1px)) brightness(var(--slot-brightness, 1)) saturate(var(--slot-sat, 1)) drop-shadow(0 8px 12px rgba(90, 66, 78, var(--slot-shadow, 0.12))) !important;
+  animation: neighborBreath 7.2s ease-in-out infinite !important;
+  overflow: visible !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-dummy small,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-seat-dummy small,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-dummy small,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #worldNeighborSpots .neighbor-spot.is-seat-dummy small {
+  display: none !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot.my-world-spot,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot.my-world-spot {
+  position: absolute !important;
+  left: 36% !important;
+  top: 74% !important;
+  bottom: auto !important;
+  z-index: 42 !important;
+  width: clamp(86px, 9vw, 118px) !important;
+  min-height: clamp(108px, 12vw, 142px) !important;
+  transform: translate(-50%, -50%) !important;
+  opacity: 1 !important;
+  filter: drop-shadow(0 8px 15px rgba(105, 72, 90, 0.18)) !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot .my-spot-visual,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot .my-spot-visual {
+  width: 100% !important;
+  height: clamp(92px, 10.5vw, 128px) !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot .my-spot-tree-wrap,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot .my-spot-tree-wrap {
+  width: clamp(70px, 7.8vw, 98px) !important;
+  height: clamp(90px, 10.5vw, 126px) !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot .my-spot-name,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot .my-spot-name {
+  bottom: -6px !important;
+  min-height: 23px !important;
+  padding: 0 9px !important;
+  font-size: 10.5px !important;
+  background: rgba(255, 255, 255, 0.76) !important;
+  color: rgba(75, 58, 72, 0.88) !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions {
+  position: fixed !important;
+  right: max(16px, env(safe-area-inset-right)) !important;
+  bottom: max(16px, env(safe-area-inset-bottom)) !important;
+  z-index: 230 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  width: auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  pointer-events: auto !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row button,
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions button,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row button,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions button {
+  display: inline-flex !important;
+  width: auto !important;
+  min-width: 58px !important;
+  min-height: 36px !important;
+  padding: 0 13px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,0.64) !important;
+  background: rgba(255, 255, 255, 0.70) !important;
+  color: rgba(77, 61, 73, 0.88) !important;
+  box-shadow: 0 8px 16px rgba(97, 72, 88, 0.13) !important;
+  font-size: 11.4px !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row #goGardenBtn,
+body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row #goGardenBtn {
+  background: rgba(255, 218, 239, 0.86) !important;
+}
+
+@media (max-width: 640px) {
+  body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active,
+  body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active {
+    padding: max(5px, env(safe-area-inset-top)) max(5px, env(safe-area-inset-right)) max(5px, env(safe-area-inset-bottom)) max(5px, env(safe-area-inset-left)) !important;
+  }
+
+  body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card,
+  body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card.visual-card,
+  body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card,
+  body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card.visual-card {
+    left: max(5px, env(safe-area-inset-left)) !important;
+    top: max(5px, env(safe-area-inset-top)) !important;
+    right: max(5px, env(safe-area-inset-right)) !important;
+    bottom: max(5px, env(safe-area-inset-bottom)) !important;
+    border-radius: 24px !important;
+  }
+
+  body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero,
+  body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero {
+    left: max(12px, env(safe-area-inset-left)) !important;
+    top: max(12px, env(safe-area-inset-top)) !important;
+    width: min(280px, calc(100vw - 24px)) !important;
+    padding: 8px 11px 9px !important;
+    border-radius: 18px !important;
+  }
+
+  body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero h1,
+  body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero h1 {
+    font-size: 22px !important;
+  }
+
+  body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .subtitle,
+  body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hero .subtitle {
+    font-size: 11px !important;
+  }
+
+  body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
+  body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
+    display: none !important;
+  }
+
+  body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-time-badge,
+  body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-time-badge {
+    left: max(12px, env(safe-area-inset-left)) !important;
+    top: calc(max(12px, env(safe-area-inset-top)) + 68px) !important;
+    min-height: 24px !important;
+    padding: 0 8px !important;
+    font-size: 9.8px !important;
+  }
+
+  body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot.my-world-spot,
+  body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot.my-world-spot {
+    left: 36% !important;
+    top: 73% !important;
+    width: 78px !important;
+    min-height: 102px !important;
+  }
+
+  body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot .my-spot-tree-wrap,
+  body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot .my-spot-tree-wrap {
+    width: 60px !important;
+    height: 80px !important;
+  }
+
+  body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row,
+  body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions,
+  body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row,
+  body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions {
+    right: max(11px, env(safe-area-inset-right)) !important;
+    bottom: max(11px, env(safe-area-inset-bottom)) !important;
+    gap: 6px !important;
+  }
+
+  body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row button,
+  body.lf-v1724-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions button,
+  body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-action-row button,
+  body.lf-v1724-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-hud-actions button {
+    min-width: 50px !important;
+    min-height: 33px !important;
+    padding: 0 9px !important;
+    font-size: 10.4px !important;
+  }
+}

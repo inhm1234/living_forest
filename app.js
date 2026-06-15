@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.72.4 test
+// 살아있는 숲 V1.72.4 test hotfix
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.72.4 test
+// 버전명: V1.72.4 test hotfix
 // 목적: 정원은 고정 게임 무대로 유지하고 HUD 버튼은 최소화, 실제 기능은 짧은 전용 팝업으로만 실행
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.72.4 test",
+  version: "V1.72.4 test hotfix",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
