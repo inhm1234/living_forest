@@ -1,7 +1,8 @@
-살아있는 숲 V1.73.8 growth variety + hero size hotfix
+살아있는 숲 V1.73.9 world tree big scale + class fix hotfix
 
-- 내 나무 stage별 크기 확대
-- 더미 나무 성장 다양화
-- 더미/주변 나무 크기 추가 확대
+- body class 누락 수정
+- style/app cache bust 갱신
+- 주변 나무 대폭 확대
+- 내 나무 대폭 확대
+- 더미 나무 성장 다양화 유지
 - 내 자리 위치 고정 유지
-- 백서 버튼 / 실제 시간대 유지

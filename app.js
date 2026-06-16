@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.73.8 growth variety + hero size hotfix
+// 살아있는 숲 V1.73.9 world tree big scale + class fix hotfix
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.73.8 growth variety + hero size hotfix
+// 버전명: V1.73.9 world tree big scale + class fix hotfix
 // 목적: 전체숲 시간대별 전용 배경 이미지를 연결하고 오버레이 실험을 원복
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.73.8 growth variety + hero size hotfix",
+  version: "V1.73.9 world tree big scale + class fix hotfix",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -591,21 +591,21 @@ const friendInviteSeatSlots = [
 let selectedFriendInviteSeatId = "flower_path";
 
 const worldForestSlots = [
-  { id: "citizen-back-left", name: "하루의 나무", ownerName: "루나", state: "balanced", days: 18, x: 31, y: 43, scale: 0.76, mobileX: 30, mobileY: 44, mobileScale: 0.62, depth: 2, tilt: -2 },
-  { id: "citizen-back-right", name: "별잎 나무", ownerName: "모모", state: "leaf-strong", days: 28, x: 75, y: 43, scale: 0.78, mobileX: 76, mobileY: 44, mobileScale: 0.64, depth: 2, tilt: 2 },
-  { id: "citizen-mid-left", name: "다정한 나무", ownerName: "나린", state: "root-strong", days: 44, x: 14, y: 60, scale: 0.92, mobileX: 13, mobileY: 61, mobileScale: 0.76, depth: 4, tilt: -3 },
-  { id: "citizen-mid-right", name: "말랑잎 나무", ownerName: "소미", state: "balanced", days: 58, x: 86, y: 60, scale: 0.94, mobileX: 87, mobileY: 61, mobileScale: 0.78, depth: 4, tilt: 3 },
-  { id: "citizen-front-left", name: "햇살 나무", ownerName: "유리", state: "leaf-strong", days: 76, x: 24, y: 77, scale: 1.10, mobileX: 23, mobileY: 78, mobileScale: 0.90, depth: 6, tilt: -2 },
-  { id: "citizen-front-right", name: "꽃잠 나무", ownerName: "하린", state: "balanced", days: 92, x: 76, y: 77, scale: 1.10, mobileX: 77, mobileY: 78, mobileScale: 0.90, depth: 6, tilt: 2 }
+  { id: "citizen-back-left", name: "하루의 나무", ownerName: "루나", state: "balanced", days: 12, x: 30, y: 43, scale: 0.94, mobileX: 29, mobileY: 44, mobileScale: 0.76, depth: 2, tilt: -2 },
+  { id: "citizen-back-right", name: "별잎 나무", ownerName: "모모", state: "leaf-strong", days: 24, x: 76, y: 43, scale: 0.96, mobileX: 77, mobileY: 44, mobileScale: 0.78, depth: 2, tilt: 2 },
+  { id: "citizen-mid-left", name: "다정한 나무", ownerName: "나린", state: "root-strong", days: 46, x: 14, y: 60, scale: 1.14, mobileX: 13, mobileY: 61, mobileScale: 0.92, depth: 4, tilt: -3 },
+  { id: "citizen-mid-right", name: "말랑잎 나무", ownerName: "소미", state: "balanced", days: 63, x: 86, y: 60, scale: 1.16, mobileX: 87, mobileY: 61, mobileScale: 0.94, depth: 4, tilt: 3 },
+  { id: "citizen-front-left", name: "햇살 나무", ownerName: "유리", state: "leaf-strong", days: 84, x: 24, y: 77, scale: 1.38, mobileX: 23, mobileY: 78, mobileScale: 1.08, depth: 6, tilt: -2 },
+  { id: "citizen-front-right", name: "꽃잠 나무", ownerName: "하린", state: "balanced", days: 98, x: 76, y: 77, scale: 1.38, mobileX: 77, mobileY: 78, mobileScale: 1.08, depth: 6, tilt: 2 }
 ];
 
 
 const worldCommunitySeatSlots = {
-  flower_path: { id: "community-seat-flower_path", name: "기다리는 꽃길나무", className: "row-community community-left trail-edge", state: "balanced", days: 14, x: 26, y: 76, scale: 1.06, opacity: 0.72, depth: 10, tilt: -5, lift: 10, groundOpacity: 0.062, mobileX: 25, mobileY: 77, mobileScale: 0.86 },
-  sunny_spot: { id: "community-seat-sunny_spot", name: "기다리는 햇살나무", className: "row-community community-back trail-edge", state: "leaf-strong", days: 22, x: 36, y: 48, scale: 0.82, opacity: 0.64, depth: 9, tilt: -3, lift: 5, groundOpacity: 0.048, mobileX: 35, mobileY: 49, mobileScale: 0.68 },
-  pond_spot: { id: "community-seat-pond_spot", name: "기다리는 연못나무", className: "row-community community-back trail-edge", state: "root-strong", days: 34, x: 64, y: 48, scale: 0.84, opacity: 0.64, depth: 9, tilt: 3, lift: 5, groundOpacity: 0.048, mobileX: 65, mobileY: 49, mobileScale: 0.70 },
-  swing_spot: { id: "community-seat-swing_spot", name: "기다리는 그네나무", className: "row-community community-right trail-edge", state: "balanced", days: 48, x: 74, y: 76, scale: 1.08, opacity: 0.72, depth: 10, tilt: 5, lift: 10, groundOpacity: 0.062, mobileX: 75, mobileY: 77, mobileScale: 0.88 },
-  flower_fence: { id: "community-seat-flower_fence", name: "기다리는 꽃담나무", className: "row-community community-front trail-edge", state: "leaf-strong", days: 68, x: 50, y: 71, scale: 0.98, opacity: 0.66, depth: 10, tilt: 0, lift: 9, groundOpacity: 0.056, mobileX: 50, mobileY: 72, mobileScale: 0.80 }
+  flower_path: { id: "community-seat-flower_path", name: "기다리는 꽃길나무", className: "row-community community-left trail-edge", state: "balanced", days: 16, x: 26, y: 76, scale: 1.22, opacity: 0.72, depth: 10, tilt: -5, lift: 10, groundOpacity: 0.062, mobileX: 25, mobileY: 77, mobileScale: 0.98 },
+  sunny_spot: { id: "community-seat-sunny_spot", name: "기다리는 햇살나무", className: "row-community community-back trail-edge", state: "leaf-strong", days: 22, x: 36, y: 48, scale: 1.00, opacity: 0.64, depth: 9, tilt: -3, lift: 5, groundOpacity: 0.048, mobileX: 35, mobileY: 49, mobileScale: 0.80 },
+  pond_spot: { id: "community-seat-pond_spot", name: "기다리는 연못나무", className: "row-community community-back trail-edge", state: "root-strong", days: 36, x: 64, y: 48, scale: 1.02, opacity: 0.64, depth: 9, tilt: 3, lift: 5, groundOpacity: 0.048, mobileX: 65, mobileY: 49, mobileScale: 0.82 },
+  swing_spot: { id: "community-seat-swing_spot", name: "기다리는 그네나무", className: "row-community community-right trail-edge", state: "balanced", days: 52, x: 74, y: 76, scale: 1.24, opacity: 0.72, depth: 10, tilt: 5, lift: 10, groundOpacity: 0.062, mobileX: 75, mobileY: 77, mobileScale: 1.00 },
+  flower_fence: { id: "community-seat-flower_fence", name: "기다리는 꽃담나무", className: "row-community community-front trail-edge", state: "leaf-strong", days: 74, x: 50, y: 71, scale: 1.14, opacity: 0.66, depth: 10, tilt: 0, lift: 9, groundOpacity: 0.056, mobileX: 50, mobileY: 72, mobileScale: 0.92 }
 };
 
 const worldScreenElement = document.querySelector("#worldScreen");
