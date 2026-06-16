@@ -22229,3 +22229,12 @@ body.lf-v17313-ux #worldScreen.screen-active #myWorldSpot.my-tree-exact-match .m
 body.lf-v17313-ux #worldScreen.screen-active #myWorldSpot.my-tree-exact-match .my-spot-status {
   z-index: 4 !important;
 }
+
+
+/* V1.73.14 my tree balanced-size hotfix
+   V1.73.13 exact-match는 체급은 맞췄지만 중앙 주인공 나무가 약간 과해 보였다.
+   이번 버전은 동일 컨셉을 유지하면서 전체 크기를 약 9~10% 줄여 더 자연스럽게 맞춘다. */
+body.lf-v17314-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
+body.lf-v17314-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
+  content: "V1.73.14 my tree balanced-size hotfix" !important;
+}

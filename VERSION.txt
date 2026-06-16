@@ -1,4 +1,4 @@
-살아있는 숲 V1.73.13 my tree exact-match hotfix
+살아있는 숲 V1.73.14 my tree balanced-size hotfix
 
-- 내 나무 = 앞줄 더미 나무 체급 direct match
-- inline important size override
+- 내 나무 약 9~10% 축소
+- exact-match 방식 유지
