@@ -1,6 +1,6 @@
-살아있는 숲 V1.73.10 my tree upsize hotfix
+살아있는 숲 V1.73.11 my tree world-visual boost hotfix
 
-- 내 나무 월드 표현 크기 확대
+- 내 나무 world visual boost
+- worldDisplayDays 보정 추가
 - 주변 큰 나무 크기 유지
-- 더미 나무 성장 다양화 유지
 - 내 자리 위치 고정 유지

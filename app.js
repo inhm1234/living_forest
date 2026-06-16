@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.73.10 my tree upsize hotfix
+// 살아있는 숲 V1.73.11 my tree world-visual boost hotfix
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.73.10 my tree upsize hotfix
+// 버전명: V1.73.11 my tree world-visual boost hotfix
 // 목적: 전체숲 시간대별 전용 배경 이미지를 연결하고 오버레이 실험을 원복
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.73.10 my tree upsize hotfix",
+  version: "V1.73.11 my tree world-visual boost hotfix",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -2484,6 +2484,30 @@ function getWorldTreeSizeClass(days) {
   return "world-tree-hero";
 }
 
+function getWorldDisplayDays(days) {
+  if (days <= 0) {
+    return 0;
+  }
+
+  if (days <= 2) {
+    return 21;
+  }
+
+  if (days <= 6) {
+    return 30;
+  }
+
+  if (days <= 20) {
+    return 45;
+  }
+
+  if (days <= 59) {
+    return 68;
+  }
+
+  return days;
+}
+
 function getTreeState() {
   const todayMoodState = getTodayMoodState();
 
@@ -4399,8 +4423,9 @@ function renderWorld() {
   const name = treeData.treeName?.trim() || "이름 없는 나무";
   const todayRecord = getTodayRecord();
   const spotInfo = getWorldSpotInfo();
-  const myTreeImageInfo = getTreeImageInfo();
-  const myWorldTreeSizeClass = getWorldTreeSizeClass(treeData.history.length);
+  const myWorldDisplayDays = getWorldDisplayDays(treeData.history.length);
+  const myTreeImageInfo = getTreeImageInfoByDays(myWorldDisplayDays);
+  const myWorldTreeSizeClass = getWorldTreeSizeClass(myWorldDisplayDays);
 
   renderWorldNeighbors();
   renderWorldCommunityHint(todayRecord);
