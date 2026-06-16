@@ -22238,3 +22238,12 @@ body.lf-v17314-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.s
 body.lf-v17314-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
   content: "V1.73.14 my tree balanced-size hotfix" !important;
 }
+
+
+/* V1.73.15 my tree softer-balance hotfix
+   V1.73.14보다 한 번 더 줄여 중앙 나무가 너무 튀는 느낌을 덜어낸 버전.
+   exact-match 기반은 유지하되 체급을 더 자연스럽게 낮춘다. */
+body.lf-v17315-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
+body.lf-v17315-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
+  content: "V1.73.15 my tree softer-balance hotfix" !important;
+}
