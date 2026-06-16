@@ -21983,3 +21983,75 @@ body.lf-v1739-ux.world-focus-running #worldScreen.screen-active #myWorldSpot .my
   body.lf-v1739-ux #worldScreen.screen-active #myWorldSpot.world-tree-young .my-spot-tree-wrap { width: 174px !important; height: 222px !important; }
   body.lf-v1739-ux #worldScreen.screen-active #myWorldSpot.world-tree-hero .my-spot-tree-wrap { width: 186px !important; height: 238px !important; }
 }
+
+
+/* V1.73.10 my tree upsize hotfix
+   사용자 피드백: 주변 큰 나무 크기는 만족하지만, 내 나무는 여전히 너무 작아 보인다.
+   해결: 월드 숲의 내 나무만 한 단계 더 크게 키워 주변 큰 나무와 비슷한 존재감을 갖게 한다. */
+body.lf-v17310-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
+body.lf-v17310-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
+  content: "V1.73.10 my tree upsize hotfix" !important;
+}
+
+body.lf-v17310-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot.my-world-spot,
+body.lf-v17310-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot.my-world-spot,
+body.lf-v17310-ux.world-focus-running #worldScreen.screen-active #myWorldSpot.my-world-spot {
+  width: 310px !important;
+  bottom: 82px !important;
+}
+
+body.lf-v17310-ux #worldScreen.screen-active #myWorldSpot .my-spot-visual {
+  width: 278px !important;
+  height: 292px !important;
+}
+
+body.lf-v17310-ux #worldScreen.screen-active #myWorldSpot .my-spot-ground-shadow {
+  width: 190px !important;
+  height: 42px !important;
+  bottom: 10px !important;
+  opacity: 1 !important;
+}
+
+body.lf-v17310-ux #worldScreen.screen-active #myWorldSpot.world-tree-seed .my-spot-tree-wrap { width: 188px !important; height: 244px !important; bottom: 6px !important; }
+body.lf-v17310-ux #worldScreen.screen-active #myWorldSpot.world-tree-sprout .my-spot-tree-wrap { width: 214px !important; height: 272px !important; bottom: 4px !important; }
+body.lf-v17310-ux #worldScreen.screen-active #myWorldSpot.world-tree-sapling .my-spot-tree-wrap { width: 238px !important; height: 300px !important; bottom: 2px !important; }
+body.lf-v17310-ux #worldScreen.screen-active #myWorldSpot.world-tree-young .my-spot-tree-wrap { width: 262px !important; height: 328px !important; bottom: 0 !important; }
+body.lf-v17310-ux #worldScreen.screen-active #myWorldSpot.world-tree-hero .my-spot-tree-wrap { width: 276px !important; height: 346px !important; bottom: -2px !important; }
+
+body.lf-v17310-ux #worldScreen.screen-active #myWorldSpot .my-spot-tree-image {
+  filter: drop-shadow(0 20px 28px rgba(0,0,0,0.34)) !important;
+}
+
+body.lf-v17310-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-stage.world-focus-active #myWorldSpot.my-world-spot,
+body.lf-v17310-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-stage.world-focus-active #myWorldSpot.my-world-spot,
+body.lf-v17310-ux.world-focus-running #worldScreen.screen-active #myWorldSpot.my-world-spot {
+  width: 310px !important;
+  bottom: 82px !important;
+  transform: translateX(-50%) !important;
+}
+
+body.lf-v17310-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-stage.world-focus-active #myWorldSpot .my-spot-tree-wrap,
+body.lf-v17310-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-stage.world-focus-active #myWorldSpot .my-spot-tree-wrap,
+body.lf-v17310-ux.world-focus-running #worldScreen.screen-active #myWorldSpot .my-spot-tree-wrap {
+  transform: translateX(-50%) scale(1.03) !important;
+}
+
+@media (max-width: 560px) {
+  body.lf-v17310-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot.my-world-spot,
+  body.lf-v17310-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot.my-world-spot,
+  body.lf-v17310-ux.world-focus-running #worldScreen.screen-active #myWorldSpot.my-world-spot {
+    width: 248px !important;
+    bottom: 78px !important;
+  }
+
+  body.lf-v17310-ux #worldScreen.screen-active #myWorldSpot .my-spot-visual {
+    width: 216px !important;
+    height: 228px !important;
+  }
+
+  body.lf-v17310-ux #worldScreen.screen-active #myWorldSpot.world-tree-seed .my-spot-tree-wrap { width: 150px !important; height: 194px !important; }
+  body.lf-v17310-ux #worldScreen.screen-active #myWorldSpot.world-tree-sprout .my-spot-tree-wrap { width: 172px !important; height: 220px !important; }
+  body.lf-v17310-ux #worldScreen.screen-active #myWorldSpot.world-tree-sapling .my-spot-tree-wrap { width: 190px !important; height: 244px !important; }
+  body.lf-v17310-ux #worldScreen.screen-active #myWorldSpot.world-tree-young .my-spot-tree-wrap { width: 208px !important; height: 268px !important; }
+  body.lf-v17310-ux #worldScreen.screen-active #myWorldSpot.world-tree-hero .my-spot-tree-wrap { width: 220px !important; height: 284px !important; }
+}
