@@ -22212,3 +22212,20 @@ body.lf-v17312-ux.world-focus-running #worldScreen.screen-active #myWorldSpot .m
     height: 300px !important;
   }
 }
+
+
+/* V1.73.13 my tree exact-match hotfix
+   이번 버전은 간접 확대가 아니라, 내 나무를 앞줄 더미 나무와 같은 체급으로
+   직접 맞추기 위한 최종판이다. 실제 크기 강제는 app.js에서 inline !important로 수행한다. */
+body.lf-v17313-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
+body.lf-v17313-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
+  content: "V1.73.13 my tree exact-match hotfix" !important;
+}
+
+body.lf-v17313-ux #worldScreen.screen-active #myWorldSpot.my-tree-exact-match .my-spot-name {
+  z-index: 5 !important;
+}
+
+body.lf-v17313-ux #worldScreen.screen-active #myWorldSpot.my-tree-exact-match .my-spot-status {
+  z-index: 4 !important;
+}

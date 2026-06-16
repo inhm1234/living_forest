@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.73.12 my tree hero-scale hotfix
+// 살아있는 숲 V1.73.13 my tree exact-match hotfix
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.73.12 my tree hero-scale hotfix
+// 버전명: V1.73.13 my tree exact-match hotfix
 // 목적: 전체숲 시간대별 전용 배경 이미지를 연결하고 오버레이 실험을 원복
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.73.12 my tree hero-scale hotfix",
+  version: "V1.73.13 my tree exact-match hotfix",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -4422,6 +4422,95 @@ async function shareFriendInviteToKakao() {
   }
 }
 
+function applyMyWorldSpotExactMatchSize() {
+  if (!myWorldSpotElement || !mySpotVisualElement) {
+    return;
+  }
+
+  const isMobile = typeof window !== "undefined" && window.innerWidth <= 560;
+
+  /*
+    기준: 사용자가 비교 대상으로 삼은 앞줄 더미 나무의 실제 표시 체급.
+    더미 나무는 base width에 slot scale(앞줄 1.38)이 곱해져 크게 보이므로,
+    내 나무도 최종 표시 크기를 그 체급에 직접 맞춘다.
+  */
+  const desktop = {
+    spotWidth: 296,
+    visualWidth: 296,
+    visualHeight: 382,
+    treeWrapWidth: 296,
+    treeWrapHeight: 382,
+    treeImageWidth: 282,
+    shadowWidth: 172,
+    shadowHeight: 42,
+    shadowBottom: 6,
+    spotBottom: 56,
+    wrapBottom: -4
+  };
+
+  const mobile = {
+    spotWidth: 184,
+    visualWidth: 184,
+    visualHeight: 238,
+    treeWrapWidth: 184,
+    treeWrapHeight: 238,
+    treeImageWidth: 174,
+    shadowWidth: 108,
+    shadowHeight: 28,
+    shadowBottom: 6,
+    spotBottom: 70,
+    wrapBottom: -2
+  };
+
+  const cfg = isMobile ? mobile : desktop;
+
+  const treeWrap = mySpotVisualElement.querySelector('.my-spot-tree-wrap');
+  const treeImage = mySpotVisualElement.querySelector('.my-spot-tree-image');
+  const treeShadow = mySpotVisualElement.querySelector('.my-spot-tree-shadow');
+  const groundShadow = mySpotVisualElement.querySelector('.my-spot-ground-shadow');
+
+  myWorldSpotElement.classList.add('my-tree-exact-match');
+  myWorldSpotElement.style.setProperty('width', `${cfg.spotWidth}px`, 'important');
+  myWorldSpotElement.style.setProperty('bottom', `${cfg.spotBottom}px`, 'important');
+  myWorldSpotElement.style.setProperty('min-height', `${cfg.visualHeight + 54}px`, 'important');
+
+  mySpotVisualElement.style.setProperty('width', `${cfg.visualWidth}px`, 'important');
+  mySpotVisualElement.style.setProperty('height', `${cfg.visualHeight}px`, 'important');
+
+  if (groundShadow) {
+    groundShadow.style.setProperty('width', `${cfg.shadowWidth}px`, 'important');
+    groundShadow.style.setProperty('height', `${cfg.shadowHeight}px`, 'important');
+    groundShadow.style.setProperty('bottom', `${cfg.shadowBottom}px`, 'important');
+    groundShadow.style.setProperty('opacity', '1', 'important');
+  }
+
+  if (treeWrap) {
+    treeWrap.style.setProperty('width', `${cfg.treeWrapWidth}px`, 'important');
+    treeWrap.style.setProperty('height', `${cfg.treeWrapHeight}px`, 'important');
+    treeWrap.style.setProperty('bottom', `${cfg.wrapBottom}px`, 'important');
+    treeWrap.style.setProperty('left', '50%', 'important');
+    treeWrap.style.setProperty('transform', 'translateX(-50%)', 'important');
+  }
+
+  if (treeShadow) {
+    treeShadow.style.setProperty('width', `${cfg.treeImageWidth * 0.98}px`, 'important');
+    treeShadow.style.setProperty('left', '50%', 'important');
+    treeShadow.style.setProperty('bottom', '0', 'important');
+    treeShadow.style.setProperty('transform', 'translateX(-50%)', 'important');
+    treeShadow.style.setProperty('opacity', '0.94', 'important');
+  }
+
+  if (treeImage) {
+    treeImage.style.setProperty('width', `${cfg.treeImageWidth}px`, 'important');
+    treeImage.style.setProperty('max-width', 'none', 'important');
+    treeImage.style.setProperty('height', 'auto', 'important');
+    treeImage.style.setProperty('left', '50%', 'important');
+    treeImage.style.setProperty('bottom', '0', 'important');
+    treeImage.style.setProperty('transform', 'translateX(-50%)', 'important');
+    treeImage.style.setProperty('filter', 'drop-shadow(0 18px 26px rgba(0,0,0,0.34))', 'important');
+  }
+}
+
 function renderWorld() {
   renderWorldVisualLayers();
 
@@ -4451,6 +4540,7 @@ function renderWorld() {
   `;
   mySpotNameElement.textContent = name;
   mySpotStatusElement.textContent = spotInfo.status;
+  applyMyWorldSpotExactMatchSize();
 
   if (todayRecord) {
     const moodClass = `mood-${todayRecord.mood}`;
