@@ -1,4 +1,4 @@
-살아있는 숲 V1.73.15 my tree softer-balance hotfix
+살아있는 숲 V1.73.16 my tree final-balance hotfix
 
-- 내 나무 추가 축소
-- exact-match 기반 유지
+- 내 나무 약 5~6% 추가 축소
+- final-balance 마감 버전

@@ -22247,3 +22247,11 @@ body.lf-v17315-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.s
 body.lf-v17315-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
   content: "V1.73.15 my tree softer-balance hotfix" !important;
 }
+
+
+/* V1.73.16 my tree final-balance hotfix
+   V1.73.15보다 내 나무를 약 5~6% 더 줄여, 주인공감은 유지하면서도 화면에서 과해 보이지 않게 마감한 버전. */
+body.lf-v17316-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
+body.lf-v17316-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
+  content: "V1.73.16 my tree final-balance hotfix" !important;
+}

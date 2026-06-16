@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.73.15 my tree softer-balance hotfix
+// 살아있는 숲 V1.73.16 my tree final-balance hotfix
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.73.15 my tree softer-balance hotfix
+// 버전명: V1.73.16 my tree final-balance hotfix
 // 목적: 전체숲 시간대별 전용 배경 이미지를 연결하고 오버레이 실험을 원복
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.73.15 my tree softer-balance hotfix",
+  version: "V1.73.16 my tree final-balance hotfix",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -4435,28 +4435,28 @@ function applyMyWorldSpotExactMatchSize() {
     내 나무도 최종 표시 크기를 그 체급에 직접 맞춘다.
   */
   const desktop = {
-    spotWidth: 242,
-    visualWidth: 242,
-    visualHeight: 314,
-    treeWrapWidth: 242,
-    treeWrapHeight: 314,
-    treeImageWidth: 230,
-    shadowWidth: 144,
-    shadowHeight: 34,
+    spotWidth: 228,
+    visualWidth: 228,
+    visualHeight: 296,
+    treeWrapWidth: 228,
+    treeWrapHeight: 296,
+    treeImageWidth: 216,
+    shadowWidth: 136,
+    shadowHeight: 32,
     shadowBottom: 6,
-    spotBottom: 60,
-    wrapBottom: -2
+    spotBottom: 61,
+    wrapBottom: -1
   };
 
   const mobile = {
-    spotWidth: 154,
-    visualWidth: 154,
-    visualHeight: 198,
-    treeWrapWidth: 154,
-    treeWrapHeight: 198,
-    treeImageWidth: 146,
-    shadowWidth: 90,
-    shadowHeight: 24,
+    spotWidth: 146,
+    visualWidth: 146,
+    visualHeight: 188,
+    treeWrapWidth: 146,
+    treeWrapHeight: 188,
+    treeImageWidth: 138,
+    shadowWidth: 86,
+    shadowHeight: 22,
     shadowBottom: 6,
     spotBottom: 71,
     wrapBottom: -1
