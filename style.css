@@ -22255,3 +22255,12 @@ body.lf-v17316-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.s
 body.lf-v17316-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
   content: "V1.73.16 my tree final-balance hotfix" !important;
 }
+
+
+/* V1.73.17 my tree direct-size-fix hotfix
+   이번 버전은 감이 아니라 수치를 직접 고정한 축소 버전이다.
+   desktop 기준 treeImageWidth를 216 -> 200으로 낮춰 중앙 나무가 한 단계 더 작아지게 한다. */
+body.lf-v17317-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
+body.lf-v17317-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
+  content: "V1.73.17 my tree direct-size-fix hotfix" !important;
+}

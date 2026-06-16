@@ -1,4 +1,5 @@
-살아있는 숲 V1.73.16 my tree final-balance hotfix
+살아있는 숲 V1.73.17 my tree direct-size-fix hotfix
 
-- 내 나무 약 5~6% 추가 축소
-- final-balance 마감 버전
+- treeImageWidth 216 -> 200
+- visual 228x296 -> 210x272
+- direct size tuning
