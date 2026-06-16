@@ -1,13 +1,13 @@
-// 살아있는 숲 V1.73.11 my tree world-visual boost hotfix
+// 살아있는 숲 V1.73.12 my tree hero-scale hotfix
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.73.11 my tree world-visual boost hotfix
+// 버전명: V1.73.12 my tree hero-scale hotfix
 // 목적: 전체숲 시간대별 전용 배경 이미지를 연결하고 오버레이 실험을 원복
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.73.11 my tree world-visual boost hotfix",
+  version: "V1.73.12 my tree hero-scale hotfix",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -2489,23 +2489,28 @@ function getWorldDisplayDays(days) {
     return 0;
   }
 
+  /*
+    월드 숲에서는 내 나무가 너무 작은 묘목처럼 보이지 않도록
+    실제 기록이 적더라도 충분히 자란 시각 단계로 보정한다.
+    사용자 피드백 기준: 좌우 대표 나무 대비 최소 70~85% 체급.
+  */
   if (days <= 2) {
-    return 21;
+    return 84;
   }
 
   if (days <= 6) {
-    return 30;
+    return 88;
   }
 
   if (days <= 20) {
-    return 45;
+    return 92;
   }
 
   if (days <= 59) {
-    return 68;
+    return 96;
   }
 
-  return days;
+  return Math.max(days, 96);
 }
 
 function getTreeState() {

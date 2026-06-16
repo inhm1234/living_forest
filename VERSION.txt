@@ -1,6 +1,6 @@
-살아있는 숲 V1.73.11 my tree world-visual boost hotfix
+살아있는 숲 V1.73.12 my tree hero-scale hotfix
 
-- 내 나무 world visual boost
-- worldDisplayDays 보정 추가
+- 내 나무 hero-scale 확대
+- worldDisplayDays 강한 상향
 - 주변 큰 나무 크기 유지
 - 내 자리 위치 고정 유지

@@ -22131,3 +22131,84 @@ body.lf-v17311-ux.world-focus-running #worldScreen.screen-active #myWorldSpot .m
   body.lf-v17311-ux #worldScreen.screen-active #myWorldSpot.world-tree-young .my-spot-tree-wrap { width: 228px !important; height: 290px !important; }
   body.lf-v17311-ux #worldScreen.screen-active #myWorldSpot.world-tree-hero .my-spot-tree-wrap { width: 238px !important; height: 304px !important; }
 }
+
+
+/* V1.73.12 my tree hero-scale hotfix
+   사용자 지적이 맞았다. 이전까지는 내 나무가 주변 대표 나무 대비 여전히 너무 작았다.
+   이번 버전은 말 그대로 내 나무를 월드 숲의 대표 나무급 체급으로 올리는 강한 수정이다. */
+body.lf-v17312-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
+body.lf-v17312-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
+  content: "V1.73.12 my tree hero-scale hotfix" !important;
+}
+
+body.lf-v17312-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot.my-world-spot,
+body.lf-v17312-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot.my-world-spot,
+body.lf-v17312-ux.world-focus-running #worldScreen.screen-active #myWorldSpot.my-world-spot {
+  width: 438px !important;
+  bottom: 52px !important;
+}
+
+body.lf-v17312-ux #worldScreen.screen-active #myWorldSpot .my-spot-visual {
+  width: 392px !important;
+  height: 410px !important;
+}
+
+body.lf-v17312-ux #worldScreen.screen-active #myWorldSpot .my-spot-ground-shadow {
+  width: 240px !important;
+  height: 52px !important;
+  bottom: 10px !important;
+  opacity: 1 !important;
+}
+
+body.lf-v17312-ux #worldScreen.screen-active #myWorldSpot.world-tree-seed .my-spot-tree-wrap,
+body.lf-v17312-ux #worldScreen.screen-active #myWorldSpot.world-tree-sprout .my-spot-tree-wrap,
+body.lf-v17312-ux #worldScreen.screen-active #myWorldSpot.world-tree-sapling .my-spot-tree-wrap,
+body.lf-v17312-ux #worldScreen.screen-active #myWorldSpot.world-tree-young .my-spot-tree-wrap,
+body.lf-v17312-ux #worldScreen.screen-active #myWorldSpot.world-tree-hero .my-spot-tree-wrap {
+  width: 360px !important;
+  height: 430px !important;
+  bottom: -6px !important;
+}
+
+body.lf-v17312-ux #worldScreen.screen-active #myWorldSpot .my-spot-tree-image {
+  transform: scale(1.22) !important;
+  transform-origin: center bottom !important;
+  filter: drop-shadow(0 24px 32px rgba(0,0,0,0.38)) !important;
+}
+
+body.lf-v17312-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-stage.world-focus-active #myWorldSpot.my-world-spot,
+body.lf-v17312-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-stage.world-focus-active #myWorldSpot.my-world-spot,
+body.lf-v17312-ux.world-focus-running #worldScreen.screen-active #myWorldSpot.my-world-spot {
+  width: 438px !important;
+  bottom: 52px !important;
+  transform: translateX(-50%) !important;
+}
+
+body.lf-v17312-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-stage.world-focus-active #myWorldSpot .my-spot-tree-wrap,
+body.lf-v17312-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #worldStage.world-stage.world-focus-active #myWorldSpot .my-spot-tree-wrap,
+body.lf-v17312-ux.world-focus-running #worldScreen.screen-active #myWorldSpot .my-spot-tree-wrap {
+  transform: translateX(-50%) scale(1.03) !important;
+}
+
+@media (max-width: 560px) {
+  body.lf-v17312-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot.my-world-spot,
+  body.lf-v17312-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active #myWorldSpot.my-world-spot,
+  body.lf-v17312-ux.world-focus-running #worldScreen.screen-active #myWorldSpot.my-world-spot {
+    width: 310px !important;
+    bottom: 66px !important;
+  }
+
+  body.lf-v17312-ux #worldScreen.screen-active #myWorldSpot .my-spot-visual {
+    width: 272px !important;
+    height: 286px !important;
+  }
+
+  body.lf-v17312-ux #worldScreen.screen-active #myWorldSpot.world-tree-seed .my-spot-tree-wrap,
+  body.lf-v17312-ux #worldScreen.screen-active #myWorldSpot.world-tree-sprout .my-spot-tree-wrap,
+  body.lf-v17312-ux #worldScreen.screen-active #myWorldSpot.world-tree-sapling .my-spot-tree-wrap,
+  body.lf-v17312-ux #worldScreen.screen-active #myWorldSpot.world-tree-young .my-spot-tree-wrap,
+  body.lf-v17312-ux #worldScreen.screen-active #myWorldSpot.world-tree-hero .my-spot-tree-wrap {
+    width: 246px !important;
+    height: 300px !important;
+  }
+}

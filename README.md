@@ -1,13 +1,12 @@
-# 살아있는 숲 V1.73.11 my tree world-visual boost hotfix
+# 살아있는 숲 V1.73.12 my tree hero-scale hotfix
 
-현재 V1.73.11은 **내 나무가 커지지 않아 보이던 근본 원인을 수정한 버전**입니다.
+현재 V1.73.12는 **내 나무를 월드 숲의 대표 큰 나무급으로 강하게 키운 버전**입니다.
 
 ## 이번 수정
 
-- 월드 숲의 내 나무에 worldDisplayDays 보정 추가
-- 초반 기록이어도 월드 숲에서는 더 성숙한 나무 이미지로 표현
-- 내 나무 wrapper / visual / shadow / image scale 추가 확대
+- 내 나무 worldDisplayDays를 강하게 상향 보정
+- 양수 기록이면 월드 숲에서 hero급 시각 단계로 보이도록 조정
+- 내 나무 wrapper / visual / image scale 대폭 확대
 - 주변 큰 나무 크기 유지
 - 내 자리 위치 고정 유지
 - 더미 나무 성장 다양화 유지
-- 백서 버튼 / 시간대 자동 적용 유지
