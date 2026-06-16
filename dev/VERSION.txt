@@ -1,1 +1,1 @@
-오늘의숲 DEV v0.2.2 - support/ad placement fix
+DEV v0.2.3 - quiet support/ad panel polish
