@@ -1,3 +1,1 @@
-오늘의숲 DEV v0.2.1
-우선순위 2: 후원 안내 + 광고 자리 테스트
-기준: service-v0.1-stable
+오늘의숲 DEV v0.2.2 - support/ad placement fix
