@@ -21759,3 +21759,50 @@ body.lf-v1736-ux.world-focus-running #worldScreen.screen-active #myWorldSpot .my
     height: 176px !important;
   }
 }
+
+
+/* V1.73.7 neighbor position-size rebalance hotfix
+   사용자 피드백: 주변 나무 위치가 어색하고, 기준 배경나무 대비 여전히 작아 보였다.
+   따라서 주변 나무를 clearing 가장자리와 뒤쪽 길목 쪽으로 다시 배치하고,
+   기준 나무와 비슷하거나 조금 더 크게 느껴지도록 크기를 한 번 더 키운다. */
+body.lf-v1737-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
+body.lf-v1737-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
+  content: "V1.73.7 neighbor position-size rebalance hotfix" !important;
+}
+
+body.lf-v1737-ux #worldNeighborSpots .forest-citizen-tree {
+  width: 176px !important;
+  height: 224px !important;
+}
+
+body.lf-v1737-ux #worldNeighborSpots .citizen-tree-ground {
+  width: 102px !important;
+  height: 28px !important;
+  bottom: -6px !important;
+  opacity: 0.24 !important;
+  filter: blur(1.8px) !important;
+}
+
+body.lf-v1737-ux #worldNeighborSpots .citizen-tree-image {
+  width: 168px !important;
+  filter: drop-shadow(0 14px 20px rgba(0,0,0,0.28)) !important;
+}
+
+body.lf-v1737-ux #worldNeighborSpots .forest-citizen-tree.is-real .citizen-tree-image {
+  filter: drop-shadow(0 15px 21px rgba(0,0,0,0.32)) drop-shadow(0 0 14px rgba(255,245,190,0.26)) !important;
+}
+
+body.lf-v1737-ux #worldNeighborSpots .citizen-tree-label {
+  bottom: -16px !important;
+}
+
+@media (max-width: 560px) {
+  body.lf-v1737-ux #worldNeighborSpots .forest-citizen-tree {
+    width: 142px !important;
+    height: 182px !important;
+  }
+
+  body.lf-v1737-ux #worldNeighborSpots .citizen-tree-image {
+    width: 136px !important;
+  }
+}
