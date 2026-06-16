@@ -1,0 +1,5 @@
+살아있는 숲 V1.73.17 my tree direct-size-fix hotfix
+
+- treeImageWidth 216 -> 200
+- visual 228x296 -> 210x272
+- direct size tuning
