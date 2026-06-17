@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>[DEV] 오늘의숲 | 후원 안내 준비</title>
+  <title>[DEV] 오늘의숲 | 개인정보·광고 안내 준비</title>
   <meta
     name="description"
     content="내 나무를 키우고 친구들과 함께 숲을 채워가는 귀엽고 따뜻한 숲 놀이터 체험판입니다. 기록은 이 기기에만 저장돼요."
@@ -123,6 +123,9 @@
 
   .support-revenue-btn {
     appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: 1px solid rgba(93, 70, 46, 0.13);
     border-radius: 999px;
     background: rgba(255, 247, 223, 0.92);
@@ -132,6 +135,7 @@
     font-size: 12.5px;
     font-weight: 900;
     cursor: pointer;
+    text-decoration: none;
     box-shadow: 0 7px 16px rgba(112, 84, 52, 0.07);
   }
 
@@ -266,7 +270,7 @@
         <nav class="world-story-nav" aria-label="오늘의숲 안내">
           <a class="world-story-link" href="whitepaper.html">오늘의숲 백서</a>
         </nav>
-        <p class="demo-pill">DEV v0.2.4 · support wording test</p>
+        <p class="demo-pill">DEV v0.2.5 · privacy/ad guide test</p>
       </header>
 
       <section id="launchGuideCard" class="launch-guide-card glass-panel" aria-labelledby="launchGuideTitle">
@@ -867,6 +871,7 @@
       <p class="support-revenue-text">후원은 선택이며, 광고는 숲과 나무를 가리지 않는 위치에서만 조용히 보여줍니다.</p>
       <div class="support-revenue-actions">
         <button id="openSupportModalBtn" class="support-revenue-btn" type="button">🌱 후원 안내</button>
+        <a class="support-revenue-btn" href="privacy.html">개인정보·광고 안내</a>
       </div>
       <div class="support-ad-placeholder" role="complementary" aria-label="광고 테스트 영역">
         <span>작은 광고 자리<br />정원과 나무를 가리지 않음</span>
@@ -875,6 +880,8 @@
 
     <footer class="site-footer-links" aria-label="오늘의숲 문서 링크">
       <a href="whitepaper.html">오늘의숲 백서</a>
+      <span aria-hidden="true">·</span>
+      <a href="privacy.html">개인정보·광고 안내</a>
       <span aria-hidden="true">·</span>
       <span>마음이 나무가 되는 작은 숲</span>
     </footer>
@@ -956,7 +963,7 @@
     </div>
 
     <p class="test-storage-line">저장키: <span id="testModeStorageKey">livingForestV012_TEST</span></p>
-    <p class="test-storage-line">데이터: <span id="testModeDataInfo">DEV v0.2.4 · support wording test</span></p>
+    <p class="test-storage-line">데이터: <span id="testModeDataInfo">DEV v0.2.5 · privacy/ad guide test</span></p>
 
     <div class="test-preset-buttons">
       <button type="button" data-test-preset="first">첫 방문자</button>

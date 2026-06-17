@@ -1,1 +1,5 @@
-DEV v0.2.4 - support popup wording and cautious donation prep
+DEV v0.2.5 · 개인정보·광고 안내 준비
+- /dev/privacy.html 추가
+- 하단 문서 링크에 개인정보·광고 안내 추가
+- 수익화 패널에서 개인정보·광고 안내 페이지로 이동 가능
+- 실제 광고 코드와 실제 후원 링크는 아직 넣지 않음
