@@ -1,18 +1,21 @@
-// 살아있는 숲 V1.73.17 my tree direct-size-fix hotfix
+// 오늘의숲 v0.2.0 · 수익화 준비
 // 프로젝트명: 살아있는 숲
-// 버전명: V1.73.17 my tree direct-size-fix hotfix
+// 버전명: v0.2.0 · 수익화 준비
 // 목적: 전체숲 시간대별 전용 배경 이미지를 연결하고 오버레이 실험을 원복
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "V1.73.17 my tree direct-size-fix hotfix",
+  version: "v0.2.0 · 수익화 준비",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
   serviceTimeZoneOffsetMinutes: 9 * 60
 };
+
+const APP_ENV = "production";
+const IS_DEV_BUILD = APP_ENV === "development";
 
 const KAKAO_SHARE_CONFIG = {
   javascriptKey: "a8e1dde7570cf9d030b20628c29e75a4",
@@ -32,7 +35,7 @@ const ADMIN_TRACKING_CONFIG = {
 
 function getAdminAnonId() {
   try {
-    const key = isTestMode ? "livingForestAdminAnonId_TEST" : "livingForestAdminAnonId";
+    const key = IS_DEV_BUILD ? "livingForestAdminAnonId_DEV" : (isTestMode ? "livingForestAdminAnonId_TEST" : "livingForestAdminAnonId");
     let anonId = localStorage.getItem(key);
 
     if (!anonId) {
@@ -168,8 +171,8 @@ function trackGrowthMilestones() {
 function trackReturnVisitIfNeeded() {
   try {
     const today = getTodayKey();
-    const lastVisitKey = isTestMode ? "livingForestAnalyticsLastVisit_TEST" : "livingForestAnalyticsLastVisit";
-    const firstVisitKey = isTestMode ? "livingForestAnalyticsFirstVisit_TEST" : "livingForestAnalyticsFirstVisit";
+    const lastVisitKey = IS_DEV_BUILD ? "livingForestAnalyticsLastVisit_DEV" : (isTestMode ? "livingForestAnalyticsLastVisit_TEST" : "livingForestAnalyticsLastVisit");
+    const firstVisitKey = IS_DEV_BUILD ? "livingForestAnalyticsFirstVisit_DEV" : (isTestMode ? "livingForestAnalyticsFirstVisit_TEST" : "livingForestAnalyticsFirstVisit");
 
     const firstVisit = localStorage.getItem(firstVisitKey);
     const lastVisit = localStorage.getItem(lastVisitKey);
@@ -203,7 +206,7 @@ const TEST_STORAGE_KEY = APP_CONFIG.testStorageKey;
 const urlParams = new URLSearchParams(window.location.search);
 const isTestMode = urlParams.get("test") === "1";
 const forestInviteSource = getForestInviteSource();
-const STORAGE_KEY = isTestMode ? TEST_STORAGE_KEY : BASE_STORAGE_KEY;
+const STORAGE_KEY = IS_DEV_BUILD ? `${BASE_STORAGE_KEY}_DEV` : (isTestMode ? TEST_STORAGE_KEY : BASE_STORAGE_KEY);
 const ONLINE_FOREST_STORAGE_KEY = `${STORAGE_KEY}_ONLINE_FOREST_ID_V1`;
 const ONLINE_FRIEND_STORAGE_KEY = `${STORAGE_KEY}_ONLINE_FRIEND_ID_V1`;
 let onlineFriendSeats = {};
@@ -687,7 +690,7 @@ const onboardingOverlayElement = document.querySelector("#onboardingOverlay");
 const closeOnboardingBtnElement = document.querySelector("#closeOnboardingBtn");
 const onboardingStartBtnElement = document.querySelector("#onboardingStartBtn");
 const onboardingLaterBtnElement = document.querySelector("#onboardingLaterBtn");
-const ONBOARDING_STORAGE_KEY = isTestMode ? "livingForestOnboardingV159_TEST" : "livingForestOnboardingV159";
+const ONBOARDING_STORAGE_KEY = IS_DEV_BUILD ? "livingForestOnboardingV159_DEV" : (isTestMode ? "livingForestOnboardingV159_TEST" : "livingForestOnboardingV159");
 const gardenHubElement = document.querySelector("#gardenHub");
 const gardenHubSheetElement = document.querySelector("#gardenHubSheet");
 const gardenPanelTitleElement = document.querySelector("#gardenPanelTitle");

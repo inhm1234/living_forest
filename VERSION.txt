@@ -1,5 +1,6 @@
-살아있는 숲 V1.73.17 my tree direct-size-fix hotfix
+오늘의숲 service v0.2.0 · 수익화 준비
 
-- treeImageWidth 216 -> 200
-- visual 228x296 -> 210x272
-- direct size tuning
+- 개인정보·광고 안내 페이지 추가
+- 전체숲 하단 운영 안내/광고 예정 영역 추가
+- 후원 안내 팝업 추가
+- 실제 광고 코드/후원 링크는 아직 미적용
