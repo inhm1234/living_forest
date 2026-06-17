@@ -1,13 +1,13 @@
-// 오늘의숲 DEV v0.2.6 · 개인정보·광고 안내 여백 보정
+// 오늘의숲 DEV v0.2.7 · 성장 규칙 정리 / 정원-전체숲 단계 동기화
 // 프로젝트명: 살아있는 숲
-// 버전명: DEV v0.2.6 · 개인정보·광고 안내 여백 보정
+// 버전명: DEV v0.2.7 · 성장 규칙 정리 / 정원-전체숲 단계 동기화
 // 목적: 전체숲 시간대별 전용 배경 이미지를 연결하고 오버레이 실험을 원복
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "DEV v0.2.6 · 개인정보·광고 안내 여백 보정",
+  version: "DEV v0.2.7 · 성장 규칙 정리 / 정원-전체숲 단계 동기화",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -287,14 +287,8 @@ const forestDiaryRules = {
 const growthStageRules = [
   { minDays: 0, maxDays: 0, name: "씨앗이 깨어나는 날" },
   { minDays: 1, maxDays: 2, name: "막 올라온 새싹" },
-  { minDays: 3, maxDays: 4, name: "어린 새싹" },
-  { minDays: 5, maxDays: 6, name: "잎이 퍼지는 새싹" },
-  { minDays: 7, maxDays: 9, name: "작은 묘목" },
-  { minDays: 10, maxDays: 13, name: "가지가 생긴 묘목" },
-  { minDays: 14, maxDays: 20, name: "어린 나무의 시작" },
-  { minDays: 21, maxDays: 29, name: "잎이 풍성한 어린 나무" },
-  { minDays: 30, maxDays: 59, name: "어린 나무" },
-  { minDays: 60, maxDays: Infinity, name: "대표 나무" }
+  { minDays: 3, maxDays: 6, name: "자리를 잡아가는 작은 나무" },
+  { minDays: 7, maxDays: Infinity, name: "숲에 자리 잡은 내 나무" }
 ];
 
 const treeImageStageRules = [
@@ -2472,48 +2466,28 @@ function getWorldTreeSizeClass(days) {
     return "world-tree-seed";
   }
 
-  if (days <= 6) {
+  if (days <= 2) {
     return "world-tree-sprout";
   }
 
-  if (days <= 20) {
+  if (days <= 6) {
     return "world-tree-sapling";
   }
 
-  if (days <= 59) {
-    return "world-tree-young";
-  }
-
-  return "world-tree-hero";
+  return "world-tree-young";
 }
 
 function getWorldDisplayDays(days) {
-  if (days <= 0) {
+  if (!Number.isFinite(days) || days <= 0) {
     return 0;
   }
 
   /*
-    월드 숲에서는 내 나무가 너무 작은 묘목처럼 보이지 않도록
-    실제 기록이 적더라도 충분히 자란 시각 단계로 보정한다.
-    사용자 피드백 기준: 좌우 대표 나무 대비 최소 70~85% 체급.
+    성장 단계는 내 정원과 전체숲에서 동일하게 유지한다.
+    전체숲에서는 단계 보정을 하지 않고 실제 기록 횟수만 반영한다.
+    시각적인 차이는 CSS 크기/위치 조정으로만 처리한다.
   */
-  if (days <= 2) {
-    return 84;
-  }
-
-  if (days <= 6) {
-    return 88;
-  }
-
-  if (days <= 20) {
-    return 92;
-  }
-
-  if (days <= 59) {
-    return 96;
-  }
-
-  return Math.max(days, 96);
+  return Math.max(0, Math.round(days));
 }
 
 function getTreeState() {
