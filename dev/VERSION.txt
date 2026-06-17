@@ -1,1 +1,6 @@
-DEV v0.2.8 · 성장 테스트 버전 문구 정리
+DEV v0.3.0 · 시간대별 성장 나무 적용
+
+- assets/garden/tree_growth/ 시간대별 성장 나무 18개 연결
+- dev/assets/garden/tree_growth/에도 동일 에셋 복사
+- 감정 기록 30회 기준으로 내 나무 최종 성장 단계 정리
+- 현재 시간대(day/sunset/night)에 따라 morning/sunset/night 나무 이미지 자동 선택

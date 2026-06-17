@@ -1,13 +1,13 @@
-// 오늘의숲 v0.2.0 · 수익화 준비
+// 오늘의숲 v0.2.1 · 시간대별 성장 나무 적용
 // 프로젝트명: 살아있는 숲
-// 버전명: v0.2.0 · 수익화 준비
+// 버전명: v0.2.1 · 시간대별 성장 나무 적용
 // 목적: 전체숲 시간대별 전용 배경 이미지를 연결하고 오버레이 실험을 원복
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "v0.2.0 · 수익화 준비",
+  version: "v0.2.1 · 시간대별 성장 나무 적용",
   dataSchemaVersion: 12,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -114,8 +114,8 @@ function isForestInviteVisit() {
 }
 
 function getTreeStageName(days) {
-  if (days >= 60) return "hero";
-  if (days >= 30) return "young";
+  if (days >= 30) return "hero";
+  if (days >= 21) return "young";
   if (days >= 14) return "early_tree";
   if (days >= 7) return "sapling";
   if (days >= 3) return "seedling";
@@ -149,7 +149,7 @@ const trackedMilestones = new Set();
 
 function trackGrowthMilestones() {
   const days = Array.isArray(treeData?.history) ? treeData.history.length : 0;
-  const milestones = [1, 3, 7, 14, 21, 30, 60];
+  const milestones = [1, 3, 7, 14, 21, 30];
 
   milestones.forEach((milestone) => {
     const key = `growth_day_${milestone}`;
@@ -284,30 +284,24 @@ const forestDiaryRules = {
   }
 };
 
+const TREE_GROWTH_ASSET_BASE = "assets/garden/tree_growth";
+
 const growthStageRules = [
-  { minDays: 0, maxDays: 0, name: "씨앗이 깨어나는 날" },
-  { minDays: 1, maxDays: 2, name: "막 올라온 새싹" },
-  { minDays: 3, maxDays: 4, name: "어린 새싹" },
-  { minDays: 5, maxDays: 6, name: "잎이 퍼지는 새싹" },
-  { minDays: 7, maxDays: 9, name: "작은 묘목" },
-  { minDays: 10, maxDays: 13, name: "가지가 생긴 묘목" },
-  { minDays: 14, maxDays: 20, name: "어린 나무의 시작" },
-  { minDays: 21, maxDays: 29, name: "잎이 풍성한 어린 나무" },
-  { minDays: 30, maxDays: 59, name: "어린 나무" },
-  { minDays: 60, maxDays: Infinity, name: "대표 나무" }
+  { minDays: 0, maxDays: 2, name: "처음 깨어난 새싹" },
+  { minDays: 3, maxDays: 6, name: "봉오리가 올라온 새싹" },
+  { minDays: 7, maxDays: 13, name: "줄기가 자란 어린 나무" },
+  { minDays: 14, maxDays: 20, name: "꽃이 피는 작은 나무" },
+  { minDays: 21, maxDays: 29, name: "풍성해지는 나무" },
+  { minDays: 30, maxDays: Infinity, name: "완성된 마음 나무" }
 ];
 
 const treeImageStageRules = [
-  { minDays: 0, maxDays: 0, className: "tree-stage-germination", src: "assets/garden/tree-germination-v2.png", alt: "꽃밭 위에서 작게 깨어난 새싹" },
-  { minDays: 1, maxDays: 2, className: "tree-stage-sprout", src: "assets/garden/tree-sprout-v2.png", alt: "반짝이는 잎을 펼친 새싹" },
-  { minDays: 3, maxDays: 4, className: "tree-stage-seedling", src: "assets/garden/tree-seedling-v2.png", alt: "작은 나무 모양으로 자라난 새싹" },
-  { minDays: 5, maxDays: 6, className: "tree-stage-leafy-seedling", src: "assets/garden/tree-seedling-v2.png", alt: "잎이 조금 더 풍성해진 어린 나무" },
-  { minDays: 7, maxDays: 9, className: "tree-stage-sapling", src: "assets/garden/tree-sapling-v2.png", alt: "꽃과 잎이 돋아난 작은 묘목" },
-  { minDays: 10, maxDays: 13, className: "tree-stage-branching-sapling", src: "assets/garden/tree-sapling-v2.png", alt: "작은 가지와 장식이 생긴 묘목" },
-  { minDays: 14, maxDays: 20, className: "tree-stage-early-tree", src: "assets/garden/tree-young-v2.png", alt: "꽃이 피기 시작한 어린 나무" },
-  { minDays: 21, maxDays: 29, className: "tree-stage-young-canopy", src: "assets/garden/tree-young-v2.png", alt: "잎과 꽃이 풍성해진 어린 나무" },
-  { minDays: 30, maxDays: 59, className: "tree-stage-young", src: "assets/garden/tree-young-v2.png", alt: "반짝이는 꽃나무로 자란 내 나무" },
-  { minDays: 60, maxDays: Infinity, className: "tree-stage-hero", src: "assets/garden/tree-hero-v2.png", alt: "리본과 별빛 장식이 있는 대표 나무" }
+  { minDays: 0, maxDays: 2, className: "tree-stage-germination", stage: 1, alt: "꽃밭 위에서 작게 깨어난 새싹" },
+  { minDays: 3, maxDays: 6, className: "tree-stage-sprout", stage: 2, alt: "봉오리와 잎을 펼친 새싹" },
+  { minDays: 7, maxDays: 13, className: "tree-stage-seedling", stage: 3, alt: "줄기와 가지가 자라난 어린 나무" },
+  { minDays: 14, maxDays: 20, className: "tree-stage-sapling", stage: 4, alt: "꽃과 잎이 돋아난 작은 나무" },
+  { minDays: 21, maxDays: 29, className: "tree-stage-young", stage: 5, alt: "잎과 꽃이 풍성해지는 나무" },
+  { minDays: 30, maxDays: Infinity, className: "tree-stage-hero", stage: 6, alt: "한 달의 마음 기록으로 완성된 나무" }
 ];
 
 const growthMilestoneRules = [
@@ -2457,14 +2451,34 @@ function getDailyLoopInfo() {
   };
 }
 
-function getTreeImageInfoByDays(totalDays = 0) {
-  return treeImageStageRules.find((stage) => {
-    return totalDays >= stage.minDays && totalDays <= stage.maxDays;
+function getTreeTimeKey() {
+  const atmosphere = getWorldAtmosphereInfo();
+
+  if (atmosphere.key === "sunset") {
+    return "sunset";
+  }
+
+  if (atmosphere.key === "night") {
+    return "night";
+  }
+
+  return "morning";
+}
+
+function getTreeImageInfoByDays(totalDays = 0, timeKey = getTreeTimeKey()) {
+  const stage = treeImageStageRules.find((rule) => {
+    return totalDays >= rule.minDays && totalDays <= rule.maxDays;
   }) || treeImageStageRules[treeImageStageRules.length - 1];
+
+  return {
+    ...stage,
+    timeKey,
+    src: `${TREE_GROWTH_ASSET_BASE}/tree_stage${stage.stage}_${timeKey}.png`
+  };
 }
 
 function getTreeImageInfo() {
-  return getTreeImageInfoByDays(treeData.history.length);
+  return getTreeImageInfoByDays(treeData.history.length, getTreeTimeKey());
 }
 
 function getWorldTreeSizeClass(days) {
@@ -6084,7 +6098,8 @@ function updateOneActionStepUI() {
 function renderTree(animate = false) {
   const state = getTreeState();
   const imageInfo = getTreeImageInfo();
-  treeElement.className = `tree tree-image-layer ${imageInfo.className} ${state}`;
+  treeElement.className = `tree tree-image-layer ${imageInfo.className} tree-time-${imageInfo.timeKey} ${state}`;
+  treeElement.dataset.treeTime = imageInfo.timeKey;
   treeImageElement.src = imageInfo.src;
   treeImageElement.alt = imageInfo.alt;
   skyElement.classList.remove("garden-mood-leaf", "garden-mood-balanced", "garden-mood-root");
