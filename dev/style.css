@@ -22262,3 +22262,61 @@ body.lf-v17317-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.s
 body.lf-v17317-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
   content: "V1.73.17 my tree direct-size-fix hotfix" !important;
 }
+
+/* DEV v0.2.9 / V1.74.0 test: 전체숲 30그루 자리 배치 테스트
+   목적: 전체숲을 최소 25그루 이상, 체감 30그루 정도로 보이게 하되
+   길은 막지 않고 내 나무는 공터 앞쪽 중심에서 주인공처럼 보이게 한다. */
+body.lf-v1740-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
+body.lf-v1740-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
+  content: "DEV v0.2.9 world forest 30 trees layout" !important;
+}
+
+body.lf-v1740-ux #worldNeighborSpots .forest-citizen-tree {
+  width: 174px !important;
+  height: 224px !important;
+  opacity: var(--citizen-opacity, 1) !important;
+  transform: translate(-50%, -100%) scale(var(--citizen-scale, 1)) rotate(var(--citizen-tilt, 0deg)) !important;
+}
+
+body.lf-v1740-ux #worldNeighborSpots .citizen-tree-ground {
+  width: 92px !important;
+  height: 24px !important;
+  bottom: -6px !important;
+  opacity: calc(var(--citizen-opacity, 1) * 0.24) !important;
+  filter: blur(1.8px) !important;
+}
+
+body.lf-v1740-ux #worldNeighborSpots .citizen-tree-image {
+  width: 166px !important;
+  filter:
+    drop-shadow(0 12px 18px rgba(0,0,0,0.25))
+    blur(var(--citizen-blur, 0px))
+    brightness(var(--citizen-brightness, 1))
+    saturate(var(--citizen-sat, 1)) !important;
+}
+
+body.lf-v1740-ux #worldNeighborSpots .forest-citizen-tree.is-real .citizen-tree-image {
+  filter:
+    drop-shadow(0 13px 19px rgba(0,0,0,0.30))
+    drop-shadow(0 0 12px rgba(255,245,190,0.22))
+    blur(var(--citizen-blur, 0px))
+    brightness(var(--citizen-brightness, 1))
+    saturate(var(--citizen-sat, 1)) !important;
+}
+
+@media (max-width: 560px) {
+  body.lf-v1740-ux #worldNeighborSpots .forest-citizen-tree {
+    width: 130px !important;
+    height: 168px !important;
+    transform: translate(-50%, -100%) scale(var(--citizen-mobile-scale, var(--citizen-scale, 1))) rotate(var(--citizen-tilt, 0deg)) !important;
+  }
+
+  body.lf-v1740-ux #worldNeighborSpots .citizen-tree-image {
+    width: 124px !important;
+  }
+
+  body.lf-v1740-ux #worldNeighborSpots .citizen-tree-ground {
+    width: 70px !important;
+    height: 19px !important;
+  }
+}
