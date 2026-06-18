@@ -588,38 +588,42 @@ const friendInviteSeatSlots = [
 let selectedFriendInviteSeatId = "flower_path";
 
 const worldForestSlots = [
-  // DEV v0.2.11: 길 위에 나무가 올라가는 문제를 우선 해결한 path-safe 배치.
+  // DEV v0.2.12: 비어 보이는 왼쪽 공터를 메우고,
+  // 뒤쪽 좌/우 나무가 유령처럼 투명해 보이던 문제를 보정한 버전.
   // 원칙:
-  // 1) 왼쪽 아래에서 뒤쪽 중앙으로 이어지는 산책길 위에는 나무를 두지 않는다.
-  // 2) 나무는 길의 오른쪽 공터, 중앙 잔디, 오른쪽 꽃밭 가장자리, 뒤쪽 숲 가장자리 위주로 배치한다.
-  // 3) 이전보다 나무 크기를 키워서 테스트용 스프라이트처럼 작아 보이지 않게 한다.
-  // 4) 내 나무는 #myWorldSpot에서 따로 렌더링되므로, 여기에는 주변/친구/일반/배경 나무만 둔다.
+  // 1) 길은 계속 비운다.
+  // 2) 파란색으로 표시된 왼쪽 공터에는 중간~앞쪽 나무를 자연스럽게 추가한다.
+  // 3) 뒤쪽 좌/우 나무는 opacity를 올리고 blur를 줄여 실제 숲 배경 나무처럼 보이게 한다.
 
-  // 뒤쪽 숲 가장자리 — 작지만 길 위를 피해서 좌우 숲 쪽으로 배치
-  { id: "world-back-01", name: "먼빛 나무", ownerName: "숲친구", state: "balanced", days: 38, x: 14, y: 39, scale: 0.58, mobileX: 12, mobileY: 40, mobileScale: 0.44, depth: 1, tilt: -4, opacity: 0.58, blur: 0.42, brightness: 0.96, sat: 0.96 },
-  { id: "world-back-02", name: "안개잎 나무", ownerName: "숲친구", state: "leaf-strong", days: 46, x: 25, y: 37, scale: 0.56, mobileX: 23, mobileY: 38, mobileScale: 0.43, depth: 1, tilt: 3, opacity: 0.56, blur: 0.46, brightness: 0.96, sat: 0.96 },
-  { id: "world-back-03", name: "새벽꽃 나무", ownerName: "숲친구", state: "balanced", days: 54, x: 36, y: 38, scale: 0.58, mobileX: 35, mobileY: 39, mobileScale: 0.44, depth: 1, tilt: -2, opacity: 0.58, blur: 0.42, brightness: 0.97, sat: 0.97 },
-  { id: "world-back-04", name: "구름잎 나무", ownerName: "숲친구", state: "leaf-strong", days: 49, x: 66, y: 38, scale: 0.58, mobileX: 67, mobileY: 39, mobileScale: 0.44, depth: 1, tilt: 3, opacity: 0.58, blur: 0.42, brightness: 0.97, sat: 0.97 },
-  { id: "world-back-05", name: "작은숲 나무", ownerName: "숲친구", state: "root-strong", days: 44, x: 77, y: 38, scale: 0.56, mobileX: 79, mobileY: 39, mobileScale: 0.43, depth: 1, tilt: -3, opacity: 0.56, blur: 0.46, brightness: 0.96, sat: 0.96 },
-  { id: "world-back-06", name: "숲끝 나무", ownerName: "숲친구", state: "balanced", days: 52, x: 88, y: 41, scale: 0.60, mobileX: 89, mobileY: 42, mobileScale: 0.46, depth: 1, tilt: 4, opacity: 0.60, blur: 0.40, brightness: 0.98, sat: 0.97 },
+  // 뒤쪽 숲 가장자리 — 유령처럼 보이지 않도록 opacity/blur 보정
+  { id: "world-back-01", name: "먼빛 나무", ownerName: "숲친구", state: "balanced", days: 38, x: 14, y: 39, scale: 0.62, mobileX: 12, mobileY: 40, mobileScale: 0.48, depth: 1, tilt: -4, opacity: 0.74, blur: 0.18, brightness: 0.98, sat: 0.98 },
+  { id: "world-back-02", name: "안개잎 나무", ownerName: "숲친구", state: "leaf-strong", days: 46, x: 25, y: 37, scale: 0.60, mobileX: 23, mobileY: 38, mobileScale: 0.46, depth: 1, tilt: 3, opacity: 0.72, blur: 0.20, brightness: 0.98, sat: 0.98 },
+  { id: "world-back-03", name: "새벽꽃 나무", ownerName: "숲친구", state: "balanced", days: 54, x: 36, y: 38, scale: 0.62, mobileX: 35, mobileY: 39, mobileScale: 0.48, depth: 1, tilt: -2, opacity: 0.74, blur: 0.18, brightness: 0.99, sat: 0.99 },
+  { id: "world-back-04", name: "구름잎 나무", ownerName: "숲친구", state: "leaf-strong", days: 49, x: 66, y: 38, scale: 0.62, mobileX: 67, mobileY: 39, mobileScale: 0.48, depth: 1, tilt: 3, opacity: 0.74, blur: 0.18, brightness: 0.99, sat: 0.99 },
+  { id: "world-back-05", name: "작은숲 나무", ownerName: "숲친구", state: "root-strong", days: 44, x: 77, y: 38, scale: 0.60, mobileX: 79, mobileY: 39, mobileScale: 0.46, depth: 1, tilt: -3, opacity: 0.72, blur: 0.20, brightness: 0.98, sat: 0.98 },
+  { id: "world-back-06", name: "숲끝 나무", ownerName: "숲친구", state: "balanced", days: 52, x: 88, y: 41, scale: 0.64, mobileX: 89, mobileY: 42, mobileScale: 0.49, depth: 1, tilt: 4, opacity: 0.76, blur: 0.16, brightness: 1.00, sat: 0.99 },
 
-  // 뒤-중간층 — 길의 윗부분과 왼쪽 곡선을 피해서 잔디/꽃밭 안쪽에 배치
-  { id: "world-midback-01", name: "산들 나무", ownerName: "민트", state: "balanced", days: 63, x: 55, y: 52, scale: 0.72, mobileX: 56, mobileY: 53, mobileScale: 0.55, depth: 3, tilt: -2, opacity: 0.72, blur: 0.18, brightness: 1.00, sat: 1.00 },
-  { id: "world-midback-02", name: "잔잔한 나무", ownerName: "하루", state: "leaf-strong", days: 72, x: 68, y: 52, scale: 0.74, mobileX: 70, mobileY: 53, mobileScale: 0.56, depth: 3, tilt: 3, opacity: 0.74, blur: 0.16, brightness: 1.01, sat: 1.01 },
-  { id: "world-midback-03", name: "숨결 나무", ownerName: "초록", state: "root-strong", days: 58, x: 82, y: 54, scale: 0.72, mobileX: 84, mobileY: 55, mobileScale: 0.55, depth: 3, tilt: -3, opacity: 0.72, blur: 0.18, brightness: 1.00, sat: 1.00 },
-  { id: "world-midback-04", name: "달빛 나무", ownerName: "나린", state: "balanced", days: 81, x: 43, y: 58, scale: 0.76, mobileX: 41, mobileY: 59, mobileScale: 0.58, depth: 4, tilt: 2, opacity: 0.76, blur: 0.12, brightness: 1.02, sat: 1.02 },
-  { id: "world-midback-05", name: "보라꽃 나무", ownerName: "유나", state: "leaf-strong", days: 77, x: 74, y: 60, scale: 0.78, mobileX: 77, mobileY: 61, mobileScale: 0.59, depth: 4, tilt: -3, opacity: 0.78, blur: 0.10, brightness: 1.02, sat: 1.02 },
+  // 뒤-중간층
+  { id: "world-midback-01", name: "산들 나무", ownerName: "민트", state: "balanced", days: 63, x: 55, y: 52, scale: 0.74, mobileX: 56, mobileY: 53, mobileScale: 0.56, depth: 3, tilt: -2, opacity: 0.74, blur: 0.16, brightness: 1.00, sat: 1.00 },
+  { id: "world-midback-02", name: "잔잔한 나무", ownerName: "하루", state: "leaf-strong", days: 72, x: 68, y: 52, scale: 0.76, mobileX: 70, mobileY: 53, mobileScale: 0.58, depth: 3, tilt: 3, opacity: 0.76, blur: 0.14, brightness: 1.01, sat: 1.01 },
+  { id: "world-midback-03", name: "숨결 나무", ownerName: "초록", state: "root-strong", days: 58, x: 82, y: 54, scale: 0.74, mobileX: 84, mobileY: 55, mobileScale: 0.56, depth: 3, tilt: -3, opacity: 0.74, blur: 0.16, brightness: 1.00, sat: 1.00 },
+  { id: "world-midback-04", name: "달빛 나무", ownerName: "나린", state: "balanced", days: 81, x: 43, y: 58, scale: 0.78, mobileX: 41, mobileY: 59, mobileScale: 0.60, depth: 4, tilt: 2, opacity: 0.78, blur: 0.10, brightness: 1.02, sat: 1.02 },
+  { id: "world-midback-05", name: "보라꽃 나무", ownerName: "유나", state: "leaf-strong", days: 77, x: 74, y: 60, scale: 0.80, mobileX: 77, mobileY: 61, mobileScale: 0.61, depth: 4, tilt: -3, opacity: 0.80, blur: 0.08, brightness: 1.02, sat: 1.02 },
 
-  // 중간 공터층 — 파란색으로 표시한 길 안쪽을 피하고, 중앙/오른쪽 잔디 공터 위주
-  { id: "world-mid-01", name: "햇살 나무", ownerName: "루나", state: "leaf-strong", days: 94, x: 40, y: 68, scale: 0.90, mobileX: 37, mobileY: 69, mobileScale: 0.68, depth: 6, tilt: -3, opacity: 0.88, blur: 0.02, brightness: 1.03, sat: 1.04 },
-  { id: "world-mid-02", name: "다정한 나무", ownerName: "모모", state: "balanced", days: 88, x: 56, y: 68, scale: 0.92, mobileX: 56, mobileY: 69, mobileScale: 0.70, depth: 6, tilt: 2, opacity: 0.89, blur: 0.01, brightness: 1.03, sat: 1.04 },
-  { id: "world-mid-03", name: "풀잎 나무", ownerName: "은하", state: "root-strong", days: 89, x: 70, y: 69, scale: 0.92, mobileX: 72, mobileY: 70, mobileScale: 0.70, depth: 6, tilt: -2, opacity: 0.89, blur: 0.01, brightness: 1.03, sat: 1.04 },
-  { id: "world-mid-04", name: "꽃잠 나무", ownerName: "소미", state: "balanced", days: 96, x: 84, y: 70, scale: 0.90, mobileX: 87, mobileY: 71, mobileScale: 0.68, depth: 6, tilt: 3, opacity: 0.88, blur: 0.02, brightness: 1.03, sat: 1.04 },
+  // 왼쪽 공터 보강 — 길을 침범하지 않는 선에서 빈 공간 메우기
+  { id: "world-leftfill-01", name: "고운잎 나무", ownerName: "다솜", state: "balanced", days: 86, x: 29, y: 70, scale: 0.90, mobileX: 25, mobileY: 71, mobileScale: 0.68, depth: 5, tilt: -2, opacity: 0.88, blur: 0.02, brightness: 1.03, sat: 1.04 },
+  { id: "world-leftfill-02", name: "초롱 나무", ownerName: "라임", state: "leaf-strong", days: 97, x: 33, y: 81, scale: 1.00, mobileX: 29, mobileY: 81, mobileScale: 0.74, depth: 7, tilt: 2, opacity: 0.92, blur: 0.00, brightness: 1.04, sat: 1.05 },
 
-  // 앞쪽 관계층 — 길을 침범하지 않도록 x 38% 이상으로 제한
-  { id: "world-front-01", name: "푸른별 나무", ownerName: "나래", state: "leaf-strong", days: 124, x: 42, y: 82, scale: 1.06, mobileX: 38, mobileY: 82, mobileScale: 0.78, depth: 8, tilt: -4, opacity: 0.96, blur: 0, brightness: 1.05, sat: 1.06 },
-  { id: "world-front-02", name: "작은기록 나무", ownerName: "다온", state: "root-strong", days: 109, x: 61, y: 82, scale: 1.04, mobileX: 62, mobileY: 82, mobileScale: 0.77, depth: 8, tilt: 2, opacity: 0.95, blur: 0, brightness: 1.05, sat: 1.05 },
-  { id: "world-front-03", name: "마음결 나무", ownerName: "로미", state: "balanced", days: 112, x: 78, y: 81, scale: 1.02, mobileX: 82, mobileY: 81, mobileScale: 0.76, depth: 8, tilt: 4, opacity: 0.95, blur: 0, brightness: 1.05, sat: 1.05 }
+  // 중간 공터층 — 중앙/오른쪽 잔디 공터
+  { id: "world-mid-01", name: "햇살 나무", ownerName: "루나", state: "leaf-strong", days: 94, x: 40, y: 68, scale: 0.92, mobileX: 37, mobileY: 69, mobileScale: 0.70, depth: 6, tilt: -3, opacity: 0.88, blur: 0.02, brightness: 1.03, sat: 1.04 },
+  { id: "world-mid-02", name: "다정한 나무", ownerName: "모모", state: "balanced", days: 88, x: 56, y: 68, scale: 0.94, mobileX: 56, mobileY: 69, mobileScale: 0.71, depth: 6, tilt: 2, opacity: 0.89, blur: 0.01, brightness: 1.03, sat: 1.04 },
+  { id: "world-mid-03", name: "풀잎 나무", ownerName: "은하", state: "root-strong", days: 89, x: 70, y: 69, scale: 0.94, mobileX: 72, mobileY: 70, mobileScale: 0.71, depth: 6, tilt: -2, opacity: 0.89, blur: 0.01, brightness: 1.03, sat: 1.04 },
+  { id: "world-mid-04", name: "꽃잠 나무", ownerName: "소미", state: "balanced", days: 96, x: 84, y: 70, scale: 0.92, mobileX: 87, mobileY: 71, mobileScale: 0.70, depth: 6, tilt: 3, opacity: 0.88, blur: 0.02, brightness: 1.03, sat: 1.04 },
+
+  // 앞쪽 관계층
+  { id: "world-front-01", name: "푸른별 나무", ownerName: "나래", state: "leaf-strong", days: 124, x: 42, y: 82, scale: 1.08, mobileX: 38, mobileY: 82, mobileScale: 0.80, depth: 8, tilt: -4, opacity: 0.96, blur: 0, brightness: 1.05, sat: 1.06 },
+  { id: "world-front-02", name: "작은기록 나무", ownerName: "다온", state: "root-strong", days: 109, x: 61, y: 82, scale: 1.06, mobileX: 62, mobileY: 82, mobileScale: 0.79, depth: 8, tilt: 2, opacity: 0.95, blur: 0, brightness: 1.05, sat: 1.05 },
+  { id: "world-front-03", name: "마음결 나무", ownerName: "로미", state: "balanced", days: 112, x: 78, y: 81, scale: 1.04, mobileX: 82, mobileY: 81, mobileScale: 0.78, depth: 8, tilt: 4, opacity: 0.95, blur: 0, brightness: 1.05, sat: 1.05 }
 ];
 
 

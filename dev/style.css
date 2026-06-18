@@ -22443,3 +22443,60 @@ body.lf-v1742-ux #worldNeighborSpots .forest-citizen-tree.is-real .citizen-tree-
     height: 23px !important;
   }
 }
+
+
+/* DEV v0.2.12 / V1.74.3 test: 왼쪽 공터 채우기 + 뒤쪽 유령나무 보정 */
+body.lf-v1743-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
+body.lf-v1743-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
+  content: "DEV v0.2.12 fill left + fix back trees" !important;
+}
+
+body.lf-v1743-ux #worldNeighborSpots .forest-citizen-tree {
+  width: 224px !important;
+  height: 288px !important;
+  opacity: var(--citizen-opacity, 1) !important;
+  transform: translate(-50%, -100%) scale(var(--citizen-scale, 1)) rotate(var(--citizen-tilt, 0deg)) !important;
+}
+
+body.lf-v1743-ux #worldNeighborSpots .citizen-tree-ground {
+  width: 122px !important;
+  height: 32px !important;
+  bottom: -8px !important;
+  opacity: calc(var(--citizen-opacity, 1) * 0.28) !important;
+  filter: blur(2.2px) !important;
+}
+
+body.lf-v1743-ux #worldNeighborSpots .citizen-tree-image {
+  width: 214px !important;
+  filter:
+    drop-shadow(0 14px 20px rgba(0,0,0,0.27))
+    blur(var(--citizen-blur, 0px))
+    brightness(var(--citizen-brightness, 1))
+    saturate(var(--citizen-sat, 1)) !important;
+}
+
+body.lf-v1743-ux #worldNeighborSpots .forest-citizen-tree.is-real .citizen-tree-image {
+  filter:
+    drop-shadow(0 15px 21px rgba(0,0,0,0.32))
+    drop-shadow(0 0 12px rgba(255,245,190,0.22))
+    blur(var(--citizen-blur, 0px))
+    brightness(var(--citizen-brightness, 1))
+    saturate(var(--citizen-sat, 1)) !important;
+}
+
+@media (max-width: 560px) {
+  body.lf-v1743-ux #worldNeighborSpots .forest-citizen-tree {
+    width: 160px !important;
+    height: 208px !important;
+    transform: translate(-50%, -100%) scale(var(--citizen-mobile-scale, var(--citizen-scale, 1))) rotate(var(--citizen-tilt, 0deg)) !important;
+  }
+
+  body.lf-v1743-ux #worldNeighborSpots .citizen-tree-image {
+    width: 154px !important;
+  }
+
+  body.lf-v1743-ux #worldNeighborSpots .citizen-tree-ground {
+    width: 88px !important;
+    height: 23px !important;
+  }
+}
