@@ -22445,10 +22445,10 @@ body.lf-v1742-ux #worldNeighborSpots .forest-citizen-tree.is-real .citizen-tree-
 }
 
 
-/* DEV v0.2.12 / V1.74.3 test: 왼쪽 공터 채우기 + 뒤쪽 유령나무 보정 */
+/* DEV v0.2.13 / V1.74.4 test: 상단 배경숲 오브젝트 제거 + 아래 활동영역 유지 */
 body.lf-v1743-ux.lf-world-active:not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after,
 body.lf-v1743-ux:not(.lf-garden-active):not(.online-friend-invite-mode) #worldScreen.screen-active .world-card::after {
-  content: "DEV v0.2.12 fill left + fix back trees" !important;
+  content: "DEV v0.2.13 remove top trees + keep lower grove" !important;
 }
 
 body.lf-v1743-ux #worldNeighborSpots .forest-citizen-tree {

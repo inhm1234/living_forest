@@ -588,20 +588,12 @@ const friendInviteSeatSlots = [
 let selectedFriendInviteSeatId = "flower_path";
 
 const worldForestSlots = [
-  // DEV v0.2.12: 비어 보이는 왼쪽 공터를 메우고,
-  // 뒤쪽 좌/우 나무가 유령처럼 투명해 보이던 문제를 보정한 버전.
+  // DEV v0.2.13: 실제로 배치되는 나무는 아래~중단 활동 영역에 모은다.
   // 원칙:
   // 1) 길은 계속 비운다.
-  // 2) 파란색으로 표시된 왼쪽 공터에는 중간~앞쪽 나무를 자연스럽게 추가한다.
-  // 3) 뒤쪽 좌/우 나무는 opacity를 올리고 blur를 줄여 실제 숲 배경 나무처럼 보이게 한다.
-
-  // 뒤쪽 숲 가장자리 — 유령처럼 보이지 않도록 opacity/blur 보정
-  { id: "world-back-01", name: "먼빛 나무", ownerName: "숲친구", state: "balanced", days: 38, x: 14, y: 39, scale: 0.62, mobileX: 12, mobileY: 40, mobileScale: 0.48, depth: 1, tilt: -4, opacity: 0.74, blur: 0.18, brightness: 0.98, sat: 0.98 },
-  { id: "world-back-02", name: "안개잎 나무", ownerName: "숲친구", state: "leaf-strong", days: 46, x: 25, y: 37, scale: 0.60, mobileX: 23, mobileY: 38, mobileScale: 0.46, depth: 1, tilt: 3, opacity: 0.72, blur: 0.20, brightness: 0.98, sat: 0.98 },
-  { id: "world-back-03", name: "새벽꽃 나무", ownerName: "숲친구", state: "balanced", days: 54, x: 36, y: 38, scale: 0.62, mobileX: 35, mobileY: 39, mobileScale: 0.48, depth: 1, tilt: -2, opacity: 0.74, blur: 0.18, brightness: 0.99, sat: 0.99 },
-  { id: "world-back-04", name: "구름잎 나무", ownerName: "숲친구", state: "leaf-strong", days: 49, x: 66, y: 38, scale: 0.62, mobileX: 67, mobileY: 39, mobileScale: 0.48, depth: 1, tilt: 3, opacity: 0.74, blur: 0.18, brightness: 0.99, sat: 0.99 },
-  { id: "world-back-05", name: "작은숲 나무", ownerName: "숲친구", state: "root-strong", days: 44, x: 77, y: 38, scale: 0.60, mobileX: 79, mobileY: 39, mobileScale: 0.46, depth: 1, tilt: -3, opacity: 0.72, blur: 0.20, brightness: 0.98, sat: 0.98 },
-  { id: "world-back-06", name: "숲끝 나무", ownerName: "숲친구", state: "balanced", days: 52, x: 88, y: 41, scale: 0.64, mobileX: 89, mobileY: 42, mobileScale: 0.49, depth: 1, tilt: 4, opacity: 0.76, blur: 0.16, brightness: 1.00, sat: 0.99 },
+  // 2) 빨간색(내 나무)과 파란색(주변 나무) 구역은 유지한다.
+  // 3) 검은색으로 표시된 상단 배경 숲 영역에는 별도 나무 오브젝트를 두지 않는다.
+  //    배경 일러스트의 숲을 그대로 살리고, 실제 배치 나무는 앞쪽 공간에만 자연스럽게 보이게 한다.
 
   // 뒤-중간층
   { id: "world-midback-01", name: "산들 나무", ownerName: "민트", state: "balanced", days: 63, x: 55, y: 52, scale: 0.74, mobileX: 56, mobileY: 53, mobileScale: 0.56, depth: 3, tilt: -2, opacity: 0.74, blur: 0.16, brightness: 1.00, sat: 1.00 },
@@ -629,8 +621,8 @@ const worldForestSlots = [
 
 const worldCommunitySeatSlots = {
   flower_path: { id: "community-seat-flower_path", name: "기다리는 꽃길나무", className: "row-community community-left trail-edge", state: "balanced", days: 16, x: 26, y: 76, scale: 1.22, opacity: 0.72, depth: 10, tilt: -5, lift: 10, groundOpacity: 0.062, mobileX: 25, mobileY: 77, mobileScale: 0.98 },
-  sunny_spot: { id: "community-seat-sunny_spot", name: "기다리는 햇살나무", className: "row-community community-back trail-edge", state: "leaf-strong", days: 22, x: 36, y: 48, scale: 1.00, opacity: 0.64, depth: 9, tilt: -3, lift: 5, groundOpacity: 0.048, mobileX: 35, mobileY: 49, mobileScale: 0.80 },
-  pond_spot: { id: "community-seat-pond_spot", name: "기다리는 연못나무", className: "row-community community-back trail-edge", state: "root-strong", days: 36, x: 64, y: 48, scale: 1.02, opacity: 0.64, depth: 9, tilt: 3, lift: 5, groundOpacity: 0.048, mobileX: 65, mobileY: 49, mobileScale: 0.82 },
+  sunny_spot: { id: "community-seat-sunny_spot", name: "기다리는 햇살나무", className: "row-community community-mid trail-edge", state: "leaf-strong", days: 22, x: 36, y: 66, scale: 1.00, opacity: 0.64, depth: 9, tilt: -3, lift: 7, groundOpacity: 0.052, mobileX: 34, mobileY: 67, mobileScale: 0.80 },
+  pond_spot: { id: "community-seat-pond_spot", name: "기다리는 연못나무", className: "row-community community-mid trail-edge", state: "root-strong", days: 36, x: 64, y: 66, scale: 1.02, opacity: 0.64, depth: 9, tilt: 3, lift: 7, groundOpacity: 0.052, mobileX: 66, mobileY: 67, mobileScale: 0.82 },
   swing_spot: { id: "community-seat-swing_spot", name: "기다리는 그네나무", className: "row-community community-right trail-edge", state: "balanced", days: 52, x: 74, y: 76, scale: 1.24, opacity: 0.72, depth: 10, tilt: 5, lift: 10, groundOpacity: 0.062, mobileX: 75, mobileY: 77, mobileScale: 1.00 },
   flower_fence: { id: "community-seat-flower_fence", name: "기다리는 꽃담나무", className: "row-community community-front trail-edge", state: "leaf-strong", days: 74, x: 50, y: 71, scale: 1.14, opacity: 0.66, depth: 10, tilt: 0, lift: 9, groundOpacity: 0.056, mobileX: 50, mobileY: 72, mobileScale: 0.92 }
 };
