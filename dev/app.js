@@ -1,14 +1,14 @@
-// 오늘의숲 DEV v0.3.0 · 시간대별 성장 나무 적용
+// 오늘의숲 DEV v0.3.1 · 좌표 기반 2.5D 월드 프로토타입
 // 프로젝트명: 살아있는 숲
-// 버전명: DEV v0.3.0 · 시간대별 성장 나무 적용
-// 목적: 전체숲 시간대별 전용 배경 이미지를 연결하고 오버레이 실험을 원복
+// 버전명: DEV v0.3.1 · 좌표 기반 2.5D 월드 프로토타입
+// 목적: 고정된 레벨디자인·XYZ 좌표·나무 슬롯·개인 카메라 구조를 DEV에 도입
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "DEV v0.3.0 · 시간대별 성장 나무 적용",
-  dataSchemaVersion: 12,
+  version: "DEV v0.3.1 · 좌표 기반 2.5D 월드 프로토타입",
+  dataSchemaVersion: 13,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
   serviceTimeZoneOffsetMinutes: 9 * 60
@@ -635,6 +635,13 @@ const backToWorldBtnBottomElement = document.querySelector("#backToWorldBtnBotto
 const myWorldSpotElement = document.querySelector("#myWorldSpot");
 const worldNeighborSpotsElement = document.querySelector("#worldNeighborSpots");
 const worldStageElement = document.querySelector("#worldStage");
+const coordinateWorldViewportElement = document.querySelector("#coordinateWorldViewport");
+const coordinateWorldCanvasElement = document.querySelector("#coordinateWorldCanvas");
+const coordinateTerrainLayerElement = document.querySelector("#coordinateTerrainLayer");
+const coordinateSlotLayerElement = document.querySelector("#coordinateSlotLayer");
+const coordinateTreeLayerElement = document.querySelector("#coordinateTreeLayer");
+const coordinateWorldZoneElement = document.querySelector("#coordinateWorldZone");
+const coordinateWorldMetaElement = document.querySelector("#coordinateWorldMeta");
 const worldTimeBadgeElement = document.querySelector("#worldTimeBadge");
 const worldAtmosphereHintElement = document.querySelector("#worldAtmosphereHint");
 const worldLifeLayerElement = document.querySelector("#worldLifeLayer");
@@ -949,6 +956,10 @@ function createNewTreeData(overrides = {}) {
     lastCheckDate: null,
     history: [],
     treeName: "",
+    // 좌표 월드: 사용자당 하나의 작은 숲 구역과 미래 나무 자리 4개를 예약한다.
+    worldGroveId: "",
+    worldSlotId: "",
+    reservedWorldSlotIds: [],
     careHistory: [],
     trailHistory: [],
     selfCareHistory: [],
@@ -1110,6 +1121,22 @@ function normalizeTreeData(rawData) {
         .filter(Boolean)
     : [];
   const treeName = typeof sourceData.treeName === "string" ? sourceData.treeName.trim().slice(0, 16) : "";
+  const resolvedTreeId = typeof sourceData.treeId === "string" && sourceData.treeId.trim() ? sourceData.treeId : baseData.treeId;
+  const coordinateWorld = window.LivingForestWorld;
+  const fallbackReservation = coordinateWorld?.getReservationForTree
+    ? coordinateWorld.getReservationForTree(resolvedTreeId)
+    : { groveId: "", slotIds: [], activeSlotId: "" };
+  const requestedGrove = coordinateWorld?.getGroveById?.(sourceData.worldGroveId);
+  const resolvedGroveId = requestedGrove?.id || fallbackReservation.groveId;
+  const allowedSlotIds = requestedGrove?.slotIds || fallbackReservation.slotIds || [];
+  const sourceReservedSlots = Array.isArray(sourceData.reservedWorldSlotIds)
+    ? sourceData.reservedWorldSlotIds.filter((slotId) => allowedSlotIds.includes(slotId))
+    : [];
+  const reservedWorldSlotIds = sourceReservedSlots.length ? sourceReservedSlots : [...allowedSlotIds];
+  const sourceWorldSlotId = typeof sourceData.worldSlotId === "string" ? sourceData.worldSlotId : "";
+  const worldSlotId = reservedWorldSlotIds.includes(sourceWorldSlotId)
+    ? sourceWorldSlotId
+    : (reservedWorldSlotIds[0] || fallbackReservation.activeSlotId || "");
   const createdAt = typeof sourceData.createdAt === "string" && sourceData.createdAt.trim()
     ? sourceData.createdAt
     : baseData.createdAt;
@@ -1153,7 +1180,10 @@ function normalizeTreeData(rawData) {
     appName: APP_CONFIG.name,
     appVersion: APP_CONFIG.version,
     dataSchemaVersion: APP_CONFIG.dataSchemaVersion,
-    treeId: typeof sourceData.treeId === "string" && sourceData.treeId.trim() ? sourceData.treeId : baseData.treeId,
+    treeId: resolvedTreeId,
+    worldGroveId: resolvedGroveId,
+    worldSlotId,
+    reservedWorldSlotIds,
     createdAt,
     updatedAt,
     storageInfo: normalizeStorageInfo(sourceData, updatedAt),
@@ -2926,6 +2956,7 @@ function showWorldFocusToast(message = "여기가 내 자리예요") {
 
 function focusMyWorldSpot() {
   trackForestEvent("focus_my_tree_click", { source: "focus_my_tree_button" });
+  focusCoordinateWorldCamera();
 
   if (!worldStageElement || !myWorldSpotElement) {
     highlightWorldSpot();
@@ -3556,19 +3587,17 @@ function renderWorldCommunityHint(todayRecord) {
     return;
   }
 
-  const worldInfo = getWorldEvolutionInfo();
+  const world = window.LivingForestWorld;
+  const grove = world?.getGroveById?.(treeData.worldGroveId);
+  const reservationCount = Array.isArray(treeData.reservedWorldSlotIds) ? treeData.reservedWorldSlotIds.length : 0;
+  const groveText = grove?.name || "내 작은 숲 구역";
 
   if (todayRecord) {
-    worldCommunityHintElement.textContent = `오늘의 ${todayRecord.label} 기운이 내 자리 주변 숲에도 남았어요. 친구가 들어오면 가까운 더미 나무 자리가 실제 친구 나무로 바뀌어요.`;
+    worldCommunityHintElement.textContent = `오늘의 ${todayRecord.label} 기록이 ${groveText}의 고정 좌표에 남았어요. 다음 나무 자리 ${Math.max(0, reservationCount - 1)}개도 같은 구역에 예약되어 있어요.`;
     return;
   }
 
-  if (treeData.history.length === 0) {
-    worldCommunityHintElement.textContent = `멀리 보이는 나무들은 초반 더미 나무예요. 실제 친구가 들어오면 가까운 다섯 자리가 친구 나무로 바뀌어요.`;
-    return;
-  }
-
-  worldCommunityHintElement.textContent = `${treeData.history.length}일의 기록이 월드 숲에 쌓였어요. 더미 나무 사이에 내 나무와 친구 나무가 함께 자리 잡을 수 있어요. ${worldInfo.meta}`;
+  worldCommunityHintElement.textContent = `${groveText}은 하나의 실제 월드 안에 있는 내 고정 구역이에요. 지형과 나무 자리는 모두 미리 정한 XYZ 좌표를 사용해요.`;
 }
 
 function renderWorldGrowthCard() {
@@ -4530,6 +4559,176 @@ function applyMyWorldSpotExactMatchSize() {
   }
 }
 
+
+/* --------------------------------------------------------------------------
+   DEV v0.3.1 coordinate world renderer
+   - x/y: world ground position
+   - z: elevation (visual lift)
+   - draw order: tree base y, never transparency
+   -------------------------------------------------------------------------- */
+let coordinateWorldFocusTimer = null;
+
+function getCoordinateWorldTreeImage(days) {
+  return getTreeImageInfoByDays(Math.max(0, Number(days) || 0));
+}
+
+function getCoordinateWorldReservation() {
+  const world = window.LivingForestWorld;
+  if (!world) return { grove: null, slot: null, reservedSlotIds: [] };
+
+  const fallback = world.getReservationForTree(treeData.treeId);
+  const grove = world.getGroveById(treeData.worldGroveId) || world.getGroveById(fallback.groveId);
+  const reservedSlotIds = Array.isArray(treeData.reservedWorldSlotIds) && treeData.reservedWorldSlotIds.length
+    ? treeData.reservedWorldSlotIds
+    : [...(grove?.slotIds || fallback.slotIds || [])];
+  const slot = world.getSlotById(treeData.worldSlotId) || world.getSlotById(reservedSlotIds[0]) || null;
+
+  return { grove, slot, reservedSlotIds };
+}
+
+function getCoordinateWorldGroundY(item) {
+  return Number(item?.y || 0) - Number(item?.z || 0) * 0.42;
+}
+
+function getCoordinateWorldTreeMarkup(tree, options = {}) {
+  const imageInfo = getCoordinateWorldTreeImage(tree.days);
+  const x = Number(tree.x || 0);
+  const y = getCoordinateWorldGroundY(tree);
+  const scale = Number(tree.scale || 1);
+  const renderOrder = 1000 + Math.round(Number(tree.y || 0));
+  const label = tree.isMine
+    ? `${tree.name || "내 나무"} · 내 자리`
+    : `${tree.ownerName || "친구"}의 ${tree.name || "나무"}`;
+
+  return `
+    <article
+      class="coordinate-tree ${tree.isMine ? "is-mine" : "is-friend"}"
+      style="--world-x:${x}px; --world-y:${y}px; --world-scale:${scale}; z-index:${renderOrder};"
+      aria-label="${escapeHtml(label)}"
+    >
+      <span class="coordinate-tree-shadow" aria-hidden="true"></span>
+      <img src="${imageInfo.src}" alt="" class="coordinate-tree-image" />
+      ${tree.isMine ? `<span class="coordinate-tree-name">${escapeHtml(tree.name || "내 나무")}</span>` : ""}
+    </article>
+  `;
+}
+
+function renderCoordinateWorld() {
+  const world = window.LivingForestWorld;
+  if (!world || !coordinateWorldCanvasElement || !coordinateTerrainLayerElement || !coordinateSlotLayerElement || !coordinateTreeLayerElement) {
+    return;
+  }
+
+  const { grove, slot: mySlot, reservedSlotIds } = getCoordinateWorldReservation();
+  const myDisplayDays = getWorldDisplayDays(treeData.history.length);
+
+  coordinateTerrainLayerElement.innerHTML = world.terrainObjects.map((item) => {
+    const y = getCoordinateWorldGroundY(item);
+    const zIndex = 100 + Math.round(Number(item.depth || 0) * 10 + Number(item.y || 0) * 0.1);
+    return `<span class="coordinate-terrain coordinate-${escapeHtml(item.type)}" style="--world-x:${item.x}px; --world-y:${y}px; --terrain-width:${item.width}px; --terrain-height:${item.height}px; z-index:${zIndex};"></span>`;
+  }).join("");
+
+  coordinateSlotLayerElement.innerHTML = world.treeSlots.map((slot) => {
+    const isCurrent = slot.id === mySlot?.id;
+    const isReserved = reservedSlotIds.includes(slot.id);
+    const y = getCoordinateWorldGroundY(slot);
+    const zIndex = 700 + Math.round(Number(slot.y || 0));
+    const label = isCurrent ? "내 현재 나무 자리" : (isReserved ? "다음 나무 예약 자리" : "배정 가능한 나무 자리");
+    return `
+      <span
+        class="coordinate-slot ${isCurrent ? "is-current" : ""} ${isReserved ? "is-reserved" : ""}"
+        style="--world-x:${slot.x}px; --world-y:${y}px; --slot-scale:${slot.scale || 1}; z-index:${zIndex};"
+        aria-label="${label}"
+      >${isCurrent ? "내 자리" : (isReserved ? "다음" : "")}</span>
+    `;
+  }).join("");
+
+  const trees = [];
+  if (mySlot) {
+    trees.push({
+      ...mySlot,
+      isMine: true,
+      name: treeData.treeName?.trim() || "내 나무",
+      days: myDisplayDays,
+      scale: (mySlot.scale || 1) * 1.12
+    });
+  }
+
+  // 실제로 연결된 온라인 친구만 월드 좌표에 표시한다. 더미 나무는 만들지 않는다.
+  const usedFriendSlots = new Set([mySlot?.id].filter(Boolean));
+  friendInviteSeatSlots.forEach((seat) => {
+    const record = getOnlineSeatRecord(seat.id);
+    const slotId = world.friendSeatSlotMap[seat.id];
+    const friendSlot = world.getSlotById(slotId);
+    if (!record || !friendSlot || usedFriendSlots.has(friendSlot.id)) return;
+
+    usedFriendSlots.add(friendSlot.id);
+    const ownerName = sanitizeOnlineText(record.friendName || record.friend_name || "친구", 12) || "친구";
+    const name = sanitizeOnlineText(record.treeName || record.tree_name || `${ownerName}의 나무`, 16) || `${ownerName}의 나무`;
+    trees.push({
+      ...friendSlot,
+      isMine: false,
+      ownerName,
+      name,
+      days: getOnlineSeatDays(record),
+      scale: friendSlot.scale || 1
+    });
+  });
+
+  coordinateTreeLayerElement.innerHTML = trees
+    .sort((a, b) => Number(a.y || 0) - Number(b.y || 0))
+    .map((tree) => getCoordinateWorldTreeMarkup(tree))
+    .join("");
+
+  if (coordinateWorldZoneElement) {
+    coordinateWorldZoneElement.textContent = grove?.name || "내 작은 숲 구역";
+  }
+  if (coordinateWorldMetaElement) {
+    coordinateWorldMetaElement.textContent = `고정 좌표 · 내 나무 1개 · 미래 자리 ${Math.max(0, reservedSlotIds.length - 1)}개`;
+  }
+
+  requestAnimationFrame(() => setCoordinateWorldCamera());
+}
+
+function setCoordinateWorldCamera(options = {}) {
+  const world = window.LivingForestWorld;
+  if (!world || !coordinateWorldCanvasElement || !coordinateWorldViewportElement) return;
+
+  const { grove, slot } = getCoordinateWorldReservation();
+  if (!grove || !slot) return;
+
+  const viewport = coordinateWorldViewportElement.getBoundingClientRect();
+  if (!viewport.width || !viewport.height) return;
+
+  const compact = viewport.width <= 560;
+  const baseZoom = Number(grove.camera?.zoom || 0.46);
+  const zoom = Math.max(0.32, baseZoom * (compact ? 0.84 : 1) + (options.focus ? 0.07 : 0));
+  const focusX = options.focus ? slot.x : (grove.camera?.x || slot.x);
+  const focusY = options.focus ? getCoordinateWorldGroundY(slot) : getCoordinateWorldGroundY({ y: grove.camera?.y || slot.y, z: 0 });
+  const anchorY = compact ? 0.60 : 0.62;
+  const translateX = viewport.width * 0.5 - focusX * zoom;
+  const translateY = viewport.height * anchorY - focusY * zoom;
+
+  coordinateWorldCanvasElement.style.setProperty("--camera-x", `${translateX.toFixed(2)}px`);
+  coordinateWorldCanvasElement.style.setProperty("--camera-y", `${translateY.toFixed(2)}px`);
+  coordinateWorldCanvasElement.style.setProperty("--camera-zoom", zoom.toFixed(3));
+}
+
+function focusCoordinateWorldCamera() {
+  if (!coordinateWorldViewportElement) return;
+  setCoordinateWorldCamera({ focus: true });
+  coordinateWorldViewportElement.classList.add("is-focus-camera");
+
+  if (coordinateWorldFocusTimer) {
+    window.clearTimeout(coordinateWorldFocusTimer);
+  }
+
+  coordinateWorldFocusTimer = window.setTimeout(() => {
+    coordinateWorldViewportElement.classList.remove("is-focus-camera");
+    setCoordinateWorldCamera();
+  }, 2600);
+}
+
 function renderWorld() {
   renderWorldVisualLayers();
 
@@ -4541,6 +4740,7 @@ function renderWorld() {
   const myWorldTreeSizeClass = getWorldTreeSizeClass(myWorldDisplayDays);
 
   renderWorldNeighbors();
+  renderCoordinateWorld();
   renderWorldCommunityHint(todayRecord);
   renderWorldGrowthCard();
   renderFriendForestCard();
@@ -7332,6 +7532,14 @@ function handleAnalyticsClickCapture(event) {
 
 document.addEventListener("click", handleAnalyticsClickCapture);
 
+// 카메라는 화면 가로폭이 바뀌어도 같은 내 구역을 유지한다.
+let coordinateWorldResizeTimer = null;
+window.addEventListener("resize", () => {
+  window.clearTimeout(coordinateWorldResizeTimer);
+  coordinateWorldResizeTimer = window.setTimeout(() => {
+    setCoordinateWorldCamera();
+  }, 80);
+});
 
 
 if (worldStarterFriendsElement) {
