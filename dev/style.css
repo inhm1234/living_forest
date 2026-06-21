@@ -177,8 +177,9 @@ h1,
   height: min(70vh, 560px);
   min-height: 470px;
   background-image: url("../assets/world/world-bg-preview.png");
-  background-size: cover;
-  background-position: center;
+  /* 월드 캔버스가 배경 원본(1448 × 1086)과 같은 좌표계다. */
+  background-size: 100% 100%;
+  background-position: 0 0;
 }
 
 .world-dim {
@@ -22503,7 +22504,7 @@ body.lf-v1743-ux #worldNeighborSpots .forest-citizen-tree.is-real .citizen-tree-
 
 
 /* ==========================================================================
-   DEV v0.3.1 — Coordinate 2.5D World
+   DEV v0.3.2 — Coordinate 2.5D World (map-size + safe camera fix)
    The legacy one-screen dummy-tree layout remains in source for rollback, but
    this build renders only the coordinate-world viewport below.
    ========================================================================== */
@@ -22514,7 +22515,7 @@ body.lf-v1743-ux #worldNeighborSpots .forest-citizen-tree.is-real .citizen-tree-
   overflow: hidden !important;
   isolation: isolate;
   border-radius: 28px !important;
-  background: #cdeeff !important;
+  background: #eaf7d9 !important;
 }
 
 .coordinate-world-enabled #worldStage > :not(.coordinate-world-viewport):not(#worldTimeBadge) {
@@ -22535,19 +22536,19 @@ body.lf-v1743-ux #worldNeighborSpots .forest-citizen-tree.is-real .citizen-tree-
   inset: 0;
   z-index: 2;
   overflow: hidden;
-  background: #cfeeff;
+  background: url("../assets/world/world-overview-day-v2.png") center / cover no-repeat;
   touch-action: manipulation;
 }
 
 .coordinate-world-canvas {
   --camera-x: 0px;
   --camera-y: 0px;
-  --camera-zoom: 0.46;
+  --camera-zoom: 1.16;
   position: absolute;
   left: 0;
   top: 0;
-  width: 3200px;
-  height: 1800px;
+  width: var(--world-width, 1448px);
+  height: var(--world-height, 1086px);
   transform: translate3d(var(--camera-x), var(--camera-y), 0) scale(var(--camera-zoom));
   transform-origin: 0 0;
   transition: transform 780ms cubic-bezier(.22,.85,.25,1);
@@ -22565,15 +22566,18 @@ body.lf-v1743-ux #worldNeighborSpots .forest-citizen-tree.is-real .citizen-tree-
 .coordinate-world-ground {
   z-index: 0;
   background-image: url("../assets/world/world-overview-day-v2.png");
-  background-size: cover;
-  background-position: center;
+  /* 월드 캔버스가 배경 원본(1448 × 1086)과 같은 좌표계다. */
+  background-size: 100% 100%;
+  background-position: 0 0;
   background-repeat: no-repeat;
 }
 
+.world-time-sunset .coordinate-world-viewport,
 .world-time-sunset .coordinate-world-ground {
   background-image: url("../assets/world/world-overview-sunset-v2.png");
 }
 
+.world-time-night .coordinate-world-viewport,
 .world-time-night .coordinate-world-ground {
   background-image: url("../assets/world/world-overview-night-v2.png");
 }
@@ -22673,6 +22677,10 @@ body.lf-v1743-ux #worldNeighborSpots .forest-citizen-tree.is-real .citizen-tree-
   background: rgba(255,255,255,.86);
   box-shadow: 0 0 0 4px rgba(255,221,237,.36);
   transform: translate(-50%, -50%);
+}
+
+.coordinate-slot:not(.is-current):not(.is-reserved) {
+  display: none;
 }
 
 .coordinate-slot.is-reserved {

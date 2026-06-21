@@ -1,13 +1,13 @@
-// 오늘의숲 DEV v0.3.1 · 좌표 기반 2.5D 월드 프로토타입
+// 오늘의숲 DEV v0.3.2 · 좌표 맵·안전 카메라 보정
 // 프로젝트명: 살아있는 숲
-// 버전명: DEV v0.3.1 · 좌표 기반 2.5D 월드 프로토타입
+// 버전명: DEV v0.3.2 · 좌표 맵·안전 카메라 보정
 // 목적: 고정된 레벨디자인·XYZ 좌표·나무 슬롯·개인 카메라 구조를 DEV에 도입
 // 저장 방식: localStorage + Google Sheets friend_seats/friend_links 연동
 // 저장 방식: localStorage 유지
 
 const APP_CONFIG = {
   name: "살아있는 숲",
-  version: "DEV v0.3.1 · 좌표 기반 2.5D 월드 프로토타입",
+  version: "DEV v0.3.2 · 좌표 맵·안전 카메라 보정",
   dataSchemaVersion: 13,
   baseStorageKey: "livingForestV012",
   testStorageKey: "livingForestV012_TEST",
@@ -4561,7 +4561,7 @@ function applyMyWorldSpotExactMatchSize() {
 
 
 /* --------------------------------------------------------------------------
-   DEV v0.3.1 coordinate world renderer
+   DEV v0.3.2 coordinate world renderer
    - x/y: world ground position
    - z: elevation (visual lift)
    - draw order: tree base y, never transparency
@@ -4618,6 +4618,9 @@ function renderCoordinateWorld() {
   if (!world || !coordinateWorldCanvasElement || !coordinateTerrainLayerElement || !coordinateSlotLayerElement || !coordinateTreeLayerElement) {
     return;
   }
+
+  coordinateWorldCanvasElement.style.setProperty("--world-width", `${Number(world.width) || 1448}px`);
+  coordinateWorldCanvasElement.style.setProperty("--world-height", `${Number(world.height) || 1086}px`);
 
   const { grove, slot: mySlot, reservedSlotIds } = getCoordinateWorldReservation();
   const myDisplayDays = getWorldDisplayDays(treeData.history.length);
@@ -4700,15 +4703,35 @@ function setCoordinateWorldCamera(options = {}) {
   const viewport = coordinateWorldViewportElement.getBoundingClientRect();
   if (!viewport.width || !viewport.height) return;
 
+  const worldWidth = Math.max(1, Number(world.width) || 1448);
+  const worldHeight = Math.max(1, Number(world.height) || 1086);
   const compact = viewport.width <= 560;
-  const baseZoom = Number(grove.camera?.zoom || 0.46);
-  const zoom = Math.max(0.32, baseZoom * (compact ? 0.84 : 1) + (options.focus ? 0.07 : 0));
-  const focusX = options.focus ? slot.x : (grove.camera?.x || slot.x);
-  const focusY = options.focus ? getCoordinateWorldGroundY(slot) : getCoordinateWorldGroundY({ y: grove.camera?.y || slot.y, z: 0 });
-  const anchorY = compact ? 0.60 : 0.62;
-  const translateX = viewport.width * 0.5 - focusX * zoom;
-  const translateY = viewport.height * anchorY - focusY * zoom;
 
+  // 원본 월드가 화면을 완전히 덮는 최소 확대값.
+  // 이 값과 아래 clamp가 함께 있어서 카메라가 절대 하늘색 빈 영역을 보여주지 않는다.
+  const coverZoom = Math.max(viewport.width / worldWidth, viewport.height / worldHeight) + 0.008;
+  const configuredZoom = Number(
+    compact ? grove.camera?.zoomMobile : grove.camera?.zoomDesktop
+  ) || (compact ? 0.70 : 1.16);
+  const zoom = Math.max(coverZoom, configuredZoom + (options.focus ? 0.08 : 0));
+
+  const focusX = Number(options.focus ? slot.x : (grove.camera?.x || slot.x));
+  const focusY = Number(options.focus
+    ? getCoordinateWorldGroundY(slot)
+    : getCoordinateWorldGroundY({ y: grove.camera?.y || slot.y, z: 0 }));
+
+  const anchorY = compact ? 0.58 : 0.60;
+  const rawX = viewport.width * 0.5 - focusX * zoom;
+  const rawY = viewport.height * anchorY - focusY * zoom;
+
+  // 카메라 이동 범위를 월드 내부로 한정한다.
+  const minX = Math.min(0, viewport.width - worldWidth * zoom);
+  const minY = Math.min(0, viewport.height - worldHeight * zoom);
+  const translateX = Math.min(0, Math.max(minX, rawX));
+  const translateY = Math.min(0, Math.max(minY, rawY));
+
+  coordinateWorldCanvasElement.style.setProperty("--world-width", `${worldWidth}px`);
+  coordinateWorldCanvasElement.style.setProperty("--world-height", `${worldHeight}px`);
   coordinateWorldCanvasElement.style.setProperty("--camera-x", `${translateX.toFixed(2)}px`);
   coordinateWorldCanvasElement.style.setProperty("--camera-y", `${translateY.toFixed(2)}px`);
   coordinateWorldCanvasElement.style.setProperty("--camera-zoom", zoom.toFixed(3));
