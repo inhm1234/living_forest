@@ -404,3 +404,69 @@ textarea::placeholder { color: #a7b4bd; }
   line-height: 1.45;
   text-align: center;
 }
+
+/* Friends v0.4 */
+.friend-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border: 1px solid rgba(130, 170, 150, .18);
+  border-radius: 999px;
+  background: rgba(248,255,248,.58);
+  color: #669178;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(92, 143, 107, .08);
+}
+.friend-pill:hover { transform: translateY(-1px); }
+
+.friend-invite-box {
+  margin: 17px 0 20px;
+  padding: 15px;
+  border: 1px solid rgba(129, 186, 149, .22);
+  border-radius: 21px;
+  background: linear-gradient(135deg, #f1fbf0, #f9f6ff);
+}
+.friend-invite-copy { display: flex; align-items: flex-start; gap: 10px; }
+.friend-invite-icon { display: grid; flex: 0 0 auto; place-items: center; width: 38px; height: 38px; border-radius: 14px; background: #e3f5e4; font-size: 20px; }
+.friend-invite-copy b { display: block; color: #547666; font-size: 14px; }
+.friend-invite-copy p { margin: 4px 0 0; color: #7d928a; font-size: 12px; line-height: 1.5; }
+.create-invite-button {
+  width: 100%;
+  margin-top: 13px;
+  padding: 12px 14px;
+  border: 1px solid rgba(104, 163, 124, .23);
+  border-radius: 15px;
+  background: #fff;
+  color: #5e9874;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.create-invite-button:disabled { cursor: wait; opacity: .7; }
+.invite-link-wrap { display: grid; grid-template-columns: 1fr auto; gap: 7px; margin-top: 11px; }
+.invite-link-wrap input { min-width: 0; height: 41px; padding: 0 11px; border: 1px solid #dfe9e4; border-radius: 13px; background: rgba(255,255,255,.82); color: #7a8c94; font-size: 11px; }
+.invite-link-wrap button { padding: 0 13px; border: 0; border-radius: 13px; background: #75ad87; color: #fff; font-size: 12px; font-weight: 900; cursor: pointer; }
+.invite-expiry { margin: 8px 1px 0; color: #91a098; font-size: 11px; }
+
+.friends-section-head { display: flex; align-items: end; justify-content: space-between; gap: 10px; margin: 4px 2px 11px; }
+.friends-section-head .sheet-kicker { margin-bottom: 3px; }
+.friends-section-head h3 { margin: 0; color: #5b7281; font-size: 16px; letter-spacing: -0.04em; }
+.friends-total { padding: 5px 8px; border-radius: 999px; background: #f0f7f1; color: #71907a; font-size: 11px; font-weight: 900; }
+.friends-list { display: grid; gap: 9px; }
+.friend-row { display: flex; align-items: center; gap: 11px; padding: 12px; border: 1px solid #e6edf0; border-radius: 18px; background: #fff; box-shadow: 0 8px 17px rgba(102,124,143,.05); }
+.friend-avatar { display: grid; flex: 0 0 auto; place-items: center; width: 42px; height: 42px; overflow: hidden; border-radius: 15px; background: linear-gradient(145deg, #effae9, #e7f0ff); color: #75a17f; font-size: 18px; font-weight: 900; }
+.friend-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.friend-main { min-width: 0; flex: 1; }
+.friend-name { overflow: hidden; color: #58707f; font-size: 13px; font-weight: 900; text-overflow: ellipsis; white-space: nowrap; }
+.friend-stage { margin-top: 3px; color: #94a3ad; font-size: 11px; line-height: 1.35; }
+.remove-friend-button { flex: 0 0 auto; padding: 8px 9px; border: 1px solid #f1dce3; border-radius: 11px; background: #fff9fa; color: #bd8594; font-size: 11px; font-weight: 800; cursor: pointer; }
+.secondary-sheet-button { width: 100%; margin-top: 9px; padding: 11px; border: 0; background: transparent; color: #8495a1; font-size: 13px; font-weight: 800; cursor: pointer; }
+.friend-invite-card .letter-delivery { color: #70a181; }
+
+@media (max-width: 470px) {
+  .friend-pill { font-size: 10px; }
+  .friend-invite-box { padding: 13px; }
+}

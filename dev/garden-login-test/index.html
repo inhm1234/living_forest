@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#eef1ff" />
   <meta name="color-scheme" content="light" />
-  <title>[DEV] 오늘의숲 | 카카오 로그인 내 정원</title>
+  <title>[DEV] 오늘의숲 | 친구 초대 내 정원</title>
   <meta name="robots" content="noindex, nofollow" />
   <link rel="stylesheet" href="garden.css" />
 </head>
@@ -37,6 +37,10 @@
         <button class="account-pill" id="accountButton" type="button" aria-label="내 계정 정보 보기">
           <span class="account-dot" aria-hidden="true"></span>
           <span id="accountName">내 정원</span>
+        </button>
+        <button class="friend-pill" id="openFriends" type="button" aria-label="친구 관리 열기">
+          <span aria-hidden="true">♡</span>
+          <span id="friendCount">친구 0명</span>
         </button>
         <button class="quiet-pill" id="weatherButton" type="button" aria-label="오늘 날씨 바꾸기">
           <span id="weatherIcon" aria-hidden="true">☁️</span>
@@ -166,6 +170,42 @@
     <div class="record-list" id="recordList" aria-live="polite"></div>
   </section>
 
+  <section class="bottom-sheet tall-sheet hidden" id="friendsSheet" role="dialog" aria-modal="true" aria-labelledby="friendsSheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="sheet-kicker">GARDEN FRIENDS</p>
+        <h2 id="friendsSheetTitle">친구</h2>
+      </div>
+      <button class="close-button" data-close="friendsSheet" type="button" aria-label="친구 닫기">×</button>
+    </div>
+
+    <div class="friend-invite-box">
+      <div class="friend-invite-copy">
+        <span class="friend-invite-icon" aria-hidden="true">🌿</span>
+        <div>
+          <b>친구를 내 정원으로 초대해요</b>
+          <p>링크를 받은 친구가 카카오로 로그인한 뒤 수락하면, 서로의 나무 성장을 볼 수 있어요.</p>
+        </div>
+      </div>
+      <button id="createInviteButton" class="create-invite-button" type="button">친구 초대 링크 만들기</button>
+      <div class="invite-link-wrap hidden" id="inviteLinkWrap">
+        <input id="inviteLink" type="text" readonly aria-label="친구 초대 링크" />
+        <button id="copyInviteLink" type="button">복사</button>
+      </div>
+      <p class="invite-expiry hidden" id="inviteExpiry"></p>
+    </div>
+
+    <div class="friends-section-head">
+      <div>
+        <p class="sheet-kicker">MY FRIENDS</p>
+        <h3>함께 자라는 친구</h3>
+      </div>
+      <span class="friends-total" id="friendsTotal">0명</span>
+    </div>
+    <div class="friends-list" id="friendsList" aria-live="polite"></div>
+  </section>
+
   <section class="bottom-sheet tall-sheet hidden" id="lettersSheet" role="dialog" aria-modal="true" aria-labelledby="lettersSheetTitle">
     <div class="sheet-handle"></div>
     <div class="sheet-head">
@@ -177,6 +217,18 @@
     </div>
     <p class="letter-intro">도착한 편지는 읽은 뒤 이 둥지에 차분히 모여요.</p>
     <div class="letter-list" id="letterList" aria-live="polite"></div>
+  </section>
+
+  <section class="letter-modal hidden" id="friendInviteModal" role="dialog" aria-modal="true" aria-labelledby="friendInviteTitle">
+    <div class="letter-card friend-invite-card">
+      <button class="letter-close" id="closeFriendInviteModal" type="button" aria-label="친구 초대 닫기">×</button>
+      <p class="letter-delivery">GARDEN INVITATION</p>
+      <p class="letter-from" id="friendInviteFrom">친구의 정원</p>
+      <h2 id="friendInviteTitle">내 정원을 함께 키울래?</h2>
+      <p class="letter-body">친구가 마음을 남기며 나무를 키우는 정원으로 초대했어요. 수락하면 서로의 나무 성장 모습만 가볍게 볼 수 있어요. 기록 내용은 서로 보이지 않아요.</p>
+      <button class="letter-confirm" id="acceptFriendInviteButton" type="button">친구 되기</button>
+      <button class="secondary-sheet-button" id="declineFriendInviteButton" type="button">나중에 하기</button>
+    </div>
   </section>
 
   <section class="letter-modal hidden" id="letterModal" role="dialog" aria-modal="true" aria-labelledby="letterModalTitle">
