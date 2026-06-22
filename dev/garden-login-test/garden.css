@@ -97,19 +97,19 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 /* 비 오는 날은 같은 정원이지만 조금 더 고요하고 감성적인 빛으로 바뀝니다. */
 .garden-stage.weather-rain {
   background:
-    radial-gradient(ellipse at 50% 78%, rgba(238,247,245,0.8) 0 8%, rgba(194,223,210,0.68) 36%, transparent 62%),
-    linear-gradient(180deg, #9ea9c3 0%, #c4cbe0 47%, #d5e9df 100%);
-  box-shadow: var(--shadow), inset 0 0 0 999px rgba(57, 69, 94, 0.13), inset 0 1px 0 rgba(255,255,255,0.42);
+    radial-gradient(ellipse at 50% 78%, rgba(241,248,246,0.84) 0 8%, rgba(203,228,217,0.60) 36%, transparent 62%),
+    linear-gradient(180deg, #aeb8cf 0%, #ccd4e5 47%, #ddecdf 100%);
+  box-shadow: var(--shadow), inset 0 0 0 999px rgba(57, 69, 94, 0.08), inset 0 1px 0 rgba(255,255,255,0.48);
 }
 .garden-stage.weather-rain::before {
   background:
-    radial-gradient(ellipse at 50% 22%, rgba(239,248,247,0.54), transparent 39%),
-    linear-gradient(180deg, rgba(195,224,208,0.76), rgba(166,206,183,0.83));
+    radial-gradient(ellipse at 50% 22%, rgba(242,249,248,0.58), transparent 39%),
+    linear-gradient(180deg, rgba(204,229,216,0.72), rgba(177,211,192,0.78));
 }
-.garden-stage.weather-rain .pastel-glow { opacity: 0.42; filter: blur(8px); }
-.garden-stage.weather-rain .glow-one { background: rgba(177, 183, 213, 0.54); }
-.garden-stage.weather-rain .glow-two { background: rgba(161, 195, 209, 0.52); }
-.garden-stage.weather-rain .cloud { background: rgba(151, 162, 188, 0.56); filter: blur(1.8px); }
+.garden-stage.weather-rain .pastel-glow { opacity: 0.36; filter: blur(8px); }
+.garden-stage.weather-rain .glow-one { background: rgba(184, 190, 220, 0.44); }
+.garden-stage.weather-rain .glow-two { background: rgba(170, 201, 214, 0.42); }
+.garden-stage.weather-rain .cloud { background: rgba(156, 167, 191, 0.48); filter: blur(1.8px); }
 .garden-stage.weather-rain .cloud-one { top: 86px; left: 4%; transform: scale(1.15); }
 .garden-stage.weather-rain .cloud-two { top: 145px; right: 2%; transform: scale(0.98); opacity: 0.88; }
 .garden-stage.weather-rain .tree-aura { opacity: 0.34; }
@@ -117,7 +117,7 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .garden-stage.weather-rain .stage-message,
 .garden-stage.weather-rain .visitor-card,
 .garden-stage.weather-rain .friend-visit-weather {
-  background: rgba(248, 250, 255, 0.5);
+  background: rgba(248, 250, 255, 0.62);
 }
 
 .garden-stage::before {
@@ -236,7 +236,19 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 
 .rain-layer { position: absolute; z-index: 6; inset: 0; pointer-events: none; opacity: 0; transition: opacity .35s ease; overflow: hidden; }
 .rain-layer.active { opacity: 1; }
-.rain-layer::before { content: ""; position: absolute; inset: -18% -10%; background-image: repeating-linear-gradient(112deg, transparent 0 14px, rgba(244,250,255,0.65) 15px 16px, transparent 17px 35px); background-size: 39px 50px; animation: rainDrop .78s linear infinite; }
+.rain-layer::before {
+  content: "";
+  position: absolute;
+  inset: -14% -7%;
+  background-image: repeating-linear-gradient(
+    108deg,
+    transparent 0 18px,
+    rgba(244,250,255,0.34) 19px 20px,
+    transparent 21px 54px
+  );
+  background-size: 58px 76px;
+  animation: rainDrop 1.45s linear infinite;
+}
 /* 땅 위에 맺히는 작은 물결: 실제 빗방울이 튀는 느낌을 가볍게 더합니다. */
 .rain-layer::after {
   content: "";
@@ -246,17 +258,14 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
   bottom: 7%;
   height: 31%;
   background:
-    radial-gradient(ellipse 16px 5px at 8% 72%, transparent 52%, rgba(236,249,255,0.85) 57% 64%, transparent 69%),
-    radial-gradient(ellipse 11px 4px at 24% 43%, transparent 52%, rgba(236,249,255,0.75) 57% 64%, transparent 69%),
-    radial-gradient(ellipse 18px 6px at 40% 76%, transparent 52%, rgba(236,249,255,0.82) 57% 64%, transparent 69%),
-    radial-gradient(ellipse 10px 4px at 57% 48%, transparent 52%, rgba(236,249,255,0.76) 57% 64%, transparent 69%),
-    radial-gradient(ellipse 15px 5px at 72% 67%, transparent 52%, rgba(236,249,255,0.84) 57% 64%, transparent 69%),
-    radial-gradient(ellipse 11px 4px at 91% 40%, transparent 52%, rgba(236,249,255,0.72) 57% 64%, transparent 69%);
+    radial-gradient(ellipse 14px 4px at 18% 64%, transparent 54%, rgba(236,249,255,0.48) 58% 63%, transparent 68%),
+    radial-gradient(ellipse 16px 5px at 49% 76%, transparent 54%, rgba(236,249,255,0.52) 58% 64%, transparent 69%),
+    radial-gradient(ellipse 13px 4px at 79% 58%, transparent 54%, rgba(236,249,255,0.46) 58% 63%, transparent 68%);
   opacity: 0;
-  transform: translateY(6px) scale(0.94);
-  animation: rainSplash 1.35s ease-in-out infinite;
+  transform: translateY(6px) scale(0.95);
+  animation: rainSplash 2.2s ease-in-out infinite;
 }
-.rain-layer.active::after { opacity: 0.82; }
+.rain-layer.active::after { opacity: 0.48; }
 
 .sparkle-layer { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
 .sparkle-layer i { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,210,0.9); box-shadow: 0 0 14px rgba(255,255,196,0.9); animation: twinkle 3s ease-in-out infinite; }
@@ -338,12 +347,12 @@ textarea::placeholder { color: #a7b4bd; }
 @keyframes treeSway { 0%,100% { transform: translateX(-50%) rotate(0deg); } 50% { transform: translateX(-50%) rotate(1.4deg); } }
 @keyframes treePulse { 0% { transform: translateX(-50%) scale(1); } 45% { transform: translateX(-50%) scale(1.035); } 100% { transform: translateX(-50%) scale(1); } }
 @keyframes letterHang { 0%,100% { transform: rotate(3deg) translateY(0); } 50% { transform: rotate(-3deg) translateY(2px); } }
-@keyframes rainDrop { from { transform: translate3d(-20px,-35px,0); } to { transform: translate3d(80px,100px,0); } }
+@keyframes rainDrop { from { transform: translate3d(-10px,-22px,0); } to { transform: translate3d(34px,54px,0); } }
 @keyframes rainSplash {
-  0% { transform: translateY(7px) scale(0.86); opacity: 0; }
-  26% { opacity: 0.86; }
-  72% { transform: translateY(-1px) scale(1.08); opacity: 0.48; }
-  100% { transform: translateY(-4px) scale(1.18); opacity: 0; }
+  0% { transform: translateY(6px) scale(0.88); opacity: 0; }
+  28% { opacity: 0.46; }
+  72% { transform: translateY(0) scale(1.04); opacity: 0.24; }
+  100% { transform: translateY(-2px) scale(1.10); opacity: 0; }
 }
 @keyframes twinkle { 0%,100% { transform: scale(.7); opacity: .3; } 50% { transform: scale(1.35); opacity: 1; } }
 @keyframes floatCloud { 0%,100% { transform: translateX(0); } 50% { transform: translateX(18px); } }
