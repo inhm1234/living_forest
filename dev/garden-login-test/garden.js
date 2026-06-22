@@ -460,50 +460,53 @@ function seededRandom(seedValue) {
 
 function buildRainScene(layer, seedKey) {
   if (!layer) return;
-  const rainSeed = String(seedKey || "guest-rain");
-  if (layer.dataset.rainSeed === rainSeed && layer.childElementCount > 0) return;
 
-  const random = seededRandom(rainSeed);
+  const rainSeed = String(seedKey || "guest-rain");
+  const stageHeight = Math.max(420, Math.round(layer.getBoundingClientRect().height || layer.clientHeight || 520));
+  const sceneKey = `${rainSeed}:${stageHeight}`;
+  if (layer.dataset.rainSceneKey === sceneKey && layer.childElementCount > 0) return;
+
+  const random = seededRandom(sceneKey);
   const fragment = document.createDocumentFragment();
-  const dropCount = 18;
+  const dropCount = 20;
 
   layer.innerHTML = "";
-  layer.dataset.rainSeed = rainSeed;
+  layer.dataset.rainSceneKey = sceneKey;
 
   for (let index = 0; index < dropCount; index += 1) {
-    const item = document.createElement("span");
-    item.className = "rain-drop-item";
+    const x = 5 + random() * 90;
+    const duration = 1.45 + random() * 0.72;
+    const delay = -(random() * duration);
+    const impactY = Math.round(stageHeight * (0.67 + random() * 0.18));
+    const travel = impactY + 42;
+    const length = 18 + random() * 12;
+    const alpha = 0.45 + random() * 0.20;
+    const drift = -1.5 + random() * 3;
+    const splashScale = 0.88 + random() * 0.28;
 
-    const x = 8 + random() * 84;
-    const delay = -(random() * 2.8);
-    const duration = 1.65 + random() * 0.85;
-    const length = 13 + random() * 12;
-    const alpha = 0.22 + random() * 0.18;
-    const drift = -2 + random() * 4;
-    const splashBottom = 9 + random() * 10;
-    const fallInset = 78 + random() * 34;
-    const splashScale = 0.88 + random() * 0.34;
-    const splashDelayOffset = 0.02 + random() * 0.08;
-
-    item.style.setProperty("--x", `${x.toFixed(2)}%`);
-    item.style.setProperty("--delay", `${delay.toFixed(2)}s`);
-    item.style.setProperty("--duration", `${duration.toFixed(2)}s`);
-    item.style.setProperty("--length", `${length.toFixed(1)}px`);
-    item.style.setProperty("--alpha", alpha.toFixed(2));
-    item.style.setProperty("--drift", `${drift.toFixed(1)}px`);
-    item.style.setProperty("--fall-distance", `calc(100% - ${fallInset.toFixed(0)}px)`);
-    item.style.setProperty("--splash-bottom", `${splashBottom.toFixed(1)}%`);
-    item.style.setProperty("--splash-scale", splashScale.toFixed(2));
-    item.style.setProperty("--splash-delay", `${(delay + duration - splashDelayOffset).toFixed(2)}s`);
+    const dropItem = document.createElement("span");
+    dropItem.className = "rain-drop-item";
+    dropItem.style.setProperty("--x", `${x.toFixed(2)}%`);
+    dropItem.style.setProperty("--delay", `${delay.toFixed(2)}s`);
+    dropItem.style.setProperty("--duration", `${duration.toFixed(2)}s`);
+    dropItem.style.setProperty("--travel", `${travel}px`);
+    dropItem.style.setProperty("--length", `${length.toFixed(1)}px`);
+    dropItem.style.setProperty("--alpha", alpha.toFixed(2));
+    dropItem.style.setProperty("--drift", `${drift.toFixed(1)}px`);
 
     const drop = document.createElement("span");
     drop.className = "rain-drop";
+    dropItem.appendChild(drop);
 
-    const splash = document.createElement("span");
-    splash.className = "rain-splash";
+    const splashItem = document.createElement("span");
+    splashItem.className = "rain-splash-item";
+    splashItem.style.setProperty("--x", `${x.toFixed(2)}%`);
+    splashItem.style.setProperty("--impact-y", `${impactY}px`);
+    splashItem.style.setProperty("--duration", `${duration.toFixed(2)}s`);
+    splashItem.style.setProperty("--splash-delay", `${(delay + duration - 0.09).toFixed(2)}s`);
+    splashItem.style.setProperty("--splash-scale", splashScale.toFixed(2));
 
-    item.append(drop, splash);
-    fragment.appendChild(item);
+    fragment.append(dropItem, splashItem);
   }
 
   layer.appendChild(fragment);

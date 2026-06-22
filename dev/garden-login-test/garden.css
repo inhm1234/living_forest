@@ -113,6 +113,7 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .garden-stage.weather-rain .cloud-one { top: 86px; left: 4%; transform: scale(1.15); }
 .garden-stage.weather-rain .cloud-two { top: 145px; right: 2%; transform: scale(0.98); opacity: 0.88; }
 .garden-stage.weather-rain .tree-aura { opacity: 0.34; }
+.garden-stage.weather-rain .sparkle-layer { opacity: 0.24; }
 .garden-stage.weather-rain .stage-topline,
 .garden-stage.weather-rain .stage-message,
 .garden-stage.weather-rain .visitor-card,
@@ -238,43 +239,58 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .rain-layer.active { opacity: 1; }
 .rain-layer::before,
 .rain-layer::after { content: none; }
-.rain-drop-item { position: absolute; inset: -18% 0 0 0; left: var(--x); width: 24px; }
-.rain-drop {
+
+/* 각 빗방울을 따로 떨어뜨려, 사선 줄무늬가 아닌 실제 비처럼 보이게 합니다. */
+.rain-drop-item {
   position: absolute;
-  left: 50%;
-  top: 0;
-  width: 2.6px;
+  left: var(--x);
+  top: -42px;
+  width: 10px;
   height: var(--length);
+  opacity: 0;
+  animation: rainTrack var(--duration) linear var(--delay) infinite;
+}
+.rain-drop {
+  display: block;
+  width: 2.5px;
+  height: 100%;
+  margin: 0 auto;
   border-radius: 999px;
-  background: linear-gradient(
-    180deg,
-    rgba(255,255,255,0) 0%,
-    rgba(241,248,255,0.42) 26%,
-    rgba(247,252,255,0.68) 72%,
-    rgba(255,255,255,0.54) 100%
-  );
-  box-shadow: 0 0 3px rgba(241,248,255,0.18);
-  transform: translateX(-50%);
-  filter: blur(.05px);
-  animation: rainFall var(--duration) linear var(--delay) infinite;
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(238,247,255,calc(var(--alpha) * .55)) 24%, rgba(248,252,255,var(--alpha)) 82%, rgba(255,255,255,calc(var(--alpha) * .88)) 100%);
+  box-shadow: 0 0 4px rgba(239,248,255,.20);
+  filter: blur(.08px);
 }
-.rain-splash { position: absolute; left: 50%; bottom: var(--splash-bottom); width: 24px; height: 14px; opacity: 0; transform: translateX(-50%) scale(.8); animation: splashTap var(--duration) ease-out var(--splash-delay) infinite; }
-.rain-splash::before,
-.rain-splash::after { content: ""; position: absolute; inset: 0; }
-.rain-splash::before {
-  background:
-    radial-gradient(ellipse at 50% 78%, rgba(240,248,255,0) 0 44%, rgba(240,248,255,0.72) 48% 58%, transparent 62%),
-    radial-gradient(circle at 50% 36%, rgba(246,251,255,0.76) 0 1.8px, transparent 2.3px),
-    radial-gradient(circle at 27% 22%, rgba(246,251,255,0.64) 0 1.4px, transparent 1.9px),
-    radial-gradient(circle at 73% 22%, rgba(246,251,255,0.64) 0 1.4px, transparent 1.9px);
+
+/* 바닥에 닿는 순간: 작은 파문과 물방울이 타닥 하고 튑니다. */
+.rain-splash-item {
+  position: absolute;
+  left: var(--x);
+  top: var(--impact-y);
+  width: 30px;
+  height: 16px;
+  opacity: 0;
+  transform: translateX(-50%) scale(.84);
+  animation: splashTap var(--duration) ease-out var(--splash-delay) infinite;
 }
-.rain-splash::after {
-  inset: -3px 6px auto 6px;
-  height: 8px;
+.rain-splash-item::before,
+.rain-splash-item::after { content: ""; position: absolute; }
+.rain-splash-item::before {
+  inset: 0;
   background:
-    radial-gradient(circle at 18% 92%, rgba(246,251,255,0.55) 0 1.2px, transparent 1.7px),
-    radial-gradient(circle at 50% 28%, rgba(246,251,255,0.62) 0 1.5px, transparent 2px),
-    radial-gradient(circle at 82% 92%, rgba(246,251,255,0.55) 0 1.2px, transparent 1.7px);
+    radial-gradient(ellipse at 50% 80%, transparent 0 43%, rgba(240,249,255,.68) 48% 57%, transparent 62%),
+    radial-gradient(circle at 50% 36%, rgba(248,252,255,.76) 0 1.8px, transparent 2.3px),
+    radial-gradient(circle at 25% 46%, rgba(248,252,255,.62) 0 1.3px, transparent 1.8px),
+    radial-gradient(circle at 75% 46%, rgba(248,252,255,.62) 0 1.3px, transparent 1.8px);
+}
+.rain-splash-item::after {
+  left: 8px;
+  top: -3px;
+  width: 14px;
+  height: 9px;
+  background:
+    radial-gradient(circle at 9% 100%, rgba(248,252,255,.55) 0 1.1px, transparent 1.6px),
+    radial-gradient(circle at 50% 8%, rgba(248,252,255,.68) 0 1.55px, transparent 2px),
+    radial-gradient(circle at 91% 100%, rgba(248,252,255,.55) 0 1.1px, transparent 1.6px);
 }
 
 .sparkle-layer { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
@@ -357,18 +373,17 @@ textarea::placeholder { color: #a7b4bd; }
 @keyframes treeSway { 0%,100% { transform: translateX(-50%) rotate(0deg); } 50% { transform: translateX(-50%) rotate(1.4deg); } }
 @keyframes treePulse { 0% { transform: translateX(-50%) scale(1); } 45% { transform: translateX(-50%) scale(1.035); } 100% { transform: translateX(-50%) scale(1); } }
 @keyframes letterHang { 0%,100% { transform: rotate(3deg) translateY(0); } 50% { transform: rotate(-3deg) translateY(2px); } }
-@keyframes rainFall {
-  0% { transform: translateX(-50%) translate3d(0,-26px,0); opacity: 0; }
-  8% { opacity: .92; }
-  88% { transform: translateX(-50%) translate3d(var(--drift), var(--fall-distance), 0); opacity: .92; }
-  100% { transform: translateX(-50%) translate3d(var(--drift), calc(var(--fall-distance) + 8px), 0); opacity: 0; }
+@keyframes rainTrack {
+  0% { transform: translateX(-50%) translate3d(0, 0, 0); opacity: 0; }
+  8% { opacity: .90; }
+  88% { transform: translateX(-50%) translate3d(var(--drift), var(--travel), 0); opacity: .88; }
+  100% { transform: translateX(-50%) translate3d(var(--drift), calc(var(--travel) + 6px), 0); opacity: 0; }
 }
 @keyframes splashTap {
-  0%, 72% { opacity: 0; transform: translateX(-50%) translateY(3px) scale(calc(var(--splash-scale) * .82)); }
-  80% { opacity: .22; }
-  86% { opacity: .78; transform: translateX(-50%) translateY(0) scale(var(--splash-scale)); }
-  94% { opacity: .22; transform: translateX(-50%) translateY(-1px) scale(calc(var(--splash-scale) * 1.08)); }
-  100% { opacity: 0; transform: translateX(-50%) translateY(-1px) scale(calc(var(--splash-scale) * 1.16)); }
+  0% { opacity: 0; transform: translateX(-50%) translateY(3px) scale(calc(var(--splash-scale) * .78)); }
+  6% { opacity: .82; transform: translateX(-50%) translateY(0) scale(var(--splash-scale)); }
+  14% { opacity: .24; transform: translateX(-50%) translateY(-1px) scale(calc(var(--splash-scale) * 1.08)); }
+  22%, 100% { opacity: 0; transform: translateX(-50%) translateY(-1px) scale(calc(var(--splash-scale) * 1.16)); }
 }
   26% { opacity: 0.86; }
   72% { transform: translateY(-1px) scale(1.08); opacity: 0.48; }
