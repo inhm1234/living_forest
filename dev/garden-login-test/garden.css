@@ -561,3 +561,53 @@ textarea::placeholder { color: #a7b4bd; }
   .write-letter-box { padding: 13px; }
   .sent-letter-status { font-size: 9px; }
 }
+
+/* DEV test friend v0.5.1 */
+.dev-test-friend-box {
+  display: grid;
+  gap: 11px;
+  margin: 13px 0 18px;
+  padding: 14px;
+  border: 1px dashed rgba(133, 148, 194, .45);
+  border-radius: 20px;
+  background: linear-gradient(135deg, #f7f6ff, #f2fbf5);
+}
+.dev-test-friend-box b { display: block; color: #697594; font-size: 13px; }
+.dev-test-friend-box p:not(.sheet-kicker) { margin: 5px 0 0; color: #9099aa; font-size: 11px; line-height: 1.5; }
+.enable-dev-friend-button {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid #d9d8ef;
+  border-radius: 15px;
+  background: #fff;
+  color: #7781aa;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.enable-dev-friend-button:disabled { cursor: wait; opacity: .68; }
+.dev-test-friend-box.is-active { display: none; }
+.dev-test-tag {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 5px;
+  padding: 3px 5px;
+  border-radius: 999px;
+  background: #ecebfb;
+  color: #7c77ae;
+  font-size: 9px;
+  font-weight: 900;
+  vertical-align: 2px;
+}
+.dev-read-sim-button {
+  margin-top: 8px;
+  padding: 7px 9px;
+  border: 1px solid #e6dff8;
+  border-radius: 10px;
+  background: #faf8ff;
+  color: #8075ac;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.sent-letter-item.is-dev-test { border-color: #e5def7; background: linear-gradient(135deg, #fff, #fbf9ff); }

@@ -112,6 +112,8 @@ const els = {
   inviteLink: $("#inviteLink"),
   copyInviteLink: $("#copyInviteLink"),
   inviteExpiry: $("#inviteExpiry"),
+  devTestFriendBox: $("#devTestFriendBox"),
+  enableDevFriendButton: $("#enableDevFriendButton"),
   friendInviteModal: $("#friendInviteModal"),
   friendInviteFrom: $("#friendInviteFrom"),
   acceptFriendInviteButton: $("#acceptFriendInviteButton"),
@@ -149,6 +151,9 @@ function databaseErrorMessage(error) {
   }
   if (message.includes("garden_profiles") || message.includes("garden_records") || message.includes("garden_letters")) {
     return "내 정원 저장소가 아직 준비되지 않았어요. Supabase SQL 설정을 먼저 실행해 주세요.";
+  }
+  if (message.includes("garden_dev_test") || message.includes("enable_my_dev_test_friend") || message.includes("send_dev_test_garden_letter")) {
+    return "테스트 새싹 준비를 하지 못했어요. DEV 테스트 친구 SQL 설정을 먼저 실행해 주세요.";
   }
   if (message.includes("garden_friend") || message.includes("friend")) {
     return "친구 정원을 준비하지 못했어요. 친구 기능 SQL 설정을 먼저 확인해 주세요.";
@@ -258,6 +263,7 @@ async function loadGardenState() {
       sentAt: letter.sent_at,
       availableAt: letter.available_at,
       readAt: letter.read_at,
+      isDevTest: Boolean(letter.is_dev_test),
     })),
     friends: (friendsResult.data || []).map((friend) => ({
       id: friend.friend_id,
@@ -265,6 +271,7 @@ async function loadGardenState() {
       avatarUrl: friend.avatar_url || "",
       growth: Number(friend.growth_count || 0),
       becameFriendsAt: friend.became_friends_at,
+      isDevTest: Boolean(friend.is_dev_test),
     })),
   };
 }
@@ -432,17 +439,26 @@ function renderSentLetters() {
 
   els.sentLetterList.innerHTML = sentLetters.map((letter) => {
     const carrier = carrierForKind(letter.deliveryKind);
+    const isDelivered = new Date(letter.availableAt).getTime() <= Date.now();
+    const devReadButton = letter.isDevTest && isDelivered && !letter.readAt
+      ? `<button class="dev-read-sim-button" type="button" data-dev-read-letter="${escapeAttr(letter.id)}">테스트 친구가 읽기</button>`
+      : "";
     return `
-      <article class="sent-letter-item">
+      <article class="sent-letter-item ${letter.isDevTest ? "is-dev-test" : ""}">
         <div class="sent-letter-icon" aria-hidden="true">${carrier.icon}</div>
         <div class="sent-letter-main">
-          <div class="sent-letter-title">${escapeHTML(letter.to)}에게 · ${escapeHTML(letter.title)}</div>
+          <div class="sent-letter-title">${escapeHTML(letter.to)}에게 · ${escapeHTML(letter.title)}${letter.isDevTest ? '<span class="dev-test-tag">DEV</span>' : ""}</div>
           <div class="sent-letter-detail">${escapeHTML(carrier.name)} · ${escapeHTML(formatDate(letter.sentAt))}</div>
+          ${devReadButton}
         </div>
         <span class="sent-letter-status">${escapeHTML(deliveryStatus(letter))}</span>
       </article>
     `;
   }).join("");
+
+  $$('[data-dev-read-letter]').forEach((button) => {
+    button.addEventListener("click", () => simulateDevFriendRead(button.dataset.devReadLetter));
+  });
 }
 
 function carrierForKind(kind) {
@@ -475,8 +491,8 @@ function renderLetterComposer() {
       <button class="letter-recipient-choice ${friend.id === selectedLetterRecipientId ? "selected" : ""}" type="button" data-letter-recipient="${escapeAttr(friend.id)}">
         <span class="letter-recipient-avatar">${avatar}</span>
         <span>
-          <span class="letter-recipient-name">${escapeHTML(friend.name)}</span>
-          <span class="letter-recipient-stage">마음 ${friend.growth}일째 · ${escapeHTML(stage.label)}</span>
+          <span class="letter-recipient-name">${escapeHTML(friend.name)}${friend.isDevTest ? '<span class="dev-test-tag">DEV</span>' : ""}</span>
+          <span class="letter-recipient-stage">마음 ${friend.growth}일째 · ${escapeHTML(stage.label)}${friend.isDevTest ? " · 개발 확인용" : ""}</span>
         </span>
       </button>
     `;
@@ -490,7 +506,11 @@ function renderLetterComposer() {
   });
 
   const carrier = carrierForGrowth(state.growth);
-  els.letterCarrierPreview.innerHTML = `<span class="carrier-icon" aria-hidden="true">${carrier.icon}</span><p>${carrier.name}가 편지를 맡아, 1분 뒤 친구의 나뭇가지에 걸어둘 거예요.</p>`;
+  const chosenFriend = friends.find((friend) => friend.id === selectedLetterRecipientId);
+  const destination = chosenFriend?.isDevTest
+    ? "테스트 새싹의 나뭇가지에 도착한 뒤, 이 화면에서 읽음 상태까지 확인할 수 있어요."
+    : "친구의 나뭇가지에 걸어둘 거예요.";
+  els.letterCarrierPreview.innerHTML = `<span class="carrier-icon" aria-hidden="true">${carrier.icon}</span><p>${carrier.name}가 편지를 맡아, 1분 뒤 ${destination}</p>`;
 }
 
 async function sendGardenLetter(event) {
@@ -517,14 +537,22 @@ async function sendGardenLetter(event) {
     return;
   }
 
+  const selectedFriend = (state.friends || []).find((friend) => friend.id === selectedLetterRecipientId);
+  const isDevTestFriend = Boolean(selectedFriend?.isDevTest);
   const submitButton = els.letterForm.querySelector('button[type="submit"]');
   submitButton.disabled = true;
   submitButton.textContent = "새가 편지를 품고 날아가요";
-  const { data, error } = await supabase.rpc("send_garden_letter", {
-    p_recipient_id: selectedLetterRecipientId,
-    p_title: title,
-    p_body: body,
-  });
+  const { data, error } = isDevTestFriend
+    ? await supabase.rpc("send_dev_test_garden_letter", {
+      p_test_friend_id: selectedLetterRecipientId,
+      p_title: title,
+      p_body: body,
+    })
+    : await supabase.rpc("send_garden_letter", {
+      p_recipient_id: selectedLetterRecipientId,
+      p_title: title,
+      p_body: body,
+    });
   submitButton.disabled = false;
   submitButton.textContent = "새에게 편지 맡기기";
 
@@ -544,8 +572,10 @@ async function sendGardenLetter(event) {
 
 function renderFriends() {
   const friends = state.friends || [];
+  const hasDevTestFriend = friends.some((friend) => friend.isDevTest);
   els.friendCount.textContent = `친구 ${friends.length}명`;
   els.friendsTotal.textContent = `${friends.length}명`;
+  els.devTestFriendBox.classList.toggle("is-active", hasDevTestFriend);
 
   if (!friends.length) {
     els.friendsList.innerHTML = '<div class="empty-state">아직 함께 자라는 친구가 없어요.<br />초대 링크를 보내면 친구의 나무도 이곳에 찾아와요.</div>';
@@ -557,21 +587,50 @@ function renderFriends() {
     const avatar = friend.avatarUrl
       ? `<img src="${escapeAttr(friend.avatarUrl)}" alt="${escapeAttr(friend.name)} 프로필 사진" />`
       : escapeHTML(friend.name.slice(0, 1));
+    const actionText = friend.isDevTest ? "테스트 친구 지우기" : "친구 삭제";
     return `
-      <article class="friend-row">
+      <article class="friend-row ${friend.isDevTest ? "is-dev-test" : ""}">
         <div class="friend-avatar">${avatar}</div>
         <div class="friend-main">
-          <div class="friend-name">${escapeHTML(friend.name)}</div>
-          <div class="friend-stage">마음 ${friend.growth}일째 · ${escapeHTML(stage.label)}</div>
+          <div class="friend-name">${escapeHTML(friend.name)}${friend.isDevTest ? '<span class="dev-test-tag">DEV</span>' : ""}</div>
+          <div class="friend-stage">마음 ${friend.growth}일째 · ${escapeHTML(stage.label)}${friend.isDevTest ? " · 개발 확인용" : ""}</div>
         </div>
-        <button class="remove-friend-button" type="button" data-remove-friend="${escapeAttr(friend.id)}" data-friend-name="${escapeAttr(friend.name)}">친구 삭제</button>
+        <button class="remove-friend-button" type="button" data-remove-friend="${escapeAttr(friend.id)}" data-friend-name="${escapeAttr(friend.name)}" data-dev-test="${friend.isDevTest ? "true" : "false"}">${actionText}</button>
       </article>
     `;
   }).join("");
 
   $$('[data-remove-friend]').forEach((button) => {
-    button.addEventListener("click", () => removeFriend(button.dataset.removeFriend, button.dataset.friendName));
+    button.addEventListener("click", () => removeFriend(button.dataset.removeFriend, button.dataset.friendName, button.dataset.devTest === "true"));
   });
+}
+
+async function enableDevTestFriend() {
+  if (!currentUser) return;
+  const button = els.enableDevFriendButton;
+  button.disabled = true;
+  button.textContent = "테스트 새싹을 심는 중이에요";
+  const { error } = await supabase.rpc("enable_my_dev_test_friend");
+  button.disabled = false;
+  button.textContent = "테스트 새싹 친구 만들기";
+  if (error) {
+    showToast(databaseErrorMessage(error));
+    return;
+  }
+  await loadGardenState();
+  renderAll();
+  showToast("테스트 새싹이 내 정원 친구 목록에 왔어요.");
+}
+
+async function simulateDevFriendRead(letterId) {
+  const { error } = await supabase.rpc("mark_dev_test_garden_letter_read", { p_letter_id: letterId });
+  if (error) {
+    showToast(databaseErrorMessage(error));
+    return;
+  }
+  await loadGardenState();
+  renderAll();
+  showToast("테스트 새싹이 편지를 마음에 담았어요.");
 }
 
 function shortDelivery(text) {
@@ -788,12 +847,17 @@ async function copyFriendInviteLink() {
   }
 }
 
-async function removeFriend(friendId, name) {
+async function removeFriend(friendId, name, isDevTest = false) {
   if (!friendId) return;
-  const okay = window.confirm(`${name || "이 친구"}님과의 친구 관계를 끝낼까요?\n서로 새 편지는 보낼 수 없게 돼요.`);
+  const prompt = isDevTest
+    ? `${name || "테스트 새싹"}을 개발용 친구 목록에서 지울까요?\n테스트로 보낸 편지도 함께 지워져요.`
+    : `${name || "이 친구"}님과의 친구 관계를 끝낼까요?\n서로 새 편지는 보낼 수 없게 돼요.`;
+  const okay = window.confirm(prompt);
   if (!okay) return;
 
-  const { error } = await supabase.rpc("remove_garden_friend", { p_friend_id: friendId });
+  const { error } = isDevTest
+    ? await supabase.rpc("remove_my_dev_test_friend")
+    : await supabase.rpc("remove_garden_friend", { p_friend_id: friendId });
   if (error) {
     showToast(databaseErrorMessage(error));
     return;
@@ -801,7 +865,7 @@ async function removeFriend(friendId, name) {
 
   await loadGardenState();
   renderAll();
-  showToast(`${name || "친구"}님과의 친구 관계를 정리했어요.`);
+  showToast(isDevTest ? "테스트 새싹과 테스트 편지를 정리했어요." : `${name || "친구"}님과의 친구 관계를 정리했어요.`);
 }
 
 function showToast(message) {
@@ -977,6 +1041,7 @@ function bindEvents() {
   els.letterModal.addEventListener("click", (event) => { if (event.target === els.letterModal) closeLetterModal(); });
   els.createInviteButton.addEventListener("click", createFriendInvite);
   els.copyInviteLink.addEventListener("click", copyFriendInviteLink);
+  els.enableDevFriendButton.addEventListener("click", enableDevTestFriend);
   $("#closeFriendInviteModal").addEventListener("click", () => closeFriendInviteModal());
   els.declineFriendInviteButton.addEventListener("click", () => closeFriendInviteModal());
   els.acceptFriendInviteButton.addEventListener("click", acceptFriendInvite);
