@@ -61,6 +61,7 @@ let pendingFriendInvite = null;
 let invitePreviewHandled = false;
 let toastTimer = null;
 let authBusy = false;
+let activeFriendGardenId = "";
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -114,6 +115,15 @@ const els = {
   inviteExpiry: $("#inviteExpiry"),
   devTestFriendBox: $("#devTestFriendBox"),
   enableDevFriendButton: $("#enableDevFriendButton"),
+  friendGardenModal: $("#friendGardenModal"),
+  friendGardenName: $("#friendGardenName"),
+  friendGardenTitle: $("#friendGardenTitle"),
+  friendGardenTree: $("#friendGardenTree"),
+  friendGardenDayCount: $("#friendGardenDayCount"),
+  friendGardenStage: $("#friendGardenStage"),
+  friendGardenWeather: $("#friendGardenWeather"),
+  friendGardenWriteLetter: $("#friendGardenWriteLetter"),
+  friendGardenBack: $("#friendGardenBack"),
   friendInviteModal: $("#friendInviteModal"),
   friendInviteFrom: $("#friendInviteFrom"),
   acceptFriendInviteButton: $("#acceptFriendInviteButton"),
@@ -663,19 +673,81 @@ function renderFriends() {
     const actionText = friend.isDevTest ? "테스트 친구 지우기" : "친구 삭제";
     return `
       <article class="friend-row ${friend.isDevTest ? "is-dev-test" : ""}">
-        <div class="friend-avatar">${avatar}</div>
-        <div class="friend-main">
-          <div class="friend-name">${escapeHTML(friend.name)}${friend.isDevTest ? '<span class="dev-test-tag">DEV</span>' : ""}</div>
-          <div class="friend-stage">마음 ${friend.growth}일째 · ${escapeHTML(stage.label)}${friend.isDevTest ? " · 개발 확인용" : ""}</div>
-        </div>
+        <button class="friend-garden-open" type="button" data-view-friend="${escapeAttr(friend.id)}" aria-label="${escapeAttr(friend.name)}의 정원 보기">
+          <span class="friend-avatar">${avatar}</span>
+          <span class="friend-main">
+            <span class="friend-name">${escapeHTML(friend.name)}${friend.isDevTest ? '<span class="dev-test-tag">DEV</span>' : ""}</span>
+            <span class="friend-stage">마음 ${friend.growth}일째 · ${escapeHTML(stage.label)}${friend.isDevTest ? " · 개발 확인용" : ""}</span>
+          </span>
+          <span class="friend-view-arrow" aria-hidden="true">›</span>
+        </button>
         <button class="remove-friend-button" type="button" data-remove-friend="${escapeAttr(friend.id)}" data-friend-name="${escapeAttr(friend.name)}" data-dev-test="${friend.isDevTest ? "true" : "false"}">${actionText}</button>
       </article>
     `;
   }).join("");
 
+  $$('[data-view-friend]').forEach((button) => {
+    button.addEventListener("click", () => openFriendGarden(button.dataset.viewFriend));
+  });
   $$('[data-remove-friend]').forEach((button) => {
     button.addEventListener("click", () => removeFriend(button.dataset.removeFriend, button.dataset.friendName, button.dataset.devTest === "true"));
   });
+}
+
+async function openFriendGarden(friendId) {
+  const fallbackFriend = (state.friends || []).find((friend) => friend.id === friendId);
+  if (!friendId || !fallbackFriend) {
+    showToast("친구 정원을 찾지 못했어요.");
+    return;
+  }
+
+  const { data, error } = await supabase.rpc("get_my_garden_friend_view", { p_friend_id: friendId });
+  if (error) {
+    console.error("TodayForest friend garden load error:", error);
+    showToast(databaseErrorMessage(error));
+    return;
+  }
+
+  const friend = normalizeRpcRow(data);
+  if (!friend) {
+    showToast("친구 정원을 찾지 못했어요.");
+    return;
+  }
+
+  const growth = Number(friend.growth_count ?? fallbackFriend.growth ?? 0);
+  const weather = weatherOptions[Number(friend.weather_index ?? 0) % weatherOptions.length];
+  const stage = stageForGrowth(growth);
+  const name = friend.nickname || fallbackFriend.name || "친구";
+
+  activeFriendGardenId = friend.friend_id || friendId;
+  els.friendGardenName.textContent = `${name}의 정원`;
+  els.friendGardenTitle.textContent = stage.label;
+  els.friendGardenTree.src = `../../assets/garden/tree_growth/${stage.asset}`;
+  els.friendGardenTree.alt = `${name}의 ${stage.label}`;
+  els.friendGardenDayCount.textContent = `마음 ${growth}일째`;
+  els.friendGardenStage.textContent = stage.label;
+  els.friendGardenWeather.textContent = `${weather.icon} ${weather.text}`;
+  els.friendGardenWriteLetter.textContent = `${name}에게 편지 보내기`;
+  els.friendGardenModal.classList.remove("hidden");
+}
+
+function closeFriendGardenModal() {
+  els.friendGardenModal.classList.add("hidden");
+  activeFriendGardenId = "";
+}
+
+function writeLetterToActiveFriend() {
+  const friend = (state.friends || []).find((item) => item.id === activeFriendGardenId);
+  if (!friend) {
+    showToast("친구 정보를 다시 불러온 뒤 편지를 보내 주세요.");
+    closeFriendGardenModal();
+    return;
+  }
+
+  selectedLetterRecipientId = friend.id;
+  closeFriendGardenModal();
+  renderLetterComposer();
+  openSheet(els.letterComposerSheet);
 }
 
 async function enableDevTestFriend() {
@@ -1094,6 +1166,7 @@ async function signOut() {
   selectedLetterRecipientId = "";
   closeAllSheets();
   closeLetterModal();
+  closeFriendGardenModal();
   closeFriendInviteModal({ keepLink: true });
   renderAuthUI();
   setAuthError("");
@@ -1150,6 +1223,10 @@ function bindEvents() {
   $("#closeLetterModal").addEventListener("click", closeLetterModal);
   $("#readLetterButton").addEventListener("click", markLetterRead);
   els.letterModal.addEventListener("click", (event) => { if (event.target === els.letterModal) closeLetterModal(); });
+  $("#closeFriendGardenModal").addEventListener("click", closeFriendGardenModal);
+  els.friendGardenBack.addEventListener("click", closeFriendGardenModal);
+  els.friendGardenWriteLetter.addEventListener("click", writeLetterToActiveFriend);
+  els.friendGardenModal.addEventListener("click", (event) => { if (event.target === els.friendGardenModal) closeFriendGardenModal(); });
   els.createInviteButton.addEventListener("click", createFriendInvite);
   els.copyInviteLink.addEventListener("click", copyFriendInviteLink);
   els.enableDevFriendButton.addEventListener("click", enableDevTestFriend);
@@ -1170,6 +1247,7 @@ function bindEvents() {
     if (event.key !== "Escape") return;
     closeAllSheets();
     closeLetterModal();
+    closeFriendGardenModal();
     closeFriendInviteModal();
   });
 }

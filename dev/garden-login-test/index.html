@@ -30,7 +30,7 @@
   <main class="garden-app hidden" id="gardenApp" aria-label="오늘의숲 내 정원">
     <header class="garden-header">
       <div>
-        <p class="eyebrow">DEV · FRIEND LETTER TEST v0.5.1</p>
+        <p class="eyebrow">DEV · FRIEND GARDEN VIEW v0.6</p>
         <h1>내 정원</h1>
       </div>
       <div class="header-actions">
@@ -286,6 +286,37 @@
       <button class="send-letter-button" type="submit">새에게 편지 맡기기</button>
       <p class="sheet-footnote">지금은 개발 테스트라 모든 편지가 1분 뒤 도착해요.</p>
     </form>
+  </section>
+
+
+  <section class="letter-modal hidden" id="friendGardenModal" role="dialog" aria-modal="true" aria-labelledby="friendGardenTitle">
+    <div class="friend-garden-card">
+      <button class="letter-close" id="closeFriendGardenModal" type="button" aria-label="친구 정원 닫기">×</button>
+      <p class="friend-garden-kicker">FRIEND'S GARDEN</p>
+      <p class="friend-garden-name" id="friendGardenName">친구의 정원</p>
+      <h2 id="friendGardenTitle">조용히 자라는 나무</h2>
+
+      <div class="friend-garden-scene" aria-hidden="true">
+        <span class="friend-garden-glow friend-garden-glow-one"></span>
+        <span class="friend-garden-glow friend-garden-glow-two"></span>
+        <span class="friend-garden-cloud friend-garden-cloud-one"></span>
+        <span class="friend-garden-cloud friend-garden-cloud-two"></span>
+        <img id="friendGardenTree" src="../../assets/garden/tree_growth/tree_stage1_morning.png" alt="친구의 마음 나무" />
+      </div>
+
+      <div class="friend-garden-status">
+        <span id="friendGardenDayCount">마음 0일째</span>
+        <span class="dot">·</span>
+        <span id="friendGardenStage">처음 깨어난 새싹</span>
+      </div>
+      <p class="friend-garden-weather" id="friendGardenWeather">🍃 바람이 가볍게 불어요</p>
+      <p class="friend-garden-note">기록의 내용은 서로 보이지 않아요. 이곳에서는 친구의 나무가 자란 모습만 함께 볼 수 있어요.</p>
+
+      <div class="friend-garden-actions">
+        <button class="friend-garden-letter" id="friendGardenWriteLetter" type="button">이 나무에게 편지 보내기</button>
+        <button class="friend-garden-back" id="friendGardenBack" type="button">친구 목록으로 돌아가기</button>
+      </div>
+    </div>
   </section>
 
   <section class="letter-modal hidden" id="friendInviteModal" role="dialog" aria-modal="true" aria-labelledby="friendInviteTitle">
