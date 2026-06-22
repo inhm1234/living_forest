@@ -30,7 +30,7 @@
   <main class="garden-app hidden" id="gardenApp" aria-label="오늘의숲 내 정원">
     <header class="garden-header">
       <div>
-        <p class="eyebrow">DEV · MY GARDEN CONCEPT v0.1</p>
+        <p class="eyebrow">DEV · MY GARDEN DATABASE TEST v0.3</p>
         <h1>내 정원</h1>
       </div>
       <div class="header-actions">
@@ -56,9 +56,9 @@
       </div>
 
       <div class="stage-topline">
-        <span id="dayCount">마음 14일째</span>
+        <span id="dayCount">마음 0일째</span>
         <span class="dot">·</span>
-        <span id="treeStageLabel">꽃이 피는 작은 나무</span>
+        <span id="treeStageLabel">처음 깨어난 새싹</span>
       </div>
 
       <button class="visitor-card" id="visitorButton" type="button" aria-label="오늘의 방문자 보기">
@@ -108,12 +108,12 @@
       <button type="button" class="nav-action" id="openLetters">
         <span class="nav-icon" aria-hidden="true">✉</span>
         <span>편지</span>
-        <em class="nav-badge" id="navLetterBadge">1</em>
+        <em class="nav-badge hidden" id="navLetterBadge">0</em>
       </button>
     </nav>
 
     <div class="garden-footer-actions">
-      <button id="resetPrototype" class="reset-link" type="button">테스트 상태 처음으로</button>
+      <p class="database-note">내 기록과 내 나무 상태는 로그인한 계정의 정원에 저장돼요.</p>
       <button id="signOutButton" class="reset-link signout-link" type="button">로그아웃</button>
     </div>
   </main>
@@ -149,7 +149,7 @@
         <textarea id="detailText" name="detailText" maxlength="1000" rows="6" placeholder="길게 적고 싶은 날에만 편하게 써요."></textarea>
       </div>
       <button class="save-record" type="submit">나무에 마음 남기기</button>
-      <p class="sheet-footnote">카카오 로그인 테스트 중이에요. 기록과 편지는 현재 이 기기에서 계정별로 저장돼요.</p>
+      <p class="sheet-footnote">내 기록과 나무 성장 상태는 로그인한 내 정원에 저장돼요.</p>
     </form>
   </section>
 

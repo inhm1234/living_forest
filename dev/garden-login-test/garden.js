@@ -11,22 +11,13 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
     },
   });
 
-  const STORAGE_KEY_PREFIX = "todayforest_my_garden_kakao_v02";
+  // v0.3: 기록·성장·날씨·편지는 브라우저 임시 저장이 아니라 Supabase 데이터베이스에서 읽습니다.
   const DEFAULT_STATE = {
-    growth: 14,
+    growth: 0,
     weatherIndex: 0,
     records: [],
-    letters: [
-      {
-        id: "letter-demo-1",
-        from: "민지의 마음",
-        title: "오늘도 잘 지나가고 있어?",
-        body: "네 나무가 조금씩 자라고 있다는 얘기를 들었어.\n오늘은 마음이 어떤 모양이었는지 궁금해.\n무리하지 말고, 좋은 밤 보내.",
-        delivery: "새싹새가 가지에 걸어두고 갔어요",
-        date: new Date().toISOString(),
-        read: false,
-      },
-    ],
+    letters: [],
+    profileName: "새 친구",
   };
 
   const weatherOptions = [
@@ -119,28 +110,99 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
     return JSON.parse(JSON.stringify(DEFAULT_STATE));
   }
 
-  function storageKey() {
-    return `${STORAGE_KEY_PREFIX}:${currentUser?.id || "guest"}`;
-  }
-
-  function readState() {
-    try {
-      const stored = localStorage.getItem(storageKey());
-      if (!stored) return cloneDefault();
-      const parsed = JSON.parse(stored);
-      return {
-        ...cloneDefault(),
-        ...parsed,
-        records: Array.isArray(parsed.records) ? parsed.records : [],
-        letters: Array.isArray(parsed.letters) ? parsed.letters : cloneDefault().letters,
-      };
-    } catch (error) {
-      return cloneDefault();
+  function databaseErrorMessage(error) {
+    console.error("TodayForest database error:", error);
+    const message = String(error?.message || "");
+    if (message.includes("garden_profiles") || message.includes("garden_records") || message.includes("garden_letters")) {
+      return "내 정원 저장소가 아직 준비되지 않았어요. Supabase SQL 설정을 먼저 실행해 주세요.";
     }
+    return "내 정원 데이터를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.";
   }
 
-  function persist() {
-    localStorage.setItem(storageKey(), JSON.stringify(state));
+  function profileNameFromUser(user) {
+    return displayName(user);
+  }
+
+  async function ensureGardenProfile() {
+    if (!currentUser) return;
+    const metadata = currentUser.user_metadata || {};
+    const payload = {
+      id: currentUser.id,
+      nickname: profileNameFromUser(currentUser),
+      avatar_url: metadata.avatar_url || metadata.picture || null,
+    };
+
+    const { error } = await supabase
+      .from("garden_profiles")
+      .upsert(payload, { onConflict: "id" });
+
+    if (error) throw error;
+  }
+
+  function deliveryText(kind) {
+    const map = {
+      little_bird: "작은 새가 가지에 걸어두고 갔어요",
+      squirrel: "다람쥐가 나무 아래에 두고 갔어요",
+      sprout_bird: "새싹새가 가지에 걸어두고 갔어요",
+      swift_bird: "빠른 새가 높이 날아와 전해줬어요",
+    };
+    return map[kind] || "숲의 새가 가지에 걸어두고 갔어요";
+  }
+
+  async function loadGardenState() {
+    if (!currentUser) {
+      state = cloneDefault();
+      return;
+    }
+
+    const [profileResult, recordsResult, lettersResult] = await Promise.all([
+      supabase.from("garden_profiles").select("nickname, growth_count, weather_index").eq("id", currentUser.id).single(),
+      supabase.from("garden_records").select("id, mood, one_line, detail, created_at").order("created_at", { ascending: false }),
+      supabase.from("garden_letters").select("id, sender_name, title, body, delivery_kind, sent_at, available_at, read_at, created_at").order("available_at", { ascending: false }),
+    ]);
+
+    if (profileResult.error) throw profileResult.error;
+    if (recordsResult.error) throw recordsResult.error;
+    if (lettersResult.error) throw lettersResult.error;
+
+    const profile = profileResult.data;
+    state = {
+      growth: Number(profile?.growth_count || 0),
+      weatherIndex: Number(profile?.weather_index || 0),
+      profileName: profile?.nickname || profileNameFromUser(currentUser),
+      records: (recordsResult.data || []).map((record) => ({
+        id: record.id,
+        mood: record.mood,
+        oneLine: record.one_line,
+        detail: record.detail || "",
+        createdAt: record.created_at,
+      })),
+      letters: (lettersResult.data || []).map((letter) => ({
+        id: letter.id,
+        from: letter.sender_name || "친구의 마음",
+        title: letter.title,
+        body: letter.body,
+        delivery: deliveryText(letter.delivery_kind),
+        date: letter.available_at || letter.sent_at || letter.created_at,
+        read: Boolean(letter.read_at),
+      })),
+    };
+  }
+
+  async function hydrateGardenForCurrentUser() {
+    if (!currentUser) return;
+    try {
+      await ensureGardenProfile();
+      await loadGardenState();
+      renderAuthUI();
+      renderAll();
+      setAuthError("");
+    } catch (error) {
+      state = cloneDefault();
+      renderAuthUI();
+      renderAll();
+      setAuthError(databaseErrorMessage(error));
+    }
   }
 
   function openSheet(element) {
@@ -286,11 +348,20 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
     activeLetterId = null;
   }
 
-  function markLetterRead() {
+  async function markLetterRead() {
     const letter = state.letters.find((item) => item.id === activeLetterId);
     if (letter && !letter.read) {
+      const { error } = await supabase
+        .from("garden_letters")
+        .update({ read_at: new Date().toISOString() })
+        .eq("id", letter.id);
+
+      if (error) {
+        showToast("편지 상태를 저장하지 못했어요. 다시 시도해 주세요.");
+        return;
+      }
+
       letter.read = true;
-      persist();
       renderGarden();
       renderLetters();
       showToast("편지가 내 편지함에 조용히 보관되었어요.");
@@ -304,25 +375,43 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
     });
   }
 
-  function saveRecord(event) {
+  async function saveRecord(event) {
     event.preventDefault();
     const oneLine = els.oneLine.value.trim();
     const detail = els.detailText.value.trim();
+    const submitButton = els.recordForm.querySelector('button[type="submit"]');
     if (!oneLine) {
       showToast("오늘 마음에 남은 한 줄을 적어주세요.");
       els.oneLine.focus();
       return;
     }
+    if (!currentUser) {
+      showToast("내 정원을 먼저 로그인해 주세요.");
+      return;
+    }
 
-    state.records.push({
-      id: `record-${Date.now()}`,
-      mood: selectedMood,
-      oneLine,
-      detail,
-      createdAt: new Date().toISOString(),
+    submitButton.disabled = true;
+    submitButton.textContent = "나무에 마음을 남기는 중이에요";
+    const { error } = await supabase.rpc("save_garden_record", {
+      p_mood: selectedMood,
+      p_one_line: oneLine,
+      p_detail: detail || null,
     });
-    state.growth += 1;
-    persist();
+
+    submitButton.disabled = false;
+    submitButton.textContent = "나무에 마음 남기기";
+
+    if (error) {
+      showToast(databaseErrorMessage(error));
+      return;
+    }
+
+    try {
+      await loadGardenState();
+    } catch (loadError) {
+      showToast(databaseErrorMessage(loadError));
+      return;
+    }
 
     els.recordForm.reset();
     selectedMood = "good";
@@ -334,7 +423,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
     els.treeWrap.classList.remove("tree-pulse");
     void els.treeWrap.offsetWidth;
     els.treeWrap.classList.add("tree-pulse");
-    showToast("오늘의 마음이 나무 가까이에 남았어요.");
+    showToast("오늘의 마음이 내 정원에 저장됐어요.");
   }
 
   function showToast(message) {
@@ -376,8 +465,9 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
     els.authScreen.classList.toggle("hidden", isSignedIn);
     els.gardenApp.classList.toggle("hidden", !isSignedIn);
     if (isSignedIn) {
-      els.accountName.textContent = `${displayName(currentUser)}의 정원`;
-      els.accountButton.setAttribute("aria-label", `${displayName(currentUser)} 계정 정보 보기`);
+      const name = state.profileName || displayName(currentUser);
+      els.accountName.textContent = `${name}의 정원`;
+      els.accountButton.setAttribute("aria-label", `${name} 계정 정보 보기`);
     }
   }
 
@@ -433,10 +523,15 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
     currentUser = nextUser;
 
     if (currentUser && changedUser) {
-      state = readState();
+      state = cloneDefault();
       selectedMood = "good";
+      renderAuthUI();
+      renderAll();
+      await hydrateGardenForCurrentUser();
+      return;
     }
 
+    if (!currentUser) state = cloneDefault();
     renderAuthUI();
     if (currentUser) renderAll();
   }
@@ -470,9 +565,22 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
       const firstUnread = getUnreadLetters()[0];
       if (firstUnread) openLetter(firstUnread.id);
     });
-    els.weatherButton.addEventListener("click", () => {
-      state.weatherIndex = (state.weatherIndex + 1) % weatherOptions.length;
-      persist();
+    els.weatherButton.addEventListener("click", async () => {
+      if (!currentUser) return;
+      const nextIndex = (state.weatherIndex + 1) % weatherOptions.length;
+      els.weatherButton.disabled = true;
+      const { error } = await supabase
+        .from("garden_profiles")
+        .update({ weather_index: nextIndex })
+        .eq("id", currentUser.id);
+      els.weatherButton.disabled = false;
+
+      if (error) {
+        showToast(databaseErrorMessage(error));
+        return;
+      }
+
+      state.weatherIndex = nextIndex;
       renderGarden();
       showToast(`${currentWeather().text}`);
     });
@@ -498,20 +606,6 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
     els.letterModal.addEventListener("click", (event) => {
       if (event.target === els.letterModal) closeLetterModal();
     });
-    $("#resetPrototype").addEventListener("click", () => {
-      const okay = window.confirm("프로토타입 기록과 편지 상태를 처음으로 되돌릴까요?");
-      if (!okay) return;
-      state = cloneDefault();
-      selectedMood = "good";
-      persist();
-      closeAllSheets();
-      closeLetterModal();
-      renderMoodSelection();
-      renderGarden();
-      renderRecords();
-      renderLetters();
-      showToast("테스트 상태를 처음으로 되돌렸어요.");
-    });
     window.addEventListener("keydown", (event) => {
       if (event.key !== "Escape") return;
       closeAllSheets();
@@ -524,14 +618,21 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
     await handleOAuthCallback();
     await syncSession();
 
-    supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth.onAuthStateChange(async (_event, session) => {
       const nextUser = session?.user || null;
       const changedUser = nextUser?.id !== currentUser?.id;
       currentUser = nextUser;
+
       if (currentUser && changedUser) {
-        state = readState();
+        state = cloneDefault();
         selectedMood = "good";
+        renderAuthUI();
+        renderAll();
+        await hydrateGardenForCurrentUser();
+        return;
       }
+
+      if (!currentUser) state = cloneDefault();
       renderAuthUI();
       if (currentUser) renderAll();
     });

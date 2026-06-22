@@ -395,3 +395,12 @@ textarea::placeholder { color: #a7b4bd; }
   .header-actions { gap: 5px; }
   .account-pill { max-width: 150px; font-size: 10px; }
 }
+
+.database-note {
+  margin: 0;
+  color: #8a9bad;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: center;
+}
