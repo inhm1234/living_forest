@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#eef1ff" />
   <meta name="color-scheme" content="light" />
-  <title>[DEV] 오늘의숲 | 친구 초대 내 정원</title>
+  <title>[DEV] 오늘의숲 | 편지 전달 내 정원</title>
   <meta name="robots" content="noindex, nofollow" />
   <link rel="stylesheet" href="garden.css" />
 </head>
@@ -30,7 +30,7 @@
   <main class="garden-app hidden" id="gardenApp" aria-label="오늘의숲 내 정원">
     <header class="garden-header">
       <div>
-        <p class="eyebrow">DEV · MY GARDEN DATABASE TEST v0.3</p>
+        <p class="eyebrow">DEV · FRIEND LETTER TEST v0.5</p>
         <h1>내 정원</h1>
       </div>
       <div class="header-actions">
@@ -215,8 +215,68 @@
       </div>
       <button class="close-button" data-close="lettersSheet" type="button" aria-label="편지함 닫기">×</button>
     </div>
-    <p class="letter-intro">도착한 편지는 읽은 뒤 이 둥지에 차분히 모여요.</p>
-    <div class="letter-list" id="letterList" aria-live="polite"></div>
+
+    <div class="write-letter-box">
+      <div class="write-letter-copy">
+        <span class="write-letter-icon" aria-hidden="true">🕊️</span>
+        <div>
+          <b>친구의 나뭇가지에 마음을 걸어둘래?</b>
+          <p id="letterFriendHint">친구와 연결되면 새에게 편지를 맡길 수 있어요.</p>
+        </div>
+      </div>
+      <button id="openLetterComposer" class="open-letter-composer" type="button">새에게 편지 맡기기</button>
+    </div>
+
+    <section class="sent-letter-section" aria-labelledby="sentLettersTitle">
+      <div class="letter-section-head">
+        <div>
+          <p class="sheet-kicker">ON THE WAY</p>
+          <h3 id="sentLettersTitle">날아가는 편지</h3>
+        </div>
+      </div>
+      <div class="sent-letter-list" id="sentLetterList" aria-live="polite"></div>
+    </section>
+
+    <section class="received-letter-section" aria-labelledby="receivedLettersTitle">
+      <div class="letter-section-head">
+        <div>
+          <p class="sheet-kicker">MY NEST</p>
+          <h3 id="receivedLettersTitle">내 둥지에 도착한 편지</h3>
+        </div>
+      </div>
+      <p class="letter-intro">도착한 편지는 읽은 뒤 이 둥지에 차분히 모여요.</p>
+      <div class="letter-list" id="letterList" aria-live="polite"></div>
+    </section>
+  </section>
+
+  <section class="bottom-sheet tall-sheet hidden" id="letterComposerSheet" role="dialog" aria-modal="true" aria-labelledby="letterComposerTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="sheet-kicker">FOREST POST</p>
+        <h2 id="letterComposerTitle">편지를 맡기기</h2>
+      </div>
+      <button class="close-button" data-close="letterComposerSheet" type="button" aria-label="편지 쓰기 닫기">×</button>
+    </div>
+
+    <form id="letterForm" class="letter-form">
+      <p class="write-label">누구의 나뭇가지에 걸어둘까?</p>
+      <div class="letter-recipient-list" id="letterRecipientList" aria-live="polite"></div>
+
+      <div class="carrier-preview" id="letterCarrierPreview">
+        <span class="carrier-icon" aria-hidden="true">🐦</span>
+        <p>작은 새가 편지를 맡아, 1분 뒤 친구의 나뭇가지에 걸어둘 거예요.</p>
+      </div>
+
+      <label class="write-label" for="letterTitle">편지 제목</label>
+      <input id="letterTitle" name="letterTitle" maxlength="100" autocomplete="off" placeholder="오늘도 수고했어" />
+
+      <label class="write-label" for="letterMessage">전하고 싶은 이야기</label>
+      <textarea id="letterMessage" name="letterMessage" maxlength="2000" rows="7" placeholder="친구에게 전하고 싶은 마음을 편하게 적어 주세요."></textarea>
+
+      <button class="send-letter-button" type="submit">새에게 편지 맡기기</button>
+      <p class="sheet-footnote">지금은 개발 테스트라 모든 편지가 1분 뒤 도착해요.</p>
+    </form>
   </section>
 
   <section class="letter-modal hidden" id="friendInviteModal" role="dialog" aria-modal="true" aria-labelledby="friendInviteTitle">

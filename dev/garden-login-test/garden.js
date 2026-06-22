@@ -16,6 +16,7 @@ const DEFAULT_STATE = {
   weatherIndex: 0,
   records: [],
   letters: [],
+  sentLetters: [],
   friends: [],
   profileName: "새 친구",
 };
@@ -54,6 +55,7 @@ let currentUser = null;
 let state = cloneDefault();
 let selectedMood = "good";
 let activeLetterId = null;
+let selectedLetterRecipientId = "";
 let activeInviteLink = "";
 let pendingFriendInvite = null;
 let invitePreviewHandled = false;
@@ -85,6 +87,7 @@ const els = {
   recordsSheet: $("#recordsSheet"),
   friendsSheet: $("#friendsSheet"),
   lettersSheet: $("#lettersSheet"),
+  letterComposerSheet: $("#letterComposerSheet"),
   recordForm: $("#recordForm"),
   oneLine: $("#oneLine"),
   detailText: $("#detailText"),
@@ -93,6 +96,14 @@ const els = {
   recordsSummary: $("#recordsSummary"),
   recordList: $("#recordList"),
   letterList: $("#letterList"),
+  sentLetterList: $("#sentLetterList"),
+  openLetterComposer: $("#openLetterComposer"),
+  letterFriendHint: $("#letterFriendHint"),
+  letterForm: $("#letterForm"),
+  letterRecipientList: $("#letterRecipientList"),
+  letterCarrierPreview: $("#letterCarrierPreview"),
+  letterTitle: $("#letterTitle"),
+  letterMessage: $("#letterMessage"),
   friendsList: $("#friendsList"),
   friendsTotal: $("#friendsTotal"),
   friendCount: $("#friendCount"),
@@ -133,6 +144,9 @@ function normalizeRpcRow(data) {
 function databaseErrorMessage(error) {
   console.error("TodayForest database error:", error);
   const message = String(error?.message || "");
+  if (message.includes("send_garden_letter") || message.includes("list_my_sent_garden_letters")) {
+    return "편지 전달 준비를 하지 못했어요. 편지 기능 SQL 설정을 먼저 실행해 주세요.";
+  }
   if (message.includes("garden_profiles") || message.includes("garden_records") || message.includes("garden_letters")) {
     return "내 정원 저장소가 아직 준비되지 않았어요. Supabase SQL 설정을 먼저 실행해 주세요.";
   }
@@ -180,22 +194,39 @@ function deliveryText(kind) {
   return map[kind] || "숲의 새가 가지에 걸어두고 갔어요";
 }
 
+function carrierForGrowth(growth) {
+  if (growth <= 2) return { kind: "little_bird", icon: "🐦", name: "작은 새" };
+  if (growth <= 7) return { kind: "squirrel", icon: "🐿️", name: "다람쥐" };
+  if (growth <= 17) return { kind: "sprout_bird", icon: "🕊️", name: "새싹새" };
+  return { kind: "swift_bird", icon: "🕊️", name: "빠른 새" };
+}
+
+function deliveryStatus(sentLetter) {
+  if (sentLetter.readAt) return "친구가 읽었어요";
+  const availableAt = new Date(sentLetter.availableAt);
+  if (availableAt.getTime() > Date.now()) return "새가 날아가는 중";
+  return "나뭇가지에 도착";
+}
+
 async function loadGardenState() {
   if (!currentUser) {
     state = cloneDefault();
     return;
   }
 
-  const [profileResult, recordsResult, lettersResult, friendsResult] = await Promise.all([
+  const nowIso = new Date().toISOString();
+  const [profileResult, recordsResult, lettersResult, sentLettersResult, friendsResult] = await Promise.all([
     supabase.from("garden_profiles").select("nickname, growth_count, weather_index").eq("id", currentUser.id).single(),
     supabase.from("garden_records").select("id, mood, one_line, detail, created_at").order("created_at", { ascending: false }),
-    supabase.from("garden_letters").select("id, sender_name, title, body, delivery_kind, sent_at, available_at, read_at, created_at").order("available_at", { ascending: false }),
+    supabase.from("garden_letters").select("id, sender_name, title, body, delivery_kind, sent_at, available_at, read_at, created_at").lte("available_at", nowIso).order("available_at", { ascending: false }),
+    supabase.rpc("list_my_sent_garden_letters"),
     supabase.rpc("list_my_garden_friends"),
   ]);
 
   if (profileResult.error) throw profileResult.error;
   if (recordsResult.error) throw recordsResult.error;
   if (lettersResult.error) throw lettersResult.error;
+  if (sentLettersResult.error) throw sentLettersResult.error;
   if (friendsResult.error) throw friendsResult.error;
 
   const profile = profileResult.data;
@@ -218,6 +249,15 @@ async function loadGardenState() {
       delivery: deliveryText(letter.delivery_kind),
       date: letter.available_at || letter.sent_at || letter.created_at,
       read: Boolean(letter.read_at),
+    })),
+    sentLetters: (sentLettersResult.data || []).map((letter) => ({
+      id: letter.id,
+      to: letter.recipient_name || "친구",
+      title: letter.title,
+      deliveryKind: letter.delivery_kind,
+      sentAt: letter.sent_at,
+      availableAt: letter.available_at,
+      readAt: letter.read_at,
     })),
     friends: (friendsResult.data || []).map((friend) => ({
       id: friend.friend_id,
@@ -254,7 +294,7 @@ function openSheet(element) {
 }
 
 function closeAllSheets() {
-  [els.recordSheet, els.recordsSheet, els.friendsSheet, els.lettersSheet].forEach((sheet) => sheet.classList.add("hidden"));
+  [els.recordSheet, els.recordsSheet, els.friendsSheet, els.lettersSheet, els.letterComposerSheet].forEach((sheet) => sheet.classList.add("hidden"));
   els.sheetOverlay.classList.add("hidden");
 }
 
@@ -353,6 +393,17 @@ function renderRecords() {
 
 function renderLetters() {
   const letters = [...state.letters].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const friends = state.friends || [];
+  const canWrite = friends.length > 0;
+
+  els.openLetterComposer.disabled = !canWrite;
+  els.openLetterComposer.textContent = canWrite ? "새에게 편지 맡기기" : "친구가 생기면 편지를 보낼 수 있어요";
+  els.letterFriendHint.textContent = canWrite
+    ? `함께 자라는 친구 ${friends.length}명에게 마음을 보낼 수 있어요.`
+    : "친구와 연결되면 새에게 편지를 맡길 수 있어요.";
+
+  renderSentLetters();
+
   if (!letters.length) {
     els.letterList.innerHTML = '<div class="empty-state">아직 도착한 편지가 없어요.<br />새가 나뭇가지에 편지를 걸어두면 여기에도 차분히 모여요.</div>';
     return;
@@ -370,6 +421,125 @@ function renderLetters() {
   `).join("");
 
   $$('[data-letter-id]').forEach((button) => button.addEventListener("click", () => openLetter(button.dataset.letterId)));
+}
+
+function renderSentLetters() {
+  const sentLetters = [...(state.sentLetters || [])].sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
+  if (!sentLetters.length) {
+    els.sentLetterList.innerHTML = '<div class="empty-state">아직 맡긴 편지가 없어요.<br />친구에게 먼저 작은 마음을 보내볼래요?</div>';
+    return;
+  }
+
+  els.sentLetterList.innerHTML = sentLetters.map((letter) => {
+    const carrier = carrierForKind(letter.deliveryKind);
+    return `
+      <article class="sent-letter-item">
+        <div class="sent-letter-icon" aria-hidden="true">${carrier.icon}</div>
+        <div class="sent-letter-main">
+          <div class="sent-letter-title">${escapeHTML(letter.to)}에게 · ${escapeHTML(letter.title)}</div>
+          <div class="sent-letter-detail">${escapeHTML(carrier.name)} · ${escapeHTML(formatDate(letter.sentAt))}</div>
+        </div>
+        <span class="sent-letter-status">${escapeHTML(deliveryStatus(letter))}</span>
+      </article>
+    `;
+  }).join("");
+}
+
+function carrierForKind(kind) {
+  const map = {
+    little_bird: { icon: "🐦", name: "작은 새" },
+    squirrel: { icon: "🐿️", name: "다람쥐" },
+    sprout_bird: { icon: "🕊️", name: "새싹새" },
+    swift_bird: { icon: "🕊️", name: "빠른 새" },
+  };
+  return map[kind] || { icon: "🕊️", name: "숲의 새" };
+}
+
+function renderLetterComposer() {
+  const friends = state.friends || [];
+  if (!friends.length) {
+    els.letterRecipientList.innerHTML = '<div class="empty-state">편지를 맡길 친구가 아직 없어요.<br />먼저 친구 초대 링크로 정원을 이어 주세요.</div>';
+    return;
+  }
+
+  if (!friends.some((friend) => friend.id === selectedLetterRecipientId)) {
+    selectedLetterRecipientId = friends[0].id;
+  }
+
+  els.letterRecipientList.innerHTML = friends.map((friend) => {
+    const stage = stageForGrowth(friend.growth);
+    const avatar = friend.avatarUrl
+      ? `<img src="${escapeAttr(friend.avatarUrl)}" alt="${escapeAttr(friend.name)} 프로필 사진" />`
+      : escapeHTML(friend.name.slice(0, 1));
+    return `
+      <button class="letter-recipient-choice ${friend.id === selectedLetterRecipientId ? "selected" : ""}" type="button" data-letter-recipient="${escapeAttr(friend.id)}">
+        <span class="letter-recipient-avatar">${avatar}</span>
+        <span>
+          <span class="letter-recipient-name">${escapeHTML(friend.name)}</span>
+          <span class="letter-recipient-stage">마음 ${friend.growth}일째 · ${escapeHTML(stage.label)}</span>
+        </span>
+      </button>
+    `;
+  }).join("");
+
+  $$('[data-letter-recipient]').forEach((button) => {
+    button.addEventListener("click", () => {
+      selectedLetterRecipientId = button.dataset.letterRecipient;
+      renderLetterComposer();
+    });
+  });
+
+  const carrier = carrierForGrowth(state.growth);
+  els.letterCarrierPreview.innerHTML = `<span class="carrier-icon" aria-hidden="true">${carrier.icon}</span><p>${carrier.name}가 편지를 맡아, 1분 뒤 친구의 나뭇가지에 걸어둘 거예요.</p>`;
+}
+
+async function sendGardenLetter(event) {
+  event.preventDefault();
+  if (!currentUser) {
+    showToast("내 정원을 먼저 로그인해 주세요.");
+    return;
+  }
+  if (!selectedLetterRecipientId) {
+    showToast("편지를 받을 친구를 골라 주세요.");
+    return;
+  }
+
+  const title = els.letterTitle.value.trim();
+  const body = els.letterMessage.value.trim();
+  if (!title) {
+    showToast("편지 제목을 적어 주세요.");
+    els.letterTitle.focus();
+    return;
+  }
+  if (!body) {
+    showToast("전하고 싶은 이야기를 적어 주세요.");
+    els.letterMessage.focus();
+    return;
+  }
+
+  const submitButton = els.letterForm.querySelector('button[type="submit"]');
+  submitButton.disabled = true;
+  submitButton.textContent = "새가 편지를 품고 날아가요";
+  const { data, error } = await supabase.rpc("send_garden_letter", {
+    p_recipient_id: selectedLetterRecipientId,
+    p_title: title,
+    p_body: body,
+  });
+  submitButton.disabled = false;
+  submitButton.textContent = "새에게 편지 맡기기";
+
+  if (error) {
+    const message = String(error.message || "");
+    showToast(message || databaseErrorMessage(error));
+    return;
+  }
+
+  const letter = normalizeRpcRow(data);
+  els.letterForm.reset();
+  await loadGardenState();
+  renderAll();
+  openSheet(els.lettersSheet);
+  showToast(`${letter?.recipient_nickname || "친구"}님에게 편지를 보냈어요. 1분 뒤 나뭇가지에 도착해요.`);
 }
 
 function renderFriends() {
@@ -405,7 +575,11 @@ function renderFriends() {
 }
 
 function shortDelivery(text) {
-  return text.replace("가 가지에 걸어두고 갔어요", "가 전해줌").replace("가 나뭇가지에 걸어두고 갔어요", "가 전해줌");
+  if (text.includes("다람쥐")) return "다람쥐가 전해줌";
+  if (text.includes("빠른 새")) return "빠른 새가 전해줌";
+  if (text.includes("새싹새")) return "새싹새가 전해줌";
+  if (text.includes("작은 새")) return "작은 새가 전해줌";
+  return "숲의 새가 전해줌";
 }
 
 function openLetter(letterId) {
@@ -719,6 +893,7 @@ async function syncSession() {
   if (currentUser && changedUser) {
     state = cloneDefault();
     selectedMood = "good";
+    selectedLetterRecipientId = "";
     invitePreviewHandled = false;
     renderAuthUI();
     renderAll();
@@ -741,6 +916,7 @@ async function signOut() {
   }
   currentUser = null;
   state = cloneDefault();
+  selectedLetterRecipientId = "";
   closeAllSheets();
   closeLetterModal();
   closeFriendInviteModal({ keepLink: true });
@@ -756,6 +932,15 @@ function bindEvents() {
   $("#openRecords").addEventListener("click", () => { renderRecords(); openSheet(els.recordsSheet); });
   els.openFriends.addEventListener("click", () => { renderFriends(); openSheet(els.friendsSheet); });
   $("#openLetters").addEventListener("click", () => { renderLetters(); openSheet(els.lettersSheet); });
+  els.openLetterComposer.addEventListener("click", () => {
+    if (!(state.friends || []).length) {
+      showToast("친구와 연결되면 편지를 보낼 수 있어요.");
+      return;
+    }
+    renderLetterComposer();
+    openSheet(els.letterComposerSheet);
+  });
+  els.letterForm.addEventListener("submit", sendGardenLetter);
   els.branchLetter.addEventListener("click", () => {
     const firstUnread = getUnreadLetters()[0];
     if (firstUnread) openLetter(firstUnread.id);
@@ -796,6 +981,15 @@ function bindEvents() {
   els.declineFriendInviteButton.addEventListener("click", () => closeFriendInviteModal());
   els.acceptFriendInviteButton.addEventListener("click", acceptFriendInvite);
   els.friendInviteModal.addEventListener("click", (event) => { if (event.target === els.friendInviteModal) closeFriendInviteModal(); });
+  window.addEventListener("focus", async () => {
+    if (!currentUser) return;
+    try {
+      await loadGardenState();
+      renderAll();
+    } catch (error) {
+      console.warn("TodayForest refresh skipped:", error);
+    }
+  });
   window.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
     closeAllSheets();
@@ -809,6 +1003,16 @@ async function init() {
   await handleOAuthCallback();
   await syncSession();
 
+  window.setInterval(async () => {
+    if (!currentUser) return;
+    try {
+      await loadGardenState();
+      renderAll();
+    } catch (error) {
+      console.warn("TodayForest letter refresh skipped:", error);
+    }
+  }, 30000);
+
   supabase.auth.onAuthStateChange(async (_event, session) => {
     const nextUser = session?.user || null;
     const changedUser = nextUser?.id !== currentUser?.id;
@@ -817,6 +1021,7 @@ async function init() {
     if (currentUser && changedUser) {
       state = cloneDefault();
       selectedMood = "good";
+      selectedLetterRecipientId = "";
       invitePreviewHandled = false;
       renderAuthUI();
       renderAll();
