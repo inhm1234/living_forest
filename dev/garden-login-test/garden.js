@@ -149,6 +149,9 @@ function databaseErrorMessage(error) {
   if (message.includes("send_garden_letter") || message.includes("list_my_sent_garden_letters")) {
     return "편지 전달 준비를 하지 못했어요. 편지 기능 SQL 설정을 먼저 실행해 주세요.";
   }
+  if (message.includes("bootstrap_my_garden_profile")) {
+    return "새 정원을 준비하지 못했어요. 새 사용자 정원 보정 SQL을 먼저 실행해 주세요.";
+  }
   if (message.includes("garden_profiles") || message.includes("garden_records") || message.includes("garden_letters")) {
     return "내 정원 저장소가 아직 준비되지 않았어요. Supabase SQL 설정을 먼저 실행해 주세요.";
   }
@@ -178,15 +181,14 @@ function displayName(user) {
 }
 
 async function ensureGardenProfile() {
-  if (!currentUser) return;
+  if (!currentUser) return null;
   const metadata = currentUser.user_metadata || {};
-  const payload = {
-    id: currentUser.id,
-    nickname: profileNameFromUser(currentUser),
-    avatar_url: metadata.avatar_url || metadata.picture || null,
-  };
-  const { error } = await supabase.from("garden_profiles").upsert(payload, { onConflict: "id" });
+  const { data, error } = await supabase.rpc("bootstrap_my_garden_profile", {
+    p_nickname: profileNameFromUser(currentUser),
+    p_avatar_url: metadata.avatar_url || metadata.picture || null,
+  });
   if (error) throw error;
+  return normalizeRpcRow(data);
 }
 
 function deliveryText(kind) {
