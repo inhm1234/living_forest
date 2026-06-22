@@ -540,34 +540,67 @@ async function sendGardenLetter(event) {
   const selectedFriend = (state.friends || []).find((friend) => friend.id === selectedLetterRecipientId);
   const isDevTestFriend = Boolean(selectedFriend?.isDevTest);
   const submitButton = els.letterForm.querySelector('button[type="submit"]');
+  const originalText = submitButton.textContent;
+
   submitButton.disabled = true;
-  submitButton.textContent = "새가 편지를 품고 날아가요";
-  const { data, error } = isDevTestFriend
-    ? await supabase.rpc("send_dev_test_garden_letter", {
-      p_test_friend_id: selectedLetterRecipientId,
-      p_title: title,
-      p_body: body,
-    })
-    : await supabase.rpc("send_garden_letter", {
-      p_recipient_id: selectedLetterRecipientId,
-      p_title: title,
-      p_body: body,
-    });
-  submitButton.disabled = false;
-  submitButton.textContent = "새에게 편지 맡기기";
+  submitButton.textContent = "새가 편지를 품고 날아가요…";
 
-  if (error) {
-    const message = String(error.message || "");
-    showToast(message || databaseErrorMessage(error));
-    return;
+  try {
+    const result = isDevTestFriend
+      ? await supabase.rpc("send_dev_test_garden_letter", {
+        p_test_friend_id: selectedLetterRecipientId,
+        p_title: title,
+        p_body: body,
+      })
+      : await supabase.rpc("send_garden_letter", {
+        p_recipient_id: selectedLetterRecipientId,
+        p_title: title,
+        p_body: body,
+      });
+
+    if (result.error) {
+      throw result.error;
+    }
+
+    const letter = normalizeRpcRow(result.data) || {};
+    const recipientName = letter.recipient_nickname || selectedFriend?.name || "친구";
+    const deliveryKind = letter.delivery_kind || carrierForGrowth(state.growth).kind;
+    const availableAt = letter.available_at || new Date(Date.now() + 60000).toISOString();
+
+    // 전송이 성공한 즉시, 재조회가 늦더라도 보낸 편지 목록에 확실히 표시합니다.
+    state.sentLetters = [{
+      id: letter.letter_id || `pending-${Date.now()}`,
+      to: recipientName,
+      title,
+      deliveryKind,
+      sentAt: new Date().toISOString(),
+      availableAt,
+      readAt: null,
+      isDevTest: isDevTestFriend,
+    }, ...(state.sentLetters || [])];
+
+    els.letterForm.reset();
+    closeAllSheets();
+    renderAll();
+    openSheet(els.lettersSheet);
+    showToast(`${recipientName}에게 편지를 보냈어요. 작은 새가 나뭇가지로 날아가요.`);
+
+    // 저장 성공 뒤의 재조회는 화면을 막지 않도록 별도로 처리합니다.
+    try {
+      await loadGardenState();
+      renderAll();
+      openSheet(els.lettersSheet);
+    } catch (refreshError) {
+      console.warn("TodayForest sent-letter refresh skipped:", refreshError);
+    }
+  } catch (error) {
+    console.error("TodayForest letter send error:", error);
+    const detail = String(error?.message || "").trim();
+    showToast(detail || "편지를 보내지 못했어요. 제목과 내용은 그대로 두었어요.");
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = originalText || "새에게 편지 맡기기";
   }
-
-  const letter = normalizeRpcRow(data);
-  els.letterForm.reset();
-  await loadGardenState();
-  renderAll();
-  openSheet(els.lettersSheet);
-  showToast(`${letter?.recipient_nickname || "친구"}님에게 편지를 보냈어요. 1분 뒤 나뭇가지에 도착해요.`);
 }
 
 function renderFriends() {
