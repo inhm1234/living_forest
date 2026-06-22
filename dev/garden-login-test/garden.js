@@ -159,6 +159,9 @@ function normalizeRpcRow(data) {
 function databaseErrorMessage(error) {
   console.error("TodayForest database error:", error);
   const message = String(error?.message || "");
+  if (message.includes("TODAY_RECORD_ALREADY_SAVED")) {
+    return "오늘의 마음은 이미 나무에 남겼어요. 내일 다시 와요.";
+  }
   if (message.includes("send_garden_letter") || message.includes("list_my_sent_garden_letters")) {
     return "편지 전달 준비를 하지 못했어요. 편지 기능 SQL 설정을 먼저 실행해 주세요.";
   }
@@ -386,6 +389,34 @@ function formatShortDate(iso) {
   return new Intl.DateTimeFormat("ko-KR", { month: "numeric", day: "numeric" }).format(date);
 }
 
+function seoulDateKey(value = new Date()) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const valueFor = (type) => parts.find((part) => part.type === type)?.value || "";
+  return `${valueFor("year")}-${valueFor("month")}-${valueFor("day")}`;
+}
+
+function hasSavedToday() {
+  const today = seoulDateKey();
+  return Boolean(today) && state.records.some((record) => seoulDateKey(record.createdAt) === today);
+}
+
+function updateTodayRecordAction() {
+  const action = $("#openRecord");
+  const label = action?.querySelector("span:last-child");
+  const savedToday = hasSavedToday();
+  if (!action || !label) return;
+  action.classList.toggle("record-complete", savedToday);
+  action.setAttribute("aria-label", savedToday ? "오늘 마음 남기기 완료" : "마음 남기기");
+  label.textContent = savedToday ? "오늘 마음 남김" : "마음 남기기";
+}
+
 function currentWeather() {
   return weatherOptions[state.weatherIndex % weatherOptions.length];
 }
@@ -423,6 +454,7 @@ function renderGarden() {
   els.letterBadge.textContent = unread.length > 1 ? `새 편지 ${unread.length}` : "새 편지";
   els.navLetterBadge.textContent = unread.length;
   els.navLetterBadge.classList.toggle("hidden", unread.length === 0);
+  updateTodayRecordAction();
 }
 
 function renderRecords() {
@@ -866,6 +898,13 @@ async function saveRecord(event) {
   const oneLine = els.oneLine.value.trim();
   const detail = els.detailText.value.trim();
   const submitButton = els.recordForm.querySelector('button[type="submit"]');
+
+  if (hasSavedToday()) {
+    closeAllSheets();
+    renderGarden();
+    showToast("오늘의 마음은 이미 나무에 남겼어요. 내일 다시 와요.");
+    return;
+  }
   if (!oneLine) {
     showToast("오늘 마음에 남은 한 줄을 적어주세요.");
     els.oneLine.focus();
@@ -887,6 +926,17 @@ async function saveRecord(event) {
   submitButton.textContent = "나무에 마음 남기기";
 
   if (error) {
+    if (String(error?.message || "").includes("TODAY_RECORD_ALREADY_SAVED")) {
+      try {
+        await loadGardenState();
+      } catch (loadError) {
+        console.warn("TodayForest daily record refresh skipped:", loadError);
+      }
+      closeAllSheets();
+      renderAll();
+      showToast("오늘의 마음은 이미 나무에 남겼어요. 내일 다시 와요.");
+      return;
+    }
     showToast(databaseErrorMessage(error));
     return;
   }
@@ -1175,7 +1225,13 @@ function bindEvents() {
   els.signInKakao.addEventListener("click", beginKakaoLogin);
   els.signOutButton.addEventListener("click", signOut);
   els.accountButton.addEventListener("click", () => showToast(`${state.profileName || displayName(currentUser)} 계정으로 내 정원을 이어보고 있어요.`));
-  $("#openRecord").addEventListener("click", () => openSheet(els.recordSheet));
+  $("#openRecord").addEventListener("click", () => {
+    if (hasSavedToday()) {
+      showToast("오늘의 마음은 이미 나무에 남겼어요. 내일 다시 와요.");
+      return;
+    }
+    openSheet(els.recordSheet);
+  });
   $("#openRecords").addEventListener("click", () => { renderRecords(); openSheet(els.recordsSheet); });
   els.openFriends.addEventListener("click", () => { renderFriends(); openSheet(els.friendsSheet); });
   $("#openLetters").addEventListener("click", () => { renderLetters(); openSheet(els.lettersSheet); });
