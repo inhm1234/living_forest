@@ -13,7 +13,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 
 const DEFAULT_STATE = {
   growth: 0,
-  weatherIndex: 0,
   records: [],
   letters: [],
   sentLetters: [],
@@ -21,10 +20,12 @@ const DEFAULT_STATE = {
   profileName: "새 친구",
 };
 
+// 날씨는 한국 날짜가 바뀔 때마다 각 정원에 새로 정해집니다.
+// 맑음 60% · 바람 20% · 비 20% 비율이며, 같은 날에는 새로고침해도 바뀌지 않습니다.
 const weatherOptions = [
-  { icon: "🍃", text: "바람이 가볍게 불어요", className: "wind", message: "바람이 잎 끝을 살짝 흔들고 있어요." },
-  { icon: "🌧️", text: "조용히 비가 내려요", className: "rain", message: "비가 나무 가까이에 조용히 스며들어요." },
   { icon: "☀️", text: "햇살이 포근하게 내려와요", className: "sun", message: "햇살이 오늘의 잎을 따뜻하게 감싸요." },
+  { icon: "🍃", text: "바람이 가볍게 불어요", className: "wind", message: "바람이 잎 끝을 살짝 흔들고 있어요." },
+  { icon: "🌧️", text: "조용히 비가 내려요", className: "rain", message: "구름 아래로 빗방울이 조용히 정원에 내려앉아요." },
 ];
 
 const visitorRules = [
@@ -66,6 +67,7 @@ let activeFriendGardenId = "";
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 const els = {
+  gardenStage: $("#gardenStage"),
   treeWrap: $("#treeWrap"),
   treeImage: $("#treeImage"),
   weatherButton: $("#weatherButton"),
@@ -116,6 +118,7 @@ const els = {
   devTestFriendBox: $("#devTestFriendBox"),
   enableDevFriendButton: $("#enableDevFriendButton"),
   friendVisit: $("#friendVisit"),
+  friendVisitStage: $("#friendVisitStage"),
   friendVisitName: $("#friendVisitName"),
   friendVisitTree: $("#friendVisitTree"),
   friendVisitDayCount: $("#friendVisitDayCount"),
@@ -239,7 +242,7 @@ async function loadGardenState() {
 
   const nowIso = new Date().toISOString();
   const [profileResult, recordsResult, lettersResult, sentLettersResult, friendsResult, devFriendResult, devSentLettersResult] = await Promise.all([
-    supabase.from("garden_profiles").select("nickname, growth_count, weather_index").eq("id", currentUser.id).single(),
+    supabase.from("garden_profiles").select("nickname, growth_count").eq("id", currentUser.id).single(),
     supabase.from("garden_records").select("id, mood, one_line, detail, created_at").order("created_at", { ascending: false }),
     supabase.from("garden_letters").select("id, sender_name, title, body, delivery_kind, sent_at, available_at, read_at, created_at").lte("available_at", nowIso).order("available_at", { ascending: false }),
     supabase.rpc("list_my_sent_garden_letters"),
@@ -309,7 +312,6 @@ async function loadGardenState() {
 
   state = {
     growth: Number(profile?.growth_count || 0),
-    weatherIndex: Number(profile?.weather_index || 0),
     profileName: profile?.nickname || profileNameFromUser(currentUser),
     records: (recordsResult.data || []).map((record) => ({
       id: record.id,
@@ -417,8 +419,41 @@ function updateTodayRecordAction() {
   label.textContent = savedToday ? "오늘 마음 남김" : "마음 남기기";
 }
 
+function stableHash(value) {
+  let hash = 2166136261;
+  for (const character of String(value || "")) {
+    hash ^= character.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function previewWeatherFromUrl() {
+  // 개발 화면 검수용: ?weatherPreview=sun / wind / rain 을 붙인 경우에만 임시로 날씨를 고정합니다.
+  const preview = new URL(window.location.href).searchParams.get("weatherPreview");
+  return weatherOptions.find((weather) => weather.className === preview) || null;
+}
+
+function weatherForGarden(gardenId, dateKey = seoulDateKey()) {
+  const preview = previewWeatherFromUrl();
+  if (preview) return preview;
+
+  // 정원 ID + 한국 날짜를 조합해, 그 정원만의 오늘 날씨를 안정적으로 정합니다.
+  // 0~5: 맑음(60%), 6~7: 바람(20%), 8~9: 비(20%)
+  const roll = stableHash(`${gardenId || "guest"}:${dateKey || "today"}`) % 10;
+  if (roll < 6) return weatherOptions[0];
+  if (roll < 8) return weatherOptions[1];
+  return weatherOptions[2];
+}
+
 function currentWeather() {
-  return weatherOptions[state.weatherIndex % weatherOptions.length];
+  return weatherForGarden(currentUser?.id || "guest");
+}
+
+function applyWeatherVisuals(stage, treeWrap, rainLayer, weather) {
+  if (stage) stage.classList.toggle("weather-rain", weather.className === "rain");
+  if (treeWrap) treeWrap.classList.toggle("wind-active", weather.className === "wind");
+  if (rainLayer) rainLayer.classList.toggle("active", weather.className === "rain");
 }
 
 function renderGarden() {
@@ -439,8 +474,7 @@ function renderGarden() {
 
   els.weatherIcon.textContent = weather.icon;
   els.weatherText.textContent = weather.text;
-  els.rainLayer.classList.toggle("active", weather.className === "rain");
-  els.treeWrap.classList.toggle("wind-active", weather.className === "wind");
+  applyWeatherVisuals(els.gardenStage, els.treeWrap, els.rainLayer, weather);
   els.stageMessage.textContent = weather.message;
 
   if (visitor.next) {
@@ -750,7 +784,7 @@ async function openFriendGarden(friendId) {
   }
 
   const growth = Number(friend.growth_count ?? fallbackFriend.growth ?? 0);
-  const weather = weatherOptions[Number(friend.weather_index ?? 0) % weatherOptions.length];
+  const weather = weatherForGarden(friend.friend_id || friendId);
   const stage = stageForGrowth(growth);
   const name = friend.nickname || fallbackFriend.name || "친구";
 
@@ -763,8 +797,7 @@ async function openFriendGarden(friendId) {
   els.friendVisitWeatherIcon.textContent = weather.icon;
   els.friendVisitWeatherText.textContent = weather.text;
   els.friendVisitMessage.textContent = `${name}의 나무에도 ${weather.message}`;
-  els.friendVisitRainLayer.classList.toggle("active", weather.className === "rain");
-  els.friendVisitTreeWrap.classList.toggle("wind-active", weather.className === "wind");
+  applyWeatherVisuals(els.friendVisitStage, els.friendVisitTreeWrap, els.friendVisitRainLayer, weather);
 
   closeAllSheets();
   els.gardenApp.classList.add("hidden");
@@ -777,6 +810,7 @@ function returnToMyGarden() {
   els.gardenApp.classList.remove("hidden");
   els.friendVisitRainLayer.classList.remove("active");
   els.friendVisitTreeWrap.classList.remove("wind-active");
+  els.friendVisitStage.classList.remove("weather-rain");
   activeFriendGardenId = "";
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -1247,20 +1281,6 @@ function bindEvents() {
   els.branchLetter.addEventListener("click", () => {
     const firstUnread = getUnreadLetters()[0];
     if (firstUnread) openLetter(firstUnread.id);
-  });
-  els.weatherButton.addEventListener("click", async () => {
-    if (!currentUser) return;
-    const nextIndex = (state.weatherIndex + 1) % weatherOptions.length;
-    els.weatherButton.disabled = true;
-    const { error } = await supabase.from("garden_profiles").update({ weather_index: nextIndex }).eq("id", currentUser.id);
-    els.weatherButton.disabled = false;
-    if (error) {
-      showToast(databaseErrorMessage(error));
-      return;
-    }
-    state.weatherIndex = nextIndex;
-    renderGarden();
-    showToast(currentWeather().text);
   });
   els.visitorButton.addEventListener("click", () => showToast(`${getVisitor().name} 방문 중이에요.`));
   els.recordForm.addEventListener("submit", saveRecord);
