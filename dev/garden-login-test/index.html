@@ -30,7 +30,7 @@
   <main class="garden-app hidden" id="gardenApp" aria-label="오늘의숲 내 정원">
     <header class="garden-header">
       <div>
-        <p class="eyebrow">DEV · FRIEND GARDEN VIEW v0.6</p>
+        <p class="eyebrow">DEV · FRIEND GARDEN VISIT v0.7</p>
         <h1>내 정원</h1>
       </div>
       <div class="header-actions">
@@ -120,6 +120,57 @@
       <p class="database-note">내 기록과 내 나무 상태는 로그인한 계정의 정원에 저장돼요.</p>
       <button id="signOutButton" class="reset-link signout-link" type="button">로그아웃</button>
     </div>
+  </main>
+
+
+  <main class="garden-app friend-visit hidden" id="friendVisit" aria-label="친구 정원 방문">
+    <header class="garden-header friend-visit-header">
+      <div>
+        <p class="eyebrow">VISITING FRIEND'S GARDEN</p>
+        <h1 id="friendVisitName">친구의 정원</h1>
+      </div>
+      <button class="friend-return-top" id="returnToMyGardenTop" type="button">← 내 정원</button>
+    </header>
+
+    <section class="garden-stage friend-visit-stage" id="friendVisitStage" aria-label="친구의 마음 나무가 있는 정원">
+      <div class="pastel-glow glow-one"></div>
+      <div class="pastel-glow glow-two"></div>
+      <div class="cloud cloud-one"></div>
+      <div class="cloud cloud-two"></div>
+      <div class="rain-layer" id="friendVisitRainLayer" aria-hidden="true"></div>
+      <div class="sparkle-layer" aria-hidden="true">
+        <i></i><i></i><i></i><i></i><i></i>
+      </div>
+
+      <div class="stage-topline">
+        <span id="friendVisitDayCount">마음 0일째</span>
+        <span class="dot">·</span>
+        <span id="friendVisitStageLabel">처음 깨어난 새싹</span>
+      </div>
+
+      <div class="friend-visit-weather" aria-live="polite">
+        <span id="friendVisitWeatherIcon" aria-hidden="true">🍃</span>
+        <span id="friendVisitWeatherText">바람이 가볍게 불어요</span>
+      </div>
+
+      <div class="tree-wrap friend-visit-tree-wrap" id="friendVisitTreeWrap">
+        <div class="tree-aura" aria-hidden="true"></div>
+        <img id="friendVisitTree" class="tree-image" src="../../assets/garden/tree_growth/tree_stage1_morning.png" alt="친구의 마음 나무" />
+      </div>
+
+      <div class="ground-shadow" aria-hidden="true"></div>
+      <p class="stage-message" id="friendVisitMessage">친구의 나무가 오늘도 조용히 자라고 있어요.</p>
+    </section>
+
+    <section class="friend-visit-note" aria-label="친구 정원 방문 안내">
+      <div class="friend-visit-note-icon" aria-hidden="true">🌿</div>
+      <div>
+        <p class="growth-note-kicker">FRIEND'S TREE</p>
+        <p class="friend-visit-note-text">이곳에서는 친구의 나무와 정원 분위기만 볼 수 있어요. 기록의 내용은 서로 보이지 않아요.</p>
+      </div>
+    </section>
+
+    <button class="friend-return-button" id="returnToMyGarden" type="button">내 정원으로 돌아가기</button>
   </main>
 
   <div class="sheet-overlay hidden" id="sheetOverlay" aria-hidden="true"></div>
@@ -289,35 +340,7 @@
   </section>
 
 
-  <section class="letter-modal hidden" id="friendGardenModal" role="dialog" aria-modal="true" aria-labelledby="friendGardenTitle">
-    <div class="friend-garden-card">
-      <button class="letter-close" id="closeFriendGardenModal" type="button" aria-label="친구 정원 닫기">×</button>
-      <p class="friend-garden-kicker">FRIEND'S GARDEN</p>
-      <p class="friend-garden-name" id="friendGardenName">친구의 정원</p>
-      <h2 id="friendGardenTitle">조용히 자라는 나무</h2>
 
-      <div class="friend-garden-scene" aria-hidden="true">
-        <span class="friend-garden-glow friend-garden-glow-one"></span>
-        <span class="friend-garden-glow friend-garden-glow-two"></span>
-        <span class="friend-garden-cloud friend-garden-cloud-one"></span>
-        <span class="friend-garden-cloud friend-garden-cloud-two"></span>
-        <img id="friendGardenTree" src="../../assets/garden/tree_growth/tree_stage1_morning.png" alt="친구의 마음 나무" />
-      </div>
-
-      <div class="friend-garden-status">
-        <span id="friendGardenDayCount">마음 0일째</span>
-        <span class="dot">·</span>
-        <span id="friendGardenStage">처음 깨어난 새싹</span>
-      </div>
-      <p class="friend-garden-weather" id="friendGardenWeather">🍃 바람이 가볍게 불어요</p>
-      <p class="friend-garden-note">기록의 내용은 서로 보이지 않아요. 이곳에서는 친구의 나무가 자란 모습만 함께 볼 수 있어요.</p>
-
-      <div class="friend-garden-actions">
-        <button class="friend-garden-letter" id="friendGardenWriteLetter" type="button">이 나무에게 편지 보내기</button>
-        <button class="friend-garden-back" id="friendGardenBack" type="button">친구 목록으로 돌아가기</button>
-      </div>
-    </div>
-  </section>
 
   <section class="letter-modal hidden" id="friendInviteModal" role="dialog" aria-modal="true" aria-labelledby="friendInviteTitle">
     <div class="letter-card friend-invite-card">

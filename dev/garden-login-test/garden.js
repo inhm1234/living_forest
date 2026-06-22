@@ -115,15 +115,18 @@ const els = {
   inviteExpiry: $("#inviteExpiry"),
   devTestFriendBox: $("#devTestFriendBox"),
   enableDevFriendButton: $("#enableDevFriendButton"),
-  friendGardenModal: $("#friendGardenModal"),
-  friendGardenName: $("#friendGardenName"),
-  friendGardenTitle: $("#friendGardenTitle"),
-  friendGardenTree: $("#friendGardenTree"),
-  friendGardenDayCount: $("#friendGardenDayCount"),
-  friendGardenStage: $("#friendGardenStage"),
-  friendGardenWeather: $("#friendGardenWeather"),
-  friendGardenWriteLetter: $("#friendGardenWriteLetter"),
-  friendGardenBack: $("#friendGardenBack"),
+  friendVisit: $("#friendVisit"),
+  friendVisitName: $("#friendVisitName"),
+  friendVisitTree: $("#friendVisitTree"),
+  friendVisitDayCount: $("#friendVisitDayCount"),
+  friendVisitStageLabel: $("#friendVisitStageLabel"),
+  friendVisitWeatherIcon: $("#friendVisitWeatherIcon"),
+  friendVisitWeatherText: $("#friendVisitWeatherText"),
+  friendVisitRainLayer: $("#friendVisitRainLayer"),
+  friendVisitTreeWrap: $("#friendVisitTreeWrap"),
+  friendVisitMessage: $("#friendVisitMessage"),
+  returnToMyGarden: $("#returnToMyGarden"),
+  returnToMyGardenTop: $("#returnToMyGardenTop"),
   friendInviteModal: $("#friendInviteModal"),
   friendInviteFrom: $("#friendInviteFrom"),
   acceptFriendInviteButton: $("#acceptFriendInviteButton"),
@@ -720,34 +723,30 @@ async function openFriendGarden(friendId) {
   const name = friend.nickname || fallbackFriend.name || "친구";
 
   activeFriendGardenId = friend.friend_id || friendId;
-  els.friendGardenName.textContent = `${name}의 정원`;
-  els.friendGardenTitle.textContent = stage.label;
-  els.friendGardenTree.src = `../../assets/garden/tree_growth/${stage.asset}`;
-  els.friendGardenTree.alt = `${name}의 ${stage.label}`;
-  els.friendGardenDayCount.textContent = `마음 ${growth}일째`;
-  els.friendGardenStage.textContent = stage.label;
-  els.friendGardenWeather.textContent = `${weather.icon} ${weather.text}`;
-  els.friendGardenWriteLetter.textContent = `${name}에게 편지 보내기`;
-  els.friendGardenModal.classList.remove("hidden");
+  els.friendVisitName.textContent = `${name}의 정원`;
+  els.friendVisitTree.src = `../../assets/garden/tree_growth/${stage.asset}`;
+  els.friendVisitTree.alt = `${name}의 ${stage.label}`;
+  els.friendVisitDayCount.textContent = `마음 ${growth}일째`;
+  els.friendVisitStageLabel.textContent = stage.label;
+  els.friendVisitWeatherIcon.textContent = weather.icon;
+  els.friendVisitWeatherText.textContent = weather.text;
+  els.friendVisitMessage.textContent = `${name}의 나무에도 ${weather.message}`;
+  els.friendVisitRainLayer.classList.toggle("active", weather.className === "rain");
+  els.friendVisitTreeWrap.classList.toggle("wind-active", weather.className === "wind");
+
+  closeAllSheets();
+  els.gardenApp.classList.add("hidden");
+  els.friendVisit.classList.remove("hidden");
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function closeFriendGardenModal() {
-  els.friendGardenModal.classList.add("hidden");
+function returnToMyGarden() {
+  els.friendVisit.classList.add("hidden");
+  els.gardenApp.classList.remove("hidden");
+  els.friendVisitRainLayer.classList.remove("active");
+  els.friendVisitTreeWrap.classList.remove("wind-active");
   activeFriendGardenId = "";
-}
-
-function writeLetterToActiveFriend() {
-  const friend = (state.friends || []).find((item) => item.id === activeFriendGardenId);
-  if (!friend) {
-    showToast("친구 정보를 다시 불러온 뒤 편지를 보내 주세요.");
-    closeFriendGardenModal();
-    return;
-  }
-
-  selectedLetterRecipientId = friend.id;
-  closeFriendGardenModal();
-  renderLetterComposer();
-  openSheet(els.letterComposerSheet);
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 async function enableDevTestFriend() {
@@ -1166,7 +1165,7 @@ async function signOut() {
   selectedLetterRecipientId = "";
   closeAllSheets();
   closeLetterModal();
-  closeFriendGardenModal();
+  returnToMyGarden();
   closeFriendInviteModal({ keepLink: true });
   renderAuthUI();
   setAuthError("");
@@ -1223,10 +1222,8 @@ function bindEvents() {
   $("#closeLetterModal").addEventListener("click", closeLetterModal);
   $("#readLetterButton").addEventListener("click", markLetterRead);
   els.letterModal.addEventListener("click", (event) => { if (event.target === els.letterModal) closeLetterModal(); });
-  $("#closeFriendGardenModal").addEventListener("click", closeFriendGardenModal);
-  els.friendGardenBack.addEventListener("click", closeFriendGardenModal);
-  els.friendGardenWriteLetter.addEventListener("click", writeLetterToActiveFriend);
-  els.friendGardenModal.addEventListener("click", (event) => { if (event.target === els.friendGardenModal) closeFriendGardenModal(); });
+  els.returnToMyGarden.addEventListener("click", returnToMyGarden);
+  els.returnToMyGardenTop.addEventListener("click", returnToMyGarden);
   els.createInviteButton.addEventListener("click", createFriendInvite);
   els.copyInviteLink.addEventListener("click", copyFriendInviteLink);
   els.enableDevFriendButton.addEventListener("click", enableDevTestFriend);
@@ -1245,9 +1242,12 @@ function bindEvents() {
   });
   window.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
+    if (!els.friendVisit.classList.contains("hidden")) {
+      returnToMyGarden();
+      return;
+    }
     closeAllSheets();
     closeLetterModal();
-    closeFriendGardenModal();
     closeFriendInviteModal();
   });
 }
