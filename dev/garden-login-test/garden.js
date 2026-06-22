@@ -450,10 +450,72 @@ function currentWeather() {
   return weatherForGarden(currentUser?.id || "guest");
 }
 
-function applyWeatherVisuals(stage, treeWrap, rainLayer, weather) {
+function seededRandom(seedValue) {
+  let seed = stableHash(seedValue || "rain-seed") || 1;
+  return () => {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+}
+
+function buildRainScene(layer, seedKey) {
+  if (!layer) return;
+  const rainSeed = String(seedKey || "guest-rain");
+  if (layer.dataset.rainSeed === rainSeed && layer.childElementCount > 0) return;
+
+  const random = seededRandom(rainSeed);
+  const fragment = document.createDocumentFragment();
+  const dropCount = 18;
+
+  layer.innerHTML = "";
+  layer.dataset.rainSeed = rainSeed;
+
+  for (let index = 0; index < dropCount; index += 1) {
+    const item = document.createElement("span");
+    item.className = "rain-drop-item";
+
+    const x = 8 + random() * 84;
+    const delay = -(random() * 2.8);
+    const duration = 1.65 + random() * 0.85;
+    const length = 13 + random() * 12;
+    const alpha = 0.22 + random() * 0.18;
+    const drift = -2 + random() * 4;
+    const splashBottom = 9 + random() * 10;
+    const fallInset = 78 + random() * 34;
+    const splashScale = 0.88 + random() * 0.34;
+    const splashDelayOffset = 0.02 + random() * 0.08;
+
+    item.style.setProperty("--x", `${x.toFixed(2)}%`);
+    item.style.setProperty("--delay", `${delay.toFixed(2)}s`);
+    item.style.setProperty("--duration", `${duration.toFixed(2)}s`);
+    item.style.setProperty("--length", `${length.toFixed(1)}px`);
+    item.style.setProperty("--alpha", alpha.toFixed(2));
+    item.style.setProperty("--drift", `${drift.toFixed(1)}px`);
+    item.style.setProperty("--fall-distance", `calc(100% - ${fallInset.toFixed(0)}px)`);
+    item.style.setProperty("--splash-bottom", `${splashBottom.toFixed(1)}%`);
+    item.style.setProperty("--splash-scale", splashScale.toFixed(2));
+    item.style.setProperty("--splash-delay", `${(delay + duration - splashDelayOffset).toFixed(2)}s`);
+
+    const drop = document.createElement("span");
+    drop.className = "rain-drop";
+
+    const splash = document.createElement("span");
+    splash.className = "rain-splash";
+
+    item.append(drop, splash);
+    fragment.appendChild(item);
+  }
+
+  layer.appendChild(fragment);
+}
+
+function applyWeatherVisuals(stage, treeWrap, rainLayer, weather, rainSeed = "guest-rain") {
   if (stage) stage.classList.toggle("weather-rain", weather.className === "rain");
   if (treeWrap) treeWrap.classList.toggle("wind-active", weather.className === "wind");
-  if (rainLayer) rainLayer.classList.toggle("active", weather.className === "rain");
+  if (rainLayer) {
+    if (weather.className === "rain") buildRainScene(rainLayer, rainSeed);
+    rainLayer.classList.toggle("active", weather.className === "rain");
+  }
 }
 
 function renderGarden() {
@@ -474,7 +536,7 @@ function renderGarden() {
 
   els.weatherIcon.textContent = weather.icon;
   els.weatherText.textContent = weather.text;
-  applyWeatherVisuals(els.gardenStage, els.treeWrap, els.rainLayer, weather);
+  applyWeatherVisuals(els.gardenStage, els.treeWrap, els.rainLayer, weather, `${currentUser?.id || "guest"}:${seoulDateKey()}:my-garden`);
   els.stageMessage.textContent = weather.message;
 
   if (visitor.next) {
@@ -797,7 +859,7 @@ async function openFriendGarden(friendId) {
   els.friendVisitWeatherIcon.textContent = weather.icon;
   els.friendVisitWeatherText.textContent = weather.text;
   els.friendVisitMessage.textContent = `${name}의 나무에도 ${weather.message}`;
-  applyWeatherVisuals(els.friendVisitStage, els.friendVisitTreeWrap, els.friendVisitRainLayer, weather);
+  applyWeatherVisuals(els.friendVisitStage, els.friendVisitTreeWrap, els.friendVisitRainLayer, weather, `${friend.friend_id || friendId}:${seoulDateKey()}:friend-garden`);
 
   closeAllSheets();
   els.gardenApp.classList.add("hidden");
