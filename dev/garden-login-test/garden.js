@@ -220,21 +220,75 @@ async function loadGardenState() {
   }
 
   const nowIso = new Date().toISOString();
-  const [profileResult, recordsResult, lettersResult, sentLettersResult, friendsResult] = await Promise.all([
+  const [profileResult, recordsResult, lettersResult, sentLettersResult, friendsResult, devFriendResult, devSentLettersResult] = await Promise.all([
     supabase.from("garden_profiles").select("nickname, growth_count, weather_index").eq("id", currentUser.id).single(),
     supabase.from("garden_records").select("id, mood, one_line, detail, created_at").order("created_at", { ascending: false }),
     supabase.from("garden_letters").select("id, sender_name, title, body, delivery_kind, sent_at, available_at, read_at, created_at").lte("available_at", nowIso).order("available_at", { ascending: false }),
     supabase.rpc("list_my_sent_garden_letters"),
     supabase.rpc("list_my_garden_friends"),
+    supabase.rpc("get_my_dev_test_friend"),
+    supabase.rpc("list_my_dev_test_sent_letters"),
   ]);
 
+  // 내 정원의 기본 정보와 기록은 핵심 데이터라서 실패를 화면에 알려야 합니다.
   if (profileResult.error) throw profileResult.error;
   if (recordsResult.error) throw recordsResult.error;
-  if (lettersResult.error) throw lettersResult.error;
-  if (sentLettersResult.error) throw sentLettersResult.error;
-  if (friendsResult.error) throw friendsResult.error;
+
+  // 편지/친구는 각각 독립적으로 읽습니다.
+  // 한 종류의 RPC가 잠시 실패해도 다른 저장 데이터를 0으로 초기화하지 않습니다.
+  if (lettersResult.error) console.warn("TodayForest received-letter load skipped:", lettersResult.error);
+  if (sentLettersResult.error) console.warn("TodayForest sent-letter load skipped:", sentLettersResult.error);
+  if (friendsResult.error) console.warn("TodayForest friend load skipped:", friendsResult.error);
+  if (devFriendResult.error) console.warn("TodayForest DEV friend load skipped:", devFriendResult.error);
+  if (devSentLettersResult.error) console.warn("TodayForest DEV sent-letter load skipped:", devSentLettersResult.error);
 
   const profile = profileResult.data;
+  const realFriends = (friendsResult.data || []).map((friend) => ({
+    id: friend.friend_id,
+    name: friend.nickname || "친구",
+    avatarUrl: friend.avatar_url || "",
+    growth: Number(friend.growth_count || 0),
+    becameFriendsAt: friend.became_friends_at,
+    isDevTest: Boolean(friend.is_dev_test),
+  }));
+  const devFriends = (devFriendResult.data || []).map((friend) => ({
+    id: friend.friend_id,
+    name: friend.nickname || "테스트 새싹",
+    avatarUrl: friend.avatar_url || "",
+    growth: Number(friend.growth_count || 5),
+    becameFriendsAt: friend.became_friends_at,
+    isDevTest: true,
+  }));
+  const friendsById = new Map();
+  [...realFriends, ...devFriends].forEach((friend) => {
+    if (friend?.id) friendsById.set(friend.id, friend);
+  });
+
+  const realSentLetters = (sentLettersResult.data || []).map((letter) => ({
+    id: letter.id,
+    to: letter.recipient_name || "친구",
+    title: letter.title,
+    deliveryKind: letter.delivery_kind,
+    sentAt: letter.sent_at,
+    availableAt: letter.available_at,
+    readAt: letter.read_at,
+    isDevTest: Boolean(letter.is_dev_test),
+  }));
+  const devSentLetters = (devSentLettersResult.data || []).map((letter) => ({
+    id: letter.id,
+    to: letter.recipient_name || "테스트 새싹",
+    title: letter.title,
+    deliveryKind: letter.delivery_kind,
+    sentAt: letter.sent_at,
+    availableAt: letter.available_at,
+    readAt: letter.read_at,
+    isDevTest: true,
+  }));
+  const sentById = new Map();
+  [...realSentLetters, ...devSentLetters].forEach((letter) => {
+    if (letter?.id) sentById.set(letter.id, letter);
+  });
+
   state = {
     growth: Number(profile?.growth_count || 0),
     weatherIndex: Number(profile?.weather_index || 0),
@@ -255,24 +309,8 @@ async function loadGardenState() {
       date: letter.available_at || letter.sent_at || letter.created_at,
       read: Boolean(letter.read_at),
     })),
-    sentLetters: (sentLettersResult.data || []).map((letter) => ({
-      id: letter.id,
-      to: letter.recipient_name || "친구",
-      title: letter.title,
-      deliveryKind: letter.delivery_kind,
-      sentAt: letter.sent_at,
-      availableAt: letter.available_at,
-      readAt: letter.read_at,
-      isDevTest: Boolean(letter.is_dev_test),
-    })),
-    friends: (friendsResult.data || []).map((friend) => ({
-      id: friend.friend_id,
-      name: friend.nickname || "친구",
-      avatarUrl: friend.avatar_url || "",
-      growth: Number(friend.growth_count || 0),
-      becameFriendsAt: friend.became_friends_at,
-      isDevTest: Boolean(friend.is_dev_test),
-    })),
+    sentLetters: Array.from(sentById.values()),
+    friends: Array.from(friendsById.values()),
   };
 }
 
