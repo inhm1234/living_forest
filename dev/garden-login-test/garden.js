@@ -606,20 +606,58 @@ function renderFriends() {
 }
 
 async function enableDevTestFriend() {
-  if (!currentUser) return;
-  const button = els.enableDevFriendButton;
-  button.disabled = true;
-  button.textContent = "테스트 새싹을 심는 중이에요";
-  const { error } = await supabase.rpc("enable_my_dev_test_friend");
-  button.disabled = false;
-  button.textContent = "테스트 새싹 친구 만들기";
-  if (error) {
-    showToast(databaseErrorMessage(error));
+  if (!currentUser) {
+    showToast("내 정원을 먼저 로그인해 주세요.");
     return;
   }
-  await loadGardenState();
-  renderAll();
-  showToast("테스트 새싹이 내 정원 친구 목록에 왔어요.");
+
+  const button = els.enableDevFriendButton;
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = "테스트 새싹을 심는 중이에요";
+
+  try {
+    const { data, error } = await supabase.rpc("enable_my_dev_test_friend");
+    if (error) throw error;
+
+    const row = normalizeRpcRow(data);
+    if (!row?.friend_id) {
+      throw new Error("테스트 친구 정보를 받지 못했어요.");
+    }
+
+    // 먼저 화면에 즉시 반영합니다. 이후의 목록 새로고침이 늦거나 실패해도
+    // 사용자가 만든 테스트 친구가 사라진 것처럼 보이지 않게 합니다.
+    const testFriend = {
+      id: row.friend_id,
+      name: row.nickname || "테스트 새싹",
+      avatarUrl: "",
+      growth: Number(row.growth_count || 5),
+      becameFriendsAt: new Date().toISOString(),
+      isDevTest: true,
+    };
+    state.friends = [
+      testFriend,
+      ...(state.friends || []).filter((friend) => !friend.isDevTest),
+    ];
+    selectedLetterRecipientId = testFriend.id;
+    renderAll();
+    showToast("테스트 새싹이 내 정원 친구 목록에 왔어요.");
+
+    // 저장된 데이터도 다시 읽어와 다음 새로고침 뒤의 상태까지 맞춥니다.
+    try {
+      await loadGardenState();
+      renderAll();
+    } catch (refreshError) {
+      console.warn("DEV test friend refresh skipped:", refreshError);
+    }
+  } catch (error) {
+    console.error("DEV test friend creation error:", error);
+    const detail = String(error?.message || "").trim();
+    showToast(detail ? `테스트 새싹을 만들지 못했어요: ${detail}` : "테스트 새싹을 만들지 못했어요. 다시 시도해 주세요.");
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText || "테스트 새싹 친구 만들기";
+  }
 }
 
 async function simulateDevFriendRead(letterId) {
