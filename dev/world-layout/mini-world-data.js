@@ -1,16 +1,15 @@
 /*
- * 오늘의숲 · 공동 숲 카메라 검증용 작은 월드 v0.1
+ * 오늘의숲 · 개인 화면 시야 검증용 작은 월드 v0.2
  *
- * 목적: 1,024 슬롯 월드에 앞서, 하나의 고정 좌표 월드에서
- * 선택한 나무만 중앙에 보이고 다른 나무가 주변 숲이 되는지 검증한다.
- * 모든 좌표는 이 파일에만 고정되어 있다.
+ * 목적: 같은 고정 좌표 월드에서, 내 나무가 앞쪽 나무·바위·능선에
+ * 가려지지 않도록 개인 화면의 시야 규칙을 검토한다.
  */
 (function attachMiniWorld(global) {
   const WORLD = Object.freeze({
-    id: "camera-test-16",
+    id: "visibility-test-16",
     width: 900,
     height: 760,
-    name: "공동 숲 카메라 검증용 작은 월드"
+    name: "공동 숲 개인 시야 검증용 작은 월드"
   });
 
   const slots = Object.freeze([
@@ -35,12 +34,22 @@
     { id: "slot-16", label: "슬롯 16", x: 786, y: 642, z: 2, groveId: "grove-southeast", growth: 1.06 }
   ]);
 
-  // 실제 서비스 규칙과 같게: 한 사람(한 작은 숲 군락)에게 가까운 4개 슬롯을 예약한다.
   const groves = Object.freeze([
     { id: "grove-northwest", name: "북서 작은 숲 군락", slotIds: ["slot-01", "slot-02", "slot-05", "slot-06"] },
     { id: "grove-northeast", name: "북동 작은 숲 군락", slotIds: ["slot-03", "slot-04", "slot-07", "slot-08"] },
     { id: "grove-southwest", name: "남서 작은 숲 군락", slotIds: ["slot-09", "slot-10", "slot-13", "slot-14"] },
     { id: "grove-southeast", name: "남동 작은 숲 군락", slotIds: ["slot-11", "slot-12", "slot-15", "slot-16"] }
+  ]);
+
+  // 지형지물도 고정 좌표를 가진다.
+  // policy: tree=숨김, soften=약화, camera=카메라 보정, low=그대로 유지
+  const scenery = Object.freeze([
+    { id: "ridge-west", label: "낮은 능선", kind: "terrain", policy: "camera", x: 450, y: 330, z: 20, width: 300, height: 118 },
+    { id: "ridge-east", label: "완만한 둔덕", kind: "terrain", policy: "camera", x: 688, y: 520, z: 14, width: 250, height: 86 },
+    { id: "rock-west", label: "큰 바위", kind: "rock", policy: "soften", x: 352, y: 354, z: 12, width: 82, height: 70 },
+    { id: "rock-south", label: "큰 바위", kind: "rock", policy: "soften", x: 510, y: 515, z: 8, width: 78, height: 62 },
+    { id: "stream", label: "작은 개울", kind: "stream", policy: "low", x: 286, y: 360, z: 0 },
+    { id: "path", label: "숲길", kind: "path", policy: "low", x: 470, y: 545, z: 0 }
   ]);
 
   function getSlot(slotId) {
@@ -52,10 +61,11 @@
   }
 
   global.LivingForestMiniWorld = Object.freeze({
-    version: "0.1.0",
+    version: "0.2.0",
     world: WORLD,
     slots,
     groves,
+    scenery,
     getSlot,
     getGrove
   });
