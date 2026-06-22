@@ -239,7 +239,25 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .rain-layer::before,
 .rain-layer::after { content: none; }
 .rain-drop-item { position: absolute; inset: -18% 0 0 0; left: var(--x); width: 24px; }
-.rain-drop { position: absolute; left: 50%; top: 0; width: 2px; height: var(--length); border-radius: 999px; background: linear-gradient(180deg, rgba(255,255,255,0), rgba(245,250,255,var(--alpha)) 35%, rgba(245,250,255, calc(var(--alpha) * 1.15)) 100%); transform: translateX(-50%); filter: blur(.15px); animation: rainFall var(--duration) linear var(--delay) infinite; }
+.rain-drop {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 2.6px;
+  height: var(--length);
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0) 0%,
+    rgba(241,248,255,0.42) 26%,
+    rgba(247,252,255,0.68) 72%,
+    rgba(255,255,255,0.54) 100%
+  );
+  box-shadow: 0 0 3px rgba(241,248,255,0.18);
+  transform: translateX(-50%);
+  filter: blur(.05px);
+  animation: rainFall var(--duration) linear var(--delay) infinite;
+}
 .rain-splash { position: absolute; left: 50%; bottom: var(--splash-bottom); width: 24px; height: 14px; opacity: 0; transform: translateX(-50%) scale(.8); animation: splashTap var(--duration) ease-out var(--splash-delay) infinite; }
 .rain-splash::before,
 .rain-splash::after { content: ""; position: absolute; inset: 0; }
@@ -341,8 +359,8 @@ textarea::placeholder { color: #a7b4bd; }
 @keyframes letterHang { 0%,100% { transform: rotate(3deg) translateY(0); } 50% { transform: rotate(-3deg) translateY(2px); } }
 @keyframes rainFall {
   0% { transform: translateX(-50%) translate3d(0,-26px,0); opacity: 0; }
-  12% { opacity: 1; }
-  82% { transform: translateX(-50%) translate3d(var(--drift), var(--fall-distance), 0); opacity: 1; }
+  8% { opacity: .92; }
+  88% { transform: translateX(-50%) translate3d(var(--drift), var(--fall-distance), 0); opacity: .92; }
   100% { transform: translateX(-50%) translate3d(var(--drift), calc(var(--fall-distance) + 8px), 0); opacity: 0; }
 }
 @keyframes splashTap {
