@@ -86,8 +86,8 @@ const ANIMAL_DELIVERY_ARRIVAL_STORAGE_PREFIX = "todayforest-dev-animal-delivery-
 // URL에 ?receivedPreview=1~6 을 붙였을 때만 로컬 테스트 봉투를 추가합니다.
 const RECEIVED_LETTER_PREVIEW_STORAGE_PREFIX = "todayforest-dev-received-preview-v1";
 // 오래된 편지 정책을 실제 시간으로 기다리지 않고 안전하게 검수하기 위한 DEV 전용 테스트입니다.
-// URL의 ?retentionTest=21 | wind | 31 에서만 동작하며, 자기 계정에만 [DEV] 테스트 편지를 잠깐 만듭니다.
-const RETENTION_TEST_STORAGE_PREFIX = "todayforest-dev-letter-retention-test-v1";
+// 실제 garden_letters와 분리된 DEV 전용 테이블만 사용합니다.
+// 준비는 ?retentionTest=21|wind|31&retentionReset=1 일 때만, 검수는 retentionTest 주소에서만 동작합니다.
 
 const stageRules = [
   { min: 0, max: 2, label: "처음 깨어난 새싹", asset: "tree_stage1_morning.png" },
@@ -118,8 +118,11 @@ let authBusy = false;
 let activeFriendGardenId = "";
 let activeAnimalVisit = null;
 let animalDepartureTimer = null;
-let expiredUnreadLettersNoticeCount = 0;
 let pendingExpiredLetterReturn = null;
+let pendingRetentionNextVisitNoticeCount = 0;
+let retentionWindTimer = null;
+let retentionWindRefreshBusy = false;
+let retentionCleanupRanOnThisPage = false;
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -241,8 +244,8 @@ function databaseErrorMessage(error) {
   if (message.includes("garden_dev_test") || message.includes("enable_my_dev_test_friend") || message.includes("send_dev_test_garden_letter")) {
     return "테스트 새싹 준비를 하지 못했어요. DEV 테스트 친구 SQL 설정을 먼저 실행해 주세요.";
   }
-  if (message.includes("create_my_garden_retention_test")) {
-    return "오래된 편지 테스트를 준비하지 못했어요. DEV 보관 정책 SQL 설정을 먼저 실행해 주세요.";
+  if (message.includes("setup_my_garden_retention_dev_test") || message.includes("run_my_garden_retention_dev_cleanup") || message.includes("list_my_garden_retention_dev_tests")) {
+    return "오래된 편지 테스트를 준비하지 못했어요. v9 DEV 보관 정책 SQL을 먼저 실행해 주세요.";
   }
   if (message.includes("garden_friend") || message.includes("friend")) {
     return "친구 정원을 준비하지 못했어요. 친구 기능 SQL 설정을 먼저 확인해 주세요.";
@@ -310,55 +313,106 @@ function retentionTestModeFromUrl() {
   return ["21", "wind", "31"].includes(raw) ? raw : "";
 }
 
-function retentionTestStorageKey(mode) {
-  return `${RETENTION_TEST_STORAGE_PREFIX}:${currentUser?.id || "guest"}:${mode}:${seoulDateKey()}`;
+function retentionResetRequested() {
+  return new URL(window.location.href).searchParams.get("retentionReset") === "1";
 }
 
-function clearRetentionResetFromUrl() {
+function retentionCleanupRequested() {
+  return new URL(window.location.href).searchParams.get("retentionCleanup") === "1";
+}
+
+function clearRetentionUrlFlag(flagName) {
   const url = new URL(window.location.href);
-  if (url.searchParams.get("retentionReset") !== "1") return;
-  url.searchParams.delete("retentionReset");
+  if (!url.searchParams.has(flagName)) return;
+  url.searchParams.delete(flagName);
   window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
+function retentionDevLetterFromRow(row) {
+  return {
+    id: `retention-dev-${row.id}`,
+    retentionTestId: Number(row.id),
+    from: row.sender_name || "[DEV] 시간의 숲친구",
+    title: row.title || "[DEV] 오래 기다린 마음 확인",
+    body: row.body || "이 편지는 개발용 보관 정책 검수 편지예요.",
+    bodyLoaded: true,
+    delivery: deliveryText(row.delivery_kind),
+    deliveryKind: row.delivery_kind,
+    date: row.available_at || row.created_at,
+    read: false,
+    isRetentionTest: true,
+  };
 }
 
 async function prepareRetentionTestIfRequested() {
   const mode = retentionTestModeFromUrl();
-  if (!mode || !currentUser) return;
+  if (!mode || !currentUser || !retentionResetRequested()) return;
 
-  const url = new URL(window.location.href);
-  const forceReset = url.searchParams.get("retentionReset") === "1";
-  const key = retentionTestStorageKey(mode);
-  try {
-    if (!forceReset && window.sessionStorage.getItem(key) === "done") return;
-  } catch (error) {
-    console.warn("TodayForest retention-test session storage skipped:", error);
-  }
-
-  const { error } = await supabase.rpc("create_my_garden_retention_test", { p_mode: mode });
+  const { error } = await supabase.rpc("setup_my_garden_retention_dev_test", { p_mode: mode });
   if (error) {
-    console.warn("TodayForest retention test setup skipped:", error);
+    console.warn("TodayForest v9 retention test setup skipped:", error);
     return;
   }
 
-  try {
-    window.sessionStorage.setItem(key, "done");
-  } catch (error) {
-    console.warn("TodayForest retention-test session save skipped:", error);
-  }
-  clearRetentionResetFromUrl();
+  // 다음 새로고침은 준비된 DEV 봉투를 그대로 검수하도록 reset 표식만 지웁니다.
+  clearRetentionUrlFlag("retentionReset");
 }
 
-function queueExpiredLetterReturn(previousLetters, expiredIds) {
-  if (!expiredIds.length) return;
-  const previousById = new Map((previousLetters || []).map((letter) => [String(letter.id), letter]));
-  const returningLetters = expiredIds
-    .map((id) => previousById.get(String(id)))
-    .filter(Boolean);
+async function loadRetentionDevLetters() {
+  if (!retentionTestModeFromUrl() || !currentUser) return [];
+  const { data, error } = await supabase.rpc("list_my_garden_retention_dev_tests");
+  if (error) {
+    console.warn("TodayForest v9 retention DEV letter load skipped:", error);
+    return [];
+  }
+  return (data || []).map(retentionDevLetterFromRow);
+}
+
+function queueExpiredLetterReturnFromDevTests(expiredTests) {
+  const returningLetters = (expiredTests || []).map(retentionDevLetterFromRow).filter(Boolean);
   if (!returningLetters.length) return;
   pendingExpiredLetterReturn = {
     count: returningLetters.length,
     letter: returningLetters[0],
   };
+}
+
+async function runRetentionDevCleanupIfRequested() {
+  const mode = retentionTestModeFromUrl();
+  const shouldRunWindCheck = mode === "wind";
+  const shouldRun31Cleanup = mode === "31" && retentionCleanupRequested() && !retentionCleanupRanOnThisPage;
+  if (!shouldRunWindCheck && !shouldRun31Cleanup) return;
+
+  if (shouldRun31Cleanup) retentionCleanupRanOnThisPage = true;
+
+  const { data, error } = await supabase.rpc("run_my_garden_retention_dev_cleanup", { p_mode: mode });
+  if (error) {
+    console.warn("TodayForest v9 retention DEV cleanup skipped:", error);
+    return;
+  }
+
+  const cleanupInfo = normalizeRpcRow(data) || {};
+  const expiredTests = Array.isArray(cleanupInfo.expired_tests) ? cleanupInfo.expired_tests : [];
+  if (mode === "wind") queueExpiredLetterReturnFromDevTests(expiredTests);
+
+  if (shouldRun31Cleanup) {
+    clearRetentionUrlFlag("retentionCleanup");
+    showToast("개발용 31일 편지를 정리했어요. 페이지를 새로고침하면 다음 방문 안내가 한 번 보여요.");
+  }
+}
+
+async function consumeRetentionNextVisitNoticeIfNeeded() {
+  if (!currentUser || retentionTestModeFromUrl() !== "31" || retentionCleanupRanOnThisPage) return;
+
+  const { data, error } = await supabase.rpc("consume_my_garden_retention_dev_notices");
+  if (error) {
+    console.warn("TodayForest v9 retention next-visit notice skipped:", error);
+    return;
+  }
+
+  const notice = normalizeRpcRow(data) || {};
+  const count = Number(notice.expired_count || 0);
+  if (count > 0) pendingRetentionNextVisitNoticeCount += count;
 }
 
 function playExpiredLetterReturnIfNeeded() {
@@ -392,7 +446,39 @@ function playExpiredLetterReturnIfNeeded() {
 
   const suffix = pending.count > 1 ? "들이" : "이";
   showToast(`오래 머문 마음${suffix} 바람을 타고 숲으로 돌아갔어요.`);
-  expiredUnreadLettersNoticeCount = 0;
+}
+
+function playRetentionNextVisitNoticeIfNeeded() {
+  const count = pendingRetentionNextVisitNoticeCount;
+  if (!count) return;
+  pendingRetentionNextVisitNoticeCount = 0;
+  const message = count === 1
+    ? "오래 머문 마음 하나가 조용히 숲으로 돌아갔어요."
+    : `오래 머문 마음 ${count}개가 조용히 숲으로 돌아갔어요.`;
+  showToast(message);
+}
+
+function configureRetentionWindPolling() {
+  if (retentionWindTimer) {
+    window.clearInterval(retentionWindTimer);
+    retentionWindTimer = null;
+  }
+
+  if (!currentUser || retentionTestModeFromUrl() !== "wind") return;
+
+  // wind 검수 주소에서만 짧게 확인합니다. 일반 정원에서는 추가 정리 호출이 없습니다.
+  retentionWindTimer = window.setInterval(async () => {
+    if (retentionWindRefreshBusy || !currentUser || retentionTestModeFromUrl() !== "wind") return;
+    retentionWindRefreshBusy = true;
+    try {
+      await loadGardenState();
+      renderAll();
+    } catch (error) {
+      console.warn("TodayForest v9 retention wind refresh skipped:", error);
+    } finally {
+      retentionWindRefreshBusy = false;
+    }
+  }, 2000);
 }
 
 async function loadGardenState() {
@@ -401,36 +487,25 @@ async function loadGardenState() {
     return;
   }
 
-  // 개발 검수 주소에서만 21일/30일 테스트 편지를 먼저 준비합니다.
-  // 이후 실제 정리 함수를 실행하므로, 테스트도 실제 DB 정책과 같은 순서로 검증됩니다.
+  // v9 검수는 reset 주소에서만 DEV 봉투를 준비하며, public.garden_letters는 건드리지 않습니다.
   await prepareRetentionTestIfRequested();
-
-  // 편지 화면을 열지 않아도, 정원에 들어오는 시점마다 30일 보관 정책을 한 번 확인합니다.
-  // SQL이 아직 적용되지 않은 개발 환경에서는 기존 편지 흐름이 멈추지 않도록 조용히 건너뜁니다.
-  const previousUnreadLetters = [...(state.letters || [])];
-  const cleanupResult = await supabase.rpc("cleanup_expired_garden_letters");
-  if (cleanupResult.error) {
-    console.warn("TodayForest letter retention cleanup skipped:", cleanupResult.error);
-  } else {
-    const cleanupInfo = normalizeRpcRow(cleanupResult.data) || {};
-    expiredUnreadLettersNoticeCount = Number(cleanupInfo.my_unread_expired_count || 0);
-    const expiredIds = Array.isArray(cleanupInfo.my_unread_expired_ids)
-      ? cleanupInfo.my_unread_expired_ids.map(String)
-      : [];
-    queueExpiredLetterReturn(previousUnreadLetters, expiredIds);
-  }
+  await runRetentionDevCleanupIfRequested();
 
   const nowIso = new Date().toISOString();
-  const [profileResult, recordsResult, lettersResult, sentLettersResult, friendsResult, devFriendResult, devSentLettersResult] = await Promise.all([
+  const retentionTestActive = Boolean(retentionTestModeFromUrl());
+  const [profileResult, recordsResult, lettersResult, sentLettersResult, friendsResult, devFriendResult, devSentLettersResult, retentionDevLetters] = await Promise.all([
     supabase.from("garden_profiles").select("nickname, growth_count").eq("id", currentUser.id).single(),
     supabase.from("garden_records").select("id, mood, one_line, detail, created_at").order("created_at", { ascending: false }),
-    // 목록에서는 본문을 읽지 않습니다. 봉투를 실제로 열 때만 본문을 따로 불러옵니다.
-    // 가장 먼저 도착한 마음부터 최대 60통만 가져와, 화면과 네트워크 부담을 제한합니다.
-    supabase.from("garden_letters").select("id, sender_name, title, delivery_kind, sent_at, available_at, read_at, created_at").lte("available_at", nowIso).is("read_at", null).order("available_at", { ascending: true }).limit(60),
+    // 보관 정책 검수 주소에서는 실제 받은 편지를 아예 읽지 않습니다.
+    // 그래서 DEV 봉투가 실제 친구 편지와 같은 목록이나 나뭇가지에 섞이지 않습니다.
+    retentionTestActive
+      ? Promise.resolve({ data: [], error: null })
+      : supabase.from("garden_letters").select("id, sender_name, title, delivery_kind, sent_at, available_at, read_at, created_at").lte("available_at", nowIso).is("read_at", null).order("available_at", { ascending: true }).limit(60),
     supabase.rpc("list_my_sent_garden_letters"),
     supabase.rpc("list_my_garden_friends"),
     supabase.rpc("get_my_dev_test_friend"),
     supabase.rpc("list_my_dev_test_sent_letters"),
+    loadRetentionDevLetters(),
   ]);
 
   // 내 정원의 기본 정보와 기록은 핵심 데이터라서 실패를 화면에 알려야 합니다.
@@ -518,8 +593,15 @@ async function loadGardenState() {
     friends: Array.from(friendsById.values()),
   };
 
+  // v9 보관 정책 검수 봉투도 실제 수신 편지와 분리된 DEV 전용 데이터입니다.
+  if (retentionDevLetters.length) {
+    const existing = new Set((state.letters || []).map((letter) => String(letter.id)));
+    state.letters = [...state.letters, ...retentionDevLetters.filter((letter) => !existing.has(String(letter.id)))];
+  }
+
   // 개발 미리보기는 실제 수신 데이터와 분리된 로컬 봉투입니다.
   mergeReceivedPreviewLetters();
+  await consumeRetentionNextVisitNoticeIfNeeded();
 }
 
 async function hydrateGardenForCurrentUser() {
@@ -530,11 +612,7 @@ async function hydrateGardenForCurrentUser() {
     renderAuthUI();
     renderAll();
     setAuthError("");
-    if (expiredUnreadLettersNoticeCount > 0) {
-      const suffix = expiredUnreadLettersNoticeCount > 1 ? "들이" : "이";
-      showToast(`오래 머문 마음${suffix} 바람을 타고 숲으로 돌아갔어요.`);
-      expiredUnreadLettersNoticeCount = 0;
-    }
+    configureRetentionWindPolling();
     await previewFriendInviteFromUrl();
   } catch (error) {
     state = cloneDefault();
@@ -1237,6 +1315,7 @@ function renderGarden() {
 
   renderBranchLetters(unread);
   playExpiredLetterReturnIfNeeded();
+  playRetentionNextVisitNoticeIfNeeded();
   els.navLetterBadge.textContent = unread.length;
   els.navLetterBadge.classList.toggle("hidden", unread.length === 0);
   updateTodayRecordAction();
@@ -1795,7 +1874,7 @@ async function openLetter(letterId) {
   $("#readLetterButton").textContent = "마음을 받았어요";
   els.letterModal.classList.remove("hidden");
 
-  if (letter.isPreview || letter.bodyLoaded) {
+  if (letter.isPreview || letter.isRetentionTest || letter.bodyLoaded) {
     els.letterBody.textContent = letter.body || "";
     return;
   }
@@ -1828,6 +1907,12 @@ async function markLetterRead() {
   if (letter) {
     if (letter.isPreview) {
       dismissReceivedPreview(letter.id);
+    } else if (letter.isRetentionTest) {
+      const { data, error } = await supabase.rpc("dismiss_my_garden_retention_dev_test", { p_test_id: letter.retentionTestId });
+      if (error || data !== true) {
+        showToast("개발용 편지 상태를 정리하지 못했어요. 다시 시도해 주세요.");
+        return;
+      }
     } else {
       // '마음을 받았어요'를 누른 시각이 30일 보관 기준이 됩니다.
       const { data, error } = await supabase.rpc("receive_garden_letter", { p_letter_id: letter.id });
@@ -2155,7 +2240,10 @@ async function syncSession() {
     return;
   }
 
-  if (!currentUser) state = cloneDefault();
+  if (!currentUser) {
+    configureRetentionWindPolling();
+    state = cloneDefault();
+  }
   renderAuthUI();
   if (currentUser) renderAll();
 }
@@ -2169,6 +2257,7 @@ async function signOut() {
     return;
   }
   currentUser = null;
+  configureRetentionWindPolling();
   state = cloneDefault();
   selectedLetterRecipientId = "";
   closeAllSheets();
@@ -2292,7 +2381,10 @@ async function init() {
       return;
     }
 
-    if (!currentUser) state = cloneDefault();
+    if (!currentUser) {
+      configureRetentionWindPolling();
+      state = cloneDefault();
+    }
     renderAuthUI();
     if (currentUser) renderAll();
   });
