@@ -854,3 +854,25 @@ textarea::placeholder { color: #a7b4bd; }
   .friend-visit-tree-wrap { bottom: 82px; width: 93%; }
   .friend-return-top { font-size: 11px; }
 }
+
+
+/* 도착한 편지는 보낸 목록에 쌓지 않고, 편지 화면을 열었을 때만 짧게 도착 장면으로 보여줍니다. */
+.sent-letter-item.is-arrival-notice {
+  align-items: center;
+  border-color: #e7dff4;
+  background: linear-gradient(135deg, #fffdff, #fbf8ff 58%, #f9fdf9);
+}
+.sent-letter-item.is-arrival-notice .sent-letter-icon {
+  background: #f4eefb;
+}
+.animal-arrival-note {
+  margin: 4px 0 0;
+  color: #7c718e;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+.sent-letter-status.is-arrived {
+  background: #f2eef9;
+  color: #8a79a7;
+}

@@ -79,6 +79,9 @@ const animalVisitorOrder = ["bird", "squirrel", "rabbit", "hedgehog"];
 const ANIMAL_VISIT_STORAGE_PREFIX = "todayforest-dev-animal-visit-v1";
 const ANIMAL_DELIVERY_STORAGE_PREFIX = "todayforest-dev-animal-delivery-v2";
 const ANIMAL_DELIVERY_QUEUE_STORAGE_PREFIX = "todayforest-dev-animal-delivery-queue-v3";
+// 배송을 마친 편지는 보낸 편지함에 쌓지 않습니다.
+// 사용자가 편지 화면을 열었을 때 한 번만 도착 장면을 보여주기 위한 짧은 보관함입니다.
+const ANIMAL_DELIVERY_ARRIVAL_STORAGE_PREFIX = "todayforest-dev-animal-delivery-arrivals-v4";
 
 const stageRules = [
   { min: 0, max: 2, label: "처음 깨어난 새싹", asset: "tree_stage1_morning.png" },
@@ -298,7 +301,8 @@ async function loadGardenState() {
   const [profileResult, recordsResult, lettersResult, sentLettersResult, friendsResult, devFriendResult, devSentLettersResult] = await Promise.all([
     supabase.from("garden_profiles").select("nickname, growth_count").eq("id", currentUser.id).single(),
     supabase.from("garden_records").select("id, mood, one_line, detail, created_at").order("created_at", { ascending: false }),
-    supabase.from("garden_letters").select("id, sender_name, title, body, delivery_kind, sent_at, available_at, read_at, created_at").lte("available_at", nowIso).order("available_at", { ascending: false }),
+    // 읽지 않은 편지만 나뭇가지에 머물러요. 한 번 마음에 담은 편지는 목록에 다시 쌓지 않습니다.
+    supabase.from("garden_letters").select("id, sender_name, title, body, delivery_kind, sent_at, available_at, read_at, created_at").lte("available_at", nowIso).is("read_at", null).order("available_at", { ascending: false }),
     supabase.rpc("list_my_sent_garden_letters"),
     supabase.rpc("list_my_garden_friends"),
     supabase.rpc("get_my_dev_test_friend"),
@@ -381,7 +385,7 @@ async function loadGardenState() {
       body: letter.body,
       delivery: deliveryText(letter.delivery_kind),
       date: letter.available_at || letter.sent_at || letter.created_at,
-      read: Boolean(letter.read_at),
+      read: false,
     })),
     sentLetters: Array.from(sentById.values()).map(applyAnimalDeliveryMeta),
     friends: Array.from(friendsById.values()),
@@ -413,8 +417,11 @@ function openSheet(element) {
 }
 
 function closeAllSheets() {
+  const wasViewingLetters = !els.lettersSheet.classList.contains("hidden");
   [els.recordSheet, els.recordsSheet, els.friendsSheet, els.lettersSheet, els.letterComposerSheet].forEach((sheet) => sheet.classList.add("hidden"));
   els.sheetOverlay.classList.add("hidden");
+  // 도착 완료 장면은 편지 화면을 확인하는 동안만 머물고, 닫으면 조용히 사라집니다.
+  if (wasViewingLetters) clearAnimalDeliveryArrivals();
 }
 
 function getStage() {
@@ -582,6 +589,79 @@ function saveAnimalDeliveryQueue(nextQueue) {
   }
 }
 
+function animalDeliveryArrivalStorageKey() {
+  return `${ANIMAL_DELIVERY_ARRIVAL_STORAGE_PREFIX}:${currentUser?.id || "guest"}`;
+}
+
+function readAnimalDeliveryArrivals() {
+  try {
+    const raw = window.localStorage.getItem(animalDeliveryArrivalStorageKey());
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    const now = Date.now();
+    const valid = Array.isArray(parsed)
+      ? parsed.filter((item) => {
+        const arrivedAt = new Date(item?.arrivedAt || item?.availableAt || 0).getTime();
+        return item?.localId && animalVisitors[item?.kind] && Number.isFinite(arrivedAt) && now - arrivedAt < 48 * 60 * 60 * 1000;
+      })
+      : [];
+    if (Array.isArray(parsed) && valid.length !== parsed.length) {
+      window.localStorage.setItem(animalDeliveryArrivalStorageKey(), JSON.stringify(valid));
+    }
+    return valid;
+  } catch (error) {
+    console.warn("TodayForest delivery arrival read skipped:", error);
+    return [];
+  }
+}
+
+function saveAnimalDeliveryArrivals(nextArrivals) {
+  try {
+    window.localStorage.setItem(animalDeliveryArrivalStorageKey(), JSON.stringify(nextArrivals.slice(0, 20)));
+  } catch (error) {
+    console.warn("TodayForest delivery arrival save skipped:", error);
+  }
+}
+
+function rememberAnimalDeliveryArrival(item) {
+  if (!item?.localId || !animalVisitors[item?.kind]) return;
+  const arrivals = readAnimalDeliveryArrivals();
+  const alreadyAdded = arrivals.some((arrival) => arrival.localId === item.localId || (item.remoteId && arrival.remoteId === item.remoteId));
+  if (alreadyAdded) return;
+  arrivals.unshift({ ...item, arrivedAt: new Date().toISOString() });
+  saveAnimalDeliveryArrivals(arrivals);
+}
+
+function clearAnimalDeliveryArrivals() {
+  try {
+    window.localStorage.removeItem(animalDeliveryArrivalStorageKey());
+  } catch (error) {
+    console.warn("TodayForest delivery arrival clear skipped:", error);
+  }
+}
+
+function animalDeliveryArrivalNotices() {
+  return readAnimalDeliveryArrivals().map((item) => ({
+    id: `animal-arrival:${item.localId}`,
+    to: item.to || "친구",
+    title: item.title || "마음을 전해요",
+    deliveryKind: item.kind,
+    sentAt: item.sentAt,
+    availableAt: item.availableAt,
+    actualDeliveryHours: Number(item.deliveryHours || 0) || null,
+    hasAnimalTracking: true,
+    isDevTest: Boolean(item.isDevTest),
+    isAnimalArrivalNotice: true,
+    animalDeliveryMeta: {
+      kind: item.kind,
+      sentAt: item.sentAt,
+      availableAt: item.availableAt,
+      deliveryHours: item.deliveryHours,
+      rememberedAt: item.rememberedAt,
+    },
+  }));
+}
+
 function rememberAnimalDelivery(letterId, animal, sentAt, availableAt, snapshot = {}) {
   if (!animal) return;
 
@@ -634,8 +714,13 @@ function queuedAnimalDeliveryLetters() {
     return Number.isFinite(createdAt) && now - createdAt < 48 * 60 * 60 * 1000;
   });
 
-  // 이미 도착한 항목은 서버의 기존 보낸 편지 카드가 맡도록 정리합니다.
-  const inTransit = validQueue.filter((item) => new Date(item.availableAt || 0).getTime() > now);
+  // 도착한 편지는 보낸 편지함으로 쌓지 않습니다.
+  // 다음에 편지 화면을 열었을 때만 '도착 완료' 장면으로 짧게 보여준 뒤 사라집니다.
+  const inTransit = validQueue.filter((item) => {
+    const isInTransit = new Date(item.availableAt || 0).getTime() > now;
+    if (!isInTransit) rememberAnimalDeliveryArrival(item);
+    return isInTransit;
+  });
   if (inTransit.length !== validQueue.length) saveAnimalDeliveryQueue(inTransit);
 
   return inTransit.map((item) => ({
@@ -958,6 +1043,7 @@ function renderRecords() {
 }
 
 function renderLetters() {
+  // 받은 편지는 읽기 전까지만 나뭇가지와 편지 화면에 머뭅니다.
   const letters = [...state.letters].sort((a, b) => new Date(b.date) - new Date(a.date));
   const friends = state.friends || [];
   const canWrite = friends.length > 0;
@@ -976,15 +1062,15 @@ function renderLetters() {
   renderSentLetters();
 
   if (!letters.length) {
-    els.letterList.innerHTML = '<div class="empty-state">아직 도착한 편지가 없어요.<br />새가 나뭇가지에 편지를 걸어두면 여기에도 차분히 모여요.</div>';
+    els.letterList.innerHTML = '<div class="empty-state">지금 나뭇가지에 도착한 새 마음은 없어요.<br />누군가의 편지가 도착하면 봉투가 이곳에 조용히 머물러요.</div>';
     return;
   }
 
   els.letterList.innerHTML = letters.map((letter) => `
-    <button class="letter-item ${letter.read ? "" : "unread"}" type="button" data-letter-id="${escapeAttr(letter.id)}">
+    <button class="letter-item unread" type="button" data-letter-id="${escapeAttr(letter.id)}">
       <div class="letter-item-head">
         <div class="letter-from-row"><span class="mail-mark">✉</span><span>${escapeHTML(letter.from)}</span></div>
-        <span class="letter-meta">${letter.read ? "읽은 편지" : "새 편지"}</span>
+        <span class="letter-meta">새 편지</span>
       </div>
       <p class="letter-preview">${escapeHTML(letter.title)}</p>
       <span class="letter-meta">${escapeHTML(formatDate(letter.date))} · ${escapeHTML(shortDelivery(letter.delivery))}</span>
@@ -995,57 +1081,63 @@ function renderLetters() {
 }
 
 function renderSentLetters() {
+  // 보낸 편지함은 만들지 않습니다. 배송 중인 편지와, 지금 확인한 도착 장면만 보여줍니다.
   const queuedLetters = queuedAnimalDeliveryLetters();
-  const persistedLetters = (state.sentLetters || []).filter((letter) => !queuedLetters.some((queued) => isSameAnimalDeliveryLetter(letter, queued)));
-  const sentLetters = [...queuedLetters, ...persistedLetters].sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
-  if (!sentLetters.length) {
-    els.sentLetterList.innerHTML = '<div class="empty-state">아직 맡긴 편지가 없어요.<br />정원에 온 숲친구에게 작은 마음을 부탁해볼래요?</div>';
+  const persistedLetters = (state.sentLetters || [])
+    .map(applyAnimalDeliveryMeta)
+    .filter((letter) => {
+      const tracking = animalDeliveryTracking(letter);
+      return Boolean(tracking.meta && tracking.isInTransit);
+    })
+    .filter((letter) => !queuedLetters.some((queued) => isSameAnimalDeliveryLetter(letter, queued)));
+  const inTransitLetters = [...queuedLetters, ...persistedLetters]
+    .sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
+  const arrivalNotices = animalDeliveryArrivalNotices();
+
+  if (!inTransitLetters.length && !arrivalNotices.length) {
+    els.sentLetterList.innerHTML = '<div class="empty-state">지금 숲길을 걷는 편지가 없어요.<br />정원에 온 숲친구에게 작은 마음을 부탁해볼래요?</div>';
     return;
   }
 
-  els.sentLetterList.innerHTML = sentLetters.map((letter) => {
+  const inTransitCards = inTransitLetters.map((letter) => {
     const tracking = animalDeliveryTracking(letter);
     const carrier = tracking.carrier;
-    const isDelivered = !tracking.isInTransit;
-    const devReadButton = letter.isDevTest && isDelivered && !letter.readAt
-      ? `<button class="dev-read-sim-button" type="button" data-dev-read-letter="${escapeAttr(letter.id)}">테스트 친구가 읽기</button>`
-      : "";
-    const deliveryStatusText = letter.readAt
-      ? "친구가 읽었어요"
-      : tracking.isInTransit
-        ? "배송 중"
-        : "나뭇가지에 도착";
-    const trackingCard = tracking.meta && tracking.isInTransit
-      ? `
-        <div class="animal-delivery-tracking" aria-label="${escapeAttr(`${carrier.name} 배송 진행 상태`)}">
-          <p class="animal-delivery-story">${escapeHTML(animalDeliveryStory(carrier))}</p>
-          <div class="animal-delivery-time-row">
-            <span>${letter.isDevTest ? "DEV 도착까지" : "도착까지"} ${escapeHTML(formatDeliveryCountdown(tracking.remainingMs))}</span>
-            <span>${Math.round(tracking.progress)}%</span>
-          </div>
-          <span class="animal-delivery-progress" aria-hidden="true"><span style="width:${tracking.progress.toFixed(2)}%"></span></span>
-          ${letter.isDevTest ? `<p class="animal-delivery-dev-note">DEV 1분 테스트 · 실제 ${escapeHTML(String(tracking.meta.deliveryHours))}시간 배송</p>` : ""}
-        </div>
-      `
-      : "";
-
     return `
-      <article class="sent-letter-item ${letter.isDevTest ? "is-dev-test" : ""} ${tracking.meta ? "has-animal-tracking" : ""}">
+      <article class="sent-letter-item ${letter.isDevTest ? "is-dev-test" : ""} has-animal-tracking">
         <div class="sent-letter-icon" aria-hidden="true">${carrier.icon}</div>
         <div class="sent-letter-main">
           <div class="sent-letter-title">${escapeHTML(letter.to)}에게 · ${escapeHTML(letter.title)}${letter.isDevTest ? '<span class="dev-test-tag">DEV</span>' : ""}</div>
           <div class="sent-letter-detail">${escapeHTML(carrier.name)} · ${escapeHTML(formatDate(letter.sentAt))}</div>
-          ${trackingCard}
-          ${devReadButton}
+          <div class="animal-delivery-tracking" aria-label="${escapeAttr(`${carrier.name} 배송 진행 상태`)}">
+            <p class="animal-delivery-story">${escapeHTML(animalDeliveryStory(carrier))}</p>
+            <div class="animal-delivery-time-row">
+              <span>${letter.isDevTest ? "DEV 도착까지" : "도착까지"} ${escapeHTML(formatDeliveryCountdown(tracking.remainingMs))}</span>
+              <span>${Math.round(tracking.progress)}%</span>
+            </div>
+            <span class="animal-delivery-progress" aria-hidden="true"><span style="width:${tracking.progress.toFixed(2)}%"></span></span>
+            ${letter.isDevTest ? `<p class="animal-delivery-dev-note">DEV 1분 테스트 · 실제 ${escapeHTML(String(tracking.meta.deliveryHours))}시간 배송</p>` : ""}
+          </div>
         </div>
-        <span class="sent-letter-status ${tracking.isInTransit ? "is-moving" : ""}">${escapeHTML(deliveryStatusText)}</span>
+        <span class="sent-letter-status is-moving">배송 중</span>
       </article>
     `;
   }).join("");
 
-  $$('[data-dev-read-letter]').forEach((button) => {
-    button.addEventListener("click", () => simulateDevFriendRead(button.dataset.devReadLetter));
-  });
+  const arrivalCards = arrivalNotices.map((letter) => {
+    const carrier = animalDeliveryTracking(letter).carrier;
+    return `
+      <article class="sent-letter-item is-arrival-notice ${letter.isDevTest ? "is-dev-test" : ""}">
+        <div class="sent-letter-icon" aria-hidden="true">${carrier.icon}</div>
+        <div class="sent-letter-main">
+          <div class="sent-letter-title">${escapeHTML(letter.to)}에게 전한 마음</div>
+          <p class="animal-arrival-note">${escapeHTML(`${carrier.name}가 친구의 나뭇가지에 편지를 걸어두었어요.`)}</p>
+        </div>
+        <span class="sent-letter-status is-arrived">도착 완료</span>
+      </article>
+    `;
+  }).join("");
+
+  els.sentLetterList.innerHTML = `${inTransitCards}${arrivalCards}`;
 }
 
 function carrierForKind(kind) {
@@ -1398,7 +1490,7 @@ function openLetter(letterId) {
   els.letterBody.textContent = letter.body;
   els.letterDelivery.textContent = letter.delivery;
   els.letterDate.textContent = formatDate(letter.date);
-  $("#readLetterButton").textContent = letter.read ? "편지 다시 접기" : "편지 마음에 담기";
+  $("#readLetterButton").textContent = "마음에 담기";
   els.letterModal.classList.remove("hidden");
 }
 
@@ -1409,16 +1501,19 @@ function closeLetterModal() {
 
 async function markLetterRead() {
   const letter = state.letters.find((item) => item.id === activeLetterId);
-  if (letter && !letter.read) {
+  if (letter) {
     const { error } = await supabase.from("garden_letters").update({ read_at: new Date().toISOString() }).eq("id", letter.id);
     if (error) {
       showToast("편지 상태를 저장하지 못했어요. 다시 시도해 주세요.");
       return;
     }
-    letter.read = true;
+    // 받은 편지는 한 번 마음에 담으면 보관함에 쌓지 않고, 정원에서 조용히 사라집니다.
+    state.letters = state.letters.filter((item) => item.id !== letter.id);
     renderGarden();
     renderLetters();
-    showToast("편지가 내 편지함에 조용히 보관되었어요.");
+    closeLetterModal();
+    showToast("마음이 바람을 타고 정원에 스며들었어요.");
+    return;
   }
   closeLetterModal();
 }
@@ -1755,6 +1850,19 @@ async function signOut() {
   setAuthError("");
 }
 
+async function openLettersSheet() {
+  // 편지 버튼을 누르는 순간 한 번 바로 새로 읽어, 오래 닫아뒀다가 열어도 최신 배송 상태를 보여줍니다.
+  renderLetters();
+  openSheet(els.lettersSheet);
+  if (!currentUser) return;
+  try {
+    await loadGardenState();
+    renderAll();
+  } catch (error) {
+    console.warn("TodayForest letter open refresh skipped:", error);
+  }
+}
+
 function bindEvents() {
   els.signInKakao.addEventListener("click", beginKakaoLogin);
   els.signOutButton.addEventListener("click", signOut);
@@ -1768,7 +1876,7 @@ function bindEvents() {
   });
   $("#openRecords").addEventListener("click", () => { renderRecords(); openSheet(els.recordsSheet); });
   els.openFriends.addEventListener("click", () => { renderFriends(); openSheet(els.friendsSheet); });
-  $("#openLetters").addEventListener("click", () => { renderLetters(); openSheet(els.lettersSheet); });
+  $("#openLetters").addEventListener("click", () => { void openLettersSheet(); });
   els.openLetterComposer.addEventListener("click", () => {
     showToast("정원에 찾아온 숲친구를 눌러 편지를 맡겨요.");
   });
