@@ -42,10 +42,10 @@
           <span aria-hidden="true">♡</span>
           <span id="friendCount">친구 0명</span>
         </button>
-        <div class="quiet-pill weather-pill" id="weatherButton" role="status" aria-live="polite" aria-label="오늘의 날씨">
-          <span id="weatherIcon" aria-hidden="true">☀️</span>
-          <span id="weatherText">오늘의 날씨를 불러오는 중이에요</span>
-        </div>
+        <button class="quiet-pill" id="weatherButton" type="button" aria-label="오늘 날씨 바꾸기">
+          <span id="weatherIcon" aria-hidden="true">☁️</span>
+          <span id="weatherText">바람이 가볍게 불어요</span>
+        </button>
       </div>
     </header>
 
@@ -66,11 +66,21 @@
       </div>
 
       <button class="visitor-card" id="visitorButton" type="button" aria-label="오늘의 방문자 보기">
-        <img id="visitorImage" src="../../assets/garden/bird-silhouette-v3.png" alt="오늘 내 나무를 찾아온 작은 새" />
+        <img id="visitorImage" src="../../assets/garden/bird-silhouette-v3.png" alt="오늘 내 나무를 찾아온 작은 새" hidden />
+        <span class="visitor-emoji" id="visitorEmoji" aria-hidden="true">🐦</span>
         <span>
-          <b id="visitorName">새싹새가 쉬어가고 있어요</b>
-          <small id="visitorHint">나무가 자라면 더 멀리 편지를 전해줘요</small>
+          <b id="visitorName">숲친구가 정원에 놀러왔어요</b>
+          <small id="visitorHint">편지를 맡기면 바로 배송을 위해 떠나요.</small>
         </span>
+      </button>
+
+      <button class="active-animal animal-bird" id="activeAnimal" type="button" aria-label="작은 새에게 편지 맡기기">
+        <span class="animal-speech" id="activeAnimalSpeech">작은 새가 가지에서 편지를 기다리고 있어요.</span>
+        <span class="active-animal-emoji" id="activeAnimalEmoji" aria-hidden="true">🐦</span>
+      </button>
+
+      <button class="animal-trace" id="animalTrace" type="button" aria-label="숲친구가 남긴 흔적 보기" hidden>
+        <span id="animalTraceIcon" aria-hidden="true">🪶</span>
       </button>
 
       <div class="tree-wrap" id="treeWrap">
@@ -335,7 +345,7 @@
       <textarea id="letterMessage" name="letterMessage" maxlength="2000" rows="7" placeholder="친구에게 전하고 싶은 마음을 편하게 적어 주세요."></textarea>
 
       <button class="send-letter-button" type="submit">새에게 편지 맡기기</button>
-      <p class="sheet-footnote">지금은 개발 테스트라 모든 편지가 1분 뒤 도착해요.</p>
+      <p class="sheet-footnote" id="letterComposerFootnote">지금은 개발 테스트라 모든 편지가 1분 뒤 도착해요.</p>
     </form>
   </section>
 
