@@ -115,6 +115,7 @@ let authBusy = false;
 let activeFriendGardenId = "";
 let activeAnimalVisit = null;
 let animalDepartureTimer = null;
+let expiredUnreadLettersNoticeCount = 0;
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -271,12 +272,15 @@ async function ensureGardenProfile() {
 
 function deliveryText(kind) {
   const map = {
-    little_bird: "작은 새가 가지에 걸어두고 갔어요",
-    squirrel: "다람쥐가 나무 아래에 두고 갔어요",
-    sprout_bird: "새싹새가 가지에 걸어두고 갔어요",
-    swift_bird: "빠른 새가 높이 날아와 전해줬어요",
+    little_bird: "작은 새가 전해줬어요",
+    bird: "작은 새가 전해줬어요",
+    squirrel: "다람쥐가 전해줬어요",
+    rabbit: "토끼가 전해줬어요",
+    hedgehog: "고슴도치가 전해줬어요",
+    sprout_bird: "새싹새가 전해줬어요",
+    swift_bird: "빠른 새가 전해줬어요",
   };
-  return map[kind] || "숲의 새가 가지에 걸어두고 갔어요";
+  return map[kind] || "숲친구가 전해줬어요";
 }
 
 function carrierForGrowth(growth) {
@@ -299,12 +303,23 @@ async function loadGardenState() {
     return;
   }
 
+  // 편지 화면을 열지 않아도, 정원에 들어오는 시점마다 30일 보관 정책을 한 번 확인합니다.
+  // SQL이 아직 적용되지 않은 개발 환경에서는 기존 편지 흐름이 멈추지 않도록 조용히 건너뜁니다.
+  const cleanupResult = await supabase.rpc("cleanup_expired_garden_letters");
+  if (cleanupResult.error) {
+    console.warn("TodayForest letter retention cleanup skipped:", cleanupResult.error);
+  } else {
+    const cleanupInfo = normalizeRpcRow(cleanupResult.data) || {};
+    expiredUnreadLettersNoticeCount = Number(cleanupInfo.my_unread_expired_count || 0);
+  }
+
   const nowIso = new Date().toISOString();
   const [profileResult, recordsResult, lettersResult, sentLettersResult, friendsResult, devFriendResult, devSentLettersResult] = await Promise.all([
     supabase.from("garden_profiles").select("nickname, growth_count").eq("id", currentUser.id).single(),
     supabase.from("garden_records").select("id, mood, one_line, detail, created_at").order("created_at", { ascending: false }),
-    // 읽지 않은 편지만 나뭇가지에 머물러요. 한 번 마음에 담은 편지는 목록에 다시 쌓지 않습니다.
-    supabase.from("garden_letters").select("id, sender_name, title, body, delivery_kind, sent_at, available_at, read_at, created_at").lte("available_at", nowIso).is("read_at", null).order("available_at", { ascending: true }),
+    // 목록에서는 본문을 읽지 않습니다. 봉투를 실제로 열 때만 본문을 따로 불러옵니다.
+    // 가장 먼저 도착한 마음부터 최대 60통만 가져와, 화면과 네트워크 부담을 제한합니다.
+    supabase.from("garden_letters").select("id, sender_name, title, delivery_kind, sent_at, available_at, read_at, created_at").lte("available_at", nowIso).is("read_at", null).order("available_at", { ascending: true }).limit(60),
     supabase.rpc("list_my_sent_garden_letters"),
     supabase.rpc("list_my_garden_friends"),
     supabase.rpc("get_my_dev_test_friend"),
@@ -384,8 +399,11 @@ async function loadGardenState() {
       id: letter.id,
       from: letter.sender_name || "친구의 마음",
       title: letter.title,
-      body: letter.body,
+      // 본문은 봉투를 열 때 get_my_garden_letter_body RPC로 한 통만 읽습니다.
+      body: null,
+      bodyLoaded: false,
       delivery: deliveryText(letter.delivery_kind),
+      deliveryKind: letter.delivery_kind,
       date: letter.available_at || letter.sent_at || letter.created_at,
       read: false,
     })),
@@ -405,6 +423,11 @@ async function hydrateGardenForCurrentUser() {
     renderAuthUI();
     renderAll();
     setAuthError("");
+    if (expiredUnreadLettersNoticeCount > 0) {
+      const suffix = expiredUnreadLettersNoticeCount > 1 ? "들이" : "이";
+      showToast(`오래 머문 마음${suffix} 바람을 타고 숲으로 돌아갔어요.`);
+      expiredUnreadLettersNoticeCount = 0;
+    }
     await previewFriendInviteFromUrl();
   } catch (error) {
     state = cloneDefault();
@@ -1643,24 +1666,48 @@ async function simulateDevFriendRead(letterId) {
 }
 
 function shortDelivery(text) {
+  if (text.includes("고슴도치")) return "고슴도치가 전해줌";
+  if (text.includes("토끼")) return "토끼가 전해줌";
   if (text.includes("다람쥐")) return "다람쥐가 전해줌";
   if (text.includes("빠른 새")) return "빠른 새가 전해줌";
   if (text.includes("새싹새")) return "새싹새가 전해줌";
   if (text.includes("작은 새")) return "작은 새가 전해줌";
-  return "숲의 새가 전해줌";
+  return "숲친구가 전해줌";
 }
 
-function openLetter(letterId) {
+async function openLetter(letterId) {
   const letter = state.letters.find((item) => item.id === letterId);
   if (!letter) return;
+
   activeLetterId = letterId;
   els.letterFrom.textContent = letter.from;
   els.letterModalTitle.textContent = letter.title;
-  els.letterBody.textContent = letter.body;
   els.letterDelivery.textContent = letter.delivery;
   els.letterDate.textContent = formatDate(letter.date);
   $("#readLetterButton").textContent = "마음을 받았어요";
   els.letterModal.classList.remove("hidden");
+
+  if (letter.isPreview || letter.bodyLoaded) {
+    els.letterBody.textContent = letter.body || "";
+    return;
+  }
+
+  els.letterBody.textContent = "봉투를 조심히 펼치는 중이에요…";
+  const { data, error } = await supabase.rpc("get_my_garden_letter_body", { p_letter_id: letter.id });
+  if (error) {
+    console.warn("TodayForest letter body load skipped:", error);
+    if (activeLetterId === letterId) {
+      els.letterBody.textContent = "편지 내용을 펼치지 못했어요. 잠시 뒤 다시 열어봐요.";
+    }
+    return;
+  }
+
+  const loaded = normalizeRpcRow(data);
+  if (!loaded || activeLetterId !== letterId) return;
+
+  letter.body = loaded.body || "";
+  letter.bodyLoaded = true;
+  els.letterBody.textContent = letter.body;
 }
 
 function closeLetterModal() {
@@ -1674,8 +1721,9 @@ async function markLetterRead() {
     if (letter.isPreview) {
       dismissReceivedPreview(letter.id);
     } else {
-      const { error } = await supabase.from("garden_letters").update({ read_at: new Date().toISOString() }).eq("id", letter.id);
-      if (error) {
+      // '마음을 받았어요'를 누른 시각이 30일 보관 기준이 됩니다.
+      const { data, error } = await supabase.rpc("receive_garden_letter", { p_letter_id: letter.id });
+      if (error || data !== true) {
         showToast("편지 상태를 저장하지 못했어요. 다시 시도해 주세요.");
         return;
       }
