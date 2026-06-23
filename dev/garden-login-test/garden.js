@@ -78,6 +78,7 @@ const animalVisitors = {
 const animalVisitorOrder = ["bird", "squirrel", "rabbit", "hedgehog"];
 const ANIMAL_VISIT_STORAGE_PREFIX = "todayforest-dev-animal-visit-v1";
 const ANIMAL_DELIVERY_STORAGE_PREFIX = "todayforest-dev-animal-delivery-v2";
+const ANIMAL_DELIVERY_QUEUE_STORAGE_PREFIX = "todayforest-dev-animal-delivery-queue-v3";
 
 const stageRules = [
   { min: 0, max: 2, label: "처음 깨어난 새싹", asset: "tree_stage1_morning.png" },
@@ -557,25 +558,120 @@ function saveAnimalDeliveryMeta(next) {
   }
 }
 
-function rememberAnimalDelivery(letterId, animal, sentAt, availableAt) {
-  if (!letterId || !animal) return;
-  const deliveries = readAnimalDeliveryMeta();
-  deliveries[String(letterId)] = {
+function animalDeliveryQueueStorageKey() {
+  return `${ANIMAL_DELIVERY_QUEUE_STORAGE_PREFIX}:${currentUser?.id || "guest"}`;
+}
+
+function readAnimalDeliveryQueue() {
+  try {
+    const raw = window.localStorage.getItem(animalDeliveryQueueStorageKey());
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.warn("TodayForest animal delivery queue read skipped:", error);
+    return [];
+  }
+}
+
+function saveAnimalDeliveryQueue(nextQueue) {
+  try {
+    window.localStorage.setItem(animalDeliveryQueueStorageKey(), JSON.stringify(nextQueue));
+  } catch (error) {
+    console.warn("TodayForest animal delivery queue save skipped:", error);
+  }
+}
+
+function rememberAnimalDelivery(letterId, animal, sentAt, availableAt, snapshot = {}) {
+  if (!animal) return;
+
+  // 기존 보조 메타는 실제 DB 편지 id가 즉시 내려오는 경우를 위해 그대로 남깁니다.
+  if (letterId) {
+    const deliveries = readAnimalDeliveryMeta();
+    deliveries[String(letterId)] = {
+      kind: animal.kind,
+      sentAt,
+      availableAt,
+      deliveryHours: animal.deliveryHours,
+      rememberedAt: new Date().toISOString(),
+    };
+    const kept = Object.entries(deliveries)
+      .sort(([, a], [, b]) => new Date(b?.rememberedAt || 0) - new Date(a?.rememberedAt || 0))
+      .slice(0, 80);
+    saveAnimalDeliveryMeta(Object.fromEntries(kept));
+  }
+
+  // RPC 재조회가 빨라 기존 보낸 편지 목록을 덮어써도, 배송 중 카드는 사라지지 않도록
+  // 현재 브라우저에 별도의 '배송 중 임시 목록'을 보관합니다.
+  const now = new Date().toISOString();
+  const queue = readAnimalDeliveryQueue()
+    .filter((item) => {
+      const createdAt = new Date(item?.rememberedAt || item?.sentAt || 0).getTime();
+      return Number.isFinite(createdAt) && Date.now() - createdAt < 48 * 60 * 60 * 1000;
+    });
+
+  const localId = `${letterId || "local"}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+  queue.unshift({
+    localId,
+    remoteId: letterId || "",
     kind: animal.kind,
     sentAt,
     availableAt,
     deliveryHours: animal.deliveryHours,
-    rememberedAt: new Date().toISOString(),
-  };
+    rememberedAt: now,
+    to: snapshot.to || "친구",
+    title: snapshot.title || "마음을 전해요",
+    isDevTest: Boolean(snapshot.isDevTest),
+  });
+  saveAnimalDeliveryQueue(queue.slice(0, 40));
+}
 
-  // 브라우저에 남는 개발용 보조 정보는 너무 오래 쌓이지 않도록 최근 80개만 유지합니다.
-  const kept = Object.entries(deliveries)
-    .sort(([, a], [, b]) => new Date(b?.rememberedAt || 0) - new Date(a?.rememberedAt || 0))
-    .slice(0, 80);
-  saveAnimalDeliveryMeta(Object.fromEntries(kept));
+function queuedAnimalDeliveryLetters() {
+  const now = Date.now();
+  const validQueue = readAnimalDeliveryQueue().filter((item) => {
+    if (!item?.localId || !animalVisitors[item.kind]) return false;
+    const createdAt = new Date(item.rememberedAt || item.sentAt || 0).getTime();
+    return Number.isFinite(createdAt) && now - createdAt < 48 * 60 * 60 * 1000;
+  });
+
+  // 이미 도착한 항목은 서버의 기존 보낸 편지 카드가 맡도록 정리합니다.
+  const inTransit = validQueue.filter((item) => new Date(item.availableAt || 0).getTime() > now);
+  if (inTransit.length !== validQueue.length) saveAnimalDeliveryQueue(inTransit);
+
+  return inTransit.map((item) => ({
+    id: `animal-local:${item.localId}`,
+    to: item.to || "친구",
+    title: item.title || "마음을 전해요",
+    deliveryKind: item.kind,
+    sentAt: item.sentAt,
+    availableAt: item.availableAt,
+    actualDeliveryHours: Number(item.deliveryHours || 0) || null,
+    hasAnimalTracking: true,
+    readAt: null,
+    isDevTest: Boolean(item.isDevTest),
+    isLocalAnimalDelivery: true,
+    animalDeliveryMeta: {
+      kind: item.kind,
+      sentAt: item.sentAt,
+      availableAt: item.availableAt,
+      deliveryHours: item.deliveryHours,
+      rememberedAt: item.rememberedAt,
+    },
+  }));
+}
+
+function isSameAnimalDeliveryLetter(letter, queuedLetter) {
+  const sameRecipient = String(letter?.to || "") === String(queuedLetter?.to || "");
+  const sameTitle = String(letter?.title || "") === String(queuedLetter?.title || "");
+  const left = new Date(letter?.sentAt || 0).getTime();
+  const right = new Date(queuedLetter?.sentAt || 0).getTime();
+  const closeInTime = Number.isFinite(left) && Number.isFinite(right) && Math.abs(left - right) < 2 * 60 * 1000;
+  return sameRecipient && sameTitle && closeInTime;
 }
 
 function animalDeliveryMetaFor(letter) {
+  const localMeta = letter?.animalDeliveryMeta;
+  if (localMeta && animalVisitors[localMeta.kind]) return localMeta;
   if (!letter?.id) return null;
   const meta = readAnimalDeliveryMeta()[String(letter.id)];
   if (!meta || !animalVisitors[meta.kind]) return null;
@@ -899,7 +995,9 @@ function renderLetters() {
 }
 
 function renderSentLetters() {
-  const sentLetters = [...(state.sentLetters || [])].sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
+  const queuedLetters = queuedAnimalDeliveryLetters();
+  const persistedLetters = (state.sentLetters || []).filter((letter) => !queuedLetters.some((queued) => isSameAnimalDeliveryLetter(letter, queued)));
+  const sentLetters = [...queuedLetters, ...persistedLetters].sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
   if (!sentLetters.length) {
     els.sentLetterList.innerHTML = '<div class="empty-state">아직 맡긴 편지가 없어요.<br />정원에 온 숲친구에게 작은 마음을 부탁해볼래요?</div>';
     return;
@@ -1082,7 +1180,7 @@ async function sendGardenLetter(event) {
 
     // 현재 데이터베이스 RPC는 개발용 1분 배송을 유지합니다.
     // 대신 어떤 동물에게 맡겼는지는 브라우저 보조 저장으로 남겨, 편지함에서 정확한 동물·진행률을 보여줍니다.
-    rememberAnimalDelivery(outgoingId, animal, sentAt, availableAt);
+    rememberAnimalDelivery(outgoingId, animal, sentAt, availableAt, { to: recipientName, title, isDevTest: isDevTestFriend });
 
     // 전송이 성공한 즉시, 재조회가 늦더라도 보낸 편지 목록에 확실히 표시합니다.
     state.sentLetters = [{
