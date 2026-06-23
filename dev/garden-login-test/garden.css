@@ -247,26 +247,27 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 }
 .tree-image { position: relative; z-index: 2; display: block; width: 100%; height: auto; filter: drop-shadow(0 25px 18px rgba(73, 112, 83, 0.18)); user-select: none; pointer-events: none; }
 
-.letter-on-branch {
+.branch-letters { position: absolute; z-index: 5; inset: 0; pointer-events: none; }
+.branch-letters[hidden] { display: none; }
+.branch-letter-item, .branch-letter-bundle {
   position: absolute;
-  z-index: 4;
-  top: 29%;
-  right: 18%;
   display: grid;
   place-items: center;
-  width: 65px;
-  height: 65px;
   border: 0;
   background: transparent;
-  color: #f39ab0;
   cursor: pointer;
-  transform: rotate(4deg);
-  animation: letterHang 2.6s ease-in-out infinite;
+  pointer-events: auto;
 }
-.letter-on-branch[hidden] { display: none; }
-.letter-wing { position: absolute; top: -14px; right: -4px; font-size: 25px; filter: drop-shadow(0 4px 5px rgba(70,93,114,0.14)); transform: rotate(-13deg); }
-.letter-envelope { position: relative; display: grid; place-items: center; width: 42px; height: 35px; border: 1px solid rgba(255,255,255,0.82); border-radius: 10px; background: linear-gradient(145deg, #fff9e8, #ffe3ed); box-shadow: 0 8px 14px rgba(130, 107, 124, 0.16); font-size: 20px; }
-.letter-badge { position: absolute; bottom: -9px; min-width: max-content; padding: 4px 7px; border-radius: 999px; background: #fff; color: #df7a96; font-size: 9px; font-weight: 900; box-shadow: 0 5px 12px rgba(128,93,107,0.14); }
+.branch-letter-item { width: 56px; height: 56px; color: #f39ab0; animation: letterHang 2.6s ease-in-out infinite; }
+.branch-letter-item.item-1 { top: 25%; right: 15%; transform: rotate(4deg); }
+.branch-letter-item.item-2 { top: 33%; right: 29%; transform: rotate(-7deg); animation-delay: -.8s; }
+.branch-letter-item.item-3 { top: 18%; right: 32%; transform: rotate(8deg); animation-delay: -1.5s; }
+.branch-letter-envelope { display: grid; place-items: center; width: 40px; height: 33px; border: 1px solid rgba(255,255,255,.86); border-radius: 10px; background: linear-gradient(145deg, #fff9e8, #ffe3ed); box-shadow: 0 8px 14px rgba(130,107,124,.16); font-size: 19px; }
+.branch-letter-item.is-waiting .branch-letter-envelope { background: linear-gradient(145deg, #fff7df, #f4e5d1); filter: saturate(.78); }
+.branch-letter-old { position: absolute; top: -16px; min-width: max-content; padding: 3px 5px; border-radius: 999px; background: rgba(255,255,255,.83); color: #a58c78; font-size: 8px; font-weight: 900; box-shadow: 0 4px 10px rgba(112,95,72,.10); }
+.branch-letter-bundle { top: 21%; right: 17%; width: 68px; height: 62px; transform: rotate(4deg); animation: letterHang 2.9s ease-in-out infinite; }
+.branch-bundle-envelopes { display: block; padding: 8px 7px; border: 1px solid rgba(255,255,255,.88); border-radius: 15px; background: linear-gradient(145deg, #fffaf2, #ffe7ee); color: #ef97ad; font-size: 17px; letter-spacing: -7px; box-shadow: 0 8px 15px rgba(130,107,124,.15); }
+.branch-bundle-count { position: absolute; right: -8px; bottom: -6px; min-width: 23px; padding: 4px 5px; border-radius: 999px; background: #fff; color: #df7a96; font-size: 9px; font-weight: 900; box-shadow: 0 5px 12px rgba(128,93,107,.14); }
 
 .ground-shadow { position: absolute; z-index: 1; left: 50%; bottom: 76px; width: min(63%, 315px); height: 35px; border-radius: 50%; background: rgba(78, 128, 89, 0.14); filter: blur(12px); transform: translateX(-50%); }
 .stage-message { position: absolute; z-index: 5; bottom: 22px; left: 50%; width: max-content; max-width: calc(100% - 42px); margin: 0; padding: 9px 13px; border: 1px solid rgba(255,255,255,0.7); border-radius: 999px; background: rgba(255,255,255,0.52); color: #708395; font-size: 12px; font-weight: 800; text-align: center; transform: translateX(-50%); backdrop-filter: blur(8px); }
@@ -392,6 +393,10 @@ textarea::placeholder { color: #a7b4bd; }
 .letter-item { width: 100%; border: 1px solid #e6edf0; text-align: left; cursor: pointer; }
 .letter-item.unread { border-color: rgba(248,151,177,.45); background: linear-gradient(135deg, #fff8f8, #fffdf5); }
 .letter-item .mail-mark { display: grid; place-items: center; flex: 0 0 auto; width: 33px; height: 33px; border-radius: 12px; background: #fff0f3; font-size: 17px; }
+.received-letter-guide { margin: 0 0 10px; color: #8393a0; font-size: 12px; font-weight: 800; line-height: 1.5; }
+.letter-item .letter-delivery-meta { display: block; margin: 8px 0 0 40px; }
+.waiting-letter-tag { display: inline-flex; align-items: center; margin-left: 6px; padding: 3px 5px; border-radius: 999px; background: #f6eee6; color: #a48a75; font-size: 9px; font-style: normal; font-weight: 900; vertical-align: 1px; }
+.letter-item.is-waiting { border-color: rgba(204, 171, 139, .52); background: linear-gradient(135deg, #fffaf5, #fffdf8); }
 
 .letter-modal { position: fixed; z-index: 45; inset: 0; display: grid; place-items: center; padding: 22px; background: rgba(69,81,99,0.35); backdrop-filter: blur(8px); }
 .letter-modal.hidden { display: none; }
@@ -440,7 +445,10 @@ textarea::placeholder { color: #a7b4bd; }
   .animal-speech { width: 126px; font-size: 9px; }
   .visitor-card small { display: none; }
   .tree-wrap { bottom: 78px; width: 93%; }
-  .letter-on-branch { top: 27%; right: 16%; }
+  .branch-letter-item.item-1 { top: 23%; right: 13%; }
+  .branch-letter-item.item-2 { right: 28%; }
+  .branch-letter-item.item-3 { right: 31%; }
+  .branch-letter-bundle { top: 20%; right: 15%; }
   .stage-message { font-size: 11px; }
   .mood-choice { font-size: 10px; }
 }

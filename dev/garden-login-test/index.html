@@ -91,11 +91,7 @@
           src="../../assets/garden/tree_growth/tree_stage4_morning.png"
           alt="꽃과 잎이 피어난 내 마음 나무"
         />
-        <button class="letter-on-branch" id="branchLetter" type="button" aria-label="새가 나뭇가지에 걸어둔 새 편지 읽기">
-          <span class="letter-wing" aria-hidden="true">🕊️</span>
-          <span class="letter-envelope" aria-hidden="true">✉</span>
-          <span class="letter-badge" id="letterBadge">새 편지</span>
-        </button>
+        <div class="branch-letters" id="branchLetters" aria-live="polite" aria-label="나뭇가지에 도착한 새 편지"></div>
       </div>
 
       <div class="ground-shadow" aria-hidden="true"></div>
@@ -372,7 +368,7 @@
       <h2 id="letterModalTitle">오늘도 잘 지나가고 있어?</h2>
       <p class="letter-body" id="letterBody">네 나무가 조금씩 자라고 있다는 얘기를 들었어. 오늘은 마음이 어떤 모양이었는지 궁금해. 무리하지 말고, 좋은 밤 보내.</p>
       <p class="letter-date" id="letterDate"></p>
-      <button class="letter-confirm" id="readLetterButton" type="button">편지 마음에 담기</button>
+      <button class="letter-confirm" id="readLetterButton" type="button">마음을 받았어요</button>
     </div>
   </section>
 

@@ -82,6 +82,9 @@ const ANIMAL_DELIVERY_QUEUE_STORAGE_PREFIX = "todayforest-dev-animal-delivery-qu
 // 배송을 마친 편지는 보낸 편지함에 쌓지 않습니다.
 // 사용자가 편지 화면을 열었을 때 한 번만 도착 장면을 보여주기 위한 짧은 보관함입니다.
 const ANIMAL_DELIVERY_ARRIVAL_STORAGE_PREFIX = "todayforest-dev-animal-delivery-arrivals-v4";
+// 받은 편지 1차 화면 검수용입니다. 실제 친구 편지 데이터는 건드리지 않고,
+// URL에 ?receivedPreview=1~6 을 붙였을 때만 로컬 테스트 봉투를 추가합니다.
+const RECEIVED_LETTER_PREVIEW_STORAGE_PREFIX = "todayforest-dev-received-preview-v1";
 
 const stageRules = [
   { min: 0, max: 2, label: "처음 깨어난 새싹", asset: "tree_stage1_morning.png" },
@@ -138,8 +141,7 @@ const els = {
   letterComposerTitle: $("#letterComposerTitle"),
   letterComposerFootnote: $("#letterComposerFootnote"),
   nextVisitorText: $("#nextVisitorText"),
-  branchLetter: $("#branchLetter"),
-  letterBadge: $("#letterBadge"),
+  branchLetters: $("#branchLetters"),
   navLetterBadge: $("#navLetterBadge"),
   stageMessage: $("#stageMessage"),
   sheetOverlay: $("#sheetOverlay"),
@@ -302,7 +304,7 @@ async function loadGardenState() {
     supabase.from("garden_profiles").select("nickname, growth_count").eq("id", currentUser.id).single(),
     supabase.from("garden_records").select("id, mood, one_line, detail, created_at").order("created_at", { ascending: false }),
     // 읽지 않은 편지만 나뭇가지에 머물러요. 한 번 마음에 담은 편지는 목록에 다시 쌓지 않습니다.
-    supabase.from("garden_letters").select("id, sender_name, title, body, delivery_kind, sent_at, available_at, read_at, created_at").lte("available_at", nowIso).is("read_at", null).order("available_at", { ascending: false }),
+    supabase.from("garden_letters").select("id, sender_name, title, body, delivery_kind, sent_at, available_at, read_at, created_at").lte("available_at", nowIso).is("read_at", null).order("available_at", { ascending: true }),
     supabase.rpc("list_my_sent_garden_letters"),
     supabase.rpc("list_my_garden_friends"),
     supabase.rpc("get_my_dev_test_friend"),
@@ -390,6 +392,9 @@ async function loadGardenState() {
     sentLetters: Array.from(sentById.values()).map(applyAnimalDeliveryMeta),
     friends: Array.from(friendsById.values()),
   };
+
+  // 개발 미리보기는 실제 수신 데이터와 분리된 로컬 봉투입니다.
+  mergeReceivedPreviewLetters();
 }
 
 async function hydrateGardenForCurrentUser() {
@@ -817,6 +822,83 @@ function getUnreadLetters() {
   return state.letters.filter((letter) => !letter.read);
 }
 
+function receivedPreviewCountFromUrl() {
+  const raw = new URL(window.location.href).searchParams.get("receivedPreview");
+  const count = Number.parseInt(raw || "0", 10);
+  return Number.isFinite(count) ? Math.max(0, Math.min(6, count)) : 0;
+}
+
+function receivedPreviewStorageKey() {
+  return `${RECEIVED_LETTER_PREVIEW_STORAGE_PREFIX}:${currentUser?.id || "guest"}:${seoulDateKey()}`;
+}
+
+function readReceivedPreviewDismissedIds() {
+  try {
+    const raw = window.localStorage.getItem(receivedPreviewStorageKey());
+    const value = JSON.parse(raw || "[]");
+    return Array.isArray(value) ? value.map(String) : [];
+  } catch (error) {
+    console.warn("TodayForest received preview read skipped:", error);
+    return [];
+  }
+}
+
+function dismissReceivedPreview(letterId) {
+  try {
+    const dismissed = new Set(readReceivedPreviewDismissedIds());
+    dismissed.add(String(letterId));
+    window.localStorage.setItem(receivedPreviewStorageKey(), JSON.stringify([...dismissed]));
+  } catch (error) {
+    console.warn("TodayForest received preview dismiss skipped:", error);
+  }
+}
+
+function receivedPreviewLetters() {
+  const count = receivedPreviewCountFromUrl();
+  if (!count) return [];
+
+  const dismissed = new Set(readReceivedPreviewDismissedIds());
+  const templates = [
+    { from: "테스트 새싹", title: "오늘도 수고했어", body: "오늘도 네 나무에 마음을 남겼다는 이야기를 들었어. 천천히 쉬어가도 괜찮아.", delivery: "다람쥐가 전해줬어요", hoursAgo: 72 },
+    { from: "화이팅!", title: "작은 응원을 두고 갈게", body: "오늘이 조금 무거웠다면, 이 편지가 잠깐 쉬어갈 자리가 되었으면 좋겠어.", delivery: "작은 새가 전해줬어요", hoursAgo: 48 },
+    { from: "숲친구", title: "비가 그치면", body: "비가 오는 날에도 네 나무는 잘 자라고 있을 거야. 오늘도 잘 버텼어.", delivery: "고슴도치가 전해줬어요", hoursAgo: 24 },
+    { from: "민들레", title: "네가 생각났어", body: "바람이 불어서 네 정원에도 작은 인사를 남기고 싶었어.", delivery: "토끼가 전해줬어요", hoursAgo: 12 },
+    { from: "봄날", title: "조용한 안부", body: "크게 말하지 않아도 마음은 전해진다고 믿어. 오늘도 좋은 밤 보내.", delivery: "작은 새가 전해줬어요", hoursAgo: 6 },
+    { from: "초록빛", title: "나무가 자라는 날", body: "네가 남긴 마음이 모여서 숲이 더 따뜻해지는 것 같아.", delivery: "다람쥐가 전해줬어요", hoursAgo: 2 },
+  ];
+
+  return templates.slice(0, count).map((template, index) => {
+    const id = `preview-received-${index + 1}`;
+    return {
+      id,
+      ...template,
+      date: new Date(Date.now() - template.hoursAgo * 60 * 60 * 1000).toISOString(),
+      read: false,
+      isPreview: true,
+    };
+  }).filter((letter) => !dismissed.has(letter.id));
+}
+
+function mergeReceivedPreviewLetters() {
+  const previewLetters = receivedPreviewLetters();
+  if (!previewLetters.length) return;
+  const existing = new Set((state.letters || []).map((letter) => String(letter.id)));
+  state.letters = [...(state.letters || []), ...previewLetters.filter((letter) => !existing.has(String(letter.id)))];
+}
+
+function relativeArrivalText(date) {
+  const milliseconds = Date.now() - new Date(date).getTime();
+  const days = Math.floor(milliseconds / (24 * 60 * 60 * 1000));
+  if (!Number.isFinite(days) || days <= 0) return "오늘";
+  if (days === 1) return "어제";
+  return `${days}일 전`;
+}
+
+function isWaitingLetter(letter) {
+  const milliseconds = Date.now() - new Date(letter.date).getTime();
+  return Number.isFinite(milliseconds) && milliseconds >= 21 * 24 * 60 * 60 * 1000;
+}
+
 function formatDate(iso) {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "기록한 날";
@@ -1009,11 +1091,41 @@ function renderGarden() {
 
   els.nextVisitorText.textContent = animalGrowthMessage();
 
-  els.branchLetter.hidden = unread.length === 0;
-  els.letterBadge.textContent = unread.length > 1 ? `새 편지 ${unread.length}` : "새 편지";
+  renderBranchLetters(unread);
   els.navLetterBadge.textContent = unread.length;
   els.navLetterBadge.classList.toggle("hidden", unread.length === 0);
   updateTodayRecordAction();
+}
+
+function renderBranchLetters(unreadLetters) {
+  const letters = [...unreadLetters].sort((a, b) => new Date(a.date) - new Date(b.date));
+  if (!els.branchLetters) return;
+
+  if (!letters.length) {
+    els.branchLetters.innerHTML = "";
+    els.branchLetters.hidden = true;
+    return;
+  }
+
+  els.branchLetters.hidden = false;
+  if (letters.length >= 4) {
+    els.branchLetters.innerHTML = `
+      <button class="branch-letter-bundle" type="button" data-open-letters aria-label="나뭇가지에 도착한 편지 ${letters.length}개 보기">
+        <span class="branch-bundle-envelopes" aria-hidden="true">✉ ✉ ✉</span>
+        <span class="branch-bundle-count">+${letters.length}</span>
+      </button>
+    `;
+  } else {
+    els.branchLetters.innerHTML = letters.map((letter, index) => `
+      <button class="branch-letter-item item-${index + 1}${isWaitingLetter(letter) ? " is-waiting" : ""}" type="button" data-open-letter="${escapeAttr(letter.id)}" aria-label="${escapeAttr(`${letter.from}님이 보낸 새 편지 열기`)}">
+        <span class="branch-letter-envelope" aria-hidden="true">✉</span>
+        ${isWaitingLetter(letter) ? '<span class="branch-letter-old" aria-hidden="true">오래 기다린 마음</span>' : ""}
+      </button>
+    `).join("");
+  }
+
+  $$('[data-open-letter]').forEach((button) => button.addEventListener("click", () => openLetter(button.dataset.openLetter)));
+  $$('[data-open-letters]').forEach((button) => button.addEventListener("click", () => { void openLettersSheet(); }));
 }
 
 function renderRecords() {
@@ -1044,7 +1156,7 @@ function renderRecords() {
 
 function renderLetters() {
   // 받은 편지는 읽기 전까지만 나뭇가지와 편지 화면에 머뭅니다.
-  const letters = [...state.letters].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const letters = [...state.letters].sort((a, b) => new Date(a.date) - new Date(b.date));
   const friends = state.friends || [];
   const canWrite = friends.length > 0;
 
@@ -1066,16 +1178,18 @@ function renderLetters() {
     return;
   }
 
-  els.letterList.innerHTML = letters.map((letter) => `
-    <button class="letter-item unread" type="button" data-letter-id="${escapeAttr(letter.id)}">
-      <div class="letter-item-head">
-        <div class="letter-from-row"><span class="mail-mark">✉</span><span>${escapeHTML(letter.from)}</span></div>
-        <span class="letter-meta">새 편지</span>
-      </div>
-      <p class="letter-preview">${escapeHTML(letter.title)}</p>
-      <span class="letter-meta">${escapeHTML(formatDate(letter.date))} · ${escapeHTML(shortDelivery(letter.delivery))}</span>
-    </button>
-  `).join("");
+  els.letterList.innerHTML = `
+    <p class="received-letter-guide">먼저 나뭇가지에 도착해 기다린 마음부터 열어볼까요?</p>
+    ${letters.map((letter) => `
+      <button class="letter-item unread${isWaitingLetter(letter) ? " is-waiting" : ""}" type="button" data-letter-id="${escapeAttr(letter.id)}">
+        <div class="letter-item-head">
+          <div class="letter-from-row"><span class="mail-mark">✉</span><span>${escapeHTML(letter.from)}${isWaitingLetter(letter) ? '<em class="waiting-letter-tag">오래 기다린 마음</em>' : ""}</span></div>
+          <span class="letter-meta">${escapeHTML(relativeArrivalText(letter.date))}</span>
+        </div>
+        <span class="letter-meta letter-delivery-meta">${escapeHTML(shortDelivery(letter.delivery))}</span>
+      </button>
+    `).join("")}
+  `;
 
   $$('[data-letter-id]').forEach((button) => button.addEventListener("click", () => openLetter(button.dataset.letterId)));
 }
@@ -1490,7 +1604,7 @@ function openLetter(letterId) {
   els.letterBody.textContent = letter.body;
   els.letterDelivery.textContent = letter.delivery;
   els.letterDate.textContent = formatDate(letter.date);
-  $("#readLetterButton").textContent = "마음에 담기";
+  $("#readLetterButton").textContent = "마음을 받았어요";
   els.letterModal.classList.remove("hidden");
 }
 
@@ -1502,12 +1616,16 @@ function closeLetterModal() {
 async function markLetterRead() {
   const letter = state.letters.find((item) => item.id === activeLetterId);
   if (letter) {
-    const { error } = await supabase.from("garden_letters").update({ read_at: new Date().toISOString() }).eq("id", letter.id);
-    if (error) {
-      showToast("편지 상태를 저장하지 못했어요. 다시 시도해 주세요.");
-      return;
+    if (letter.isPreview) {
+      dismissReceivedPreview(letter.id);
+    } else {
+      const { error } = await supabase.from("garden_letters").update({ read_at: new Date().toISOString() }).eq("id", letter.id);
+      if (error) {
+        showToast("편지 상태를 저장하지 못했어요. 다시 시도해 주세요.");
+        return;
+      }
     }
-    // 받은 편지는 한 번 마음에 담으면 보관함에 쌓지 않고, 정원에서 조용히 사라집니다.
+    // 받은 편지는 한 번 마음을 받으면 보관함에 쌓지 않고, 정원에서 조용히 사라집니다.
     state.letters = state.letters.filter((item) => item.id !== letter.id);
     renderGarden();
     renderLetters();
@@ -1881,10 +1999,6 @@ function bindEvents() {
     showToast("정원에 찾아온 숲친구를 눌러 편지를 맡겨요.");
   });
   els.letterForm.addEventListener("submit", sendGardenLetter);
-  els.branchLetter.addEventListener("click", () => {
-    const firstUnread = getUnreadLetters()[0];
-    if (firstUnread) openLetter(firstUnread.id);
-  });
   els.visitorButton.addEventListener("click", openAnimalLetterComposer);
   els.activeAnimal.addEventListener("click", openAnimalLetterComposer);
   els.animalTrace.addEventListener("click", () => {
