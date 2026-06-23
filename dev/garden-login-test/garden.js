@@ -85,6 +85,9 @@ const ANIMAL_DELIVERY_ARRIVAL_STORAGE_PREFIX = "todayforest-dev-animal-delivery-
 // 받은 편지 1차 화면 검수용입니다. 실제 친구 편지 데이터는 건드리지 않고,
 // URL에 ?receivedPreview=1~6 을 붙였을 때만 로컬 테스트 봉투를 추가합니다.
 const RECEIVED_LETTER_PREVIEW_STORAGE_PREFIX = "todayforest-dev-received-preview-v1";
+// 오래된 편지 정책을 실제 시간으로 기다리지 않고 안전하게 검수하기 위한 DEV 전용 테스트입니다.
+// URL의 ?retentionTest=21 | wind | 31 에서만 동작하며, 자기 계정에만 [DEV] 테스트 편지를 잠깐 만듭니다.
+const RETENTION_TEST_STORAGE_PREFIX = "todayforest-dev-letter-retention-test-v1";
 
 const stageRules = [
   { min: 0, max: 2, label: "처음 깨어난 새싹", asset: "tree_stage1_morning.png" },
@@ -116,6 +119,7 @@ let activeFriendGardenId = "";
 let activeAnimalVisit = null;
 let animalDepartureTimer = null;
 let expiredUnreadLettersNoticeCount = 0;
+let pendingExpiredLetterReturn = null;
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -237,6 +241,9 @@ function databaseErrorMessage(error) {
   if (message.includes("garden_dev_test") || message.includes("enable_my_dev_test_friend") || message.includes("send_dev_test_garden_letter")) {
     return "테스트 새싹 준비를 하지 못했어요. DEV 테스트 친구 SQL 설정을 먼저 실행해 주세요.";
   }
+  if (message.includes("create_my_garden_retention_test")) {
+    return "오래된 편지 테스트를 준비하지 못했어요. DEV 보관 정책 SQL 설정을 먼저 실행해 주세요.";
+  }
   if (message.includes("garden_friend") || message.includes("friend")) {
     return "친구 정원을 준비하지 못했어요. 친구 기능 SQL 설정을 먼저 확인해 주세요.";
   }
@@ -297,20 +304,120 @@ function deliveryStatus(sentLetter) {
   return "나뭇가지에 도착";
 }
 
+
+function retentionTestModeFromUrl() {
+  const raw = new URL(window.location.href).searchParams.get("retentionTest");
+  return ["21", "wind", "31"].includes(raw) ? raw : "";
+}
+
+function retentionTestStorageKey(mode) {
+  return `${RETENTION_TEST_STORAGE_PREFIX}:${currentUser?.id || "guest"}:${mode}:${seoulDateKey()}`;
+}
+
+function clearRetentionResetFromUrl() {
+  const url = new URL(window.location.href);
+  if (url.searchParams.get("retentionReset") !== "1") return;
+  url.searchParams.delete("retentionReset");
+  window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
+async function prepareRetentionTestIfRequested() {
+  const mode = retentionTestModeFromUrl();
+  if (!mode || !currentUser) return;
+
+  const url = new URL(window.location.href);
+  const forceReset = url.searchParams.get("retentionReset") === "1";
+  const key = retentionTestStorageKey(mode);
+  try {
+    if (!forceReset && window.sessionStorage.getItem(key) === "done") return;
+  } catch (error) {
+    console.warn("TodayForest retention-test session storage skipped:", error);
+  }
+
+  const { error } = await supabase.rpc("create_my_garden_retention_test", { p_mode: mode });
+  if (error) {
+    console.warn("TodayForest retention test setup skipped:", error);
+    return;
+  }
+
+  try {
+    window.sessionStorage.setItem(key, "done");
+  } catch (error) {
+    console.warn("TodayForest retention-test session save skipped:", error);
+  }
+  clearRetentionResetFromUrl();
+}
+
+function queueExpiredLetterReturn(previousLetters, expiredIds) {
+  if (!expiredIds.length) return;
+  const previousById = new Map((previousLetters || []).map((letter) => [String(letter.id), letter]));
+  const returningLetters = expiredIds
+    .map((id) => previousById.get(String(id)))
+    .filter(Boolean);
+  if (!returningLetters.length) return;
+  pendingExpiredLetterReturn = {
+    count: returningLetters.length,
+    letter: returningLetters[0],
+  };
+}
+
+function playExpiredLetterReturnIfNeeded() {
+  const pending = pendingExpiredLetterReturn;
+  if (!pending || !els.branchLetters) return;
+  pendingExpiredLetterReturn = null;
+
+  const placement = receivedLetterPlacementForGrowth(visualGrowthForGarden());
+  els.branchLetters.hidden = false;
+  els.branchLetters.className = `branch-letters ${placement.className}`;
+  els.branchLetters.setAttribute("aria-label", "숲으로 돌아가는 오래된 편지");
+
+  const returning = document.createElement("span");
+  returning.className = "branch-letter-return";
+  returning.setAttribute("aria-hidden", "true");
+  returning.innerHTML = `
+    <span class="branch-letter-envelope">✉</span>
+    <i class="letter-return-leaf leaf-a">🍃</i>
+    <i class="letter-return-leaf leaf-b">✦</i>
+    <i class="letter-return-leaf leaf-c">🍂</i>
+  `;
+  els.branchLetters.append(returning);
+
+  window.requestAnimationFrame(() => returning.classList.add("is-returning"));
+  window.setTimeout(() => {
+    returning.remove();
+    if (!getUnreadLetters().length && !els.branchLetters.querySelector(".branch-letter-return")) {
+      els.branchLetters.hidden = true;
+    }
+  }, 1850);
+
+  const suffix = pending.count > 1 ? "들이" : "이";
+  showToast(`오래 머문 마음${suffix} 바람을 타고 숲으로 돌아갔어요.`);
+  expiredUnreadLettersNoticeCount = 0;
+}
+
 async function loadGardenState() {
   if (!currentUser) {
     state = cloneDefault();
     return;
   }
 
+  // 개발 검수 주소에서만 21일/30일 테스트 편지를 먼저 준비합니다.
+  // 이후 실제 정리 함수를 실행하므로, 테스트도 실제 DB 정책과 같은 순서로 검증됩니다.
+  await prepareRetentionTestIfRequested();
+
   // 편지 화면을 열지 않아도, 정원에 들어오는 시점마다 30일 보관 정책을 한 번 확인합니다.
   // SQL이 아직 적용되지 않은 개발 환경에서는 기존 편지 흐름이 멈추지 않도록 조용히 건너뜁니다.
+  const previousUnreadLetters = [...(state.letters || [])];
   const cleanupResult = await supabase.rpc("cleanup_expired_garden_letters");
   if (cleanupResult.error) {
     console.warn("TodayForest letter retention cleanup skipped:", cleanupResult.error);
   } else {
     const cleanupInfo = normalizeRpcRow(cleanupResult.data) || {};
     expiredUnreadLettersNoticeCount = Number(cleanupInfo.my_unread_expired_count || 0);
+    const expiredIds = Array.isArray(cleanupInfo.my_unread_expired_ids)
+      ? cleanupInfo.my_unread_expired_ids.map(String)
+      : [];
+    queueExpiredLetterReturn(previousUnreadLetters, expiredIds);
   }
 
   const nowIso = new Date().toISOString();
@@ -1129,6 +1236,7 @@ function renderGarden() {
   els.nextVisitorText.textContent = animalGrowthMessage();
 
   renderBranchLetters(unread);
+  playExpiredLetterReturnIfNeeded();
   els.navLetterBadge.textContent = unread.length;
   els.navLetterBadge.classList.toggle("hidden", unread.length === 0);
   updateTodayRecordAction();

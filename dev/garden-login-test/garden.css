@@ -918,3 +918,57 @@ textarea::placeholder { color: #a7b4bd; }
   background: #f2eef9;
   color: #8a79a7;
 }
+
+
+/* 30일을 지나 숲으로 돌아가는 편지 연출 */
+.branch-letter-return {
+  position: absolute;
+  z-index: 9;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  pointer-events: none;
+  color: #f39ab0;
+  opacity: 1;
+  transform: rotate(4deg);
+}
+.branch-letters.letter-placement-ground .branch-letter-return { top: 65%; right: 9%; }
+.branch-letters.letter-placement-low-branches .branch-letter-return { top: 48%; right: 17%; }
+.branch-letters.letter-placement-high-branches .branch-letter-return { top: 29%; right: 14%; }
+.branch-letter-return .branch-letter-envelope { position: relative; z-index: 2; }
+.letter-return-leaf {
+  position: absolute;
+  z-index: 1;
+  font-style: normal;
+  font-size: 13px;
+  opacity: 0;
+  filter: drop-shadow(0 3px 5px rgba(102, 131, 103, .14));
+}
+.letter-return-leaf.leaf-a { top: 8px; left: -6px; }
+.letter-return-leaf.leaf-b { top: 30px; right: -8px; color: #f4d27d; }
+.letter-return-leaf.leaf-c { right: 5px; bottom: -5px; font-size: 11px; }
+.branch-letter-return.is-returning { animation: letterReturnWind 1.7s cubic-bezier(.25,.75,.4,1) forwards; }
+.branch-letter-return.is-returning .leaf-a { animation: leafReturnA 1.45s ease-out forwards; }
+.branch-letter-return.is-returning .leaf-b { animation: leafReturnB 1.55s ease-out .08s forwards; }
+.branch-letter-return.is-returning .leaf-c { animation: leafReturnC 1.35s ease-out .14s forwards; }
+@keyframes letterReturnWind {
+  0% { opacity: 1; transform: rotate(4deg) translate(0, 0) scale(1); }
+  28% { opacity: 1; transform: rotate(-4deg) translate(3px, -2px) scale(1.02); }
+  100% { opacity: 0; transform: rotate(19deg) translate(46px, -24px) scale(.72); }
+}
+@keyframes leafReturnA {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0deg); }
+  18% { opacity: .95; }
+  100% { opacity: 0; transform: translate(34px, -24px) rotate(100deg); }
+}
+@keyframes leafReturnB {
+  0% { opacity: 0; transform: translate(0, 0) scale(.6); }
+  20% { opacity: .9; }
+  100% { opacity: 0; transform: translate(22px, -42px) scale(1.15) rotate(120deg); }
+}
+@keyframes leafReturnC {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0deg); }
+  18% { opacity: .8; }
+  100% { opacity: 0; transform: translate(43px, 10px) rotate(85deg); }
+}
