@@ -437,6 +437,18 @@ function stageForGrowth(growth) {
   return stageRules.find((rule) => growth >= rule.min && growth <= rule.max) || stageRules.at(-1);
 }
 
+function growthPreviewFromUrl() {
+  // 개발 화면에서만 성장 단계별 편지 위치를 빠르게 확인하기 위한 시각 미리보기입니다.
+  // ?growthPreview=0 / 7 / 21 처럼 붙여도 실제 성장 데이터는 바뀌지 않습니다.
+  const raw = new URL(window.location.href).searchParams.get("growthPreview");
+  const growth = Number.parseInt(raw || "", 10);
+  return Number.isFinite(growth) && growth >= 0 && growth <= 999 ? growth : null;
+}
+
+function visualGrowthForGarden() {
+  return growthPreviewFromUrl() ?? state.growth;
+}
+
 function animalPreviewFromUrl() {
   const preview = new URL(window.location.href).searchParams.get("animalPreview");
   return animalVisitors[preview] || null;
@@ -1042,13 +1054,15 @@ function applyWeatherVisuals(stage, treeWrap, rainLayer, weather, rainSeed = "gu
 }
 
 function renderGarden() {
-  const stage = getStage();
+  const visualGrowth = visualGrowthForGarden();
+  const stage = stageForGrowth(visualGrowth);
   const animal = currentAnimalVisitor();
   const trace = lastAnimalTrace();
   const weather = currentWeather();
   const unread = getUnreadLetters();
 
-  els.dayCount.textContent = `마음 ${state.growth}일째`;
+  const isGrowthPreview = growthPreviewFromUrl() !== null;
+  els.dayCount.textContent = `마음 ${visualGrowth}일째${isGrowthPreview ? " · 미리보기" : ""}`;
   els.treeStageLabel.textContent = stage.label;
   els.treeImage.src = `../../assets/garden/tree_growth/${stage.asset}`;
   els.treeImage.alt = stage.label;
@@ -1097,9 +1111,48 @@ function renderGarden() {
   updateTodayRecordAction();
 }
 
+function receivedLetterPlacementForGrowth(growth) {
+  // 편지는 나무가 자라면서 더 높은 곳에 도착합니다.
+  // 1~2단계(0~6일): 나무 곁 / 3~4단계(7~20일): 낮은 가지 / 5단계 이상(21일~): 여러 가지
+  if (growth <= 6) {
+    return {
+      className: "letter-placement-ground",
+      placeName: "나무 곁",
+      heading: "나무 곁에 도착한 마음",
+      intro: "아직 열지 않은 마음이 나무 곁에 조용히 머물러요. 읽은 마음은 바람을 타고 정원에 스며들어요.",
+    };
+  }
+  if (growth <= 20) {
+    return {
+      className: "letter-placement-low-branches",
+      placeName: "낮은 가지",
+      heading: "나뭇가지에 도착한 편지",
+      intro: "아직 열지 않은 편지만 낮은 가지에 조용히 머물러요. 읽은 마음은 바람을 타고 정원에 스며들어요.",
+    };
+  }
+  return {
+    className: "letter-placement-high-branches",
+    placeName: "나뭇가지",
+    heading: "나뭇가지에 도착한 편지",
+    intro: "아직 열지 않은 편지만 여러 가지에 조용히 머물러요. 읽은 마음은 바람을 타고 정원에 스며들어요.",
+  };
+}
+
+function updateReceivedLetterCopy(placement) {
+  const receivedTitle = $("#receivedLettersTitle");
+  const receivedIntro = document.querySelector(".received-letter-section .letter-intro");
+  if (receivedTitle) receivedTitle.textContent = placement.heading;
+  if (receivedIntro) receivedIntro.textContent = placement.intro;
+}
+
 function renderBranchLetters(unreadLetters) {
   const letters = [...unreadLetters].sort((a, b) => new Date(a.date) - new Date(b.date));
+  const placement = receivedLetterPlacementForGrowth(visualGrowthForGarden());
+  updateReceivedLetterCopy(placement);
   if (!els.branchLetters) return;
+
+  els.branchLetters.className = `branch-letters ${placement.className}`;
+  els.branchLetters.setAttribute("aria-label", `${placement.placeName}에 도착한 새 편지`);
 
   if (!letters.length) {
     els.branchLetters.innerHTML = "";
@@ -1110,14 +1163,14 @@ function renderBranchLetters(unreadLetters) {
   els.branchLetters.hidden = false;
   if (letters.length >= 4) {
     els.branchLetters.innerHTML = `
-      <button class="branch-letter-bundle" type="button" data-open-letters aria-label="나뭇가지에 도착한 편지 ${letters.length}개 보기">
+      <button class="branch-letter-bundle" type="button" data-open-letters aria-label="${escapeAttr(`${placement.placeName}에 도착한 편지 ${letters.length}개 보기`)}">
         <span class="branch-bundle-envelopes" aria-hidden="true">✉ ✉ ✉</span>
         <span class="branch-bundle-count">+${letters.length}</span>
       </button>
     `;
   } else {
     els.branchLetters.innerHTML = letters.map((letter, index) => `
-      <button class="branch-letter-item item-${index + 1}${isWaitingLetter(letter) ? " is-waiting" : ""}" type="button" data-open-letter="${escapeAttr(letter.id)}" aria-label="${escapeAttr(`${letter.from}님이 보낸 새 편지 열기`)}">
+      <button class="branch-letter-item item-${index + 1}${isWaitingLetter(letter) ? " is-waiting" : ""}" type="button" data-open-letter="${escapeAttr(letter.id)}" aria-label="${escapeAttr(`${letter.from}님이 ${placement.placeName}에 남긴 새 편지 열기`)}">
         <span class="branch-letter-envelope" aria-hidden="true">✉</span>
         ${isWaitingLetter(letter) ? '<span class="branch-letter-old" aria-hidden="true">오래 기다린 마음</span>' : ""}
       </button>
@@ -1156,6 +1209,8 @@ function renderRecords() {
 
 function renderLetters() {
   // 받은 편지는 읽기 전까지만 나뭇가지와 편지 화면에 머뭅니다.
+  const placement = receivedLetterPlacementForGrowth(visualGrowthForGarden());
+  updateReceivedLetterCopy(placement);
   const letters = [...state.letters].sort((a, b) => new Date(a.date) - new Date(b.date));
   const friends = state.friends || [];
   const canWrite = friends.length > 0;

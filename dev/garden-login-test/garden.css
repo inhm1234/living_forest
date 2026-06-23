@@ -269,6 +269,39 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .branch-bundle-envelopes { display: block; padding: 8px 7px; border: 1px solid rgba(255,255,255,.88); border-radius: 15px; background: linear-gradient(145deg, #fffaf2, #ffe7ee); color: #ef97ad; font-size: 17px; letter-spacing: -7px; box-shadow: 0 8px 15px rgba(130,107,124,.15); }
 .branch-bundle-count { position: absolute; right: -8px; bottom: -6px; min-width: 23px; padding: 4px 5px; border-radius: 999px; background: #fff; color: #df7a96; font-size: 9px; font-weight: 900; box-shadow: 0 5px 12px rgba(128,93,107,.14); }
 
+/* 받은 편지는 나무 성장 단계에 맞는 곳에 도착합니다.
+   1~2단계: 나무 곁 / 3~4단계: 낮은 가지 / 5단계 이상: 여러 가지 */
+.branch-letters.letter-placement-ground .branch-letter-item,
+.branch-letters.letter-placement-ground .branch-letter-bundle {
+  animation-name: letterRest;
+}
+.branch-letters.letter-placement-ground .branch-letter-item::before,
+.branch-letters.letter-placement-ground .branch-letter-bundle::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 47px;
+  height: 16px;
+  bottom: 7px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255,255,237,.90) 0%, rgba(213,238,177,.60) 44%, rgba(137,190,127,.10) 72%, transparent 74%);
+  filter: blur(.2px);
+}
+.branch-letters.letter-placement-ground .branch-letter-item.item-1 { top: 65%; right: 9%; transform: rotate(4deg); }
+.branch-letters.letter-placement-ground .branch-letter-item.item-2 { top: 68%; left: 8%; transform: rotate(-5deg); animation-delay: -.8s; }
+.branch-letters.letter-placement-ground .branch-letter-item.item-3 { top: 59%; right: 25%; transform: rotate(7deg); animation-delay: -1.5s; }
+.branch-letters.letter-placement-ground .branch-letter-bundle { top: 60%; right: 9%; transform: rotate(3deg); }
+
+.branch-letters.letter-placement-low-branches .branch-letter-item.item-1 { top: 48%; right: 17%; transform: rotate(5deg); }
+.branch-letters.letter-placement-low-branches .branch-letter-item.item-2 { top: 45%; left: 16%; transform: rotate(-7deg); animation-delay: -.8s; }
+.branch-letters.letter-placement-low-branches .branch-letter-item.item-3 { top: 34%; right: 34%; transform: rotate(7deg); animation-delay: -1.5s; }
+.branch-letters.letter-placement-low-branches .branch-letter-bundle { top: 42%; right: 16%; transform: rotate(4deg); }
+
+.branch-letters.letter-placement-high-branches .branch-letter-item.item-1 { top: 29%; right: 14%; transform: rotate(4deg); }
+.branch-letters.letter-placement-high-branches .branch-letter-item.item-2 { top: 40%; right: 29%; transform: rotate(-7deg); animation-delay: -.8s; }
+.branch-letters.letter-placement-high-branches .branch-letter-item.item-3 { top: 25%; left: 22%; transform: rotate(8deg); animation-delay: -1.5s; }
+.branch-letters.letter-placement-high-branches .branch-letter-bundle { top: 29%; right: 16%; transform: rotate(4deg); }
+
 .ground-shadow { position: absolute; z-index: 1; left: 50%; bottom: 76px; width: min(63%, 315px); height: 35px; border-radius: 50%; background: rgba(78, 128, 89, 0.14); filter: blur(12px); transform: translateX(-50%); }
 .stage-message { position: absolute; z-index: 5; bottom: 22px; left: 50%; width: max-content; max-width: calc(100% - 42px); margin: 0; padding: 9px 13px; border: 1px solid rgba(255,255,255,0.7); border-radius: 999px; background: rgba(255,255,255,0.52); color: #708395; font-size: 12px; font-weight: 800; text-align: center; transform: translateX(-50%); backdrop-filter: blur(8px); }
 
@@ -426,6 +459,7 @@ textarea::placeholder { color: #a7b4bd; }
   14% { opacity: .24; transform: translateX(-50%) translateY(-1px) scale(calc(var(--splash-scale) * 1.08)); }
   22%, 100% { opacity: 0; transform: translateX(-50%) translateY(-1px) scale(calc(var(--splash-scale) * 1.16)); }
 }
+@keyframes letterRest { 0%,100% { translate: 0 0; } 50% { translate: 0 -2px; } }
 @keyframes animalSettle { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-4px) rotate(1deg); } }
 @keyframes animalDepart { 0% { transform: translate3d(0,0,0) scale(1); opacity: 1; } 100% { transform: translate3d(88px,-76px,0) scale(.72); opacity: 0; } }
 @keyframes animalDepartGround { 0% { transform: translate3d(0,0,0) scale(1); opacity: 1; } 100% { transform: translate3d(96px,13px,0) scale(.78); opacity: 0; } }
