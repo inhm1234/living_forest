@@ -655,6 +655,15 @@ textarea::placeholder { color: #a7b4bd; }
 .sent-letter-title { overflow: hidden; color: #657887; font-size: 13px; font-weight: 900; text-overflow: ellipsis; white-space: nowrap; }
 .sent-letter-detail { margin-top: 3px; color: #9ba7ae; font-size: 11px; line-height: 1.35; }
 .sent-letter-status { flex: 0 0 auto; padding: 5px 7px; border-radius: 999px; background: #fdf1f4; color: #d47e96; font-size: 10px; font-weight: 900; }
+.sent-letter-item.has-animal-tracking { align-items: flex-start; }
+.sent-letter-item.has-animal-tracking .sent-letter-icon { margin-top: 2px; }
+.sent-letter-status.is-moving { background: #eef8f1; color: #649679; }
+.animal-delivery-tracking { margin-top: 9px; padding: 9px 10px; border: 1px solid #dceee1; border-radius: 13px; background: linear-gradient(135deg, #f9fffa, #f5fbff); }
+.animal-delivery-story { margin: 0; color: #698071; font-size: 11px; font-weight: 800; line-height: 1.45; }
+.animal-delivery-time-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 7px; color: #58846a; font-size: 10px; font-weight: 900; }
+.animal-delivery-progress { display: block; overflow: hidden; width: 100%; height: 6px; margin-top: 6px; border-radius: 999px; background: #e5f1e8; }
+.animal-delivery-progress > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #9ed5ad, #8fc6d8); transition: width .45s ease; }
+.animal-delivery-dev-note { margin: 6px 0 0; color: #a19baa; font-size: 9px; font-weight: 800; line-height: 1.35; }
 .letter-form { margin-top: 17px; }
 .letter-recipient-list { display: grid; gap: 8px; }
 .letter-recipient-choice {

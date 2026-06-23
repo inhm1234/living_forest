@@ -77,6 +77,7 @@ const animalVisitors = {
 
 const animalVisitorOrder = ["bird", "squirrel", "rabbit", "hedgehog"];
 const ANIMAL_VISIT_STORAGE_PREFIX = "todayforest-dev-animal-visit-v1";
+const ANIMAL_DELIVERY_STORAGE_PREFIX = "todayforest-dev-animal-delivery-v2";
 
 const stageRules = [
   { min: 0, max: 2, label: "처음 깨어난 새싹", asset: "tree_stage1_morning.png" },
@@ -381,7 +382,7 @@ async function loadGardenState() {
       date: letter.available_at || letter.sent_at || letter.created_at,
       read: Boolean(letter.read_at),
     })),
-    sentLetters: Array.from(sentById.values()),
+    sentLetters: Array.from(sentById.values()).map(applyAnimalDeliveryMeta),
     friends: Array.from(friendsById.values()),
   };
 }
@@ -530,6 +531,105 @@ function markAnimalDeparted(kind, reason = "letter") {
     departureReason: reason,
   });
   return previous;
+}
+
+function animalDeliveryStorageKey() {
+  return `${ANIMAL_DELIVERY_STORAGE_PREFIX}:${currentUser?.id || "guest"}`;
+}
+
+function readAnimalDeliveryMeta() {
+  try {
+    const raw = window.localStorage.getItem(animalDeliveryStorageKey());
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch (error) {
+    console.warn("TodayForest animal delivery metadata read skipped:", error);
+    return {};
+  }
+}
+
+function saveAnimalDeliveryMeta(next) {
+  try {
+    window.localStorage.setItem(animalDeliveryStorageKey(), JSON.stringify(next));
+  } catch (error) {
+    console.warn("TodayForest animal delivery metadata save skipped:", error);
+  }
+}
+
+function rememberAnimalDelivery(letterId, animal, sentAt, availableAt) {
+  if (!letterId || !animal) return;
+  const deliveries = readAnimalDeliveryMeta();
+  deliveries[String(letterId)] = {
+    kind: animal.kind,
+    sentAt,
+    availableAt,
+    deliveryHours: animal.deliveryHours,
+    rememberedAt: new Date().toISOString(),
+  };
+
+  // 브라우저에 남는 개발용 보조 정보는 너무 오래 쌓이지 않도록 최근 80개만 유지합니다.
+  const kept = Object.entries(deliveries)
+    .sort(([, a], [, b]) => new Date(b?.rememberedAt || 0) - new Date(a?.rememberedAt || 0))
+    .slice(0, 80);
+  saveAnimalDeliveryMeta(Object.fromEntries(kept));
+}
+
+function animalDeliveryMetaFor(letter) {
+  if (!letter?.id) return null;
+  const meta = readAnimalDeliveryMeta()[String(letter.id)];
+  if (!meta || !animalVisitors[meta.kind]) return null;
+  return meta;
+}
+
+function applyAnimalDeliveryMeta(letter) {
+  const meta = animalDeliveryMetaFor(letter);
+  if (!meta) return letter;
+  return {
+    ...letter,
+    deliveryKind: meta.kind,
+    sentAt: meta.sentAt || letter.sentAt,
+    availableAt: meta.availableAt || letter.availableAt,
+    actualDeliveryHours: Number(meta.deliveryHours || 0) || null,
+    hasAnimalTracking: true,
+  };
+}
+
+function formatDeliveryCountdown(milliseconds) {
+  const totalSeconds = Math.max(0, Math.ceil(milliseconds / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) return `${hours}시간 ${minutes}분`;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function animalDeliveryStory(animal) {
+  const copy = {
+    bird: "작은 새가 구름 사이를 가볍게 날고 있어요.",
+    squirrel: "다람쥐가 나무 사이 숲길을 달리고 있어요.",
+    rabbit: "토끼가 풀숲 사이를 조심히 뛰고 있어요.",
+    hedgehog: "고슴도치가 천천히 숲길을 걷고 있어요.",
+  };
+  return copy[animal?.kind] || "숲친구가 편지를 품고 길을 가고 있어요.";
+}
+
+function animalDeliveryTracking(letter) {
+  const meta = animalDeliveryMetaFor(letter);
+  const carrier = meta ? animalVisitors[meta.kind] : carrierForKind(letter.deliveryKind);
+  const sentAtMs = new Date(meta?.sentAt || letter.sentAt || Date.now()).getTime();
+  const availableAtMs = new Date(meta?.availableAt || letter.availableAt || Date.now()).getTime();
+  const now = Date.now();
+  const totalMs = Math.max(1, availableAtMs - sentAtMs);
+  const remainingMs = Math.max(0, availableAtMs - now);
+  const progress = Math.max(4, Math.min(100, ((now - sentAtMs) / totalMs) * 100));
+  return {
+    meta,
+    carrier,
+    isInTransit: availableAtMs > now,
+    remainingMs,
+    progress,
+  };
 }
 
 function getUnreadLetters() {
@@ -801,25 +901,46 @@ function renderLetters() {
 function renderSentLetters() {
   const sentLetters = [...(state.sentLetters || [])].sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
   if (!sentLetters.length) {
-    els.sentLetterList.innerHTML = '<div class="empty-state">아직 맡긴 편지가 없어요.<br />친구에게 먼저 작은 마음을 보내볼래요?</div>';
+    els.sentLetterList.innerHTML = '<div class="empty-state">아직 맡긴 편지가 없어요.<br />정원에 온 숲친구에게 작은 마음을 부탁해볼래요?</div>';
     return;
   }
 
   els.sentLetterList.innerHTML = sentLetters.map((letter) => {
-    const carrier = carrierForKind(letter.deliveryKind);
-    const isDelivered = new Date(letter.availableAt).getTime() <= Date.now();
+    const tracking = animalDeliveryTracking(letter);
+    const carrier = tracking.carrier;
+    const isDelivered = !tracking.isInTransit;
     const devReadButton = letter.isDevTest && isDelivered && !letter.readAt
       ? `<button class="dev-read-sim-button" type="button" data-dev-read-letter="${escapeAttr(letter.id)}">테스트 친구가 읽기</button>`
       : "";
+    const deliveryStatusText = letter.readAt
+      ? "친구가 읽었어요"
+      : tracking.isInTransit
+        ? "배송 중"
+        : "나뭇가지에 도착";
+    const trackingCard = tracking.meta && tracking.isInTransit
+      ? `
+        <div class="animal-delivery-tracking" aria-label="${escapeAttr(`${carrier.name} 배송 진행 상태`)}">
+          <p class="animal-delivery-story">${escapeHTML(animalDeliveryStory(carrier))}</p>
+          <div class="animal-delivery-time-row">
+            <span>${letter.isDevTest ? "DEV 도착까지" : "도착까지"} ${escapeHTML(formatDeliveryCountdown(tracking.remainingMs))}</span>
+            <span>${Math.round(tracking.progress)}%</span>
+          </div>
+          <span class="animal-delivery-progress" aria-hidden="true"><span style="width:${tracking.progress.toFixed(2)}%"></span></span>
+          ${letter.isDevTest ? `<p class="animal-delivery-dev-note">DEV 1분 테스트 · 실제 ${escapeHTML(String(tracking.meta.deliveryHours))}시간 배송</p>` : ""}
+        </div>
+      `
+      : "";
+
     return `
-      <article class="sent-letter-item ${letter.isDevTest ? "is-dev-test" : ""}">
+      <article class="sent-letter-item ${letter.isDevTest ? "is-dev-test" : ""} ${tracking.meta ? "has-animal-tracking" : ""}">
         <div class="sent-letter-icon" aria-hidden="true">${carrier.icon}</div>
         <div class="sent-letter-main">
           <div class="sent-letter-title">${escapeHTML(letter.to)}에게 · ${escapeHTML(letter.title)}${letter.isDevTest ? '<span class="dev-test-tag">DEV</span>' : ""}</div>
           <div class="sent-letter-detail">${escapeHTML(carrier.name)} · ${escapeHTML(formatDate(letter.sentAt))}</div>
+          ${trackingCard}
           ${devReadButton}
         </div>
-        <span class="sent-letter-status">${escapeHTML(deliveryStatus(letter))}</span>
+        <span class="sent-letter-status ${tracking.isInTransit ? "is-moving" : ""}">${escapeHTML(deliveryStatusText)}</span>
       </article>
     `;
   }).join("");
@@ -955,17 +1076,24 @@ async function sendGardenLetter(event) {
 
     const letter = normalizeRpcRow(result.data) || {};
     const recipientName = letter.recipient_nickname || selectedFriend?.name || "친구";
-    const deliveryKind = letter.delivery_kind || carrierForGrowth(state.growth).kind;
     const availableAt = letter.available_at || new Date(Date.now() + 60000).toISOString();
+    const sentAt = new Date().toISOString();
+    const outgoingId = letter.letter_id || `pending-${Date.now()}`;
+
+    // 현재 데이터베이스 RPC는 개발용 1분 배송을 유지합니다.
+    // 대신 어떤 동물에게 맡겼는지는 브라우저 보조 저장으로 남겨, 편지함에서 정확한 동물·진행률을 보여줍니다.
+    rememberAnimalDelivery(outgoingId, animal, sentAt, availableAt);
 
     // 전송이 성공한 즉시, 재조회가 늦더라도 보낸 편지 목록에 확실히 표시합니다.
     state.sentLetters = [{
-      id: letter.letter_id || `pending-${Date.now()}`,
+      id: outgoingId,
       to: recipientName,
       title,
-      deliveryKind,
-      sentAt: new Date().toISOString(),
+      deliveryKind: animal.kind,
+      sentAt,
       availableAt,
+      actualDeliveryHours: animal.deliveryHours,
+      hasAnimalTracking: true,
       readAt: null,
       isDevTest: isDevTestFriend,
     }, ...(state.sentLetters || [])];
