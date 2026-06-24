@@ -247,6 +247,37 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 }
 .tree-image { position: relative; z-index: 2; display: block; width: 100%; height: auto; filter: drop-shadow(0 25px 18px rgba(73, 112, 83, 0.18)); user-select: none; pointer-events: none; }
 
+.found-items-layer { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
+.found-item { position: absolute; width: 78px; transform: translate(-50%, 50%); filter: drop-shadow(0 6px 7px rgba(72, 112, 79, .12)); animation: foundItemSettle .7s ease both; }
+.found-item img { display: block; width: 100%; height: auto; }
+.found-item-tree_base_left { left: 27%; bottom: 30%; width: 76px; }
+.found-item-tree_base_right { left: 73%; bottom: 30%; width: 76px; }
+.found-item-front_bed_left { left: 12%; bottom: 24%; width: 76px; }
+.found-item-front_bed_right { left: 88%; bottom: 24%; width: 76px; }
+
+.found-item-sparkle {
+  position: absolute;
+  z-index: 7;
+  right: 12%;
+  bottom: 31%;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,244,.86) 0 24%, rgba(255,255,236,.30) 47%, transparent 70%);
+  color: #f2c66d;
+  font-size: 31px;
+  cursor: pointer;
+  filter: drop-shadow(0 4px 9px rgba(232, 191, 91, .36));
+  animation: foundItemSparkle 2.1s ease-in-out infinite;
+}
+.found-item-sparkle[hidden] { display: none; }
+.found-item-sparkle:disabled { opacity: .55; cursor: wait; }
+.found-item-sparkle span { display: block; text-shadow: 0 0 14px rgba(255, 235, 154, .95); }
+
 .branch-letters { position: absolute; z-index: 5; inset: 0; pointer-events: none; }
 .branch-letters[hidden] { display: none; }
 .branch-letter-item, .branch-letter-bundle {
@@ -455,6 +486,15 @@ textarea::placeholder { color: #a7b4bd; }
 
 .toast { position: fixed; z-index: 80; left: 50%; bottom: 28px; max-width: calc(100% - 32px); padding: 12px 15px; border-radius: 14px; background: rgba(54,77,78,.88); color: #fff; font-size: 13px; font-weight: 800; box-shadow: 0 10px 24px rgba(35,52,52,.2); transform: translateX(-50%); }
 .toast.hidden { display: none; }
+
+@keyframes foundItemSettle {
+  from { opacity: 0; transform: translate(-50%, calc(50% - 8px)) scale(.88); }
+  to { opacity: 1; transform: translate(-50%, 50%) scale(1); }
+}
+@keyframes foundItemSparkle {
+  0%, 100% { transform: scale(.82) rotate(-8deg); opacity: .68; }
+  50% { transform: scale(1.12) rotate(10deg); opacity: 1; }
+}
 
 @keyframes treeSway { 0%,100% { transform: translateX(-50%) rotate(0deg); } 50% { transform: translateX(-50%) rotate(1.4deg); } }
 @keyframes treePulse { 0% { transform: translateX(-50%) scale(1); } 45% { transform: translateX(-50%) scale(1.035); } 100% { transform: translateX(-50%) scale(1); } }

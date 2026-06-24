@@ -17,6 +17,7 @@ const DEFAULT_STATE = {
   letters: [],
   sentLetters: [],
   friends: [],
+  foundItems: [],
   profileName: "새 친구",
 };
 
@@ -27,6 +28,30 @@ const weatherOptions = [
   { icon: "🍃", text: "바람이 가볍게 불어요", className: "wind", message: "바람이 잎 끝을 살짝 흔들고 있어요." },
   { icon: "🌧️", text: "조용히 비가 내려요", className: "rain", message: "구름 아래로 빗방울이 조용히 정원에 내려앉아요." },
 ];
+
+const foundItemCatalog = {
+  pink_wildflower: {
+    name: "분홍 들꽃",
+    detail: "작은 들꽃이 나무 가까이에 피었어요.",
+    asset: "../../assets/decorations/pink-wildflower.png",
+  },
+  white_daisies: {
+    name: "하얀 데이지",
+    detail: "하얀 데이지가 풀밭에 조용히 머물러요.",
+    asset: "../../assets/decorations/white-daisies.png",
+  },
+  mushroom_pair: {
+    name: "작은 버섯 두 개",
+    detail: "작은 버섯 두 개가 나무 아래에 자랐어요.",
+    asset: "../../assets/decorations/mushroom-pair.png",
+  },
+  mossy_round_rock: {
+    name: "이끼 낀 둥근 돌",
+    detail: "이끼 낀 둥근 돌이 숲길 곁에 놓였어요.",
+    asset: "../../assets/decorations/mossy-round-rock.png",
+  },
+};
+const foundItemKeys = Object.keys(foundItemCatalog);
 
 const animalVisitors = {
   bird: {
@@ -156,6 +181,8 @@ const els = {
   letterComposerFootnote: $("#letterComposerFootnote"),
   nextVisitorText: $("#nextVisitorText"),
   branchLetters: $("#branchLetters"),
+  foundItemsLayer: $("#foundItemsLayer"),
+  foundItemSparkle: $("#foundItemSparkle"),
   navLetterBadge: $("#navLetterBadge"),
   stageMessage: $("#stageMessage"),
   sheetOverlay: $("#sheetOverlay"),
@@ -652,9 +679,10 @@ async function loadGardenState() {
 
   const nowIso = new Date().toISOString();
   const retentionTestActive = Boolean(retentionTestModeFromUrl());
-  const [profileResult, recordsResult, lettersResult, sentLettersResult, friendsResult, devFriendResult, devSentLettersResult, retentionDevLetters] = await Promise.all([
+  const [profileResult, recordsResult, foundItemsResult, lettersResult, sentLettersResult, friendsResult, devFriendResult, devSentLettersResult, retentionDevLetters] = await Promise.all([
     supabase.from("garden_profiles").select("nickname, growth_count").eq("id", currentUser.id).single(),
     supabase.from("garden_records").select("id, mood, one_line, detail, created_at").order("created_at", { ascending: false }),
+    supabase.from("garden_found_items").select("id, record_id, item_key, placement_slot, found_at, created_at").order("created_at", { ascending: true }),
     // 보관 정책 검수 주소에서는 실제 받은 편지를 아예 읽지 않습니다.
     // 그래서 DEV 봉투가 실제 친구 편지와 같은 목록이나 나뭇가지에 섞이지 않습니다.
     retentionTestActive
@@ -670,6 +698,9 @@ async function loadGardenState() {
   // 내 정원의 기본 정보와 기록은 핵심 데이터라서 실패를 화면에 알려야 합니다.
   if (profileResult.error) throw profileResult.error;
   if (recordsResult.error) throw recordsResult.error;
+
+  // 작은 것 불러오기는 정원 기록과 분리합니다. 일시 오류가 있어도 기존 정원은 그대로 보여줍니다.
+  if (foundItemsResult.error) console.warn("TodayForest found-item load skipped:", foundItemsResult.error);
 
   // 편지/친구는 각각 독립적으로 읽습니다.
   // 한 종류의 RPC가 잠시 실패해도 다른 저장 데이터를 0으로 초기화하지 않습니다.
@@ -750,6 +781,15 @@ async function loadGardenState() {
     })),
     sentLetters: Array.from(sentById.values()).map(applyAnimalDeliveryMeta),
     friends: Array.from(friendsById.values()),
+    foundItems: (foundItemsResult.data || [])
+      .filter((item) => foundItemCatalog[item.item_key])
+      .map((item) => ({
+        id: item.id,
+        recordId: item.record_id,
+        itemKey: item.item_key,
+        placementSlot: item.placement_slot,
+        foundAt: item.found_at || item.created_at,
+      })),
   };
 
   // v9 보관 정책 검수 봉투도 실제 수신 편지와 분리된 DEV 전용 데이터입니다.
@@ -1308,6 +1348,83 @@ function hasSavedToday() {
   return Boolean(today) && state.records.some((record) => seoulDateKey(record.createdAt) === today);
 }
 
+function todayGardenRecord() {
+  const today = seoulDateKey();
+  return state.records.find((record) => seoulDateKey(record.createdAt) === today) || null;
+}
+
+function foundItemForRecord(recordId) {
+  return (state.foundItems || []).find((item) => item.recordId === recordId) || null;
+}
+
+function canDiscoverFoundItem() {
+  const todayRecord = todayGardenRecord();
+  return Boolean(
+    todayRecord
+    && !foundItemForRecord(todayRecord.id)
+    && (state.foundItems || []).length < foundItemKeys.length
+  );
+}
+
+function renderFoundItems() {
+  if (!els.foundItemsLayer || !els.foundItemSparkle) return;
+
+  const foundItems = (state.foundItems || []).filter((item) => foundItemCatalog[item.itemKey]);
+  els.foundItemsLayer.innerHTML = foundItems.map((item) => {
+    const catalogItem = foundItemCatalog[item.itemKey];
+    return `
+      <div class="found-item found-item-${escapeAttr(item.placementSlot)}" data-found-item="${escapeAttr(item.itemKey)}" aria-label="${escapeAttr(catalogItem.name)}">
+        <img src="${escapeAttr(catalogItem.asset)}" alt="" />
+      </div>
+    `;
+  }).join("");
+
+  const canDiscover = canDiscoverFoundItem();
+  els.foundItemSparkle.hidden = !canDiscover;
+  els.foundItemSparkle.setAttribute(
+    "aria-label",
+    canDiscover ? "풀숲에서 반짝이는 작은 것 찾기" : "오늘의 작은 것을 모두 찾았어요"
+  );
+}
+
+async function claimFoundItem() {
+  if (!currentUser) return;
+  const record = todayGardenRecord();
+  if (!record || foundItemForRecord(record.id)) return;
+
+  els.foundItemSparkle.disabled = true;
+  const { data, error } = await supabase.rpc("claim_garden_found_item", { p_record_id: record.id });
+  els.foundItemSparkle.disabled = false;
+
+  if (error) {
+    showToast(databaseErrorMessage(error));
+    return;
+  }
+
+  const claimed = Array.isArray(data) ? data[0] : data;
+  if (!claimed?.item_key || !foundItemCatalog[claimed.item_key]) {
+    // 초기 네 가지를 모두 찾은 뒤에는 반짝임을 더 띄우지 않습니다.
+    renderFoundItems();
+    showToast("오늘은 숲이 조용히 쉬고 있어요.");
+    return;
+  }
+
+  const nextItem = {
+    id: claimed.id,
+    recordId: record.id,
+    itemKey: claimed.item_key,
+    placementSlot: claimed.placement_slot,
+    foundAt: claimed.found_at,
+  };
+  const existingIndex = (state.foundItems || []).findIndex((item) => item.recordId === nextItem.recordId);
+  if (existingIndex >= 0) state.foundItems.splice(existingIndex, 1, nextItem);
+  else state.foundItems.push(nextItem);
+
+  renderFoundItems();
+  const catalogItem = foundItemCatalog[nextItem.itemKey];
+  showToast(`숲에서 작은 것을 찾았어요. ${catalogItem.detail}`);
+}
+
 function updateTodayRecordAction() {
   const action = $("#openRecord");
   const label = action?.querySelector("span:last-child");
@@ -1472,6 +1589,7 @@ function renderGarden() {
 
   els.nextVisitorText.textContent = animalGrowthMessage();
 
+  renderFoundItems();
   renderBranchLetters(unread);
   playExpiredLetterReturnIfNeeded();
   playRetentionNextVisitNoticeIfNeeded();
@@ -2161,7 +2279,11 @@ async function saveRecord(event) {
   els.treeWrap.classList.remove("tree-pulse");
   void els.treeWrap.offsetWidth;
   els.treeWrap.classList.add("tree-pulse");
-  showToast("오늘의 마음이 내 정원에 저장됐어요.");
+  showToast(
+    canDiscoverFoundItem()
+      ? "오늘의 마음이 내 정원에 저장됐어요. 풀숲 어딘가가 반짝이고 있어요."
+      : "오늘의 마음이 내 정원에 저장됐어요."
+  );
 }
 
 function getInviteTokenFromUrl() {
@@ -2445,6 +2567,7 @@ function bindEvents() {
   els.signInKakao.addEventListener("click", beginKakaoLogin);
   els.installAppButton.addEventListener("click", () => { void requestAppInstall(); });
   els.dismissInstallCard.addEventListener("click", dismissInstallCardForAWhile);
+  els.foundItemSparkle.addEventListener("click", () => { void claimFoundItem(); });
   els.signOutButton.addEventListener("click", signOut);
   els.accountButton.addEventListener("click", () => showToast(`${state.profileName || displayName(currentUser)} 계정으로 내 정원을 이어보고 있어요.`));
   $("#openRecord").addEventListener("click", () => {
