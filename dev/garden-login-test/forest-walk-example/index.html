@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#eef1ff" />
+  <title>[DEV] 오늘의숲 · 작은 장면 체험</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="stylesheet" href="forest-walk-example.css" />
+</head>
+<body>
+  <main class="example-app" aria-label="오늘의숲 작은 장면 체험판">
+    <header class="example-header">
+      <a class="back-link" href="../index.html" aria-label="내 정원으로 돌아가기">← 내 정원</a>
+      <span class="dev-label">DEV · FOREST WALK EXAMPLE</span>
+    </header>
+
+    <section class="intro-card" id="introCard">
+      <p class="eyebrow">오늘의 작은 장면</p>
+      <h1>기록을 남긴 뒤,<br />숲에 잠깐 더 머물러볼까요?</h1>
+      <p class="intro-copy">장식이나 재화를 받지 않아도, 숲에서 만난 작은 순간이 한 줄의 기억으로 남는 반복 놀이예요.</p>
+      <div class="intro-points" aria-label="체험 핵심">
+        <span>15~30초</span><span>하루 2번</span><span>장식 보상 없음</span>
+      </div>
+      <button class="primary-button" id="startWalk" type="button">숲 산책 시작하기</button>
+    </section>
+
+    <section class="walk-shell hidden" id="walkShell" aria-live="polite">
+      <div class="walk-topline">
+        <div>
+          <p class="eyebrow">숲 산책</p>
+          <h1 id="walkTitle">오늘의 작은 장면</h1>
+        </div>
+        <button class="quiet-button" id="openJournal" type="button">오늘의 장면 <b id="journalCount">0</b></button>
+      </div>
+
+      <section class="forest-stage" id="forestStage" aria-label="작은 장면이 펼쳐지는 정원">
+        <div class="stage-sky-glow glow-one" aria-hidden="true"></div>
+        <div class="stage-sky-glow glow-two" aria-hidden="true"></div>
+        <div class="stage-cloud cloud-one" aria-hidden="true"></div>
+        <div class="stage-cloud cloud-two" aria-hidden="true"></div>
+        <img class="stage-tree" src="../../../assets/garden/tree_growth/tree_stage4_morning.png" alt="꽃이 핀 마음 나무" />
+        <div class="stage-grass grass-left" aria-hidden="true"></div>
+        <div class="stage-grass grass-right" aria-hidden="true"></div>
+
+        <div class="scene-home" id="sceneHome">
+          <p class="scene-home-kicker">오늘 숲에서 만날 수 있는 장면</p>
+          <p class="scene-home-copy">하나를 눌러 직접 해보세요.<br /><small>체험판이라 세 장면을 모두 열어둘게요.</small></p>
+          <div class="scene-choice-grid">
+            <button class="scene-choice" data-scene="feather" type="button">
+              <span class="choice-icon">🪶</span>
+              <b>바람에 날린 깃털</b>
+              <small>깃털을 살짝 잡아주세요</small>
+            </button>
+            <button class="scene-choice" data-scene="leaves" type="button">
+              <span class="choice-icon">🍂</span>
+              <b>움직이는 낙엽 더미</b>
+              <small>낙엽을 살며시 쓸어보세요</small>
+            </button>
+            <button class="scene-choice" data-scene="fireflies" type="button">
+              <span class="choice-icon">✨</span>
+              <b>흩어진 반딧불</b>
+              <small>빛을 병 곁으로 데려가요</small>
+            </button>
+          </div>
+        </div>
+
+        <section class="active-scene hidden" id="activeScene" aria-label="진행 중인 작은 장면">
+          <p class="scene-kicker" id="sceneKicker"></p>
+          <h2 id="sceneHeading"></h2>
+          <p class="scene-instruction" id="sceneInstruction"></p>
+          <div class="scene-playground" id="scenePlayground"></div>
+          <button class="leave-scene" id="leaveScene" type="button">산책으로 돌아가기</button>
+        </section>
+
+        <section class="scene-result hidden" id="sceneResult" aria-label="장면 완료">
+          <div class="result-icon" id="resultIcon">🌿</div>
+          <p class="scene-kicker">오늘 숲에 남은 한 줄</p>
+          <h2 id="resultTitle"></h2>
+          <p id="resultCopy"></p>
+          <button class="primary-button" id="backToWalk" type="button">다른 장면도 보기</button>
+        </section>
+      </section>
+
+      <section class="why-card">
+        <p class="eyebrow">이 체험판에서 보려는 것</p>
+        <p><b>장식이나 재화를 받지 않아도</b> 15~30초 동안 숲을 만지고, “오늘은 이런 일이 있었네” 하고 한 줄을 남기고 싶은지 보는 거예요.</p>
+      </section>
+    </section>
+
+    <section class="journal-sheet hidden" id="journalSheet" aria-modal="true" role="dialog" aria-labelledby="journalTitle">
+      <div class="sheet-dim" id="closeJournalDim"></div>
+      <div class="sheet-card">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <div class="sheet-heading">
+          <div>
+            <p class="eyebrow">오늘의 숲 장면</p>
+            <h2 id="journalTitle">잠깐 머문 기억</h2>
+          </div>
+          <button class="sheet-close" id="closeJournal" type="button" aria-label="닫기">×</button>
+        </div>
+        <div class="journal-list" id="journalList"></div>
+        <button class="reset-button" id="resetExample" type="button">체험 기록 처음부터 보기</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="forest-walk-example.js"></script>
+</body>
+</html>
