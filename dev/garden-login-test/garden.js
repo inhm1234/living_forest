@@ -244,6 +244,25 @@ function isIosBrowser() {
   return /iphone|ipad|ipod/i.test(window.navigator.userAgent || "");
 }
 
+function isAndroidDevice() {
+  return /android/i.test(window.navigator.userAgent || "");
+}
+
+function isKakaoTalkInAppBrowser() {
+  return /kakaotalk/i.test(window.navigator.userAgent || "");
+}
+
+function updateInstallButtonLabel() {
+  if (!els.installAppButton) return;
+
+  const buttonLabel = isKakaoTalkInAppBrowser()
+    ? (isAndroidDevice() ? "Chrome에서 열고 심기" : "Safari에서 열기")
+    : "내 폰에 심기";
+
+  els.installAppButton.textContent = buttonLabel;
+  els.installAppButton.setAttribute("aria-label", buttonLabel);
+}
+
 function hasRecordBeforeToday() {
   const today = seoulDateKey();
   return Boolean(today) && state.records.some((record) => {
@@ -276,6 +295,7 @@ function updateInstallCard() {
     && hasRecordBeforeToday()
     && Date.now() >= installLaterUntil();
 
+  updateInstallButtonLabel();
   els.installCard.classList.toggle("hidden", !shouldShow);
   if (!shouldShow) resetInstallCardHelp();
 }
@@ -289,14 +309,43 @@ function dismissInstallCardForAWhile() {
   updateInstallCard();
 }
 
-function showIosInstallHelp() {
+function showInstallHelp(message) {
   if (!els.installHelp) return;
   installHelpVisible = true;
-  els.installHelp.textContent = "Safari의 공유 버튼을 누른 뒤 ‘홈 화면에 추가’를 선택해 주세요.";
+  els.installHelp.textContent = message;
   els.installHelp.classList.remove("hidden");
 }
 
+function showIosInstallHelp() {
+  showInstallHelp("Safari의 공유 버튼을 누른 뒤 ‘홈 화면에 추가’를 선택해 주세요.");
+}
+
+function openChromeFromKakaoTalk() {
+  if (!isAndroidDevice()) {
+    showInstallHelp("카카오톡 안에서는 홈 화면에 심을 수 없어요. Safari에서 이 숲을 다시 열어 주세요.");
+    return;
+  }
+
+  const pageUrl = new URL(window.location.href);
+  const intentPath = `${pageUrl.host}${pageUrl.pathname}${pageUrl.search}`;
+  const fallbackUrl = encodeURIComponent(pageUrl.href);
+  const chromeIntentUrl = `intent://${intentPath}#Intent;scheme=${pageUrl.protocol.replace(":", "")};package=com.android.chrome;S.browser_fallback_url=${fallbackUrl};end`;
+
+  window.location.href = chromeIntentUrl;
+
+  window.setTimeout(() => {
+    if (document.visibilityState === "visible") {
+      showInstallHelp("Chrome이 열리지 않으면, 카카오톡을 닫은 뒤 Chrome에서 오늘의숲 링크를 다시 열어 주세요.");
+    }
+  }, 900);
+}
+
 async function requestAppInstall() {
+  if (isKakaoTalkInAppBrowser()) {
+    openChromeFromKakaoTalk();
+    return;
+  }
+
   if (deferredInstallPrompt) {
     const promptEvent = deferredInstallPrompt;
     deferredInstallPrompt = null;
