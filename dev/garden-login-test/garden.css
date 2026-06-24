@@ -247,14 +247,32 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 }
 .tree-image { position: relative; z-index: 2; display: block; width: 100%; height: auto; filter: drop-shadow(0 25px 18px rgba(73, 112, 83, 0.18)); user-select: none; pointer-events: none; }
 
-/* 장식은 나무 주변 풀섬 안의 미리 정한 자리에서만 보입니다. */
+/* 장식은 처음에는 숲이 정한 자리에 놓이고, 꾸미기 모드에서만 사용자가 옮길 수 있습니다. */
 .found-items-layer { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
+.found-items-layer.is-decorating { z-index: 9; pointer-events: auto; touch-action: none; }
 .found-item { position: absolute; width: 78px; transform: translate(-50%, 0); filter: drop-shadow(0 6px 7px rgba(72, 112, 79, .12)); animation: foundItemSettle .7s ease both; }
-.found-item img { display: block; width: 100%; height: auto; }
+.found-item img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
 .found-item-tree_base_left { left: 39%; bottom: 37%; width: 68px; }
 .found-item-tree_base_right { left: 61%; bottom: 37%; width: 68px; }
 .found-item-front_bed_left { left: 28%; bottom: 35%; width: 66px; }
 .found-item-front_bed_right { left: 74%; bottom: 34%; width: 70px; }
+.found-item.has-custom-position { left: var(--found-item-x); top: var(--found-item-y); bottom: auto; }
+.garden-stage.is-garden-decorating .found-item { cursor: grab; animation: none; filter: drop-shadow(0 7px 9px rgba(72, 112, 79, .16)); }
+.garden-stage.is-garden-decorating .found-item::after { content: ""; position: absolute; inset: -7px; border: 1.5px dashed rgba(119, 167, 116, .72); border-radius: 15px; background: rgba(255,255,255,.14); box-shadow: 0 0 0 3px rgba(255,255,255,.22); pointer-events: none; }
+.garden-stage.is-garden-decorating .found-item.is-moving { cursor: grabbing; z-index: 2; filter: drop-shadow(0 12px 13px rgba(72, 112, 79, .23)); }
+.garden-stage.is-garden-decorating .found-item.is-moving::after { border-color: rgba(250, 175, 135, .92); background: rgba(255, 244, 232, .36); }
+
+.garden-decorate-controls { position: absolute; z-index: 12; right: 16px; bottom: 16px; }
+.garden-decorate-button, .garden-decorate-cancel, .garden-decorate-save { border: 1px solid rgba(255,255,255,.82); font-family: inherit; font-weight: 900; cursor: pointer; backdrop-filter: blur(8px); }
+.garden-decorate-button { display: inline-flex; align-items: center; gap: 5px; min-height: 35px; padding: 8px 11px; border-radius: 999px; background: rgba(255,255,255,.76); color: #647b68; font-size: 11px; box-shadow: 0 9px 18px rgba(76, 104, 85, .13); }
+.garden-decorate-button span:first-child { font-size: 14px; }
+.garden-decorate-edit-actions { width: min(250px, calc(100vw - 44px)); padding: 10px; border: 1px solid rgba(255,255,255,.84); border-radius: 17px; background: rgba(255,255,255,.87); box-shadow: 0 14px 28px rgba(76, 104, 85, .15); }
+.garden-decorate-guide { margin: 0 0 8px; color: #6f8274; font-size: 10px; font-weight: 800; line-height: 1.45; }
+.garden-decorate-action-row { display: flex; gap: 6px; }
+.garden-decorate-cancel, .garden-decorate-save { min-height: 34px; padding: 7px 10px; border-radius: 11px; font-size: 11px; }
+.garden-decorate-cancel { flex: 0 0 auto; background: rgba(248,250,247,.92); color: #839188; }
+.garden-decorate-save { flex: 1 1 auto; background: linear-gradient(135deg, #dcefd6, #f2f5d9); color: #587160; box-shadow: 0 5px 10px rgba(106,143,99,.12); }
+.garden-decorate-save:disabled { opacity: .62; cursor: wait; }
 
 .found-item-sparkle {
   position: absolute;
@@ -540,6 +558,8 @@ textarea::placeholder { color: #a7b4bd; }
   .branch-letter-item.item-3 { right: 31%; }
   .branch-letter-bundle { top: 20%; right: 15%; }
   .stage-message { font-size: 11px; }
+  .garden-decorate-controls { right: 12px; bottom: 13px; }
+  .garden-decorate-edit-actions { width: min(232px, calc(100vw - 38px)); }
   .mood-choice { font-size: 10px; }
 }
 

@@ -155,6 +155,13 @@ let retentionCleanupRanOnThisPage = false;
 let deferredInstallPrompt = null;
 let installHelpVisible = false;
 
+// 발견한 작은 것은 평소에는 고정돼 있고, 꾸미기 모드에서만 사용자가 옮길 수 있습니다.
+// 실제 저장 전의 위치는 별도 초안으로만 들고 있어 취소하면 바로 원래 자리로 돌아갑니다.
+let gardenDecorateMode = false;
+let gardenDecorateSaving = false;
+let gardenDecorateDraftPositions = new Map();
+let activeFoundItemDrag = null;
+
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 const els = {
@@ -183,6 +190,12 @@ const els = {
   branchLetters: $("#branchLetters"),
   foundItemsLayer: $("#foundItemsLayer"),
   foundItemSparkle: $("#foundItemSparkle"),
+  gardenDecorateControls: $("#gardenDecorateControls"),
+  openGardenDecorate: $("#openGardenDecorate"),
+  gardenDecorateEditActions: $("#gardenDecorateEditActions"),
+  gardenDecorateGuide: $("#gardenDecorateGuide"),
+  cancelGardenDecorate: $("#cancelGardenDecorate"),
+  saveGardenDecorate: $("#saveGardenDecorate"),
   navLetterBadge: $("#navLetterBadge"),
   stageMessage: $("#stageMessage"),
   sheetOverlay: $("#sheetOverlay"),
@@ -667,6 +680,29 @@ function configureRetentionWindPolling() {
   }, 2000);
 }
 
+async function loadFoundGardenItems() {
+  // position_x / position_y SQL이 아직 적용되지 않은 개발 배포 순간에도
+  // 기존 장식 발견·표시 기능이 사라지지 않도록, 이전 열만 읽는 안전한 대체 경로를 둡니다.
+  const positionedResult = await supabase
+    .from("garden_found_items")
+    .select("id, record_id, item_key, placement_slot, position_x, position_y, found_at, created_at")
+    .order("created_at", { ascending: true });
+
+  if (!positionedResult.error) return positionedResult;
+
+  const legacyResult = await supabase
+    .from("garden_found_items")
+    .select("id, record_id, item_key, placement_slot, found_at, created_at")
+    .order("created_at", { ascending: true });
+
+  if (!legacyResult.error) {
+    console.warn("TodayForest found-item position columns are not ready yet:", positionedResult.error);
+    return legacyResult;
+  }
+
+  return positionedResult;
+}
+
 async function loadGardenState() {
   if (!currentUser) {
     state = cloneDefault();
@@ -682,7 +718,7 @@ async function loadGardenState() {
   const [profileResult, recordsResult, foundItemsResult, lettersResult, sentLettersResult, friendsResult, devFriendResult, devSentLettersResult, retentionDevLetters] = await Promise.all([
     supabase.from("garden_profiles").select("nickname, growth_count").eq("id", currentUser.id).single(),
     supabase.from("garden_records").select("id, mood, one_line, detail, created_at").order("created_at", { ascending: false }),
-    supabase.from("garden_found_items").select("id, record_id, item_key, placement_slot, found_at, created_at").order("created_at", { ascending: true }),
+    loadFoundGardenItems(),
     // 보관 정책 검수 주소에서는 실제 받은 편지를 아예 읽지 않습니다.
     // 그래서 DEV 봉투가 실제 친구 편지와 같은 목록이나 나뭇가지에 섞이지 않습니다.
     retentionTestActive
@@ -788,6 +824,8 @@ async function loadGardenState() {
         recordId: item.record_id,
         itemKey: item.item_key,
         placementSlot: item.placement_slot,
+        positionX: item.position_x,
+        positionY: item.position_y,
         foundAt: item.found_at || item.created_at,
       })),
   };
@@ -1366,25 +1404,263 @@ function canDiscoverFoundItem() {
   );
 }
 
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function roundedFoundItemPosition(value) {
+  return Number(Number(value).toFixed(3));
+}
+
+function savedFoundItemPosition(item) {
+  const x = Number(item?.positionX);
+  const y = Number(item?.positionY);
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+  return {
+    x: clamp(roundedFoundItemPosition(x), 0, 100),
+    y: clamp(roundedFoundItemPosition(y), 0, 100),
+  };
+}
+
+function foundItemDisplayPosition(item) {
+  if (gardenDecorateMode && gardenDecorateDraftPositions.has(item.id)) {
+    return gardenDecorateDraftPositions.get(item.id);
+  }
+  return savedFoundItemPosition(item);
+}
+
+function foundItemPositionStyle(item) {
+  const position = foundItemDisplayPosition(item);
+  if (!position) return "";
+  return ` style="--found-item-x:${position.x}%; --found-item-y:${position.y}%;"`;
+}
+
+function renderGardenDecorateControls(foundItems) {
+  const hasFoundItems = foundItems.length > 0;
+  if (!els.gardenDecorateControls) return;
+
+  els.gardenDecorateControls.hidden = !hasFoundItems;
+  els.gardenStage?.classList.toggle("is-garden-decorating", gardenDecorateMode && hasFoundItems);
+  els.foundItemsLayer?.classList.toggle("is-decorating", gardenDecorateMode && hasFoundItems);
+
+  if (els.openGardenDecorate) {
+    els.openGardenDecorate.hidden = gardenDecorateMode || !hasFoundItems;
+    els.openGardenDecorate.setAttribute("aria-pressed", gardenDecorateMode ? "true" : "false");
+  }
+  if (els.gardenDecorateEditActions) {
+    els.gardenDecorateEditActions.classList.toggle("hidden", !gardenDecorateMode || !hasFoundItems);
+  }
+  if (els.gardenDecorateGuide) {
+    els.gardenDecorateGuide.textContent = gardenDecorateSaving
+      ? "작은 것들을 정원에 고정하는 중이에요."
+      : "발견한 작은 것만 원하는 곳으로 옮겨보세요.";
+  }
+}
+
 function renderFoundItems() {
   if (!els.foundItemsLayer || !els.foundItemSparkle) return;
 
   const foundItems = (state.foundItems || []).filter((item) => foundItemCatalog[item.itemKey]);
   els.foundItemsLayer.innerHTML = foundItems.map((item) => {
     const catalogItem = foundItemCatalog[item.itemKey];
+    const position = foundItemDisplayPosition(item);
+    const positionClass = position ? " has-custom-position" : "";
     return `
-      <div class="found-item found-item-${escapeAttr(item.placementSlot)}" data-found-item="${escapeAttr(item.itemKey)}" aria-label="${escapeAttr(catalogItem.name)}">
-        <img src="${escapeAttr(catalogItem.asset)}" alt="" />
+      <div class="found-item found-item-${escapeAttr(item.placementSlot)}${positionClass}" data-found-item-id="${escapeAttr(item.id)}" data-found-item="${escapeAttr(item.itemKey)}" aria-label="${escapeAttr(catalogItem.name)}"${foundItemPositionStyle(item)}>
+        <img src="${escapeAttr(catalogItem.asset)}" alt="" draggable="false" />
       </div>
     `;
   }).join("");
 
+  renderGardenDecorateControls(foundItems);
+
   const canDiscover = canDiscoverFoundItem();
-  els.foundItemSparkle.hidden = !canDiscover;
+  els.foundItemSparkle.hidden = gardenDecorateMode || !canDiscover;
   els.foundItemSparkle.setAttribute(
     "aria-label",
     canDiscover ? "풀숲에서 반짝이는 작은 것 찾기" : "오늘의 작은 것을 모두 찾았어요"
   );
+}
+
+function stagePositionForFoundItemElement(element) {
+  const stageRect = els.gardenStage?.getBoundingClientRect();
+  const itemRect = element?.getBoundingClientRect();
+  if (!stageRect?.width || !stageRect?.height || !itemRect) return null;
+
+  return {
+    x: clamp(roundedFoundItemPosition(((itemRect.left + (itemRect.width / 2) - stageRect.left) / stageRect.width) * 100), 0, 100),
+    y: clamp(roundedFoundItemPosition(((itemRect.top - stageRect.top) / stageRect.height) * 100), 0, 100),
+  };
+}
+
+function startGardenDecorateMode() {
+  const foundItems = (state.foundItems || []).filter((item) => foundItemCatalog[item.itemKey]);
+  if (!foundItems.length || gardenDecorateSaving) return;
+
+  gardenDecorateDraftPositions = new Map();
+  $$(".found-item[data-found-item-id]").forEach((element) => {
+    const itemId = element.dataset.foundItemId;
+    const position = stagePositionForFoundItemElement(element);
+    if (itemId && position) gardenDecorateDraftPositions.set(itemId, position);
+  });
+
+  // 화면이 막 다시 그려진 순간처럼 요소 측정이 어려운 경우에는 DB 위치만 초안으로 씁니다.
+  foundItems.forEach((item) => {
+    if (!gardenDecorateDraftPositions.has(item.id)) {
+      const saved = savedFoundItemPosition(item);
+      if (saved) gardenDecorateDraftPositions.set(item.id, saved);
+    }
+  });
+
+  gardenDecorateMode = true;
+  renderFoundItems();
+  showToast("작은 것을 꾹 눌러 원하는 자리에 옮겨보세요.");
+}
+
+function cancelGardenDecorateMode() {
+  if (gardenDecorateSaving) return;
+  activeFoundItemDrag = null;
+  gardenDecorateMode = false;
+  gardenDecorateDraftPositions = new Map();
+  renderFoundItems();
+  showToast("바꾸기 전 배치로 돌아왔어요.");
+}
+
+function applyFoundItemDraftPosition(element, position) {
+  if (!element || !position) return;
+  element.classList.add("has-custom-position");
+  element.style.setProperty("--found-item-x", `${position.x}%`);
+  element.style.setProperty("--found-item-y", `${position.y}%`);
+}
+
+function beginFoundItemDrag(event) {
+  if (!gardenDecorateMode || gardenDecorateSaving || event.button > 0) return;
+  const element = event.target.closest(".found-item[data-found-item-id]");
+  if (!element || !els.gardenStage?.contains(element)) return;
+
+  const stageRect = els.gardenStage.getBoundingClientRect();
+  const itemRect = element.getBoundingClientRect();
+  if (!stageRect.width || !stageRect.height || !itemRect.width || !itemRect.height) return;
+
+  event.preventDefault();
+  const itemId = element.dataset.foundItemId;
+  if (!itemId) return;
+
+  const currentPosition = stagePositionForFoundItemElement(element);
+  if (currentPosition) {
+    gardenDecorateDraftPositions.set(itemId, currentPosition);
+    applyFoundItemDraftPosition(element, currentPosition);
+  }
+
+  activeFoundItemDrag = {
+    pointerId: event.pointerId,
+    itemId,
+    element,
+    stageRect,
+    itemWidth: itemRect.width,
+    itemHeight: itemRect.height,
+    pointerOffsetX: event.clientX - (itemRect.left + (itemRect.width / 2)),
+    pointerOffsetY: event.clientY - itemRect.top,
+  };
+
+  element.classList.add("is-moving");
+  element.setPointerCapture?.(event.pointerId);
+}
+
+function moveFoundItemDrag(event) {
+  const drag = activeFoundItemDrag;
+  if (!drag || drag.pointerId !== event.pointerId) return;
+  event.preventDefault();
+
+  const stageRect = drag.stageRect;
+  const halfWidth = drag.itemWidth / 2;
+  const centerX = clamp(
+    event.clientX - stageRect.left - drag.pointerOffsetX,
+    halfWidth,
+    stageRect.width - halfWidth
+  );
+  const topY = clamp(
+    event.clientY - stageRect.top - drag.pointerOffsetY,
+    0,
+    Math.max(0, stageRect.height - drag.itemHeight)
+  );
+  const position = {
+    x: roundedFoundItemPosition((centerX / stageRect.width) * 100),
+    y: roundedFoundItemPosition((topY / stageRect.height) * 100),
+  };
+
+  gardenDecorateDraftPositions.set(drag.itemId, position);
+  applyFoundItemDraftPosition(drag.element, position);
+}
+
+function endFoundItemDrag(event) {
+  const drag = activeFoundItemDrag;
+  if (!drag || (event && drag.pointerId !== event.pointerId)) return;
+  drag.element.classList.remove("is-moving");
+  if (event) {
+    try {
+      drag.element.releasePointerCapture?.(event.pointerId);
+    } catch (error) {
+      // 브라우저가 이미 포인터를 정리한 경우에는 조용히 넘어갑니다.
+    }
+  }
+  activeFoundItemDrag = null;
+}
+
+async function saveGardenDecorateMode() {
+  if (!currentUser || !gardenDecorateMode || gardenDecorateSaving) return;
+  const positions = (state.foundItems || [])
+    .filter((item) => foundItemCatalog[item.itemKey])
+    .map((item) => {
+      const position = gardenDecorateDraftPositions.get(item.id) || savedFoundItemPosition(item);
+      return position ? {
+        id: item.id,
+        position_x: position.x,
+        position_y: position.y,
+      } : null;
+    })
+    .filter(Boolean);
+
+  if (!positions.length) {
+    cancelGardenDecorateMode();
+    return;
+  }
+
+  gardenDecorateSaving = true;
+  if (els.saveGardenDecorate) {
+    els.saveGardenDecorate.disabled = true;
+    els.saveGardenDecorate.textContent = "저장 중";
+  }
+  renderGardenDecorateControls((state.foundItems || []).filter((item) => foundItemCatalog[item.itemKey]));
+
+  const { error } = await supabase.rpc("save_my_garden_found_item_positions", { p_positions: positions });
+
+  gardenDecorateSaving = false;
+  if (els.saveGardenDecorate) {
+    els.saveGardenDecorate.disabled = false;
+    els.saveGardenDecorate.textContent = "배치 저장";
+  }
+
+  if (error) {
+    renderGardenDecorateControls((state.foundItems || []).filter((item) => foundItemCatalog[item.itemKey]));
+    showToast("배치를 저장하지 못했어요. 잠시 뒤 다시 해주세요.");
+    console.warn("TodayForest found-item layout save failed:", error);
+    return;
+  }
+
+  const savedById = new Map(positions.map((position) => [position.id, position]));
+  state.foundItems = (state.foundItems || []).map((item) => {
+    const position = savedById.get(item.id);
+    return position
+      ? { ...item, positionX: position.position_x, positionY: position.position_y }
+      : item;
+  });
+
+  activeFoundItemDrag = null;
+  gardenDecorateMode = false;
+  gardenDecorateDraftPositions = new Map();
+  renderFoundItems();
+  showToast("작은 것들을 원하는 자리에 놓았어요.");
 }
 
 async function claimFoundItem() {
@@ -1414,6 +1690,8 @@ async function claimFoundItem() {
     recordId: record.id,
     itemKey: claimed.item_key,
     placementSlot: claimed.placement_slot,
+    positionX: claimed.position_x,
+    positionY: claimed.position_y,
     foundAt: claimed.found_at,
   };
   const existingIndex = (state.foundItems || []).findIndex((item) => item.recordId === nextItem.recordId);
@@ -2568,6 +2846,13 @@ function bindEvents() {
   els.installAppButton.addEventListener("click", () => { void requestAppInstall(); });
   els.dismissInstallCard.addEventListener("click", dismissInstallCardForAWhile);
   els.foundItemSparkle.addEventListener("click", () => { void claimFoundItem(); });
+  els.openGardenDecorate.addEventListener("click", startGardenDecorateMode);
+  els.cancelGardenDecorate.addEventListener("click", cancelGardenDecorateMode);
+  els.saveGardenDecorate.addEventListener("click", () => { void saveGardenDecorateMode(); });
+  els.foundItemsLayer.addEventListener("pointerdown", beginFoundItemDrag);
+  els.foundItemsLayer.addEventListener("pointermove", moveFoundItemDrag);
+  els.foundItemsLayer.addEventListener("pointerup", endFoundItemDrag);
+  els.foundItemsLayer.addEventListener("pointercancel", endFoundItemDrag);
   els.signOutButton.addEventListener("click", signOut);
   els.accountButton.addEventListener("click", () => showToast(`${state.profileName || displayName(currentUser)} 계정으로 내 정원을 이어보고 있어요.`));
   $("#openRecord").addEventListener("click", () => {
