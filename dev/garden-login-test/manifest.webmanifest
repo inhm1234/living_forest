@@ -1,0 +1,26 @@
+{
+  "id": "./",
+  "name": "오늘의숲",
+  "short_name": "오늘의숲",
+  "description": "오늘 마음 한 줄을 남기며 내 나무를 키우는 작은 숲",
+  "lang": "ko-KR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eef1ff",
+  "theme_color": "#eef1ff",
+  "icons": [
+    {
+      "src": "../../assets/pwa/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "../../assets/pwa/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

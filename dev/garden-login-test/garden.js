@@ -82,6 +82,10 @@ const ANIMAL_DELIVERY_QUEUE_STORAGE_PREFIX = "todayforest-dev-animal-delivery-qu
 // 배송을 마친 편지는 보낸 편지함에 쌓지 않습니다.
 // 사용자가 편지 화면을 열었을 때 한 번만 도착 장면을 보여주기 위한 짧은 보관함입니다.
 const ANIMAL_DELIVERY_ARRIVAL_STORAGE_PREFIX = "todayforest-dev-animal-delivery-arrivals-v4";
+// 홈 화면 안내는 기록을 남긴 다음 날부터, 계정별로 조용히 한 번씩 보여줍니다.
+const PWA_INSTALL_LATER_STORAGE_PREFIX = "todayforest-pwa-install-later-v1";
+const PWA_INSTALL_COMPLETE_STORAGE_PREFIX = "todayforest-pwa-install-complete-v1";
+const PWA_INSTALL_LATER_MS = 7 * 24 * 60 * 60 * 1000;
 // 받은 편지 1차 화면 검수용입니다. 실제 친구 편지 데이터는 건드리지 않고,
 // URL에 ?receivedPreview=1~6 을 붙였을 때만 로컬 테스트 봉투를 추가합니다.
 const RECEIVED_LETTER_PREVIEW_STORAGE_PREFIX = "todayforest-dev-received-preview-v1";
@@ -123,6 +127,8 @@ let pendingRetentionNextVisitNoticeCount = 0;
 let retentionWindTimer = null;
 let retentionWindRefreshBusy = false;
 let retentionCleanupRanOnThisPage = false;
+let deferredInstallPrompt = null;
+let installHelpVisible = false;
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -208,6 +214,10 @@ const els = {
   letterDelivery: $("#letterDelivery"),
   letterDate: $("#letterDate"),
   toast: $("#toast"),
+  installCard: $("#installCard"),
+  installAppButton: $("#installAppButton"),
+  dismissInstallCard: $("#dismissInstallCard"),
+  installHelp: $("#installHelp"),
   authScreen: $("#authScreen"),
   gardenApp: $("#gardenApp"),
   authError: $("#authError"),
@@ -220,6 +230,106 @@ const els = {
 
 function cloneDefault() {
   return JSON.parse(JSON.stringify(DEFAULT_STATE));
+}
+
+function pwaStorageKey(prefix) {
+  return `${prefix}:${currentUser?.id || "guest"}`;
+}
+
+function isStandaloneApp() {
+  return window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator.standalone === true;
+}
+
+function isIosBrowser() {
+  return /iphone|ipad|ipod/i.test(window.navigator.userAgent || "");
+}
+
+function hasRecordBeforeToday() {
+  const today = seoulDateKey();
+  return Boolean(today) && state.records.some((record) => {
+    const recordDay = seoulDateKey(record.createdAt);
+    return recordDay && recordDay < today;
+  });
+}
+
+function installLaterUntil() {
+  const value = Number(window.localStorage.getItem(pwaStorageKey(PWA_INSTALL_LATER_STORAGE_PREFIX)) || 0);
+  return Number.isFinite(value) ? value : 0;
+}
+
+function installMarkedComplete() {
+  return window.localStorage.getItem(pwaStorageKey(PWA_INSTALL_COMPLETE_STORAGE_PREFIX)) === "1";
+}
+
+function resetInstallCardHelp() {
+  installHelpVisible = false;
+  els.installHelp?.classList.add("hidden");
+  if (els.installHelp) els.installHelp.textContent = "";
+}
+
+function updateInstallCard() {
+  if (!els.installCard) return;
+
+  const shouldShow = Boolean(currentUser)
+    && !isStandaloneApp()
+    && !installMarkedComplete()
+    && hasRecordBeforeToday()
+    && Date.now() >= installLaterUntil();
+
+  els.installCard.classList.toggle("hidden", !shouldShow);
+  if (!shouldShow) resetInstallCardHelp();
+}
+
+function dismissInstallCardForAWhile() {
+  window.localStorage.setItem(
+    pwaStorageKey(PWA_INSTALL_LATER_STORAGE_PREFIX),
+    String(Date.now() + PWA_INSTALL_LATER_MS),
+  );
+  resetInstallCardHelp();
+  updateInstallCard();
+}
+
+function showIosInstallHelp() {
+  if (!els.installHelp) return;
+  installHelpVisible = true;
+  els.installHelp.textContent = "Safari의 공유 버튼을 누른 뒤 ‘홈 화면에 추가’를 선택해 주세요.";
+  els.installHelp.classList.remove("hidden");
+}
+
+async function requestAppInstall() {
+  if (deferredInstallPrompt) {
+    const promptEvent = deferredInstallPrompt;
+    deferredInstallPrompt = null;
+    await promptEvent.prompt();
+    const choice = await promptEvent.userChoice;
+    if (choice?.outcome === "accepted") {
+      window.localStorage.setItem(pwaStorageKey(PWA_INSTALL_COMPLETE_STORAGE_PREFIX), "1");
+      updateInstallCard();
+      return;
+    }
+    dismissInstallCardForAWhile();
+    return;
+  }
+
+  if (isIosBrowser()) {
+    showIosInstallHelp();
+    return;
+  }
+
+  showToast("브라우저 메뉴에서 ‘앱 설치’ 또는 ‘홈 화면에 추가’를 눌러 주세요.");
+}
+
+function registerPwaServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+
+  const register = () => navigator.serviceWorker.register("./sw.js", { scope: "./" })
+    .catch((error) => console.warn("TodayForest PWA service worker registration skipped:", error));
+
+  if (document.readyState === "complete") {
+    void register();
+  } else {
+    window.addEventListener("load", () => { void register(); }, { once: true });
+  }
 }
 
 function normalizeRpcRow(data) {
@@ -1319,6 +1429,7 @@ function renderGarden() {
   els.navLetterBadge.textContent = unread.length;
   els.navLetterBadge.classList.toggle("hidden", unread.length === 0);
   updateTodayRecordAction();
+  updateInstallCard();
 }
 
 function receivedLetterPlacementForGrowth(growth) {
@@ -2283,6 +2394,8 @@ async function openLettersSheet() {
 
 function bindEvents() {
   els.signInKakao.addEventListener("click", beginKakaoLogin);
+  els.installAppButton.addEventListener("click", () => { void requestAppInstall(); });
+  els.dismissInstallCard.addEventListener("click", dismissInstallCardForAWhile);
   els.signOutButton.addEventListener("click", signOut);
   els.accountButton.addEventListener("click", () => showToast(`${state.profileName || displayName(currentUser)} 계정으로 내 정원을 이어보고 있어요.`));
   $("#openRecord").addEventListener("click", () => {
@@ -2351,6 +2464,17 @@ function bindEvents() {
 }
 
 async function init() {
+  registerPwaServiceWorker();
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    updateInstallCard();
+  });
+  window.addEventListener("appinstalled", () => {
+    window.localStorage.setItem(pwaStorageKey(PWA_INSTALL_COMPLETE_STORAGE_PREFIX), "1");
+    deferredInstallPrompt = null;
+    updateInstallCard();
+  });
   bindEvents();
   await handleOAuthCallback();
   await syncSession();

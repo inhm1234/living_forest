@@ -5,8 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#eef1ff" />
   <meta name="color-scheme" content="light" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>[DEV] 오늘의숲 | 편지 전달 내 정원</title>
   <meta name="robots" content="noindex, nofollow" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../../assets/pwa/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/pwa/apple-touch-icon.png" />
   <link rel="stylesheet" href="garden.css" />
 </head>
 <body>
@@ -103,6 +108,18 @@
       <div>
         <p class="growth-note-kicker">다음 방문자</p>
         <p class="growth-note-text" id="nextVisitorText">마음 3번을 더 남기면 조금 더 빠른 새가 찾아와요.</p>
+      </div>
+    </section>
+
+    <section class="install-card hidden" id="installCard" aria-live="polite" aria-label="홈 화면에 오늘의숲 추가하기">
+      <div class="install-card-icon" aria-hidden="true">🌿</div>
+      <div class="install-card-copy">
+        <p>매일 찾아오는 작은 숲이에요.<br />홈 화면에 심어두면 더 쉽게 만날 수 있어요. 🌿</p>
+        <p class="install-help hidden" id="installHelp"></p>
+      </div>
+      <div class="install-card-actions">
+        <button class="install-app-button" id="installAppButton" type="button">내 폰에 심기</button>
+        <button class="install-later-button" id="dismissInstallCard" type="button">나중에</button>
       </div>
     </section>
 

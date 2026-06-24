@@ -375,6 +375,18 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .growth-note-icon { display: grid; flex: 0 0 auto; place-items: center; width: 36px; height: 36px; border-radius: 13px; background: #eff8e8; font-size: 18px; }
 .growth-note-text { margin: 0; color: #688092; font-size: 12px; line-height: 1.45; }
 
+.install-card { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px 12px; margin: 0 4px 16px; padding: 13px; border: 1px solid rgba(255,255,255,.82); border-radius: 20px; background: linear-gradient(135deg, rgba(247,244,255,.92), rgba(255,248,247,.92)); box-shadow: 0 12px 24px rgba(112,119,157,.10); }
+.install-card.hidden { display: none; }
+.install-card-icon { display: grid; place-items: center; width: 37px; height: 37px; border-radius: 14px; background: #eff8e8; font-size: 18px; }
+.install-card-copy { min-width: 0; }
+.install-card-copy > p:first-child { margin: 0; color: #65778b; font-size: 12px; font-weight: 800; line-height: 1.52; }
+.install-help { margin: 8px 0 0; color: #7c7698; font-size: 11px; font-weight: 800; line-height: 1.48; }
+.install-help.hidden { display: none; }
+.install-card-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 7px; }
+.install-app-button, .install-later-button { min-height: 34px; padding: 7px 11px; border-radius: 12px; font-size: 11px; font-weight: 900; cursor: pointer; }
+.install-app-button { border: 0; background: #87bd98; color: #fff; box-shadow: 0 8px 15px rgba(101,157,120,.18); }
+.install-later-button { border: 1px solid rgba(124,142,157,.16); background: rgba(255,255,255,.62); color: #8492a0; }
+
 .garden-nav { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 9px; }
 .nav-action { position: relative; display: grid; place-items: center; gap: 3px; min-height: 66px; padding: 8px 5px; border: 1px solid rgba(255,255,255,0.78); border-radius: 20px; background: rgba(255,255,255,0.65); color: #708396; box-shadow: 0 10px 20px rgba(100,125,148,0.08); cursor: pointer; }
 .nav-action span:last-child { font-size: 12px; font-weight: 900; }
@@ -467,6 +479,9 @@ textarea::placeholder { color: #a7b4bd; }
 @keyframes floatCloud { 0%,100% { transform: translateX(0); } 50% { transform: translateX(18px); } }
 
 @media (max-width: 470px) {
+  .install-card { margin-inline: 2px; }
+  .install-card-actions { justify-content: stretch; }
+  .install-app-button, .install-later-button { flex: 1; }
   .garden-app { padding-inline: 12px; }
   .garden-header { margin-inline: 3px; }
   .quiet-pill { max-width: 150px; font-size: 11px; }
