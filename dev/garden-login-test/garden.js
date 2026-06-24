@@ -1497,19 +1497,13 @@ function startGardenDecorateMode() {
   const foundItems = (state.foundItems || []).filter((item) => foundItemCatalog[item.itemKey]);
   if (!foundItems.length || gardenDecorateSaving) return;
 
+  // 꾸미기 버튼을 누르는 것만으로는 현재 화면의 장식 위치를 좌표로 바꾸지 않습니다.
+  // 기본 placement_slot 장식은 그대로 두고, 이미 저장된 사용자 배치만 초안에 넣습니다.
+  // 실제로 사용자가 집어 옮긴 장식만 드래그 시작 시점의 화면 위치를 좌표로 바꿉니다.
   gardenDecorateDraftPositions = new Map();
-  $$(".found-item[data-found-item-id]").forEach((element) => {
-    const itemId = element.dataset.foundItemId;
-    const position = stagePositionForFoundItemElement(element);
-    if (itemId && position) gardenDecorateDraftPositions.set(itemId, position);
-  });
-
-  // 화면이 막 다시 그려진 순간처럼 요소 측정이 어려운 경우에는 DB 위치만 초안으로 씁니다.
   foundItems.forEach((item) => {
-    if (!gardenDecorateDraftPositions.has(item.id)) {
-      const saved = savedFoundItemPosition(item);
-      if (saved) gardenDecorateDraftPositions.set(item.id, saved);
-    }
+    const saved = savedFoundItemPosition(item);
+    if (saved) gardenDecorateDraftPositions.set(item.id, saved);
   });
 
   gardenDecorateMode = true;
