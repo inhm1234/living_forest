@@ -160,6 +160,7 @@
 
     <div class="garden-footer-actions">
       <p class="database-note">내 기록과 내 나무 상태는 로그인한 계정의 정원에 저장돼요.</p>
+      <button id="openFeedback" class="feedback-link" type="button">✦ 숲에 말 남기기</button>
       <button id="signOutButton" class="reset-link signout-link" type="button">로그아웃</button>
     </div>
   </main>
@@ -312,6 +313,44 @@
     </div>
     <div class="records-summary" id="recordsSummary"></div>
     <div class="record-list" id="recordList" aria-live="polite"></div>
+  </section>
+
+  <section class="bottom-sheet hidden" id="feedbackSheet" role="dialog" aria-modal="true" aria-labelledby="feedbackSheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="sheet-kicker">A NOTE FOR THE FOREST</p>
+        <h2 id="feedbackSheetTitle">숲에 말 남기기</h2>
+      </div>
+      <button class="close-button" data-close="feedbackSheet" type="button" aria-label="숲에 말 남기기 닫기">×</button>
+    </div>
+
+    <div class="feedback-intro">
+      <span aria-hidden="true">✦</span>
+      <p>남겨주신 말은 운영자에게만 전달돼요.<br>오늘의숲을 더 잘 가꾸는 데 참고할게요.</p>
+    </div>
+
+    <form id="feedbackForm" class="feedback-form">
+      <fieldset class="feedback-category-picker">
+        <legend>어떤 이야기를 남길까요?</legend>
+        <div class="feedback-category-grid">
+          <button class="feedback-category" type="button" data-feedback-category="issue" aria-pressed="false">
+            <span aria-hidden="true">🌿</span>불편한 점
+          </button>
+          <button class="feedback-category selected" type="button" data-feedback-category="idea" aria-pressed="true">
+            <span aria-hidden="true">✦</span>바라는 점
+          </button>
+          <button class="feedback-category" type="button" data-feedback-category="cheer" aria-pressed="false">
+            <span aria-hidden="true">💌</span>응원 한마디
+          </button>
+        </div>
+      </fieldset>
+
+      <label class="write-label" for="feedbackMessage">전하고 싶은 말</label>
+      <textarea id="feedbackMessage" name="feedbackMessage" maxlength="1000" rows="6" placeholder="편했던 점, 아쉬운 점, 바라는 점을 편하게 들려주세요."></textarea>
+      <button class="feedback-submit" type="submit">운영자에게 말 남기기</button>
+      <p class="sheet-footnote">다른 사용자에게는 보이지 않아요.</p>
+    </form>
   </section>
 
   <section class="bottom-sheet tall-sheet hidden" id="friendsSheet" role="dialog" aria-modal="true" aria-labelledby="friendsSheetTitle">

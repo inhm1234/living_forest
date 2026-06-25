@@ -1368,3 +1368,102 @@ textarea::placeholder { color: #a7b4bd; }
   .shared-tree-lights-meet { top: 61%; }
 }
 
+/* 비공개 피드백 v1 */
+.feedback-link {
+  margin-top: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #6f927e;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.feedback-link:hover { color: #537d65; }
+.feedback-intro {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 17px 0 0;
+  padding: 13px;
+  border: 1px solid #e1efe5;
+  border-radius: 17px;
+  background: linear-gradient(135deg, #f5fbf5, #f8f7ff);
+}
+.feedback-intro > span {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 12px;
+  background: #fff;
+  color: #79a58a;
+  font-size: 17px;
+  box-shadow: 0 5px 12px rgba(96, 141, 111, .08);
+}
+.feedback-intro p {
+  margin: 1px 0 0;
+  color: #71858d;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.55;
+}
+.feedback-form { margin-top: 18px; }
+.feedback-category-picker {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.feedback-category-picker legend {
+  margin-bottom: 9px;
+  color: #607789;
+  font-size: 13px;
+  font-weight: 900;
+}
+.feedback-category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+.feedback-category {
+  min-height: 63px;
+  padding: 7px 4px;
+  border: 1px solid #e2e8ec;
+  border-radius: 16px;
+  background: #fff;
+  color: #778b9b;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform .15s ease, border-color .15s ease, background .15s ease;
+}
+.feedback-category span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 18px;
+}
+.feedback-category.selected {
+  border-color: #93c5a5;
+  background: #eff9ef;
+  color: #487861;
+  box-shadow: inset 0 0 0 1px rgba(130, 186, 147, .16);
+}
+.feedback-submit {
+  width: 100%;
+  margin-top: 20px;
+  padding: 15px;
+  border: 0;
+  border-radius: 17px;
+  background: linear-gradient(135deg, #87caa0, #649c7d);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 950;
+  box-shadow: 0 13px 22px rgba(86, 150, 105, .22);
+  cursor: pointer;
+}
+.feedback-submit:disabled { cursor: wait; opacity: .75; }
+@media (max-width: 380px) {
+  .feedback-category { font-size: 10px; }
+}
+

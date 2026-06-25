@@ -144,6 +144,7 @@ const moodMap = {
 let currentUser = null;
 let state = cloneDefault();
 let selectedMood = "good";
+let selectedFeedbackCategory = "idea";
 let activeLetterId = null;
 let selectedLetterRecipientId = "";
 let activeInviteLink = "";
@@ -212,7 +213,11 @@ const els = {
   recordsSheet: $("#recordsSheet"),
   friendsSheet: $("#friendsSheet"),
   lettersSheet: $("#lettersSheet"),
+  feedbackSheet: $("#feedbackSheet"),
   letterComposerSheet: $("#letterComposerSheet"),
+  openFeedback: $("#openFeedback"),
+  feedbackForm: $("#feedbackForm"),
+  feedbackMessage: $("#feedbackMessage"),
   recordForm: $("#recordForm"),
   oneLine: $("#oneLine"),
   detailText: $("#detailText"),
@@ -1098,7 +1103,7 @@ function openSheet(element) {
 
 function closeAllSheets() {
   const wasViewingLetters = !els.lettersSheet.classList.contains("hidden");
-  [els.recordSheet, els.recordsSheet, els.friendsSheet, els.lettersSheet, els.letterComposerSheet].forEach((sheet) => sheet.classList.add("hidden"));
+  [els.recordSheet, els.recordsSheet, els.friendsSheet, els.lettersSheet, els.feedbackSheet, els.letterComposerSheet].forEach((sheet) => sheet.classList.add("hidden"));
   els.sheetOverlay.classList.add("hidden");
   // 도착 완료 장면은 편지 화면을 확인하는 동안만 머물고, 닫으면 조용히 사라집니다.
   if (wasViewingLetters) clearAnimalDeliveryArrivals();
@@ -3018,6 +3023,68 @@ function renderMoodSelection() {
   $$(".mood-choice").forEach((button) => button.classList.toggle("selected", button.dataset.mood === selectedMood));
 }
 
+function renderFeedbackCategorySelection() {
+  $$("[data-feedback-category]").forEach((button) => {
+    const selected = button.dataset.feedbackCategory === selectedFeedbackCategory;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+}
+
+function openFeedbackSheet() {
+  if (!currentUser) {
+    showToast("내 정원을 먼저 로그인해 주세요.");
+    return;
+  }
+  renderFeedbackCategorySelection();
+  openSheet(els.feedbackSheet);
+}
+
+async function submitGardenFeedback(event) {
+  event.preventDefault();
+  if (!currentUser) {
+    showToast("내 정원을 먼저 로그인해 주세요.");
+    return;
+  }
+
+  const message = els.feedbackMessage.value.trim();
+  const validCategories = new Set(["issue", "idea", "cheer"]);
+  if (!validCategories.has(selectedFeedbackCategory)) {
+    selectedFeedbackCategory = "idea";
+    renderFeedbackCategorySelection();
+  }
+  if (!message) {
+    showToast("전하고 싶은 말을 짧게라도 적어 주세요.");
+    els.feedbackMessage.focus();
+    return;
+  }
+
+  const submitButton = els.feedbackForm.querySelector('button[type="submit"]');
+  const originalText = submitButton.textContent;
+  submitButton.disabled = true;
+  submitButton.textContent = "운영자에게 전하는 중이에요";
+
+  try {
+    const { error } = await supabase.rpc("submit_my_garden_feedback", {
+      p_category: selectedFeedbackCategory,
+      p_message: message,
+    });
+    if (error) throw error;
+
+    els.feedbackForm.reset();
+    selectedFeedbackCategory = "idea";
+    renderFeedbackCategorySelection();
+    closeAllSheets();
+    showToast("소중한 말을 잘 받았어요. 숲을 더 잘 가꾸는 데 참고할게요.");
+  } catch (error) {
+    console.error("TodayForest feedback save error:", error);
+    showToast("말을 전하지 못했어요. 잠시 뒤 다시 시도해 주세요.");
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = originalText || "운영자에게 말 남기기";
+  }
+}
+
 async function saveRecord(event) {
   event.preventDefault();
   const oneLine = els.oneLine.value.trim();
@@ -3396,6 +3463,12 @@ function bindEvents() {
   $("#openRecords").addEventListener("click", () => { renderRecords(); openSheet(els.recordsSheet); });
   els.openFriends.addEventListener("click", () => { renderFriends(); openSheet(els.friendsSheet); });
   $("#openLetters").addEventListener("click", () => { void openLettersSheet(); });
+  els.openFeedback.addEventListener("click", openFeedbackSheet);
+  els.feedbackForm.addEventListener("submit", submitGardenFeedback);
+  $$("[data-feedback-category]").forEach((button) => button.addEventListener("click", () => {
+    selectedFeedbackCategory = button.dataset.feedbackCategory || "idea";
+    renderFeedbackCategorySelection();
+  }));
   els.openLetterComposer.addEventListener("click", () => {
     showToast("정원에 찾아온 숲친구를 눌러 편지를 맡겨요.");
   });
@@ -3475,6 +3548,7 @@ async function init() {
     updateInstallCard();
   });
   bindEvents();
+  renderFeedbackCategorySelection();
   await handleOAuthCallback();
   await syncSession();
 
