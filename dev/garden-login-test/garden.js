@@ -116,7 +116,10 @@ const PWA_INSTALL_LATER_MS = 7 * 24 * 60 * 60 * 1000;
 // 받은 편지 1차 화면 검수용입니다. 실제 친구 편지 데이터는 건드리지 않고,
 // URL에 ?receivedPreview=1~6 을 붙였을 때만 로컬 테스트 봉투를 추가합니다.
 const RECEIVED_LETTER_PREVIEW_STORAGE_PREFIX = "todayforest-dev-received-preview-v1";
-// 테스트 친구 계정으로 로그인할 수 없는 DEV 검수용 공유나무입니다.\n// 실제 공유나무 테이블·제안·친구 데이터는 건드리지 않고, 현재 브라우저에만 저장합니다.\nconst DEV_SHARED_TREE_STORAGE_PREFIX = "todayforest-dev-shared-tree-preview-v1";\n// 오래된 편지 정책을 실제 시간으로 기다리지 않고 안전하게 검수하기 위한 DEV 전용 테스트입니다.
+// 테스트 친구 계정으로 로그인할 수 없는 DEV 검수용 공유나무입니다.
+// 실제 공유나무 테이블·제안·친구 데이터는 건드리지 않고, 현재 브라우저에만 저장합니다.
+const DEV_SHARED_TREE_STORAGE_PREFIX = "todayforest-dev-shared-tree-preview-v1";
+// 오래된 편지 정책을 실제 시간으로 기다리지 않고 안전하게 검수하기 위한 DEV 전용 테스트입니다.
 // 실제 garden_letters와 분리된 DEV 전용 테이블만 사용합니다.
 // 준비는 ?retentionTest=21|wind|31&retentionReset=1 일 때만, 검수는 retentionTest 주소에서만 동작합니다.
 
