@@ -116,7 +116,7 @@ const PWA_INSTALL_LATER_MS = 7 * 24 * 60 * 60 * 1000;
 // 받은 편지 1차 화면 검수용입니다. 실제 친구 편지 데이터는 건드리지 않고,
 // URL에 ?receivedPreview=1~6 을 붙였을 때만 로컬 테스트 봉투를 추가합니다.
 const RECEIVED_LETTER_PREVIEW_STORAGE_PREFIX = "todayforest-dev-received-preview-v1";
-// 오래된 편지 정책을 실제 시간으로 기다리지 않고 안전하게 검수하기 위한 DEV 전용 테스트입니다.
+// 테스트 친구 계정으로 로그인할 수 없는 DEV 검수용 공유나무입니다.\n// 실제 공유나무 테이블·제안·친구 데이터는 건드리지 않고, 현재 브라우저에만 저장합니다.\nconst DEV_SHARED_TREE_STORAGE_PREFIX = "todayforest-dev-shared-tree-preview-v1";\n// 오래된 편지 정책을 실제 시간으로 기다리지 않고 안전하게 검수하기 위한 DEV 전용 테스트입니다.
 // 실제 garden_letters와 분리된 DEV 전용 테이블만 사용합니다.
 // 준비는 ?retentionTest=21|wind|31&retentionReset=1 일 때만, 검수는 retentionTest 주소에서만 동작합니다.
 
@@ -736,6 +736,103 @@ async function loadFoundGardenItems() {
   return positionedResult;
 }
 
+function devSharedTreeStorageKey() {
+  return currentUser ? `${DEV_SHARED_TREE_STORAGE_PREFIX}:${currentUser.id}` : "";
+}
+
+function readDevSharedTreePreview() {
+  const key = devSharedTreeStorageKey();
+  if (!key) return null;
+
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return null;
+    const preview = JSON.parse(raw);
+    if (!preview || typeof preview !== "object" || !preview.partnerId || !preview.id) return null;
+    return preview;
+  } catch (error) {
+    console.warn("TodayForest DEV shared-tree preview read skipped:", error);
+    return null;
+  }
+}
+
+function saveDevSharedTreePreview(tree) {
+  const key = devSharedTreeStorageKey();
+  if (!key) return false;
+
+  try {
+    window.localStorage.setItem(key, JSON.stringify({
+      id: tree.id,
+      partnerId: tree.partnerId,
+      createdAt: tree.createdAt,
+    }));
+    return true;
+  } catch (error) {
+    console.warn("TodayForest DEV shared-tree preview save skipped:", error);
+    return false;
+  }
+}
+
+function mergeDevSharedTreePreview(devFriends) {
+  const preview = readDevSharedTreePreview();
+  if (!preview) return;
+
+  const devFriend = (devFriends || []).find((friend) => friend.id === preview.partnerId);
+  if (!devFriend) return;
+
+  const alreadyLoaded = (state.sharedTrees || []).some((tree) => tree.partnerId === preview.partnerId);
+  if (alreadyLoaded) return;
+
+  state.sharedTrees = [
+    ...(state.sharedTrees || []),
+    {
+      id: preview.id,
+      partnerId: preview.partnerId,
+      progressCount: 0,
+      targetSteps: 20,
+      createdAt: preview.createdAt || new Date().toISOString(),
+      completedAt: null,
+      myRecordedToday: false,
+      partnerRecordedToday: false,
+      isDevPreview: true,
+    },
+  ];
+}
+
+function createDevSharedTreePreview(friendId) {
+  const friend = (state.friends || []).find((item) => item.id === friendId);
+  if (!friend?.isDevTest) return;
+
+  const existing = sharedTreeForFriend(friendId);
+  if (existing) {
+    openSharedTree(existing.id);
+    return;
+  }
+
+  const tree = {
+    id: `dev-shared-tree-${friendId}`,
+    partnerId: friendId,
+    progressCount: 0,
+    targetSteps: 20,
+    createdAt: new Date().toISOString(),
+    completedAt: null,
+    myRecordedToday: false,
+    partnerRecordedToday: false,
+    isDevPreview: true,
+  };
+
+  if (!saveDevSharedTreePreview(tree)) {
+    showToast("DEV 공유나무를 준비하지 못했어요. 브라우저 저장 공간을 확인해 주세요.");
+    return;
+  }
+
+  state.sharedTrees = [...(state.sharedTrees || []), tree];
+  renderAll();
+  renderFriends();
+  openSharedTree(tree.id);
+  showToast(`${friend.name}와 DEV 검수용 씨앗을 함께 심었어요.`);
+}
+
 async function loadGardenState() {
   if (!currentUser) {
     state = cloneDefault();
@@ -882,6 +979,9 @@ async function loadGardenState() {
         foundAt: item.found_at || item.created_at,
       })),
   };
+
+  // 테스트 친구와의 공유나무는 실제 DB를 건드리지 않는 브라우저 전용 DEV 검수 상태입니다.
+  mergeDevSharedTreePreview(devFriends);
 
   // v9 보관 정책 검수 봉투도 실제 수신 편지와 분리된 DEV 전용 데이터입니다.
   if (retentionDevLetters.length) {
@@ -2305,11 +2405,19 @@ function sharedTreeInviteForFriend(friendId) {
 }
 
 function sharedTreeActionMarkup(friend) {
+  const tree = sharedTreeForFriend(friend.id);
   if (friend.isDevTest) {
-    return '<span class="shared-tree-status muted">개발 친구와는 함께 심을 수 없어요.</span>';
+    if (tree) {
+      return `<button class="shared-tree-open-button shared-tree-dev-open-button" type="button" data-view-shared-tree="${escapeAttr(tree.id)}">🌿 DEV · 함께 키우는 나무 보기</button>`;
+    }
+    return `
+      <button class="shared-tree-dev-create-button" type="button" data-create-dev-shared-tree="${escapeAttr(friend.id)}">
+        🌱 DEV · 함께 심어 보기
+      </button>
+      <span class="shared-tree-status muted">검수용 자동 수락 · 실제 친구 데이터는 건드리지 않아요</span>
+    `;
   }
 
-  const tree = sharedTreeForFriend(friend.id);
   if (tree) {
     const done = tree.completedAt ? "완성된 둘만의 나무" : "함께 키우는 나무 보기";
     return `<button class="shared-tree-open-button" type="button" data-view-shared-tree="${escapeAttr(tree.id)}">🌿 ${escapeHTML(done)}</button>`;
@@ -2366,6 +2474,9 @@ function renderFriends() {
     button.addEventListener("click", () => {
       void removeFriend(button.dataset.removeFriend, button.dataset.friendName, button.dataset.devTest === "true");
     });
+  });
+  $$('[data-create-dev-shared-tree]').forEach((button) => {
+    button.addEventListener("click", () => { createDevSharedTreePreview(button.dataset.createDevSharedTree); });
   });
   $$('[data-invite-shared-tree]').forEach((button) => {
     button.addEventListener("click", () => { void inviteSharedTree(button.dataset.inviteSharedTree); });
