@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#eef1ff" />
+  <title>[체험판] 오늘의숲 · 작은 풍경 만들기</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="forest-workshop.css" />
+</head>
+<body>
+  <main class="workshop-app" aria-label="오늘의숲 작은 풍경 만들기 체험판">
+    <header class="topbar">
+      <a class="back-link" href="../" aria-label="내 정원으로 돌아가기">← 정원</a>
+      <div class="topbar-copy">
+        <p class="eyebrow">FOREST WORKSHOP · EXAMPLE</p>
+        <h1>작은 풍경 만들기</h1>
+      </div>
+      <button class="help-button" type="button" id="helpButton" aria-expanded="false" aria-controls="helpPanel">?</button>
+    </header>
+
+    <section class="intro-card" aria-label="오늘의 작업 안내">
+      <div class="intro-icon" aria-hidden="true">🧺</div>
+      <div>
+        <p class="intro-title">오늘 숲에 떨어진 작은 것들이 있어요.</p>
+        <p class="intro-copy">같은 재료를 합쳐서, 정원의 빈자리를 조금씩 완성해보세요.</p>
+      </div>
+    </section>
+
+    <section class="help-panel" id="helpPanel" hidden>
+      <ol>
+        <li>작업판에서 <b>같은 재료 두 개</b>를 차례로 눌러요.</li>
+        <li>두 개가 합쳐져 더 예쁜 물건이 돼요.</li>
+        <li>완성된 물건은 아래 <b>고슴도치 쉼터</b>에 놓을 수 있어요.</li>
+      </ol>
+      <p>점수나 실패는 없어요. 오늘은 내 숲의 한 자리를 완성하는 게 목표예요.</p>
+    </section>
+
+    <section class="project-card" aria-labelledby="projectTitle">
+      <div class="project-head">
+        <div>
+          <p class="section-kicker">TODAY'S PROJECT</p>
+          <h2 id="projectTitle">고슴도치의 작은 쉼터</h2>
+          <p id="projectProgress" class="project-progress">아직 비어 있어요 · 0 / 3</p>
+        </div>
+        <span class="project-badge" id="projectBadge">만드는 중</span>
+      </div>
+
+      <div class="scene-preview" id="scenePreview" aria-label="고슴도치 쉼터 미리보기">
+        <div class="scene-moon" aria-hidden="true"></div>
+        <div class="scene-hill" aria-hidden="true"></div>
+        <div class="scene-leaves" id="sceneLeaves" aria-hidden="true">🍂</div>
+        <div class="scene-rock" id="sceneRock" aria-hidden="true" hidden>🪨</div>
+        <div class="scene-flowers" id="sceneFlowers" aria-hidden="true" hidden>🌷</div>
+        <div class="scene-jar" id="sceneJar" aria-hidden="true" hidden>🏮</div>
+        <div class="scene-hedgehog" id="sceneHedgehog" aria-hidden="true" hidden>🦔</div>
+        <p class="scene-caption" id="sceneCaption">낙엽 아래, 아직 아무도 쉬어가지 않은 작은 자리예요.</p>
+      </div>
+
+      <div class="project-needs" aria-label="쉼터에 필요한 물건">
+        <button class="need-card" type="button" data-project-target="mossyRock" disabled>
+          <span class="need-icon" aria-hidden="true">🪨</span>
+          <span class="need-copy"><b>이끼 돌</b><small id="needMoss">아직 만들지 못했어요</small></span>
+          <span class="need-action" id="actionMoss">필요해요</span>
+        </button>
+        <button class="need-card" type="button" data-project-target="flowerCluster" disabled>
+          <span class="need-icon" aria-hidden="true">🌷</span>
+          <span class="need-copy"><b>꽃무리</b><small id="needFlower">아직 만들지 못했어요</small></span>
+          <span class="need-action" id="actionFlower">필요해요</span>
+        </button>
+        <button class="need-card" type="button" data-project-target="fireflyJar" disabled>
+          <span class="need-icon" aria-hidden="true">🏮</span>
+          <span class="need-copy"><b>빛병</b><small id="needJar">아직 만들지 못했어요</small></span>
+          <span class="need-action" id="actionJar">필요해요</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="workbench-card" aria-labelledby="workbenchTitle">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">FOREST WORKBENCH</p>
+          <h2 id="workbenchTitle">숲 작업대</h2>
+        </div>
+        <span class="move-pill" id="movePill">합치기 0회</span>
+      </div>
+      <p class="instruction" id="instruction" aria-live="polite">같은 재료 두 개를 차례로 눌러 합쳐보세요.</p>
+
+      <div class="merge-guide" aria-hidden="true">
+        <span>🌱</span><span>+</span><span>🌱</span><span>→</span><span>🌷</span>
+        <small>두 개가 모이면, 정원에 놓을 작은 물건이 돼요.</small>
+      </div>
+
+      <div class="workbench" id="workbench" aria-label="같은 재료를 합치는 작업판"></div>
+
+      <div class="crafted-strip" aria-label="오늘 만든 물건">
+        <div>
+          <p class="section-kicker">MADE TODAY</p>
+          <p id="craftedSummary">아직 만든 물건이 없어요.</p>
+        </div>
+        <div class="crafted-items" id="craftedItems"></div>
+      </div>
+    </section>
+
+    <section class="next-card" id="nextCard" aria-live="polite">
+      <div class="next-icon" aria-hidden="true">⏳</div>
+      <div>
+        <p class="section-kicker">다음 작은 것</p>
+        <p><b>실서비스에서는</b> 마음 기록 후 바로 1묶음, 이후 4시간마다 새 재료가 준비돼요.</p>
+        <small>이 체험판은 지금 한 번에 만들어보는 용도라 기다릴 필요 없어요.</small>
+      </div>
+    </section>
+
+    <section class="completion-card" id="completionCard" hidden aria-live="polite">
+      <div class="completion-icon" aria-hidden="true">🦔</div>
+      <div>
+        <p class="section-kicker">PROJECT COMPLETE</p>
+        <h2>고슴도치의 작은 쉼터가 완성됐어요.</h2>
+        <p>다음에 정원을 열면, 고슴도치가 이 자리에 잠깐 쉬어갈 수 있어요.</p>
+      </div>
+      <button type="button" class="restart-button" id="restartButton">처음부터 다시 보기</button>
+    </section>
+
+    <p class="prototype-note">체험판 · 실제 정원, 로그인, 기록, 장식 저장에는 연결되지 않아요.</p>
+  </main>
+
+  <script src="forest-workshop.js"></script>
+</body>
+</html>
