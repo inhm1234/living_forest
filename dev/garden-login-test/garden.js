@@ -2537,6 +2537,11 @@ function renderFriends() {
       void removeFriend(button.dataset.removeFriend, button.dataset.friendName, button.dataset.devTest === "true");
     });
   });
+  $$('[data-view-friend]').forEach((button) => {
+    button.addEventListener("click", () => {
+      void openFriendGarden(button.dataset.viewFriend);
+    });
+  });
   $$('[data-create-dev-shared-tree]').forEach((button) => {
     button.addEventListener("click", () => { createDevSharedTreePreview(button.dataset.createDevSharedTree); });
   });
