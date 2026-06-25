@@ -263,6 +263,9 @@ const els = {
   sharedTreeLeaves: $("#sharedTreeLeaves"),
   sharedTreeTodayRow: $("#sharedTreeTodayRow"),
   sharedTreeFireflies: $("#sharedTreeFireflies"),
+  sharedTreeMyLight: $("#sharedTreeMyLight"),
+  sharedTreePartnerLight: $("#sharedTreePartnerLight"),
+  sharedTreeLightsMeet: $("#sharedTreeLightsMeet"),
   sharedTreeSeedGlow: $("#sharedTreeSeedGlow"),
   sharedTreeImage: $("#sharedTreeImage"),
   returnToFriendsFromSharedTree: $("#returnToFriendsFromSharedTree"),
@@ -2617,6 +2620,8 @@ function renderSharedTreeView(treeId = activeSharedTreeId) {
     <span class="shared-tree-today ${tree.partnerRecordedToday ? "is-on" : ""}">${tree.partnerRecordedToday ? `✦ ${escapeHTML(friend.name)}의 빛이 닿았어요` : `○ ${escapeHTML(friend.name)}의 빛을 기다려요`}</span>
   `;
   els.sharedTreeFireflies.innerHTML = bothToday ? '<i>✦</i><i>✦</i><i>✦</i><i>✦</i><i>✦</i><i>✦</i>' : "";
+  els.sharedTreeView.classList.toggle("my-recorded-today", Boolean(tree.myRecordedToday));
+  els.sharedTreeView.classList.toggle("partner-recorded-today", Boolean(tree.partnerRecordedToday));
   els.sharedTreeView.classList.toggle("both-recorded-today", bothToday);
   els.sharedTreeView.classList.toggle("is-complete", complete);
   return true;
