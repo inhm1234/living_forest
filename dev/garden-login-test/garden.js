@@ -3509,7 +3509,12 @@ async function init() {
       state = cloneDefault();
     }
     renderAuthUI();
-    if (currentUser) renderAll();
+    if (currentUser) {
+      renderAll();
+      // INITIAL_SESSION 이벤트가 마지막에 내 정원을 다시 보이게 할 수 있습니다.
+      // 주소에 공유나무가 있으면 렌더링 뒤 공유나무 화면을 최종 화면으로 복원합니다.
+      restoreSharedTreeFromUrl();
+    }
   });
 }
 
