@@ -1048,3 +1048,94 @@ textarea::placeholder { color: #a7b4bd; }
   18% { opacity: .8; }
   100% { opacity: 0; transform: translate(43px, 10px) rotate(85deg); }
 }
+
+
+/* Shared tree seed v1: 친구 목록 안의 제안 · 수락 · 둘만의 씨앗 화면 */
+.friend-row { align-items: flex-start; }
+.friend-row-main { min-width: 0; flex: 1; }
+.friend-garden-open { width: 100%; }
+.friend-shared-tree-action { margin-top: 8px; padding-left: 2px; }
+.shared-tree-invite-button,
+.shared-tree-open-button,
+.shared-tree-incoming-button {
+  padding: 7px 9px;
+  border: 1px solid rgba(113, 151, 201, .24);
+  border-radius: 11px;
+  background: linear-gradient(135deg, #f6f2ff, #f0fbf5);
+  color: #6b78a5;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.shared-tree-open-button { border-color: rgba(103, 151, 124, .25); background: linear-gradient(135deg, #eff9eb, #f7f3ff); color: #609174; }
+.shared-tree-incoming-button { border-color: rgba(208, 161, 191, .3); background: linear-gradient(135deg, #fff3f7, #f4f0ff); color: #a8758d; }
+.shared-tree-status { display: inline-block; padding: 7px 2px 1px; color: #98a3ad; font-size: 11px; font-weight: 800; }
+.shared-tree-status.muted { color: #b1afb9; }
+.shared-tree-invite-card .letter-delivery { color: #8a7ab2; }
+
+.shared-tree-view { width: min(100%, 660px); }
+.shared-tree-header { align-items: center; }
+.shared-tree-stage {
+  position: relative;
+  min-height: clamp(500px, 68vh, 600px);
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid rgba(255,255,255,.78);
+  border-radius: 34px;
+  background: linear-gradient(180deg, #d7cff5 0%, #e9dff7 40%, #f7e8df 72%, #deefde 100%);
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.9);
+}
+.shared-tree-sunset-glow { position: absolute; z-index: -1; border-radius: 50%; filter: blur(10px); opacity: .78; }
+.shared-tree-sunset-glow.glow-one { width: 330px; height: 210px; top: 8%; left: -19%; background: rgba(255, 238, 202, .95); }
+.shared-tree-sunset-glow.glow-two { width: 280px; height: 170px; top: 17%; right: -18%; background: rgba(225, 195, 252, .86); }
+.shared-tree-hill { position: absolute; z-index: -1; border-radius: 50% 50% 0 0; }
+.shared-tree-hill.hill-one { width: 128%; height: 40%; right: -19%; bottom: -6%; background: #c2e0bd; }
+.shared-tree-hill.hill-two { width: 96%; height: 34%; left: -25%; bottom: -9%; background: #acd5b3; }
+.shared-tree-path { position: absolute; z-index: -1; width: 36%; height: 52%; left: 32%; bottom: -17%; border-radius: 50% 50% 0 0; background: linear-gradient(90deg, rgba(233,220,190,.95), rgba(250,241,218,.92)); transform: rotate(7deg); opacity: .78; }
+.shared-tree-stone { position: absolute; bottom: 16%; width: 38px; height: 24px; border-radius: 50% 48% 45% 50%; background: #a6b7ac; box-shadow: inset -6px -5px 0 rgba(90,121,104,.12); }
+.shared-tree-stone.stone-one { left: 13%; transform: rotate(-8deg); }
+.shared-tree-stone.stone-two { right: 14%; bottom: 22%; transform: scale(.7) rotate(16deg); }
+.shared-tree-flowers { position: absolute; bottom: 19%; left: 18%; color: #ec9fba; font-size: 17px; letter-spacing: 13px; text-shadow: 20px 16px 0 #fff7f9, 125px 19px 0 #ed9fbb; }
+.shared-tree-plant { position: absolute; left: 50%; bottom: 16%; width: 255px; height: 295px; transform: translateX(-50%); }
+.shared-tree-trunk { position: absolute; left: 50%; bottom: 0; width: 46px; height: 175px; border-radius: 60% 55% 20% 25%; background: linear-gradient(90deg, #8b6b57, #b98a68 54%, #77594d); transform: translateX(-50%) rotate(2deg); box-shadow: inset 8px 0 0 rgba(255,228,189,.18); }
+.shared-tree-trunk::before, .shared-tree-trunk::after { content: ""; position: absolute; bottom: 85px; width: 94px; height: 23px; border-radius: 100%; background: #9d765e; transform-origin: left center; }
+.shared-tree-trunk::before { left: 26px; transform: rotate(-27deg); }
+.shared-tree-trunk::after { right: 23px; transform: rotate(28deg) scaleX(-1); }
+.shared-tree-canopy { position: absolute; top: 4px; width: 163px; height: 136px; border-radius: 54% 46% 50% 50%; background: radial-gradient(circle at 36% 28%, #ddf3c1 0 8%, transparent 9%), radial-gradient(circle at 73% 27%, #c3e6a6 0 10%, transparent 11%), linear-gradient(145deg, #7fbb7f, #a9d798 64%, #69a775); box-shadow: inset -14px -16px 0 rgba(75,130,90,.15), 0 14px 20px rgba(84,130,95,.13); }
+.shared-tree-canopy.canopy-left { left: 4px; transform: rotate(-9deg); }
+.shared-tree-canopy.canopy-right { right: 0; top: 24px; transform: rotate(12deg) scale(.87); }
+.shared-tree-root { position: absolute; bottom: -3px; width: 91px; height: 29px; border-radius: 70% 15% 60% 15%; background: #8f6c57; }
+.shared-tree-root.root-left { left: 60px; transform: rotate(8deg); }
+.shared-tree-root.root-right { right: 59px; transform: scaleX(-1) rotate(8deg); }
+.shared-tree-seed-glow { position: absolute; left: 50%; bottom: -17px; display: grid; width: 42px; height: 42px; place-items: center; border-radius: 50%; background: rgba(255,246,188,.52); color: #f1c96e; font-size: 24px; transform: translateX(-50%); box-shadow: 0 0 0 12px rgba(255,249,212,.18), 0 0 32px rgba(255,231,143,.7); }
+.shared-tree-stage-copy { position: absolute; right: 18px; bottom: 17px; left: 18px; margin: 0; padding: 12px 14px; border: 1px solid rgba(255,255,255,.62); border-radius: 16px; background: rgba(255,255,255,.55); color: #6d7087; font-size: 12px; font-weight: 800; line-height: 1.5; text-align: center; backdrop-filter: blur(4px); }
+.shared-tree-progress-card { margin-top: 15px; padding: 17px; border: 1px solid rgba(164,150,204,.18); border-radius: 23px; background: rgba(255,255,255,.78); box-shadow: 0 12px 24px rgba(116,105,146,.08); }
+.shared-tree-progress-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.shared-tree-progress-copy { margin: 0; color: #69778b; font-size: 12px; font-weight: 700; line-height: 1.5; }
+.shared-tree-progress-count { flex: 0 0 auto; padding: 6px 8px; border-radius: 999px; background: #f0ebff; color: #8471b0; font-size: 11px; font-weight: 900; }
+.shared-tree-leaves { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin-top: 15px; }
+.shared-tree-leaf { display: grid; min-height: 24px; place-items: center; border: 1px solid #e3e7e5; border-radius: 8px; background: #fbfdfb; color: #d1d8d3; font-size: 12px; }
+.shared-tree-leaf.is-filled { border-color: #efdc90; background: linear-gradient(135deg, #fff2ad, #f9d990); color: #e4a75b; box-shadow: 0 5px 10px rgba(229,171,92,.14); }
+.shared-tree-today-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+.shared-tree-today { padding: 7px 9px; border-radius: 999px; background: #f6f7f9; color: #99a4ac; font-size: 11px; font-weight: 800; }
+.shared-tree-today.is-on { background: #fff3c9; color: #bd8a42; }
+.shared-tree-note { display: flex; align-items: flex-start; gap: 9px; margin: 14px 2px 0; padding: 13px 14px; border: 1px solid rgba(255,255,255,.72); border-radius: 18px; background: rgba(255,255,255,.5); color: #7e8899; font-size: 12px; line-height: 1.5; }
+.shared-tree-note p { margin: 0; }
+.shared-tree-fireflies { position: absolute; inset: 0; pointer-events: none; }
+.shared-tree-fireflies i { position: absolute; color: #fff4a3; font-size: 18px; text-shadow: 0 0 14px #fff0a0; animation: sharedTreeTwinkle 2.1s ease-in-out infinite; }
+.shared-tree-fireflies i:nth-child(1) { left: 25%; top: 41%; }
+.shared-tree-fireflies i:nth-child(2) { left: 34%; top: 28%; animation-delay: .35s; }
+.shared-tree-fireflies i:nth-child(3) { left: 63%; top: 35%; animation-delay: .7s; }
+.shared-tree-fireflies i:nth-child(4) { left: 72%; top: 51%; animation-delay: 1.05s; }
+.shared-tree-fireflies i:nth-child(5) { left: 45%; top: 54%; animation-delay: 1.35s; }
+.shared-tree-fireflies i:nth-child(6) { left: 55%; top: 20%; animation-delay: 1.7s; }
+@keyframes sharedTreeTwinkle { 0%,100% { opacity: .35; transform: translateY(0) scale(.8); } 50% { opacity: 1; transform: translateY(-8px) scale(1.16); } }
+.shared-tree-view.both-recorded-today .shared-tree-seed-glow { animation: sharedTreeSeedPulse 1.8s ease-in-out infinite; }
+@keyframes sharedTreeSeedPulse { 0%,100% { box-shadow: 0 0 0 12px rgba(255,249,212,.18), 0 0 32px rgba(255,231,143,.7); } 50% { box-shadow: 0 0 0 20px rgba(255,249,212,.27), 0 0 46px rgba(255,223,126,.95); } }
+.shared-tree-view.is-complete .shared-tree-canopy { filter: saturate(1.14) brightness(1.06); }
+@media (max-width: 470px) {
+  .shared-tree-stage { min-height: 500px; }
+  .shared-tree-plant { transform: translateX(-50%) scale(.9); transform-origin: bottom center; }
+  .shared-tree-leaves { grid-template-columns: repeat(10, 1fr); gap: 4px; }
+  .shared-tree-leaf { min-height: 22px; }
+}

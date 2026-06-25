@@ -215,6 +215,56 @@
     <button class="friend-return-button" id="returnToMyGarden" type="button">내 정원으로 돌아가기</button>
   </main>
 
+
+
+  <main class="garden-app shared-tree-view hidden" id="sharedTreeView" aria-label="친구와 함께 키우는 나무">
+    <header class="garden-header shared-tree-header">
+      <div>
+        <p class="eyebrow">OUR LITTLE TREE</p>
+        <h1 id="sharedTreePartnerName">친구와 함께 키우는 나무</h1>
+      </div>
+      <button class="friend-return-top" id="returnToFriendsFromSharedTree" type="button">← 친구</button>
+    </header>
+
+    <section class="shared-tree-stage" aria-label="둘만의 공유나무">
+      <div class="shared-tree-sunset-glow glow-one" aria-hidden="true"></div>
+      <div class="shared-tree-sunset-glow glow-two" aria-hidden="true"></div>
+      <div class="shared-tree-hill hill-one" aria-hidden="true"></div>
+      <div class="shared-tree-hill hill-two" aria-hidden="true"></div>
+      <div class="shared-tree-path" aria-hidden="true"></div>
+      <div class="shared-tree-stone stone-one" aria-hidden="true"></div>
+      <div class="shared-tree-stone stone-two" aria-hidden="true"></div>
+      <div class="shared-tree-flowers" aria-hidden="true">✿ ✿ ✿</div>
+      <div class="shared-tree-fireflies" id="sharedTreeFireflies" aria-hidden="true"></div>
+      <div class="shared-tree-plant">
+        <div class="shared-tree-canopy canopy-left" aria-hidden="true"></div>
+        <div class="shared-tree-canopy canopy-right" aria-hidden="true"></div>
+        <div class="shared-tree-trunk" aria-hidden="true"></div>
+        <div class="shared-tree-root root-left" aria-hidden="true"></div>
+        <div class="shared-tree-root root-right" aria-hidden="true"></div>
+        <div class="shared-tree-seed-glow" id="sharedTreeSeedGlow" aria-hidden="true">✦</div>
+      </div>
+      <p class="shared-tree-stage-copy" id="sharedTreeStageCopy">두 개의 작은 빛이 씨앗 곁에서 조용히 기다리고 있어요.</p>
+    </section>
+
+    <section class="shared-tree-progress-card" aria-label="공유나무 진행">
+      <div class="shared-tree-progress-heading">
+        <div>
+          <p class="growth-note-kicker">LIGHT LEAVES</p>
+          <p class="shared-tree-progress-copy" id="sharedTreeProgressCopy">서로의 하루가 닿을 때마다 빛 조각이 하나씩 쌓여요.</p>
+        </div>
+        <span class="shared-tree-progress-count" id="sharedTreeProgressCount" aria-live="polite">0 / 20</span>
+      </div>
+      <div class="shared-tree-leaves" id="sharedTreeLeaves" aria-label="빛 조각 20개"></div>
+      <div class="shared-tree-today-row" id="sharedTreeTodayRow"></div>
+    </section>
+
+    <section class="shared-tree-note" aria-label="공유나무 안내">
+      <span aria-hidden="true">🌿</span>
+      <p>서로의 기록 내용은 보이지 않아요. 각자의 하루가 닿을 때마다 둘만의 나무가 조금씩 자라요.</p>
+    </section>
+  </main>
+
   <div class="sheet-overlay hidden" id="sheetOverlay" aria-hidden="true"></div>
 
   <section class="bottom-sheet hidden" id="recordSheet" role="dialog" aria-modal="true" aria-labelledby="recordSheetTitle">
@@ -395,6 +445,21 @@
       <button class="secondary-sheet-button" id="declineFriendInviteButton" type="button">나중에 하기</button>
     </div>
   </section>
+
+
+
+  <section class="letter-modal hidden" id="sharedTreeInviteModal" role="dialog" aria-modal="true" aria-labelledby="sharedTreeInviteTitle">
+    <div class="letter-card shared-tree-invite-card">
+      <button class="letter-close" id="closeSharedTreeInviteModal" type="button" aria-label="공유나무 제안 닫기">×</button>
+      <p class="letter-delivery">A LITTLE SEED</p>
+      <p class="letter-from" id="sharedTreeInviteFrom">친구의 정원</p>
+      <h2 id="sharedTreeInviteTitle">우리 둘만의 나무 하나 키워볼래? 🌿</h2>
+      <p class="letter-body">각자의 하루가 닿을 때마다 조금씩 자라요. 서로의 기록 내용은 보이지 않고, 둘만의 작은 나무만 남아요.</p>
+      <button class="letter-confirm" id="acceptSharedTreeInviteButton" type="button">함께 심기</button>
+      <button class="secondary-sheet-button" id="laterSharedTreeInviteButton" type="button">지금은 나중에</button>
+    </div>
+  </section>
+
 
   <section class="letter-modal hidden" id="letterModal" role="dialog" aria-modal="true" aria-labelledby="letterModalTitle">
     <div class="letter-card">

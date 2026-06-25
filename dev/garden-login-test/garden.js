@@ -17,6 +17,8 @@ const DEFAULT_STATE = {
   letters: [],
   sentLetters: [],
   friends: [],
+  sharedTrees: [],
+  sharedTreeInvites: [],
   foundItems: [],
   profileName: "새 친구",
 };
@@ -145,6 +147,8 @@ let invitePreviewHandled = false;
 let toastTimer = null;
 let authBusy = false;
 let activeFriendGardenId = "";
+let activeSharedTreeId = "";
+let pendingSharedTreeInvite = null;
 let activeAnimalVisit = null;
 let animalDepartureTimer = null;
 let pendingExpiredLetterReturn = null;
@@ -244,6 +248,20 @@ const els = {
   returnToMyGarden: $("#returnToMyGarden"),
   returnToMyGardenTop: $("#returnToMyGardenTop"),
   friendInviteModal: $("#friendInviteModal"),
+  sharedTreeInviteModal: $("#sharedTreeInviteModal"),
+  sharedTreeInviteFrom: $("#sharedTreeInviteFrom"),
+  acceptSharedTreeInviteButton: $("#acceptSharedTreeInviteButton"),
+  laterSharedTreeInviteButton: $("#laterSharedTreeInviteButton"),
+  sharedTreeView: $("#sharedTreeView"),
+  sharedTreePartnerName: $("#sharedTreePartnerName"),
+  sharedTreeStageCopy: $("#sharedTreeStageCopy"),
+  sharedTreeProgressCopy: $("#sharedTreeProgressCopy"),
+  sharedTreeProgressCount: $("#sharedTreeProgressCount"),
+  sharedTreeLeaves: $("#sharedTreeLeaves"),
+  sharedTreeTodayRow: $("#sharedTreeTodayRow"),
+  sharedTreeFireflies: $("#sharedTreeFireflies"),
+  sharedTreeSeedGlow: $("#sharedTreeSeedGlow"),
+  returnToFriendsFromSharedTree: $("#returnToFriendsFromSharedTree"),
   friendInviteFrom: $("#friendInviteFrom"),
   acceptFriendInviteButton: $("#acceptFriendInviteButton"),
   declineFriendInviteButton: $("#declineFriendInviteButton"),
@@ -442,6 +460,21 @@ function databaseErrorMessage(error) {
   }
   if (message.includes("garden_dev_test") || message.includes("enable_my_dev_test_friend") || message.includes("send_dev_test_garden_letter")) {
     return "테스트 새싹 준비를 하지 못했어요. DEV 테스트 친구 SQL 설정을 먼저 실행해 주세요.";
+  }
+  if (message.includes("SHARED_TREE_ALREADY_EXISTS")) {
+    return "이 친구와는 이미 함께 키우는 나무가 있어요.";
+  }
+  if (message.includes("SHARED_TREE_INVITE_ALREADY_PENDING")) {
+    return "이미 씨앗 제안을 기다리고 있어요.";
+  }
+  if (message.includes("SHARED_TREE_LIMIT_REACHED")) {
+    return "함께 키우는 나무는 동시에 최대 3그루까지 만들 수 있어요.";
+  }
+  if (message.includes("SHARED_TREE_FRIEND_REQUIRED")) {
+    return "현재 연결된 친구에게만 함께 키우는 나무를 제안할 수 있어요.";
+  }
+  if (message.includes("SHARED_TREE_INVITE_NOT_FOUND")) {
+    return "이 씨앗 제안은 더 이상 기다리고 있지 않아요.";
   }
   if (message.includes("setup_my_garden_retention_dev_test") || message.includes("run_my_garden_retention_dev_cleanup") || message.includes("list_my_garden_retention_dev_tests")) {
     return "오래된 편지 테스트를 준비하지 못했어요. v9 DEV 보관 정책 SQL을 먼저 실행해 주세요.";
@@ -715,7 +748,7 @@ async function loadGardenState() {
 
   const nowIso = new Date().toISOString();
   const retentionTestActive = Boolean(retentionTestModeFromUrl());
-  const [profileResult, recordsResult, foundItemsResult, lettersResult, sentLettersResult, friendsResult, devFriendResult, devSentLettersResult, retentionDevLetters] = await Promise.all([
+  const [profileResult, recordsResult, foundItemsResult, lettersResult, sentLettersResult, friendsResult, sharedTreesResult, sharedTreeInvitesResult, devFriendResult, devSentLettersResult, retentionDevLetters] = await Promise.all([
     supabase.from("garden_profiles").select("nickname, growth_count").eq("id", currentUser.id).single(),
     supabase.from("garden_records").select("id, mood, one_line, detail, created_at").order("created_at", { ascending: false }),
     loadFoundGardenItems(),
@@ -726,6 +759,8 @@ async function loadGardenState() {
       : supabase.from("garden_letters").select("id, sender_name, title, delivery_kind, sent_at, available_at, read_at, created_at").lte("available_at", nowIso).is("read_at", null).order("available_at", { ascending: true }).limit(60),
     supabase.rpc("list_my_sent_garden_letters"),
     supabase.rpc("list_my_garden_friends"),
+    supabase.rpc("list_my_garden_shared_trees"),
+    supabase.rpc("list_my_garden_shared_tree_invites"),
     supabase.rpc("get_my_dev_test_friend"),
     supabase.rpc("list_my_dev_test_sent_letters"),
     loadRetentionDevLetters(),
@@ -743,6 +778,8 @@ async function loadGardenState() {
   if (lettersResult.error) console.warn("TodayForest received-letter load skipped:", lettersResult.error);
   if (sentLettersResult.error) console.warn("TodayForest sent-letter load skipped:", sentLettersResult.error);
   if (friendsResult.error) console.warn("TodayForest friend load skipped:", friendsResult.error);
+  if (sharedTreesResult.error) console.warn("TodayForest shared-tree load skipped:", sharedTreesResult.error);
+  if (sharedTreeInvitesResult.error) console.warn("TodayForest shared-tree invite load skipped:", sharedTreeInvitesResult.error);
   if (devFriendResult.error) console.warn("TodayForest DEV friend load skipped:", devFriendResult.error);
   if (devSentLettersResult.error) console.warn("TodayForest DEV sent-letter load skipped:", devSentLettersResult.error);
 
@@ -817,6 +854,22 @@ async function loadGardenState() {
     })),
     sentLetters: Array.from(sentById.values()).map(applyAnimalDeliveryMeta),
     friends: Array.from(friendsById.values()),
+    sharedTrees: (sharedTreesResult.data || []).map((tree) => ({
+      id: tree.tree_id,
+      partnerId: tree.partner_id,
+      progressCount: Number(tree.progress_count || 0),
+      targetSteps: Number(tree.target_steps || 20),
+      createdAt: tree.created_at,
+      completedAt: tree.completed_at || null,
+      myRecordedToday: Boolean(tree.my_recorded_today),
+      partnerRecordedToday: Boolean(tree.partner_recorded_today),
+    })),
+    sharedTreeInvites: (sharedTreeInvitesResult.data || []).map((invite) => ({
+      id: invite.invite_id,
+      direction: invite.direction,
+      otherUserId: invite.other_user_id,
+      createdAt: invite.created_at,
+    })),
     foundItems: (foundItemsResult.data || [])
       .filter((item) => foundItemCatalog[item.item_key])
       .map((item) => ({
@@ -2243,6 +2296,36 @@ async function sendGardenLetter(event) {
   }
 }
 
+function sharedTreeForFriend(friendId) {
+  return (state.sharedTrees || []).find((tree) => tree.partnerId === friendId) || null;
+}
+
+function sharedTreeInviteForFriend(friendId) {
+  return (state.sharedTreeInvites || []).find((invite) => invite.otherUserId === friendId) || null;
+}
+
+function sharedTreeActionMarkup(friend) {
+  if (friend.isDevTest) {
+    return '<span class="shared-tree-status muted">개발 친구와는 함께 심을 수 없어요.</span>';
+  }
+
+  const tree = sharedTreeForFriend(friend.id);
+  if (tree) {
+    const done = tree.completedAt ? "완성된 둘만의 나무" : "함께 키우는 나무 보기";
+    return `<button class="shared-tree-open-button" type="button" data-view-shared-tree="${escapeAttr(tree.id)}">🌿 ${escapeHTML(done)}</button>`;
+  }
+
+  const invite = sharedTreeInviteForFriend(friend.id);
+  if (invite?.direction === "incoming") {
+    return `<button class="shared-tree-incoming-button" type="button" data-open-shared-tree-invite="${escapeAttr(invite.id)}">✦ 작은 씨앗이 도착했어요</button>`;
+  }
+  if (invite?.direction === "outgoing") {
+    return '<span class="shared-tree-status">씨앗 제안을 기다리고 있어요</span>';
+  }
+
+  return `<button class="shared-tree-invite-button" type="button" data-invite-shared-tree="${escapeAttr(friend.id)}" data-friend-name="${escapeAttr(friend.name)}">🌱 같이 나무 키울래?</button>`;
+}
+
 function renderFriends() {
   const friends = state.friends || [];
   const hasDevTestFriend = friends.some((friend) => friend.isDevTest);
@@ -2263,25 +2346,168 @@ function renderFriends() {
     const actionText = friend.isDevTest ? "테스트 친구 지우기" : "친구 삭제";
     return `
       <article class="friend-row ${friend.isDevTest ? "is-dev-test" : ""}">
-        <button class="friend-garden-open" type="button" data-view-friend="${escapeAttr(friend.id)}" aria-label="${escapeAttr(friend.name)}의 정원 보기">
-          <span class="friend-avatar">${avatar}</span>
-          <span class="friend-main">
-            <span class="friend-name">${escapeHTML(friend.name)}${friend.isDevTest ? '<span class="dev-test-tag">DEV</span>' : ""}</span>
-            <span class="friend-stage">마음 ${friend.growth}일째 · ${escapeHTML(stage.label)}${friend.isDevTest ? " · 개발 확인용" : ""}</span>
-          </span>
-          <span class="friend-view-arrow" aria-hidden="true">›</span>
-        </button>
+        <div class="friend-row-main">
+          <button class="friend-garden-open" type="button" data-view-friend="${escapeAttr(friend.id)}" aria-label="${escapeAttr(friend.name)}의 정원 보기">
+            <span class="friend-avatar">${avatar}</span>
+            <span class="friend-main">
+              <span class="friend-name">${escapeHTML(friend.name)}${friend.isDevTest ? '<span class="dev-test-tag">DEV</span>' : ""}</span>
+              <span class="friend-stage">마음 ${friend.growth}일째 · ${escapeHTML(stage.label)}${friend.isDevTest ? " · 개발 확인용" : ""}</span>
+            </span>
+            <span class="friend-view-arrow" aria-hidden="true">›</span>
+          </button>
+          <div class="friend-shared-tree-action">${sharedTreeActionMarkup(friend)}</div>
+        </div>
         <button class="remove-friend-button" type="button" data-remove-friend="${escapeAttr(friend.id)}" data-friend-name="${escapeAttr(friend.name)}" data-dev-test="${friend.isDevTest ? "true" : "false"}">${actionText}</button>
       </article>
     `;
   }).join("");
 
-  $$('[data-view-friend]').forEach((button) => {
-    button.addEventListener("click", () => openFriendGarden(button.dataset.viewFriend));
-  });
   $$('[data-remove-friend]').forEach((button) => {
-    button.addEventListener("click", () => removeFriend(button.dataset.removeFriend, button.dataset.friendName, button.dataset.devTest === "true"));
+    button.addEventListener("click", () => {
+      void removeFriend(button.dataset.removeFriend, button.dataset.friendName, button.dataset.devTest === "true");
+    });
   });
+  $$('[data-invite-shared-tree]').forEach((button) => {
+    button.addEventListener("click", () => { void inviteSharedTree(button.dataset.inviteSharedTree); });
+  });
+  $$('[data-open-shared-tree-invite]').forEach((button) => {
+    button.addEventListener("click", () => openSharedTreeInvite(button.dataset.openSharedTreeInvite));
+  });
+  $$('[data-view-shared-tree]').forEach((button) => {
+    button.addEventListener("click", () => openSharedTree(button.dataset.viewSharedTree));
+  });
+}
+
+function friendForSharedTree(tree) {
+  return (state.friends || []).find((friend) => friend.id === tree.partnerId) || {
+    id: tree.partnerId,
+    name: "친구",
+    avatarUrl: "",
+  };
+}
+
+function openSharedTreeInvite(inviteId) {
+  const invite = (state.sharedTreeInvites || []).find((item) => item.id === inviteId && item.direction === "incoming");
+  if (!invite) {
+    showToast("이 씨앗 제안은 더 이상 기다리고 있지 않아요.");
+    return;
+  }
+  const friend = (state.friends || []).find((item) => item.id === invite.otherUserId);
+  pendingSharedTreeInvite = invite;
+  els.sharedTreeInviteFrom.textContent = `${friend?.name || "친구"}의 정원`;
+  els.sharedTreeInviteModal.classList.remove("hidden");
+}
+
+function closeSharedTreeInviteModal() {
+  pendingSharedTreeInvite = null;
+  els.sharedTreeInviteModal.classList.add("hidden");
+}
+
+async function inviteSharedTree(friendId) {
+  const friend = (state.friends || []).find((item) => item.id === friendId);
+  if (!friendId || !friend || friend.isDevTest) return;
+
+  const { error } = await supabase.rpc("create_my_garden_shared_tree_invite", { p_friend_id: friendId });
+  if (error) {
+    console.warn("TodayForest shared-tree invite error:", error);
+    showToast(databaseErrorMessage(error));
+    return;
+  }
+
+  await loadGardenState();
+  renderAll();
+  renderFriends();
+  showToast(`${friend.name}님에게 작은 씨앗을 보냈어요.`);
+}
+
+async function acceptSharedTreeInvite() {
+  if (!pendingSharedTreeInvite) return;
+  const button = els.acceptSharedTreeInviteButton;
+  button.disabled = true;
+  button.textContent = "씨앗을 심는 중이에요";
+
+  const { data, error } = await supabase.rpc("accept_my_garden_shared_tree_invite", { p_invite_id: pendingSharedTreeInvite.id });
+
+  button.disabled = false;
+  button.textContent = "함께 심기";
+  if (error) {
+    console.warn("TodayForest shared-tree accept error:", error);
+    showToast(databaseErrorMessage(error));
+    return;
+  }
+
+  const tree = normalizeRpcRow(data);
+  closeSharedTreeInviteModal();
+  await loadGardenState();
+  renderAll();
+  renderFriends();
+  if (tree?.tree_id) openSharedTree(tree.tree_id);
+  showToast("둘만의 작은 씨앗을 심었어요.");
+}
+
+function renderSharedTreeView(treeId = activeSharedTreeId) {
+  const tree = (state.sharedTrees || []).find((item) => item.id === treeId);
+  if (!tree) return false;
+
+  const friend = friendForSharedTree(tree);
+  const target = Math.max(1, Number(tree.targetSteps || 20));
+  const progress = Math.min(target, Math.max(0, Number(tree.progressCount || 0)));
+  const bothToday = tree.myRecordedToday && tree.partnerRecordedToday;
+  const complete = Boolean(tree.completedAt) || progress >= target;
+
+  els.sharedTreePartnerName.textContent = `${friend.name}와 함께 키우는 나무`;
+  els.sharedTreeProgressCount.textContent = `${progress} / ${target}`;
+  els.sharedTreeProgressCopy.textContent = complete
+    ? "스무 개의 빛 조각이 모여, 둘만의 나무가 완성됐어요."
+    : "각자의 하루가 닿을 때마다 빛 조각이 하나씩 쌓여요.";
+  els.sharedTreeLeaves.innerHTML = Array.from({ length: target }, (_, index) => {
+    const filled = index < progress;
+    return `<span class="shared-tree-leaf ${filled ? "is-filled" : ""}" aria-hidden="true">${filled ? "✦" : "·"}</span>`;
+  }).join("");
+  els.sharedTreeLeaves.setAttribute("aria-label", `빛 조각 ${progress}개, 전체 ${target}개`);
+
+  if (complete) {
+    els.sharedTreeStageCopy.textContent = `${friend.name}와 함께 심은 나무가 두 사람의 하루를 조용히 기억하고 있어요.`;
+  } else if (bothToday) {
+    els.sharedTreeStageCopy.textContent = "오늘은 두 개의 빛이 만나, 반딧불이 나무 곁에 모였어요.";
+  } else if (tree.myRecordedToday) {
+    els.sharedTreeStageCopy.textContent = "네 빛 하나가 씨앗 곁에 닿았어요. 친구의 하루도 기다리고 있어요.";
+  } else if (tree.partnerRecordedToday) {
+    els.sharedTreeStageCopy.textContent = `${friend.name}의 빛이 먼저 씨앗 곁에 머물러 있어요.`;
+  } else {
+    els.sharedTreeStageCopy.textContent = "두 개의 작은 빛이 씨앗 곁에서 조용히 기다리고 있어요.";
+  }
+
+  els.sharedTreeTodayRow.innerHTML = `
+    <span class="shared-tree-today ${tree.myRecordedToday ? "is-on" : ""}">${tree.myRecordedToday ? "✦ 내 빛이 닿았어요" : "○ 오늘의 빛을 기다려요"}</span>
+    <span class="shared-tree-today ${tree.partnerRecordedToday ? "is-on" : ""}">${tree.partnerRecordedToday ? `✦ ${escapeHTML(friend.name)}의 빛이 닿았어요` : `○ ${escapeHTML(friend.name)}의 빛을 기다려요`}</span>
+  `;
+  els.sharedTreeFireflies.innerHTML = bothToday ? '<i>✦</i><i>✦</i><i>✦</i><i>✦</i><i>✦</i><i>✦</i>' : "";
+  els.sharedTreeView.classList.toggle("both-recorded-today", bothToday);
+  els.sharedTreeView.classList.toggle("is-complete", complete);
+  return true;
+}
+
+function openSharedTree(treeId) {
+  if (!renderSharedTreeView(treeId)) {
+    showToast("함께 키우는 나무를 찾지 못했어요.");
+    return;
+  }
+  activeSharedTreeId = treeId;
+  closeAllSheets();
+  els.gardenApp.classList.add("hidden");
+  els.friendVisit.classList.add("hidden");
+  els.sharedTreeView.classList.remove("hidden");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function returnToFriendsFromSharedTree() {
+  els.sharedTreeView.classList.add("hidden");
+  els.gardenApp.classList.remove("hidden");
+  renderFriends();
+  openSheet(els.friendsSheet);
+  activeSharedTreeId = "";
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 async function openFriendGarden(friendId) {
@@ -2893,6 +3119,11 @@ function bindEvents() {
   els.declineFriendInviteButton.addEventListener("click", () => closeFriendInviteModal());
   els.acceptFriendInviteButton.addEventListener("click", acceptFriendInvite);
   els.friendInviteModal.addEventListener("click", (event) => { if (event.target === els.friendInviteModal) closeFriendInviteModal(); });
+  $("#closeSharedTreeInviteModal").addEventListener("click", closeSharedTreeInviteModal);
+  els.laterSharedTreeInviteButton.addEventListener("click", closeSharedTreeInviteModal);
+  els.acceptSharedTreeInviteButton.addEventListener("click", () => { void acceptSharedTreeInvite(); });
+  els.sharedTreeInviteModal.addEventListener("click", (event) => { if (event.target === els.sharedTreeInviteModal) closeSharedTreeInviteModal(); });
+  els.returnToFriendsFromSharedTree.addEventListener("click", returnToFriendsFromSharedTree);
   window.addEventListener("focus", async () => {
     if (!currentUser) return;
     try {
@@ -2908,9 +3139,14 @@ function bindEvents() {
       returnToMyGarden();
       return;
     }
+    if (!els.sharedTreeView.classList.contains("hidden")) {
+      returnToFriendsFromSharedTree();
+      return;
+    }
     closeAllSheets();
     closeLetterModal();
     closeFriendInviteModal();
+    closeSharedTreeInviteModal();
   });
 }
 
