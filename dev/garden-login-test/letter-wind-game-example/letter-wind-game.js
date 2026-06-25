@@ -311,6 +311,10 @@
   }
 
   function handlePointerDown(event) {
+    // 시작 안내창의 버튼도 gameBoard 안에 있습니다.
+    // 게임이 시작되기 전에는 포인터를 잡지 않아야 버튼의 click 이벤트가 정상으로 전달됩니다.
+    if (!game?.running) return;
+
     pointerInside = true;
     els.board.setPointerCapture?.(event.pointerId);
     moveMailboxFromClientX(event.clientX);
