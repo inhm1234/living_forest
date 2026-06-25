@@ -3331,7 +3331,12 @@ async function syncSession() {
     state = cloneDefault();
   }
   renderAuthUI();
-  if (currentUser) renderAll();
+  if (currentUser) {
+    renderAll();
+    // syncSession()에서 공유나무를 먼저 복원한 뒤에도 INITIAL_SESSION 이벤트가 한 번 더 올 수 있습니다.
+    // 이때 내 정원이 다시 보이는 것을 막기 위해 주소의 공유나무 화면을 마지막으로 다시 복원합니다.
+    restoreSharedTreeFromUrl();
+  }
 }
 
 async function signOut() {
