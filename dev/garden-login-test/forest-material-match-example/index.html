@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#eaf4ed" />
+  <title>오늘의숲 · 숲 정리 체험판</title>
+  <link rel="stylesheet" href="forest-material-match.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <a class="back-link" href="../" aria-label="정원으로 돌아가기">← 정원</a>
+      <div class="topbar-copy">
+        <p class="eyebrow">반복 행동 체험판</p>
+        <h1>숲 정리</h1>
+      </div>
+      <button class="reset-button" id="resetDemo" type="button">처음부터</button>
+    </header>
+
+    <section class="forest-card" aria-label="숲의 재료 상태">
+      <div class="forest-scene" aria-hidden="true">
+        <span class="cloud cloud-a"></span>
+        <span class="cloud cloud-b"></span>
+        <span class="tree tree-a"></span>
+        <span class="tree tree-b"></span>
+        <span class="grass grass-a"></span>
+        <span class="grass grass-b"></span>
+        <span class="sparkle sparkle-a">✦</span>
+        <span class="sparkle sparkle-b">✦</span>
+      </div>
+      <div class="forest-copy">
+        <p class="forest-kicker" id="bundleStatus">작은 재료 묶음이 준비됐어요</p>
+        <h2 id="bundleTitle">오늘 숲에 떨어진 작은 것들을 정리해볼까요?</h2>
+        <p id="bundleDescription">같은 재료가 이어진 곳을 눌러 모으면, 정원을 꾸밀 재료가 돼요.</p>
+      </div>
+      <div class="bundle-meter" aria-label="쌓인 재료 묶음">
+        <span class="meter-label">쌓인 묶음</span>
+        <strong id="bundleCount">1 / 3</strong>
+        <div class="meter-dots" id="bundleDots" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section class="inventory-card" aria-labelledby="inventoryTitle">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">내 보관함</p>
+          <h2 id="inventoryTitle">꾸미기에 쓸 작은 재료</h2>
+        </div>
+        <span class="demo-note">체험판은 25초마다 묶음 준비</span>
+      </div>
+      <div class="inventory-list">
+        <article class="inventory-item seed">
+          <span class="material-icon" aria-hidden="true">◒</span>
+          <div><strong>씨앗</strong><small>꽃과 풀을 위한 재료</small></div>
+          <b id="seedCount">0</b>
+        </article>
+        <article class="inventory-item moss">
+          <span class="material-icon" aria-hidden="true">◐</span>
+          <div><strong>이끼 조각</strong><small>돌과 길을 위한 재료</small></div>
+          <b id="mossCount">0</b>
+        </article>
+        <article class="inventory-item sparkle">
+          <span class="material-icon" aria-hidden="true">✦</span>
+          <div><strong>반짝 조각</strong><small>빛과 리본을 위한 재료</small></div>
+          <b id="sparkleCount">0</b>
+        </article>
+      </div>
+    </section>
+
+    <section class="game-card" id="gameCard" aria-labelledby="gameTitle">
+      <div class="game-head">
+        <div>
+          <p class="eyebrow">짧은 짝맞추기</p>
+          <h2 id="gameTitle">숲 정리</h2>
+        </div>
+        <div class="game-stats" aria-live="polite">
+          <span><small>남은 시간</small><strong id="timeValue">40</strong></span>
+          <span><small>정리한 수</small><strong id="clearValue">0</strong></span>
+          <span><small>콤보</small><strong id="comboValue">0</strong></span>
+        </div>
+      </div>
+
+      <div class="game-intro" id="gameIntro">
+        <div class="intro-icon" aria-hidden="true">🍃</div>
+        <h3>같은 재료가 붙어 있는 곳을 눌러주세요.</h3>
+        <p>2개 이상 이어진 재료를 모으면 사라져요. 큰 묶음을 한 번에 정리할수록 더 많이 얻어요.</p>
+        <button class="primary-button" id="startGame" type="button">재료 정리 시작</button>
+      </div>
+
+      <div class="play-area is-hidden" id="playArea">
+        <p class="game-hint" id="gameHint">같은 재료가 2개 이상 붙은 곳을 눌러주세요.</p>
+        <div class="board" id="board" role="grid" aria-label="숲 재료 짝맞추기 판"></div>
+      </div>
+
+      <div class="game-result is-hidden" id="gameResult" aria-live="polite">
+        <p class="result-kicker" id="resultKicker">오늘의 숲 정리</p>
+        <h3 id="resultTitle">작은 것들이 바구니에 차곡차곡 담겼어요.</h3>
+        <div class="result-summary" id="resultSummary"></div>
+        <button class="primary-button" id="closeResult" type="button">숲으로 돌아가기</button>
+        <button class="text-button" id="replayGame" type="button">점수 연습 다시 하기</button>
+      </div>
+    </section>
+
+    <section class="future-card" aria-labelledby="futureTitle">
+      <p class="eyebrow">다음에 이어질 것</p>
+      <h2 id="futureTitle">모은 재료는 나중에 작은 꾸미기로 바꿀 수 있어요.</h2>
+      <div class="recipe-row" aria-label="예시 제작 방향">
+        <span>씨앗</span><i>+</i><span>반짝 조각</span><em>→</em><strong>작은 들꽃</strong>
+      </div>
+      <p class="future-note">이 체험판에서는 제작을 아직 열지 않았어요. 퍼즐과 재료 수집 흐름만 먼저 확인합니다.</p>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="forest-material-match.js"></script>
+</body>
+</html>
