@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#eff2ff" />
+  <title>[DEV] 오늘의숲 | 바람길 편지 배달</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="letter-wind-game.css" />
+</head>
+<body>
+  <main class="page-shell">
+    <header class="game-header">
+      <a class="back-link" href="../" aria-label="내 정원으로 돌아가기">← 내 정원</a>
+      <div>
+        <p class="eyebrow">TODAYFOREST · PLAY TEST v1</p>
+        <h1>바람길 편지 배달</h1>
+        <p class="header-copy">바람을 타고 날아오는 봉투를 받아<br />숲길 끝의 편지함으로 데려가요.</p>
+      </div>
+    </header>
+
+    <section class="game-card" aria-label="바람길 편지 배달 게임">
+      <div class="status-row" aria-live="polite">
+        <div class="status-chip">
+          <span class="status-label">바람길</span>
+          <strong id="waveLabel">준비</strong>
+        </div>
+        <div class="status-chip">
+          <span class="status-label">남은 시간</span>
+          <strong id="timeLabel">30</strong><span class="unit">초</span>
+        </div>
+        <div class="status-chip score-chip">
+          <span class="status-label">점수</span>
+          <strong id="scoreLabel">0</strong>
+        </div>
+      </div>
+
+      <section id="gameBoard" class="game-board game-ready" aria-label="바람길. 좌우로 움직여 날아오는 봉투를 받으세요." tabindex="0">
+        <div class="sky-glow glow-left" aria-hidden="true"></div>
+        <div class="sky-glow glow-right" aria-hidden="true"></div>
+        <div class="cloud cloud-a" aria-hidden="true"></div>
+        <div class="cloud cloud-b" aria-hidden="true"></div>
+        <div class="wind-ribbon ribbon-a" aria-hidden="true"></div>
+        <div class="wind-ribbon ribbon-b" aria-hidden="true"></div>
+        <div id="itemLayer" class="item-layer" aria-hidden="true"></div>
+        <div id="burstLayer" class="burst-layer" aria-hidden="true"></div>
+
+        <div id="readyPanel" class="board-panel ready-panel">
+          <span class="panel-icon" aria-hidden="true">✉️</span>
+          <h2>바람을 따라 편지가 와요</h2>
+          <p>손가락이나 마우스로 편지함을 움직여<br /><b>분홍 봉투</b>를 받아보세요.</p>
+          <div class="rule-list" aria-label="게임 규칙">
+            <span>✉ 받기 <b>+점수</b></span>
+            <span>✦ 별편지 <b>큰 점수</b></span>
+            <span>🍂 낙엽 <b>콤보 끊김</b></span>
+          </div>
+          <button id="startButton" class="main-button" type="button">바람길 열기</button>
+          <p class="tiny-note">한 판 약 30초 · 실패해도 불이익은 없어요.</p>
+        </div>
+
+        <div id="playHint" class="play-hint hidden" aria-live="polite">편지함을 좌우로 움직여요</div>
+        <div id="comboBadge" class="combo-badge hidden" aria-live="polite"><span id="comboNumber">0</span> COMBO</div>
+
+        <div id="mailbox" class="mailbox" aria-hidden="true">
+          <span class="mailbox-flag">✦</span>
+          <span class="mailbox-slot"></span>
+          <span class="mailbox-body"></span>
+          <span class="mailbox-post"></span>
+        </div>
+      </section>
+
+      <section class="play-guide" aria-label="조작 안내">
+        <div><span aria-hidden="true">☝️</span><p>화면을 따라<br />편지함을 움직여요</p></div>
+        <div><span aria-hidden="true">💌</span><p>연속으로 받으면<br />콤보가 올라가요</p></div>
+        <div><span aria-hidden="true">🌿</span><p>낙엽은 피하면 돼요<br />점수는 깎이지 않아요</p></div>
+      </section>
+    </section>
+
+    <section class="best-card" aria-label="오늘의 최고 기록">
+      <span aria-hidden="true">🌬️</span>
+      <p><small>이 브라우저의 최고 기록</small><strong id="bestScoreLabel">아직 첫 바람길을 열지 않았어요</strong></p>
+    </section>
+  </main>
+
+  <section id="resultModal" class="result-modal hidden" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <div class="result-card">
+      <span class="result-sparkle" aria-hidden="true">✦</span>
+      <p class="eyebrow">TODAY'S WIND PATH</p>
+      <h2 id="resultTitle">오늘의 바람길</h2>
+      <p id="resultCopy" class="result-copy"></p>
+      <div class="result-score"><span>점수</span><strong id="resultScore">0</strong></div>
+      <div class="result-stats">
+        <p><span>받은 편지</span><strong id="resultLetters">0통</strong></p>
+        <p><span>최고 콤보</span><strong id="resultCombo">0</strong></p>
+      </div>
+      <button id="againButton" class="main-button" type="button">한 번 더 달려가기</button>
+      <button id="closeButton" class="text-button" type="button">숲으로 돌아가기</button>
+      <p class="result-note">이 체험판 기록은 이 브라우저에만 남아요.</p>
+    </div>
+  </section>
+
+  <script src="letter-wind-game.js"></script>
+</body>
+</html>
