@@ -747,6 +747,28 @@ function devSharedTreeStorageKey() {
   return currentUser ? `${DEV_SHARED_TREE_STORAGE_PREFIX}:${currentUser.id}` : "";
 }
 
+// DEV 공유나무도 실제 성장 데이터처럼 "누가 / 한국 날짜에" 빛을 남겼는지만 저장합니다.
+// 테스트 친구 계정이나 실제 공유나무 DB에는 절대 쓰지 않습니다.
+function normalizeDevSharedTreeLightRecords(records) {
+  if (!Array.isArray(records)) return [];
+
+  const unique = new Map();
+  records.forEach((record) => {
+    const userId = typeof record?.userId === "string" ? record.userId : "";
+    const recordDate = typeof record?.recordDate === "string" ? record.recordDate : "";
+    if (!userId || !/^\d{4}-\d{2}-\d{2}$/.test(recordDate)) return;
+    unique.set(`${userId}:${recordDate}`, {
+      userId,
+      recordDate,
+      createdAt: typeof record?.createdAt === "string" ? record.createdAt : null,
+    });
+  });
+
+  return Array.from(unique.values())
+    .sort((a, b) => String(a.createdAt || a.recordDate).localeCompare(String(b.createdAt || b.recordDate)))
+    .slice(0, 20);
+}
+
 function readDevSharedTreePreview() {
   const key = devSharedTreeStorageKey();
   if (!key) return null;
@@ -756,7 +778,10 @@ function readDevSharedTreePreview() {
     if (!raw) return null;
     const preview = JSON.parse(raw);
     if (!preview || typeof preview !== "object" || !preview.partnerId || !preview.id) return null;
-    return preview;
+    return {
+      ...preview,
+      lightRecords: normalizeDevSharedTreeLightRecords(preview.lightRecords),
+    };
   } catch (error) {
     console.warn("TodayForest DEV shared-tree preview read skipped:", error);
     return null;
@@ -772,12 +797,36 @@ function saveDevSharedTreePreview(tree) {
       id: tree.id,
       partnerId: tree.partnerId,
       createdAt: tree.createdAt,
+      lightRecords: normalizeDevSharedTreeLightRecords(tree.lightRecords),
     }));
     return true;
   } catch (error) {
     console.warn("TodayForest DEV shared-tree preview save skipped:", error);
     return false;
   }
+}
+
+function recordDevSharedTreeLightForToday() {
+  const preview = readDevSharedTreePreview();
+  if (!preview || !currentUser) return false;
+
+  const today = seoulDateKey();
+  const lightRecords = normalizeDevSharedTreeLightRecords(preview.lightRecords);
+  const alreadyRecorded = lightRecords.some((record) => record.userId === currentUser.id && record.recordDate === today);
+  if (alreadyRecorded || lightRecords.length >= 20) return false;
+
+  const nextPreview = {
+    ...preview,
+    lightRecords: [
+      ...lightRecords,
+      {
+        userId: currentUser.id,
+        recordDate: today,
+        createdAt: new Date().toISOString(),
+      },
+    ],
+  };
+  return saveDevSharedTreePreview(nextPreview);
 }
 
 function mergeDevSharedTreePreview(devFriends) {
@@ -790,17 +839,19 @@ function mergeDevSharedTreePreview(devFriends) {
   const alreadyLoaded = (state.sharedTrees || []).some((tree) => tree.partnerId === preview.partnerId);
   if (alreadyLoaded) return;
 
+  const lightRecords = normalizeDevSharedTreeLightRecords(preview.lightRecords);
+  const today = seoulDateKey();
   state.sharedTrees = [
     ...(state.sharedTrees || []),
     {
       id: preview.id,
       partnerId: preview.partnerId,
-      progressCount: 0,
+      progressCount: lightRecords.length,
       targetSteps: 20,
       createdAt: preview.createdAt || new Date().toISOString(),
       completedAt: null,
-      myRecordedToday: false,
-      partnerRecordedToday: false,
+      myRecordedToday: lightRecords.some((record) => record.userId === currentUser?.id && record.recordDate === today),
+      partnerRecordedToday: lightRecords.some((record) => record.userId === preview.partnerId && record.recordDate === today),
       isDevPreview: true,
     },
   ];
@@ -819,13 +870,8 @@ function createDevSharedTreePreview(friendId) {
   const tree = {
     id: `dev-shared-tree-${friendId}`,
     partnerId: friendId,
-    progressCount: 0,
-    targetSteps: 20,
     createdAt: new Date().toISOString(),
-    completedAt: null,
-    myRecordedToday: false,
-    partnerRecordedToday: false,
-    isDevPreview: true,
+    lightRecords: [],
   };
 
   if (!saveDevSharedTreePreview(tree)) {
@@ -833,10 +879,19 @@ function createDevSharedTreePreview(friendId) {
     return;
   }
 
-  state.sharedTrees = [...(state.sharedTrees || []), tree];
+  const previewTree = {
+    ...tree,
+    progressCount: 0,
+    targetSteps: 20,
+    completedAt: null,
+    myRecordedToday: false,
+    partnerRecordedToday: false,
+    isDevPreview: true,
+  };
+  state.sharedTrees = [...(state.sharedTrees || []), previewTree];
   renderAll();
   renderFriends();
-  openSharedTree(tree.id);
+  openSharedTree(previewTree.id);
   showToast(`${friend.name}와 DEV 검수용 씨앗을 함께 심었어요.`);
 }
 
@@ -2898,6 +2953,10 @@ async function saveRecord(event) {
     showToast(databaseErrorMessage(error));
     return;
   }
+
+  // DEV 공유나무만 브라우저에 같은 날짜/사용자 기준 빛 하나를 남깁니다.
+  // 실제 공유나무는 DB 트리거가 garden_records 저장 직후 처리합니다.
+  recordDevSharedTreeLightForToday();
 
   try {
     await loadGardenState();
