@@ -119,6 +119,8 @@ const RECEIVED_LETTER_PREVIEW_STORAGE_PREFIX = "todayforest-dev-received-preview
 // 테스트 친구 계정으로 로그인할 수 없는 DEV 검수용 공유나무입니다.
 // 실제 공유나무 테이블·제안·친구 데이터는 건드리지 않고, 현재 브라우저에만 저장합니다.
 const DEV_SHARED_TREE_STORAGE_PREFIX = "todayforest-dev-shared-tree-preview-v1";
+// 공유나무를 보고 있을 때 새로고침해도 같은 나무로 돌아오기 위한 주소 상태입니다.
+const SHARED_TREE_URL_PARAM = "sharedTree";
 // 오래된 편지 정책을 실제 시간으로 기다리지 않고 안전하게 검수하기 위한 DEV 전용 테스트입니다.
 // 실제 garden_letters와 분리된 DEV 전용 테이블만 사용합니다.
 // 준비는 ?retentionTest=21|wind|31&retentionReset=1 일 때만, 검수는 retentionTest 주소에서만 동작합니다.
@@ -1077,6 +1079,7 @@ async function hydrateGardenForCurrentUser() {
     renderAll();
     setAuthError("");
     configureRetentionWindPolling();
+    restoreSharedTreeFromUrl();
     await previewFriendInviteFromUrl();
   } catch (error) {
     state = cloneDefault();
@@ -2568,6 +2571,26 @@ function renderFriends() {
   });
 }
 
+function sharedTreeIdFromUrl() {
+  return String(new URL(window.location.href).searchParams.get(SHARED_TREE_URL_PARAM) || "").trim();
+}
+
+function setSharedTreeUrl(treeId = "") {
+  const url = new URL(window.location.href);
+  if (treeId) {
+    url.searchParams.set(SHARED_TREE_URL_PARAM, treeId);
+  } else {
+    url.searchParams.delete(SHARED_TREE_URL_PARAM);
+  }
+  window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
+}
+
+function restoreSharedTreeFromUrl() {
+  const treeId = sharedTreeIdFromUrl();
+  if (!treeId) return false;
+  return openSharedTree(treeId, { updateUrl: false, scroll: false, silent: true });
+}
+
 function friendForSharedTree(tree) {
   return (state.friends || []).find((friend) => friend.id === tree.partnerId) || {
     id: tree.partnerId,
@@ -2766,20 +2789,25 @@ async function leaveSharedTreeLight() {
   }
 }
 
-function openSharedTree(treeId) {
-  if (!renderSharedTreeView(treeId)) {
-    showToast("함께 키우는 나무를 찾지 못했어요.");
-    return;
-  }
+function openSharedTree(treeId, { updateUrl = true, scroll = true, silent = false } = {}) {
   activeSharedTreeId = treeId;
+  if (!renderSharedTreeView(treeId)) {
+    activeSharedTreeId = "";
+    if (!silent) showToast("함께 키우는 나무를 찾지 못했어요.");
+    return false;
+  }
+
+  if (updateUrl) setSharedTreeUrl(treeId);
   closeAllSheets();
   els.gardenApp.classList.add("hidden");
   els.friendVisit.classList.add("hidden");
   els.sharedTreeView.classList.remove("hidden");
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
+  return true;
 }
 
 function returnToFriendsFromSharedTree() {
+  setSharedTreeUrl("");
   els.sharedTreeView.classList.add("hidden");
   els.gardenApp.classList.remove("hidden");
   renderFriends();
