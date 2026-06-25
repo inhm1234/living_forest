@@ -268,6 +268,7 @@ const els = {
   sharedTreeLightsMeet: $("#sharedTreeLightsMeet"),
   sharedTreeSeedGlow: $("#sharedTreeSeedGlow"),
   sharedTreeImage: $("#sharedTreeImage"),
+  sharedTreeRecordLightButton: $("#sharedTreeRecordLightButton"),
   returnToFriendsFromSharedTree: $("#returnToFriendsFromSharedTree"),
   friendInviteFrom: $("#friendInviteFrom"),
   acceptFriendInviteButton: $("#acceptFriendInviteButton"),
@@ -482,6 +483,15 @@ function databaseErrorMessage(error) {
   }
   if (message.includes("SHARED_TREE_INVITE_NOT_FOUND")) {
     return "이 씨앗 제안은 더 이상 기다리고 있지 않아요.";
+  }
+  if (message.includes("SHARED_TREE_LIGHT_ALREADY_RECORDED")) {
+    return "오늘의 빛은 이미 이 나무에 남겼어요. 내일 다시 와요.";
+  }
+  if (message.includes("SHARED_TREE_LIGHT_COMPLETE")) {
+    return "이 나무의 빛 조각은 이미 모두 모였어요.";
+  }
+  if (message.includes("SHARED_TREE_LIGHT_NOT_FOUND")) {
+    return "이 함께 키우는 나무를 다시 불러와 주세요.";
   }
   if (message.includes("setup_my_garden_retention_dev_test") || message.includes("run_my_garden_retention_dev_cleanup") || message.includes("list_my_garden_retention_dev_tests")) {
     return "오래된 편지 테스트를 준비하지 못했어요. v9 DEV 보관 정책 SQL을 먼저 실행해 주세요.";
@@ -806,6 +816,8 @@ function saveDevSharedTreePreview(tree) {
   }
 }
 
+// DEV 공유나무 화면에서 버튼을 눌렀을 때만 호출합니다.
+// 개인 정원 마음 기록과는 연결하지 않습니다.
 function recordDevSharedTreeLightForToday() {
   const preview = readDevSharedTreePreview();
   if (!preview || !currentUser) return false;
@@ -2656,7 +2668,21 @@ function renderSharedTreeView(treeId = activeSharedTreeId) {
   els.sharedTreeProgressCount.textContent = `${progress} / ${target}`;
   els.sharedTreeProgressCopy.textContent = complete
     ? "스무 개의 빛 조각이 모여, 둘만의 나무가 완성됐어요."
-    : "각자의 하루가 닿을 때마다 빛 조각이 하나씩 쌓여요.";
+    : "각자가 오늘의 빛을 남길 때마다 빛 조각이 하나씩 쌓여요.";
+  els.sharedTreeRecordLightButton.disabled = complete || Boolean(tree.myRecordedToday);
+  els.sharedTreeRecordLightButton.textContent = complete
+    ? "빛 조각이 모두 모였어요"
+    : tree.myRecordedToday
+      ? "오늘의 빛을 남겼어요"
+      : "오늘의 빛 남기기";
+  els.sharedTreeRecordLightButton.setAttribute(
+    "aria-label",
+    complete
+      ? "공유나무의 빛 조각이 모두 모였어요"
+      : tree.myRecordedToday
+        ? "오늘의 빛을 이미 남겼어요"
+        : "공유나무에 오늘의 빛을 남기기"
+  );
   els.sharedTreeLeaves.innerHTML = Array.from({ length: target }, (_, index) => {
     const filled = index < progress;
     return `<span class="shared-tree-leaf ${filled ? "is-filled" : ""}" aria-hidden="true">${filled ? "✦" : "·"}</span>`;
@@ -2685,6 +2711,59 @@ function renderSharedTreeView(treeId = activeSharedTreeId) {
   els.sharedTreeView.classList.toggle("both-recorded-today", bothToday);
   els.sharedTreeView.classList.toggle("is-complete", complete);
   return true;
+}
+
+async function leaveSharedTreeLight() {
+  const tree = (state.sharedTrees || []).find((item) => item.id === activeSharedTreeId);
+  if (!tree) {
+    showToast("함께 키우는 나무를 찾지 못했어요.");
+    return;
+  }
+
+  const target = Math.max(1, Number(tree.targetSteps || 20));
+  const progress = Math.max(0, Number(tree.progressCount || 0));
+  if (Boolean(tree.completedAt) || progress >= target) {
+    showToast("이 나무의 빛 조각은 이미 모두 모였어요.");
+    return;
+  }
+  if (tree.myRecordedToday) {
+    showToast("오늘의 빛은 이미 이 나무에 남겼어요. 내일 다시 와요.");
+    return;
+  }
+
+  const button = els.sharedTreeRecordLightButton;
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = "빛을 남기는 중이에요";
+
+  try {
+    if (tree.isDevPreview) {
+      const saved = recordDevSharedTreeLightForToday();
+      if (!saved) {
+        showToast("오늘의 빛은 이미 이 나무에 남겼어요. 내일 다시 와요.");
+        return;
+      }
+    } else {
+      const { error } = await supabase.rpc("add_my_garden_shared_tree_light", { p_tree_id: tree.id });
+      if (error) throw error;
+    }
+
+    await loadGardenState();
+    renderAll();
+    renderSharedTreeView(tree.id);
+    showToast("오늘의 빛이 둘만의 나무에 닿았어요.");
+  } catch (error) {
+    console.warn("TodayForest shared-tree light save error:", error);
+    showToast(databaseErrorMessage(error));
+  } finally {
+    // 재조회에 실패했을 때도 버튼이 계속 잠기지 않도록, 현재 상태로 한 번 다시 그립니다.
+    if (activeSharedTreeId === tree.id) {
+      renderSharedTreeView(tree.id);
+    } else {
+      button.disabled = false;
+      button.textContent = originalText || "오늘의 빛 남기기";
+    }
+  }
 }
 
 function openSharedTree(treeId) {
@@ -2958,10 +3037,6 @@ async function saveRecord(event) {
     showToast(databaseErrorMessage(error));
     return;
   }
-
-  // DEV 공유나무만 브라우저에 같은 날짜/사용자 기준 빛 하나를 남깁니다.
-  // 실제 공유나무는 DB 트리거가 garden_records 저장 직후 처리합니다.
-  recordDevSharedTreeLightForToday();
 
   try {
     await loadGardenState();
@@ -3327,6 +3402,7 @@ function bindEvents() {
   els.acceptSharedTreeInviteButton.addEventListener("click", () => { void acceptSharedTreeInvite(); });
   els.sharedTreeInviteModal.addEventListener("click", (event) => { if (event.target === els.sharedTreeInviteModal) closeSharedTreeInviteModal(); });
   els.returnToFriendsFromSharedTree.addEventListener("click", returnToFriendsFromSharedTree);
+  els.sharedTreeRecordLightButton.addEventListener("click", () => { void leaveSharedTreeLight(); });
   window.addEventListener("focus", async () => {
     if (!currentUser) return;
     try {

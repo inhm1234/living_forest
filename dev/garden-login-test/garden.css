@@ -1213,6 +1213,23 @@ textarea::placeholder { color: #a7b4bd; }
 .shared-tree-today-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
 .shared-tree-today { padding: 7px 9px; border-radius: 999px; background: #f6f7f9; color: #99a4ac; font-size: 11px; font-weight: 800; }
 .shared-tree-today.is-on { background: #fff3c9; color: #bd8a42; }
+.shared-tree-record-light-button {
+  width: 100%;
+  margin-top: 13px;
+  padding: 12px 14px;
+  border: 1px solid #dcd0ee;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fffdf3, #f5efff);
+  color: #735e94;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: -.02em;
+  box-shadow: 0 7px 15px rgba(121, 97, 159, .08);
+  transition: transform .16s ease, box-shadow .16s ease, opacity .16s ease;
+}
+.shared-tree-record-light-button:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 10px 19px rgba(121, 97, 159, .14); }
+.shared-tree-record-light-button:disabled { cursor: default; border-color: #e5e5e5; background: #f5f6f6; color: #a5adb0; box-shadow: none; }
 .shared-tree-note { display: flex; align-items: flex-start; gap: 9px; margin: 14px 2px 0; padding: 13px 14px; border: 1px solid rgba(255,255,255,.72); border-radius: 18px; background: rgba(255,255,255,.5); color: #7e8899; font-size: 12px; line-height: 1.5; }
 .shared-tree-note p { margin: 0; }
 .shared-tree-fireflies { position: absolute; inset: 0; pointer-events: none; }
