@@ -264,6 +264,7 @@ const els = {
   sharedTreeTodayRow: $("#sharedTreeTodayRow"),
   sharedTreeFireflies: $("#sharedTreeFireflies"),
   sharedTreeSeedGlow: $("#sharedTreeSeedGlow"),
+  sharedTreeImage: $("#sharedTreeImage"),
   returnToFriendsFromSharedTree: $("#returnToFriendsFromSharedTree"),
   friendInviteFrom: $("#friendInviteFrom"),
   acceptFriendInviteButton: $("#acceptFriendInviteButton"),
@@ -2559,6 +2560,20 @@ async function acceptSharedTreeInvite() {
   showToast("둘만의 작은 씨앗을 심었어요.");
 }
 
+function sharedTreeStageForProgress(progress, target) {
+  if (progress >= target) return 6;
+  const ratio = target > 0 ? progress / target : 0;
+  if (ratio >= 0.8) return 5;
+  if (ratio >= 0.6) return 4;
+  if (ratio >= 0.4) return 3;
+  if (ratio >= 0.2) return 2;
+  return 1;
+}
+
+function sharedTreeImagePath(stage) {
+  return `../../assets/garden/tree_growth/tree_stage${stage}_sunset.png`;
+}
+
 function renderSharedTreeView(treeId = activeSharedTreeId) {
   const tree = (state.sharedTrees || []).find((item) => item.id === treeId);
   if (!tree) return false;
@@ -2568,8 +2583,13 @@ function renderSharedTreeView(treeId = activeSharedTreeId) {
   const progress = Math.min(target, Math.max(0, Number(tree.progressCount || 0)));
   const bothToday = tree.myRecordedToday && tree.partnerRecordedToday;
   const complete = Boolean(tree.completedAt) || progress >= target;
+  const stage = sharedTreeStageForProgress(progress, target);
 
   els.sharedTreePartnerName.textContent = `${friend.name}와 함께 키우는 나무`;
+  els.sharedTreeView.dataset.stage = String(stage);
+  if (els.sharedTreeImage) {
+    els.sharedTreeImage.src = sharedTreeImagePath(stage);
+  }
   els.sharedTreeProgressCount.textContent = `${progress} / ${target}`;
   els.sharedTreeProgressCopy.textContent = complete
     ? "스무 개의 빛 조각이 모여, 둘만의 나무가 완성됐어요."
