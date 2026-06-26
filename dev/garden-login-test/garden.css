@@ -1595,6 +1595,8 @@ textarea::placeholder { color: #a7b4bd; }
 .support-point:nth-child(2) .support-point-icon { background: #f1f8ee; }
 .support-point b { display: block; color: #516b75; font-size: 13px; font-weight: 950; }
 .support-point p { margin: 5px 0 0; color: #788b96; font-size: 12px; font-weight: 700; line-height: 1.58; }
+.support-doc-links { display: grid; gap: 9px; margin-top: 13px; }
+.support-doc-links .support-privacy-link { margin-top: 0; }
 .support-privacy-link { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 13px; padding: 13px 14px; border: 1px solid rgba(133, 173, 195, .22); border-radius: 16px; background: #f7fbff; color: #617d92; font-size: 12px; font-weight: 900; text-decoration: none; }
 .support-privacy-link span { font-size: 16px; line-height: 1; }
 .support-privacy-link:hover, .support-privacy-link:focus-visible { border-color: rgba(115, 164, 188, .45); background: #f1f8ff; }
