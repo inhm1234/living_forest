@@ -133,10 +133,15 @@ button:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3p
 .reply-form label { display: block; margin-bottom: 8px; color: #5d7e6d; font-size: 12px; font-weight: 900; }
 .reply-form textarea { width: 100%; min-height: 150px; resize: vertical; padding: 13px 14px; border: 1px solid rgba(105,138,118,.2); border-radius: 13px; background: rgba(255,255,255,.82); color: #456172; font-size: 13px; font-weight: 700; line-height: 1.6; }
 .reply-form textarea::placeholder { color: #a7b3bd; }
+.reply-form textarea.is-locked { cursor: default; background: rgba(245,249,246,.92); color: #61787c; }
 .reply-form-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; }
 .reply-form-foot p { margin: 0; color: #8799a5; font-size: 10.5px; font-weight: 700; line-height: 1.45; }
-.save-reply-button { flex: 0 0 auto; min-height: 39px; padding: 0 15px; border: 0; border-radius: 12px; background: #6fac88; color: #fff; font-size: 12px; font-weight: 900; box-shadow: 0 8px 15px rgba(83,143,106,.2); }
-.save-reply-button:disabled { cursor: wait; opacity: .7; }
+.reply-form-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 7px; }
+.save-reply-button, .edit-reply-button { min-height: 39px; padding: 0 15px; border-radius: 12px; font-size: 12px; font-weight: 900; }
+.save-reply-button { border: 0; background: #6fac88; color: #fff; box-shadow: 0 8px 15px rgba(83,143,106,.2); }
+.edit-reply-button { border: 1px solid rgba(95,145,113,.25); background: rgba(255,255,255,.78); color: #5f836c; }
+.save-reply-button:disabled { cursor: default; opacity: .66; box-shadow: none; }
+.edit-reply-button:disabled { cursor: wait; opacity: .65; }
 .toast { position: fixed; z-index: 50; left: 50%; bottom: 28px; max-width: calc(100% - 36px); padding: 12px 15px; border-radius: 14px; background: rgba(57,78,85,.92); color: #fff; font-size: 12px; font-weight: 800; line-height: 1.45; text-align: center; transform: translateX(-50%); box-shadow: 0 12px 28px rgba(52,66,75,.24); }
 
 @media (max-width: 760px) {
@@ -152,7 +157,7 @@ button:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3p
   .feedback-detail { padding: 24px 18px; }
   .detail-empty { min-height: 260px; }
   .reply-form-foot { align-items: flex-end; }
-  .save-reply-button { min-height: 43px; }
+  .save-reply-button, .edit-reply-button { min-height: 43px; }
 }
 
 @media (max-width: 420px) {
@@ -162,5 +167,6 @@ button:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3p
   .filter-row { gap: 6px; }
   .feedback-detail h2 { font-size: 23px; }
   .reply-form-foot { display: grid; }
-  .save-reply-button { width: 100%; }
+  .reply-form-actions { width: 100%; }
+  .save-reply-button, .edit-reply-button { flex: 1 1 0; }
 }

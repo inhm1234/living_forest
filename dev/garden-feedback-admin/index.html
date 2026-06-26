@@ -127,7 +127,10 @@
             <textarea id="replyMessage" maxlength="1200" rows="7" placeholder="답장을 편하게 적어 주세요. 저장하면 사용자에게 바로 보입니다."></textarea>
             <div class="reply-form-foot">
               <p id="replyState">답장을 저장하면 사용자의 '내가 남긴 말'에 표시돼요.</p>
-              <button class="save-reply-button" id="saveReplyButton" type="submit">답장 보내기</button>
+              <div class="reply-form-actions">
+                <button class="edit-reply-button hidden" id="editReplyButton" type="button">수정</button>
+                <button class="save-reply-button" id="saveReplyButton" type="submit">답장 보내기</button>
+              </div>
             </div>
           </form>
         </div>

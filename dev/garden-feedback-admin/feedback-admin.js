@@ -14,6 +14,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 let currentUser = null;
 let feedbackItems = [];
 let selectedFeedbackId = "";
+let isReplyEditing = false;
 let toastTimer = null;
 
 const $ = (selector) => document.querySelector(selector);
@@ -45,6 +46,7 @@ const els = {
   replyMessage: $("#replyMessage"),
   replyState: $("#replyState"),
   saveReplyButton: $("#saveReplyButton"),
+  editReplyButton: $("#editReplyButton"),
   toast: $("#toast"),
 };
 
@@ -172,10 +174,21 @@ function renderDetail() {
   els.detailDate.dateTime = item.created_at || "";
   els.detailFrom.textContent = `${name} 님이 남긴 말`;
   els.detailMessage.textContent = item.message || "";
+  const hasSavedReply = Boolean(String(item.operator_reply || "").trim());
+  const replyLocked = hasSavedReply && !isReplyEditing;
+
   els.replyMessage.value = item.operator_reply || "";
+  els.replyMessage.readOnly = replyLocked;
+  els.replyMessage.classList.toggle("is-locked", replyLocked);
   els.markReadButton.classList.toggle("hidden", status !== "new");
+  els.editReplyButton.classList.toggle("hidden", !hasSavedReply || isReplyEditing);
+  els.editReplyButton.disabled = false;
+  els.saveReplyButton.disabled = replyLocked;
+  els.saveReplyButton.textContent = replyLocked ? "답장 저장됨" : (hasSavedReply ? "수정 저장" : "답장 보내기");
   els.replyState.textContent = item.operator_replied_at
-    ? `마지막 답장 · ${formatDateTime(item.operator_replied_at)}`
+    ? (isReplyEditing
+      ? "답장을 고친 뒤 수정 저장을 누르면 사용자 편지함에 바로 바뀌어요."
+      : `마지막 답장 · ${formatDateTime(item.operator_replied_at)}`)
     : "답장을 저장하면 사용자의 '내가 남긴 말'에 표시돼요.";
 }
 
@@ -226,7 +239,17 @@ async function loadInbox({ keepSelection = true } = {}) {
 
 async function selectFeedback(feedbackId) {
   selectedFeedbackId = feedbackId || "";
+  isReplyEditing = false;
   renderInbox();
+}
+
+function startReplyEdit() {
+  const item = selectedItem();
+  if (!item || !String(item.operator_reply || "").trim()) return;
+  isReplyEditing = true;
+  renderDetail();
+  els.replyMessage.focus();
+  els.replyMessage.setSelectionRange(els.replyMessage.value.length, els.replyMessage.value.length);
 }
 
 async function markSelectedAsRead() {
@@ -264,9 +287,10 @@ async function saveReply(event) {
     return;
   }
 
-  const originalText = els.saveReplyButton.textContent;
+  const wasEditing = isReplyEditing;
   els.saveReplyButton.disabled = true;
-  els.saveReplyButton.textContent = "답장 저장 중";
+  els.editReplyButton.disabled = true;
+  els.saveReplyButton.textContent = wasEditing ? "수정 저장 중" : "답장 저장 중";
   try {
     const { data, error } = await supabase.rpc("save_garden_feedback_admin_reply", {
       p_feedback_id: item.feedback_id,
@@ -274,14 +298,15 @@ async function saveReply(event) {
     });
     if (error) throw error;
     if (data !== true) throw new Error("FEEDBACK_NOT_FOUND");
+    isReplyEditing = false;
     await loadInbox({ keepSelection: true });
-    showToast("답장을 보냈어요. 사용자 편지함에 바로 표시돼요.");
+    showToast(wasEditing ? "답장을 수정했어요. 사용자 편지함에도 바로 반영돼요." : "답장을 보냈어요. 사용자 편지함에 바로 표시돼요.");
   } catch (error) {
     console.error("TodayForest feedback admin reply save error:", error);
-    showToast("답장을 저장하지 못했어요. 잠시 뒤 다시 시도해 주세요.");
-  } finally {
     els.saveReplyButton.disabled = false;
-    els.saveReplyButton.textContent = originalText;
+    els.editReplyButton.disabled = false;
+    els.saveReplyButton.textContent = wasEditing ? "수정 저장" : "답장 보내기";
+    showToast("답장을 저장하지 못했어요. 잠시 뒤 다시 시도해 주세요.");
   }
 }
 
@@ -367,6 +392,7 @@ function bindEvents() {
     renderInbox();
   });
   els.markReadButton.addEventListener("click", () => { void markSelectedAsRead(); });
+  els.editReplyButton.addEventListener("click", startReplyEdit);
   els.replyForm.addEventListener("submit", saveReply);
 }
 
