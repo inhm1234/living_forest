@@ -328,32 +328,44 @@
       <button class="close-button" data-close="feedbackSheet" type="button" aria-label="숲에 말 남기기 닫기">×</button>
     </div>
 
-    <div class="feedback-intro">
-      <span aria-hidden="true">✦</span>
-      <p>남겨주신 말은 운영자에게만 전달돼요.<br>오늘의숲을 더 잘 가꾸는 데 참고할게요.</p>
+    <div class="feedback-tabs" role="tablist" aria-label="숲에 말 남기기 메뉴">
+      <button class="feedback-tab selected" id="feedbackWriteTab" type="button" role="tab" aria-selected="true" aria-controls="feedbackWritePanel" data-feedback-tab="write">말 남기기</button>
+      <button class="feedback-tab" id="feedbackHistoryTab" type="button" role="tab" aria-selected="false" aria-controls="feedbackHistoryPanel" data-feedback-tab="history">내가 남긴 말</button>
     </div>
 
-    <form id="feedbackForm" class="feedback-form">
-      <fieldset class="feedback-category-picker">
-        <legend>어떤 이야기를 남길까요?</legend>
-        <div class="feedback-category-grid">
-          <button class="feedback-category" type="button" data-feedback-category="issue" aria-pressed="false">
-            <span aria-hidden="true">🌿</span>불편한 점
-          </button>
-          <button class="feedback-category selected" type="button" data-feedback-category="idea" aria-pressed="true">
-            <span aria-hidden="true">✦</span>바라는 점
-          </button>
-          <button class="feedback-category" type="button" data-feedback-category="cheer" aria-pressed="false">
-            <span aria-hidden="true">💌</span>응원 한마디
-          </button>
-        </div>
-      </fieldset>
+    <div id="feedbackWritePanel" role="tabpanel" aria-labelledby="feedbackWriteTab">
+      <div class="feedback-intro">
+        <span aria-hidden="true">✦</span>
+        <p>남겨주신 말은 운영자에게만 전달돼요.<br>답장이 오면 <b>내가 남긴 말</b>에서 조용히 확인할 수 있어요.</p>
+      </div>
 
-      <label class="write-label" for="feedbackMessage">전하고 싶은 말</label>
-      <textarea id="feedbackMessage" name="feedbackMessage" maxlength="1000" rows="6" placeholder="편했던 점, 아쉬운 점, 바라는 점을 편하게 들려주세요."></textarea>
-      <button class="feedback-submit" type="submit">운영자에게 말 남기기</button>
-      <p class="sheet-footnote">다른 사용자에게는 보이지 않아요.</p>
-    </form>
+      <form id="feedbackForm" class="feedback-form">
+        <fieldset class="feedback-category-picker">
+          <legend>어떤 이야기를 남길까요?</legend>
+          <div class="feedback-category-grid">
+            <button class="feedback-category" type="button" data-feedback-category="issue" aria-pressed="false">
+              <span aria-hidden="true">🌿</span>불편한 점
+            </button>
+            <button class="feedback-category selected" type="button" data-feedback-category="idea" aria-pressed="true">
+              <span aria-hidden="true">✦</span>바라는 점
+            </button>
+            <button class="feedback-category" type="button" data-feedback-category="cheer" aria-pressed="false">
+              <span aria-hidden="true">💌</span>응원 한마디
+            </button>
+          </div>
+        </fieldset>
+
+        <label class="write-label" for="feedbackMessage">전하고 싶은 말</label>
+        <textarea id="feedbackMessage" name="feedbackMessage" maxlength="1000" rows="6" placeholder="편했던 점, 아쉬운 점, 바라는 점을 편하게 들려주세요."></textarea>
+        <button class="feedback-submit" type="submit">운영자에게 말 남기기</button>
+        <p class="sheet-footnote">다른 사용자에게는 보이지 않아요.</p>
+      </form>
+    </div>
+
+    <div class="feedback-history-panel hidden" id="feedbackHistoryPanel" role="tabpanel" aria-labelledby="feedbackHistoryTab">
+      <p class="feedback-history-guide">내가 남긴 말과 운영자의 답장은 이곳에서만 조용히 확인할 수 있어요.</p>
+      <div class="feedback-history-list" id="feedbackHistoryList" aria-live="polite"></div>
+    </div>
   </section>
 
   <section class="bottom-sheet tall-sheet hidden" id="friendsSheet" role="dialog" aria-modal="true" aria-labelledby="friendsSheetTitle">

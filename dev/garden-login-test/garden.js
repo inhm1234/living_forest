@@ -145,6 +145,7 @@ let currentUser = null;
 let state = cloneDefault();
 let selectedMood = "good";
 let selectedFeedbackCategory = "idea";
+let activeFeedbackTab = "write";
 let activeLetterId = null;
 let selectedLetterRecipientId = "";
 let activeInviteLink = "";
@@ -216,6 +217,11 @@ const els = {
   feedbackSheet: $("#feedbackSheet"),
   letterComposerSheet: $("#letterComposerSheet"),
   openFeedback: $("#openFeedback"),
+  feedbackWriteTab: $("#feedbackWriteTab"),
+  feedbackHistoryTab: $("#feedbackHistoryTab"),
+  feedbackWritePanel: $("#feedbackWritePanel"),
+  feedbackHistoryPanel: $("#feedbackHistoryPanel"),
+  feedbackHistoryList: $("#feedbackHistoryList"),
   feedbackForm: $("#feedbackForm"),
   feedbackMessage: $("#feedbackMessage"),
   recordForm: $("#recordForm"),
@@ -3031,12 +3037,76 @@ function renderFeedbackCategorySelection() {
   });
 }
 
+function feedbackCategoryLabel(category) {
+  return ({ issue: "불편한 점", idea: "바라는 점", cheer: "응원 한마디" })[category] || "남긴 말";
+}
+
+function renderFeedbackTab() {
+  const showingHistory = activeFeedbackTab === "history";
+  els.feedbackWriteTab.classList.toggle("selected", !showingHistory);
+  els.feedbackHistoryTab.classList.toggle("selected", showingHistory);
+  els.feedbackWriteTab.setAttribute("aria-selected", String(!showingHistory));
+  els.feedbackHistoryTab.setAttribute("aria-selected", String(showingHistory));
+  els.feedbackWritePanel.classList.toggle("hidden", showingHistory);
+  els.feedbackHistoryPanel.classList.toggle("hidden", !showingHistory);
+}
+
+function renderFeedbackHistory(items = []) {
+  if (!items.length) {
+    els.feedbackHistoryList.innerHTML = '<p class="feedback-history-empty">아직 남긴 말이 없어요. 이 숲에 바라는 마음이 생기면 언제든 들려주세요.</p>';
+    return;
+  }
+
+  els.feedbackHistoryList.innerHTML = items.map((item) => {
+    const reply = String(item.operator_reply || "").trim();
+    const replyDate = item.operator_replied_at ? formatDate(item.operator_replied_at) : "";
+    const replyMarkup = reply
+      ? `
+        <div class="feedback-operator-reply">
+          <p class="feedback-reply-kicker">✦ 숲에서 답장이 도착했어요${replyDate ? ` · ${escapeHTML(replyDate)}` : ""}</p>
+          <p>${escapeHTML(reply)}</p>
+        </div>`
+      : '<p class="feedback-awaiting-reply">운영자에게 잘 전달되었어요. 답장이 오면 이곳에서 확인할 수 있어요.</p>';
+
+    return `
+      <article class="feedback-history-item">
+        <div class="feedback-history-head">
+          <strong>${escapeHTML(feedbackCategoryLabel(item.category))}</strong>
+          <time datetime="${escapeHTML(item.created_at || "")}">${escapeHTML(formatDate(item.created_at))}</time>
+        </div>
+        <p class="feedback-my-message">${escapeHTML(item.message || "")}</p>
+        ${replyMarkup}
+      </article>`;
+  }).join("");
+}
+
+async function loadMyGardenFeedback() {
+  if (!currentUser) return;
+  els.feedbackHistoryList.innerHTML = '<p class="feedback-history-loading">내가 남긴 말을 불러오고 있어요.</p>';
+  try {
+    const { data, error } = await supabase.rpc("list_my_garden_feedback");
+    if (error) throw error;
+    renderFeedbackHistory(data || []);
+  } catch (error) {
+    console.error("TodayForest feedback history load error:", error);
+    els.feedbackHistoryList.innerHTML = '<p class="feedback-history-empty">내가 남긴 말을 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</p>';
+  }
+}
+
+async function selectFeedbackTab(tab) {
+  activeFeedbackTab = tab === "history" ? "history" : "write";
+  renderFeedbackTab();
+  if (activeFeedbackTab === "history") await loadMyGardenFeedback();
+}
+
 function openFeedbackSheet() {
   if (!currentUser) {
     showToast("내 정원을 먼저 로그인해 주세요.");
     return;
   }
   renderFeedbackCategorySelection();
+  activeFeedbackTab = "write";
+  renderFeedbackTab();
   openSheet(els.feedbackSheet);
 }
 
@@ -3074,8 +3144,8 @@ async function submitGardenFeedback(event) {
     els.feedbackForm.reset();
     selectedFeedbackCategory = "idea";
     renderFeedbackCategorySelection();
-    closeAllSheets();
-    showToast("소중한 말을 잘 받았어요. 숲을 더 잘 가꾸는 데 참고할게요.");
+    await selectFeedbackTab("history");
+    showToast("소중한 말을 잘 받았어요. 답장이 오면 여기에서 만날 수 있어요.");
   } catch (error) {
     console.error("TodayForest feedback save error:", error);
     showToast("말을 전하지 못했어요. 잠시 뒤 다시 시도해 주세요.");
@@ -3465,6 +3535,7 @@ function bindEvents() {
   $("#openLetters").addEventListener("click", () => { void openLettersSheet(); });
   els.openFeedback.addEventListener("click", openFeedbackSheet);
   els.feedbackForm.addEventListener("submit", submitGardenFeedback);
+  $$("[data-feedback-tab]").forEach((button) => button.addEventListener("click", () => { void selectFeedbackTab(button.dataset.feedbackTab); }));
   $$("[data-feedback-category]").forEach((button) => button.addEventListener("click", () => {
     selectedFeedbackCategory = button.dataset.feedbackCategory || "idea";
     renderFeedbackCategorySelection();
