@@ -1578,3 +1578,24 @@ textarea::placeholder { color: #a7b4bd; }
 .tree-name-sheet-head { padding-right: 0; }
 .tree-name-lock-note { color: #798c97; }
 .tree-name-lock-note b { color: #5f7a6c; }
+
+
+/* Support and advertising notice v6 */
+.garden-footer-actions { display: grid; justify-items: center; gap: 0; margin-top: 2px; }
+.garden-footer-link-row { display: flex; align-items: center; justify-content: center; gap: 13px; margin-top: 12px; }
+.garden-footer-actions .reset-link { margin-top: 0; }
+.support-footer-link { border: 0; padding: 0; background: transparent; color: #7fa087; font-size: 11px; font-weight: 900; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.support-footer-link:hover, .support-footer-link:focus-visible { color: #5d8f6d; }
+.support-intro { display: flex; align-items: flex-start; gap: 11px; margin: 18px 0 13px; padding: 14px; border: 1px solid rgba(139, 190, 158, .18); border-radius: 19px; background: linear-gradient(135deg, #f2faf1, #fbf8ff); }
+.support-intro-icon { display: grid; flex: 0 0 auto; place-items: center; width: 37px; height: 37px; border-radius: 13px; background: rgba(255,255,255,.76); font-size: 18px; }
+.support-intro p { margin: 0; color: #647d72; font-size: 13px; font-weight: 750; line-height: 1.58; }
+.support-point-list { display: grid; gap: 9px; }
+.support-point { display: flex; align-items: flex-start; gap: 11px; padding: 13px; border: 1px solid #e7eef0; border-radius: 18px; background: #fff; }
+.support-point-icon { display: grid; flex: 0 0 auto; place-items: center; width: 34px; height: 34px; border-radius: 12px; background: #fff6f8; font-size: 16px; }
+.support-point:nth-child(2) .support-point-icon { background: #f1f8ee; }
+.support-point b { display: block; color: #516b75; font-size: 13px; font-weight: 950; }
+.support-point p { margin: 5px 0 0; color: #788b96; font-size: 12px; font-weight: 700; line-height: 1.58; }
+.support-privacy-link { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 13px; padding: 13px 14px; border: 1px solid rgba(133, 173, 195, .22); border-radius: 16px; background: #f7fbff; color: #617d92; font-size: 12px; font-weight: 900; text-decoration: none; }
+.support-privacy-link span { font-size: 16px; line-height: 1; }
+.support-privacy-link:hover, .support-privacy-link:focus-visible { border-color: rgba(115, 164, 188, .45); background: #f1f8ff; }
+.support-footnote { margin-bottom: 3px; text-align: center; }

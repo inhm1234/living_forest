@@ -218,11 +218,13 @@ const els = {
   friendsSheet: $("#friendsSheet"),
   lettersSheet: $("#lettersSheet"),
   feedbackSheet: $("#feedbackSheet"),
+  supportSheet: $("#supportSheet"),
   treeNameSheet: $("#treeNameSheet"),
   treeNameForm: $("#treeNameForm"),
   treeNameInput: $("#treeNameInput"),
   letterComposerSheet: $("#letterComposerSheet"),
   openFeedback: $("#openFeedback"),
+  openSupport: $("#openSupport"),
   feedbackWriteTab: $("#feedbackWriteTab"),
   feedbackHistoryTab: $("#feedbackHistoryTab"),
   feedbackWritePanel: $("#feedbackWritePanel"),
@@ -1151,7 +1153,7 @@ function closeAllSheets({ force = false } = {}) {
   const treeNameSheetIsOpen = els.treeNameSheet && !els.treeNameSheet.classList.contains("hidden");
   if (!force && treeNameSheetIsOpen && isTreeNameSetupRequired()) return;
   const wasViewingLetters = !els.lettersSheet.classList.contains("hidden");
-  [els.recordSheet, els.recordsSheet, els.friendsSheet, els.lettersSheet, els.feedbackSheet, els.letterComposerSheet, els.treeNameSheet].filter(Boolean).forEach((sheet) => sheet.classList.add("hidden"));
+  [els.recordSheet, els.recordsSheet, els.friendsSheet, els.lettersSheet, els.feedbackSheet, els.supportSheet, els.letterComposerSheet, els.treeNameSheet].filter(Boolean).forEach((sheet) => sheet.classList.add("hidden"));
   els.sheetOverlay.classList.add("hidden");
   // 봉투 화면을 닫을 때만 배송 도착 알림을 다음 진입 시점으로 넘깁니다.
   if (wasViewingLetters) clearAnimalDeliveryArrivals();
@@ -3166,6 +3168,10 @@ function openFeedbackSheet() {
   openSheet(els.feedbackSheet);
 }
 
+function openSupportSheet() {
+  openSheet(els.supportSheet);
+}
+
 async function submitGardenFeedback(event) {
   event.preventDefault();
   if (!currentUser) {
@@ -3647,6 +3653,7 @@ function bindEvents() {
   els.openFriends.addEventListener("click", () => { renderFriends(); openSheet(els.friendsSheet); });
   $("#openLetters").addEventListener("click", () => { void openLettersSheet(); });
   els.openFeedback.addEventListener("click", openFeedbackSheet);
+  els.openSupport.addEventListener("click", openSupportSheet);
   els.feedbackForm.addEventListener("submit", submitGardenFeedback);
   $$("[data-feedback-tab]").forEach((button) => button.addEventListener("click", () => { void selectFeedbackTab(button.dataset.feedbackTab); }));
   $$("[data-feedback-category]").forEach((button) => button.addEventListener("click", () => {
