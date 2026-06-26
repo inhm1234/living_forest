@@ -3,1015 +3,618 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>오늘의숲 | 마음이 나무가 되는 작은 숲</title>
-  <meta
-    name="description"
-    content="내 나무를 키우고 친구들과 함께 숲을 채워가는 귀엽고 따뜻한 숲 놀이터 체험판입니다. 기록은 이 기기에만 저장돼요."
-  />
-  <meta name="theme-color" content="#fff7e8" />
+  <meta name="theme-color" content="#eef1ff" />
   <meta name="color-scheme" content="light" />
-  <meta name="format-detection" content="telephone=no" />
-  <meta name="application-name" content="살아있는 숲" />
-  <meta name="apple-mobile-web-app-title" content="살아있는 숲" />
-  <meta property="og:locale" content="ko_KR" />
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="살아있는 숲" />
-  <meta property="og:title" content="살아있는 숲 | 하루 한 번, 내 마음이 자라는 숲" />
-  <meta
-    property="og:description"
-    content="처음 온 사람도 바로 시작할 수 있도록 짧은 안내와 오늘의 기록 버튼을 정리한 작은 숲 체험판입니다."
-  />
-  <meta property="og:image" content="assets/share/living-forest-og.png" />
-
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="살아있는 숲 | 하루 한 번, 내 마음이 자라는 숲" />
-  <meta
-    name="twitter:description"
-    content="오늘의 마음을 남기면 내 나무와 월드 숲이 조용히 자라요."
-  />
-  <meta name="twitter:image" content="assets/share/living-forest-og.png" />
-
-  <link rel="icon" href="assets/share/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="assets/share/living-forest-og.png" />
-  <link rel="stylesheet" href="style.css?v=1.73.12-tree-growth-time-assets" />
-<!-- Google tag (gtag.js) - Living Forest GA4 -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-YC872G7MH1"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-YC872G7MH1', {
-    send_page_view: true
-  });
-</script>
-
-
-<style>
-  .dev-mode-ribbon {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    z-index: 99999;
-    padding: 7px 10px;
-    border-radius: 999px;
-    background: rgba(31, 41, 55, 0.88);
-    color: #fff;
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: -0.01em;
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
-    pointer-events: none;
-  }
-
-
-  .support-revenue-area {
-    display: none;
-    position: fixed;
-    left: 16px;
-    bottom: 16px;
-    z-index: 8500;
-    width: min(286px, calc(100% - 32px));
-    margin: 0;
-    padding: 10px;
-    border: 1px solid rgba(112, 84, 52, 0.13);
-    border-radius: 18px;
-    background: rgba(255, 250, 240, 0.74);
-    box-shadow: 0 14px 34px rgba(20, 28, 35, 0.13);
-    backdrop-filter: blur(8px);
-  }
-
-  body.lf-world-active .support-revenue-area {
-    display: block;
-  }
-
-  body.lf-garden-active .support-revenue-area {
-    display: none !important;
-  }
-
-  .support-revenue-kicker {
-    margin: 0 0 5px;
-    color: rgba(92, 70, 49, 0.60);
-    font-size: 11px;
-    font-weight: 850;
-    letter-spacing: 0.03em;
-  }
-
-  .support-revenue-title {
-    margin: 0 0 4px;
-    color: rgba(79, 59, 43, 0.94);
-    font-size: 14px;
-    font-weight: 920;
-    letter-spacing: -0.04em;
-  }
-
-  .support-revenue-text {
-    margin: 0;
-    color: rgba(73, 55, 40, 0.70);
-    font-size: 11.5px;
-    line-height: 1.48;
-  }
-
-  .support-revenue-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 7px;
-    margin-top: 8px;
-  }
-
-  .support-revenue-btn {
-    appearance: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(93, 70, 46, 0.13);
-    border-radius: 999px;
-    background: rgba(255, 247, 223, 0.92);
-    color: #5a422e;
-    padding: 7px 11px;
-    font: inherit;
-    font-size: 12.5px;
-    font-weight: 900;
-    cursor: pointer;
-    text-decoration: none;
-    box-shadow: 0 7px 16px rgba(112, 84, 52, 0.07);
-  }
-
-  .support-revenue-btn:hover,
-  .support-revenue-btn:focus-visible {
-    background: #fff3cb;
-    outline: none;
-  }
-
-  .support-ad-placeholder {
-    margin-top: 8px;
-    min-height: 38px;
-    display: grid;
-    place-items: center;
-    border: 1px dashed rgba(112, 84, 52, 0.18);
-    border-radius: 15px;
-    background: rgba(255, 255, 255, 0.34);
-    color: rgba(83, 63, 46, 0.54);
-    text-align: center;
-    font-size: 11.5px;
-    line-height: 1.42;
-  }
-
-  .support-modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 99998;
-    display: grid;
-    place-items: center;
-    padding: 18px;
-    background: rgba(42, 31, 22, 0.36);
-    backdrop-filter: blur(8px);
-  }
-
-  .support-modal-overlay.hidden {
-    display: none;
-  }
-
-  .support-modal-dialog {
-    width: min(440px, 100%);
-    padding: 20px;
-    border: 1px solid rgba(112, 84, 52, 0.16);
-    border-radius: 26px;
-    background: #fffaf0;
-    box-shadow: 0 24px 70px rgba(42, 31, 22, 0.24);
-    color: #4d3a2a;
-  }
-
-  .support-modal-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-  }
-
-  .support-modal-kicker {
-    display: block;
-    margin-bottom: 4px;
-    color: rgba(88, 67, 49, 0.66);
-    font-size: 12px;
-    font-weight: 900;
-  }
-
-  .support-modal-title {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 950;
-    letter-spacing: -0.05em;
-  }
-
-  .support-modal-close {
-    appearance: none;
-    border: 0;
-    border-radius: 999px;
-    background: rgba(96, 71, 48, 0.08);
-    color: #5a422e;
-    width: 34px;
-    height: 34px;
-    font-size: 22px;
-    line-height: 1;
-    cursor: pointer;
-  }
-
-  .support-modal-body {
-    margin-top: 9px;
-    color: rgba(73, 55, 40, 0.82);
-    font-size: 14px;
-    line-height: 1.72;
-  }
-
-  .support-modal-note {
-    margin: 12px 0 0;
-    padding: 12px;
-    border-radius: 16px;
-    background: rgba(255, 242, 209, 0.86);
-    color: rgba(83, 63, 46, 0.78);
-    font-size: 13px;
-  }
-
-  @media (max-width: 540px) {
-    .support-revenue-area {
-      left: 10px;
-      bottom: 10px;
-      width: min(260px, calc(100% - 20px));
-      padding: 9px;
-      border-radius: 16px;
-    }
-
-    .support-revenue-text {
-      display: none;
-    }
-
-    .support-ad-placeholder {
-      min-height: 34px;
-      font-size: 11px;
-    }
-  }
-
-</style>
-</head>
-<body class="lf-v159-ux lf-v160-ux lf-v161-ux lf-v162-ux lf-v163-ux lf-v164-ux lf-v165-ux lf-v166-ux lf-v167-ux lf-v168-ux lf-v169-ux lf-v1691-ux lf-v1692-ux lf-v1693-ux lf-v1704-ux lf-v1705-ux lf-v1706-ux lf-v1707-ux lf-v1708-ux lf-v1709-ux lf-v1710-ux lf-v1711-ux lf-v1712-ux lf-v1713-ux lf-v1714-ux lf-v1715-ux lf-v1716-ux lf-v1720-ux lf-v1721-ux lf-v1722-ux lf-v1723-ux lf-v1724-ux lf-v1725-ux lf-v1727-ux lf-v1730-ux lf-v1733-ux lf-v1734-ux lf-v1735-ux lf-v1736-ux lf-v1737-ux lf-v1738-ux lf-v1739-ux lf-v17310-ux lf-v17311-ux lf-world-active">
-  <noscript>
-    <div class="noscript-message">살아있는 숲은 JavaScript가 켜져 있어야 이용할 수 있어요.</div>
-  </noscript>
-  <main class="app">
-    <section id="worldScreen" class="screen screen-active">
-      <header class="hero world-hero">
-        <p class="version">오늘의숲 v0.2.0 · 수익화 준비</p>
-        <h1>살아있는 숲</h1>
-        <p class="subtitle">사람들이 남긴 나무가 모여 숲이 되는 곳.</p>
-        <nav class="world-story-nav" aria-label="오늘의숲 안내">
-          <a class="world-story-link" href="whitepaper.html">오늘의숲 백서</a>
-        </nav>
-        <p class="demo-pill">광고·후원 안내 준비</p>
-      </header>
-
-      <section id="launchGuideCard" class="launch-guide-card glass-panel" aria-labelledby="launchGuideTitle">
-        <span class="launch-guide-kicker">처음이라면</span>
-        <h2 id="launchGuideTitle">내 숲을 시작해볼래?</h2>
-        <p class="launch-guide-text">나무 이름을 짓고 오늘 기분만 고르면 돼요.</p>
-        <div class="launch-step-list" aria-label="살아있는 숲 첫 시작 순서">
-          <article class="launch-step-card">
-            <span>1</span>
-            <strong>나무 이름 짓기</strong>
-            <p>내 숲에 심을 첫 나무 이름을 적어요.</p>
-          </article>
-          <article class="launch-step-card">
-            <span>2</span>
-            <strong>오늘 기분 고르기</strong>
-            <p>좋음·보통·피곤 중 지금과 가까운 걸 골라요.</p>
-          </article>
-          <article class="launch-step-card">
-            <span>3</span>
-            <strong>숲 자라는 모습 보기</strong>
-            <p>오늘의 기록이 숲에 작은 흔적으로 남아요.</p>
-          </article>
-        </div>
-        <div class="launch-action-row">
-          <button id="startTodayRecordBtn" class="primary-btn launch-primary-btn" type="button">내 나무 보러가기</button>
-          <button id="openOnboardingBtn" class="ghost-btn launch-ghost-btn" type="button">도움말</button>
-        </div>
-      </section>
-
-      <section class="world-card visual-card">
-        <div id="worldStage" class="world-stage visual-stage world-time-day" aria-label="전체 월드 숲">
-          <div id="worldTimeBadge" class="world-time-badge">낮 숲</div>
-          <div class="world-layer world-backdrop" aria-hidden="true"></div>
-          <div class="stage-dim world-dim"></div>
-          <div class="world-layer world-sky-glow" aria-hidden="true"></div>
-          <div class="world-layer world-sunbeam sunbeam-a" aria-hidden="true"></div>
-          <div class="world-layer world-sunbeam sunbeam-b" aria-hidden="true"></div>
-          <div class="world-depth world-depth-back" aria-hidden="true"></div>
-          <div class="world-canopy-shadow" aria-hidden="true"></div>
-          <div class="world-layer world-far-trees far-trees-a" aria-hidden="true"></div>
-          <div class="world-layer world-far-trees far-trees-b" aria-hidden="true"></div>
-          <div class="world-layer world-mid-trees" aria-hidden="true"></div>
-          <div class="world-layer world-forest-trail" aria-hidden="true"></div>
-          <div class="world-clearing" aria-hidden="true"></div>
-          <div class="world-spot-ground" aria-hidden="true"></div>
-          <div id="worldNeighborSpots" class="world-neighbor-spots" aria-label="숲의 다른 자리들"></div>
-          <div class="world-density-fallback" aria-hidden="true">
-            <span class="world-fill-tree fill-a"></span>
-            <span class="world-fill-tree fill-b"></span>
-            <span class="world-fill-tree fill-c"></span>
-            <span class="world-fill-tree fill-d"></span>
-            <span class="world-fill-tree fill-e"></span>
-            <span class="world-fill-tree fill-f"></span>
-            <span class="world-fill-tree fill-g"></span>
-            <span class="world-fill-tree fill-h"></span>
-            <span class="world-fill-tree fill-i"></span>
-            <span class="world-fill-tree fill-j"></span>
-            <span class="world-fill-tree fill-k"></span>
-            <span class="world-fill-tree fill-l"></span>
-            <span class="world-fill-tree fill-m"></span>
-            <span class="world-fill-tree fill-n"></span>
-          </div>
-          <div class="world-empty-slots" aria-hidden="true">
-            <span class="world-empty-slot empty-slot-a"></span>
-            <span class="world-empty-slot empty-slot-b"></span>
-            <span class="world-empty-slot empty-slot-c"></span>
-            <span class="world-empty-slot empty-slot-d"></span>
-            <span class="world-empty-slot empty-slot-e"></span>
-          </div>
-          <div id="worldStarterFriends" class="world-starter-friends" aria-label="온라인 친구 자리 선택">
-            <button type="button" class="starter-friend starter-friend-a" data-friend-seat="flower_path" aria-pressed="true"><b>꽃길 자리</b><small>친구 자리 A</small></button>
-            <button type="button" class="starter-friend starter-friend-b" data-friend-seat="sunny_spot" aria-pressed="false"><b>햇살 자리</b><small>친구 자리 B</small></button>
-            <button type="button" class="starter-friend starter-friend-c" data-friend-seat="pond_spot" aria-pressed="false"><b>연못 자리</b><small>친구 자리 C</small></button>
-            <button type="button" class="starter-friend starter-friend-d" data-friend-seat="swing_spot" aria-pressed="false"><b>그네 자리</b><small>친구 자리 D</small></button>
-            <button type="button" class="starter-friend starter-friend-e" data-friend-seat="flower_fence" aria-pressed="false"><b>꽃담 자리</b><small>친구 자리 E</small></button>
-          </div>
-          <div id="worldParticleLayer" class="world-particle-layer" aria-hidden="true"></div>
-          <div id="worldLifeLayer" class="world-life-layer" aria-hidden="true"></div>
-          <div class="world-fog world-fog-a" aria-hidden="true"></div>
-          <div class="world-fog world-fog-b" aria-hidden="true"></div>
-          <div class="world-fog world-fog-c" aria-hidden="true"></div>
-          <div class="world-foreground" aria-hidden="true"></div>
-          <div class="world-front-leaves leaves-a" aria-hidden="true"></div>
-          <div class="world-front-leaves leaves-b" aria-hidden="true"></div>
-
-          <div id="myWorldSpot" class="my-world-spot world-seed" aria-label="내 자리">
-            <div class="my-spot-ring" aria-hidden="true"></div>
-            <div id="mySpotAura" class="my-spot-aura"></div>
-            <div id="mySpotVisual" class="my-spot-visual">•</div>
-            <p id="mySpotName" class="my-spot-name">내 자리</p>
-            <p id="mySpotStatus" class="my-spot-status">내 자리는 아직 씨앗을 기다리고 있어요.</p>
-          </div>
-        </div>
-
-        <div class="world-summary glass-panel">
-          <div class="world-summary-top">
-            <p id="worldSummaryName" class="summary-name">이름 없는 나무</p>
-            <span id="worldSummaryToday" class="summary-chip">오늘 기록 전</span>
-          </div>
-          <p id="worldSummaryText" class="world-summary-text">오늘의 마음을 남기면 내 나무가 큰 숲 안에 자리 잡아요.</p>
-          <p id="worldCommunityHint" class="world-community-hint">초반에는 더미 나무가 숲을 채우고, 실제 친구가 오면 가까운 자리가 친구 나무로 바뀌어요.</p>
-          <p id="worldAtmosphereHint" class="world-atmosphere-hint">나무들이 조금 겹쳐 보여도, 모여 있을수록 진짜 숲처럼 보여요.</p>
-          <div class="friend-waiting-row" aria-label="온라인 친구 자리 미리보기">
-            <span>🌸 꽃길 자리</span>
-            <span>☀️ 햇살 자리</span>
-            <span>💧 연못 자리</span>
-            <span>🎀 그네 자리</span>
-            <span>🌷 꽃담 자리</span>
-          </div>
-        </div>
-
-        <div id="forestInviteCard" class="forest-invite-card glass-panel hidden" aria-live="polite">
-          <span class="forest-invite-kicker">숲 초대장</span>
-          <p id="forestInviteTitle" class="forest-invite-title">누군가의 숲 문장을 보고 오셨나요?</p>
-          <p id="forestInviteText" class="forest-invite-text">하루에 한 번 마음을 남기면 내 나무가 자라고, 친구들과 함께 숲도 조금씩 채워져요.</p>
-          <button id="forestInviteStartBtn" class="primary-btn forest-invite-start" type="button">내 숲 시작하기</button>
-          <p id="forestInviteMeta" class="forest-invite-meta">초대 링크로 들어왔어요 · 로그인 없이 바로 시작할 수 있어요.</p>
-        </div>
-
-        <div id="onlineFriendJoinCard" class="online-friend-join-card glass-panel hidden" aria-live="polite">
-          <span class="online-friend-join-kicker">온라인 친구 자리 초대</span>
-          <p id="onlineFriendJoinTitle" class="online-friend-join-title">친구의 숲 자리에 초대받았어요</p>
-          <p id="onlineFriendJoinText" class="online-friend-join-text">이미 내 나무가 있다면 새로 만들지 않고 기존 나무로 바로 들어갈 수 있어요.</p>
-
-          <div id="onlineFriendExistingPanel" class="online-friend-existing-panel hidden">
-            <span class="online-friend-existing-kicker">이미 내 나무가 있어요</span>
-            <p id="onlineFriendExistingSummary" class="online-friend-existing-summary">이 브라우저에 저장된 내 나무를 찾고 있어요.</p>
-            <div class="online-friend-existing-actions">
-              <button id="onlineFriendUseExistingBtn" class="primary-btn" type="button">기존 내 나무로 이 자리에 들어가기</button>
-              <button id="onlineFriendNewTreeToggleBtn" class="ghost-btn" type="button">새 나무로 시작할래요</button>
-            </div>
-          </div>
-
-          <ol class="online-friend-join-steps" aria-label="처음 온 친구 시작 순서">
-            <li>처음이면 닉네임을 적어요.</li>
-            <li>내 나무 이름을 정해요.</li>
-            <li>오늘의 마음을 하나 고르면 초대받은 자리에 저장돼요.</li>
-          </ol>
-          <form id="onlineFriendJoinForm" class="online-friend-join-form">
-            <label>
-              <span>친구 닉네임</span>
-              <input id="onlineFriendNameInput" type="text" maxlength="12" placeholder="예: 민지" autocomplete="nickname" />
-            </label>
-            <label>
-              <span>내 나무 이름</span>
-              <input id="onlineFriendTreeInput" type="text" maxlength="16" placeholder="예: 민지의 나무" autocomplete="off" />
-            </label>
-            <label>
-              <span>오늘의 마음</span>
-              <select id="onlineFriendMoodSelect">
-                <option value="good">좋음</option>
-                <option value="normal" selected>보통</option>
-                <option value="tired">피곤</option>
-              </select>
-            </label>
-            <button id="onlineFriendJoinBtn" class="primary-btn" type="submit">새 나무 만들고 이 자리에 들어가기</button>
-          </form>
-          <p id="onlineFriendJoinMessage" class="online-friend-join-message">초대 링크로 들어온 친구만 이 카드가 보여요.</p>
-        </div>
-
-        <div id="worldGrowthCard" class="world-growth-card glass-panel" aria-live="polite">
-          <span class="world-growth-kicker">월드 숲의 내 자리</span>
-          <p id="worldGrowthTitle" class="world-growth-title">월드 숲은 첫 흔적을 기다려요</p>
-          <p id="worldGrowthText" class="world-growth-text">첫 마음을 기록하면 내 나무 자리에도 작은 씨앗빛이 남고, 함께 만드는 숲의 시작이 열려요.</p>
-          <div class="world-growth-progress" aria-hidden="true">
-            <span id="worldGrowthFill" class="world-growth-fill"></span>
-          </div>
-          <p id="worldGrowthMeta" class="world-growth-meta">첫 월드 변화까지 확인 중</p>
-        </div>
-
-        <div id="friendForestCard" class="friend-forest-card glass-panel" aria-live="polite">
-          <span class="friend-forest-kicker">친구 숲의 움직임</span>
-          <p id="friendForestTitle" class="friend-forest-title">아직 친구가 없어도 숲은 기다리는 중</p>
-          <p id="friendForestText" class="friend-forest-text">리본새싹, 별꽃잎, 소풍바람 같은 숲 친구가 먼저 빈자리를 지켜줘서 처음 시작해도 외롭지 않게 보여요.</p>
-          <ul id="friendForestList" class="friend-forest-list" aria-label="친구 숲 미리보기"></ul>
-          <p id="friendForestMeta" class="friend-forest-meta">실제 친구가 생기면 이 자리는 친구의 나무와 방문 흔적으로 자연스럽게 이어질 수 있어요.</p>
-        </div>
-
-        <div id="friendLinksCard" class="friend-links-card glass-panel" aria-live="polite">
-          <span class="friend-links-kicker">친구 관계 저장소</span>
-          <p id="friendLinksTitle" class="friend-links-title">친구 목록과 숲 자리를 분리해서 관리해요</p>
-          <p id="friendLinksText" class="friend-links-text">친구 목록에 있는 친구를 꽃길/햇살/연못/그네/꽃담 자리로 직접 배치하거나 이동할 수 있어요.</p>
-          <ul id="friendLinksList" class="friend-links-list" aria-label="온라인 친구 관계 목록"></ul>
-          <p id="friendLinksMeta" class="friend-links-meta">친구 목록에서 원하는 숲 자리로 바로 배치할 수 있어요.</p>
-        </div>
-
-        <div id="friendInviteCard" class="friend-invite-card glass-panel" aria-live="polite">
-          <span class="friend-invite-kicker">친구 초대 준비</span>
-          <p id="friendInviteTitle" class="friend-invite-title">친구에게 보낼 숲 초대장을 만들 수 있어요</p>
-          <p id="friendInviteText" class="friend-invite-text">내 나무 이름과 오늘의 숲 문장을 담아 친구에게 보낼 짧은 초대 문구를 준비했어요.</p>
-          <div id="friendSeatOptions" class="friend-seat-options" role="group" aria-label="초대할 온라인 친구 자리 선택">
-            <button type="button" data-friend-seat-option="flower_path" aria-pressed="true"><strong>꽃길 자리</strong><span>왼쪽 아래 · 친구 자리 A</span></button>
-            <button type="button" data-friend-seat-option="sunny_spot" aria-pressed="false"><strong>햇살 자리</strong><span>왼쪽 위 · 친구 자리 B</span></button>
-            <button type="button" data-friend-seat-option="pond_spot" aria-pressed="false"><strong>연못 자리</strong><span>가운데 위 · 친구 자리 C</span></button>
-            <button type="button" data-friend-seat-option="swing_spot" aria-pressed="false"><strong>그네 자리</strong><span>오른쪽 중간 · 친구 자리 D</span></button>
-            <button type="button" data-friend-seat-option="flower_fence" aria-pressed="false"><strong>꽃담 자리</strong><span>오른쪽 아래 · 친구 자리 E</span></button>
-          </div>
-          <p id="selectedFriendSeatText" class="selected-friend-seat-text">선택된 자리: 꽃길 자리 · 친구 자리 A</p>
-          <div class="friend-invite-actions friend-invite-actions-kakao">
-            <button id="kakaoFriendInviteBtn" class="primary-btn kakao-friend-invite-btn" type="button">💬 카카오톡으로 초대하기</button>
-            <button id="copyFriendInviteBtn" class="ghost-btn" type="button">초대 링크 복사</button>
-            <button id="previewFriendInviteBtn" class="ghost-btn" type="button">문구 미리보기</button>
-            <button id="clearFriendSeatBtn" class="ghost-btn clear-friend-seat-btn" type="button" disabled>선택한 자리 비우기</button>
-          </div>
-          <p id="friendInvitePreview" class="friend-invite-preview">초대 문구를 미리 보려면 버튼을 눌러주세요.</p>
-          <p id="friendInviteLinkText" class="friend-invite-link-text">초대 링크는 자리 선택 후 여기에도 표시돼요.</p>
-          <p id="friendInviteMeta" class="friend-invite-meta">카카오톡 초대가 안 열리면, 바로 아래 초대 링크를 길게 눌러 복사해도 돼요.</p>
-        </div>
-
-        <div id="worldPlaceCard" class="world-place-card glass-panel" aria-live="polite">
-          <span class="world-place-kicker">월드 숲 자리 안내</span>
-          <p class="world-place-title">빈자리는 이제 실제 온라인 친구가 들어올 수 있는 고정 자리예요.</p>
-          <p class="world-place-text">꽃길, 햇살, 연못, 그네, 꽃담 자리 중 하나를 골라 친구에게 초대 문구를 보낼 수 있어요.</p>
-        </div>
-
-        <div id="firstVisitGuide" class="first-visit-guide glass-panel" aria-live="polite">
-          <span class="first-visit-kicker">지금 해야 할 일</span>
-          <p class="first-visit-title">복잡한 설명보다, 첫 기록부터 시작해요.</p>
-          <p class="first-visit-text">내 나무 이름을 정하고 오늘의 마음 하나만 고르면 충분해요. 나머지 기능은 숲이 자라면서 천천히 열어볼 수 있어요.</p>
-        </div>
-
-        <div id="dailyLoopCard" class="daily-loop-card glass-panel" aria-live="polite">
-          <span class="daily-loop-kicker">오늘의 흐름</span>
-          <p id="dailyLoopTitle" class="daily-loop-title">내 나무를 심을 준비</p>
-          <p id="dailyLoopText" class="daily-loop-text">숲을 둘러보고, 내 나무와 친구들이 함께 채울 자리를 시작해요.</p>
-        </div>
-
-        <div class="world-action-row world-hud-actions" aria-label="전체 숲 행동">
-          <button id="goGardenBtn" class="primary-btn" type="button">내 정원</button>
-          <button id="focusMyTreeBtn" class="ghost-btn world-focus-btn" type="button">내 자리</button>
-          <button id="worldInviteBtn" class="ghost-btn world-invite-btn" type="button">초대</button>
-        </div>
-      </section>
-    </section>
-
-    <section id="gardenScreen" class="screen">
-      <section id="oneScreenGardenShell" class="one-screen-garden-shell glass-panel" aria-label="내 숲 첫 화면">
-      <header class="hero garden-hero">
-        <button id="backToWorldBtnTop" class="ghost-btn small-btn" type="button">← 전체 숲</button>
-        <p class="version">오늘 내 나무 돌보기</p>
-        <h2 id="gardenTitle" class="garden-title">밤 숲속 자리</h2>
-        <p class="subtitle">하루 한 번, 내 숲이 조금 자라요.</p>
-      </header>
-
-      <section id="gardenStarterCard" class="garden-starter-card glass-panel" aria-labelledby="gardenStarterTitle">
-        <span class="garden-starter-kicker">첫 기록은 이렇게 해요</span>
-        <h2 id="gardenStarterTitle">나무 이름을 적고, 오늘의 마음을 하나 골라주세요.</h2>
-        <p>처음 온 사람도 길을 잃지 않도록 오늘은 이 두 가지만 먼저 하면 돼요.</p>
-        <div class="garden-starter-steps">
-          <span>① 나무 이름</span>
-          <span>② 마음 선택</span>
-          <span>③ 변화 확인</span>
-        </div>
-      </section>
-
-      <section id="gardenHub" class="garden-hub glass-panel" aria-label="내 정원 빠른 메뉴">
-        <div class="garden-hub-head">
-          <div>
-            <span class="garden-hub-kicker">내 정원 메뉴</span>
-            <p id="gardenPanelTitle" class="garden-hub-title">기록, 꾸미기, 나눔만 가볍게 열어요.</p>
-          </div>
-          <button id="closeGardenPanelBtn" class="ghost-btn small-btn garden-hub-close" type="button">메뉴 열기</button>
-        </div>
-        <div class="garden-hub-nav" role="tablist" aria-label="내 정원 메뉴 탭">
-          <button type="button" class="garden-hub-tab active" data-garden-tab="record" aria-controls="gardenPanel-record" aria-selected="true">기록</button>
-          <button type="button" class="garden-hub-tab" data-garden-tab="decorate" aria-controls="gardenPanel-decorate" aria-selected="false">꾸미기</button>
-          <button type="button" class="garden-hub-tab" data-garden-tab="letter" aria-controls="gardenPanel-letter" aria-selected="false">나눔</button>
-        </div>
-        <div id="gardenHubSheet" class="garden-hub-sheet">
-          <div id="gardenPanel-record" class="garden-hub-panel active" data-garden-panel="record"></div>
-          <div id="gardenPanel-decorate" class="garden-hub-panel" data-garden-panel="decorate"></div>
-          <div id="gardenPanel-letter" class="garden-hub-panel" data-garden-panel="letter"></div>
-        </div>
-      </section>
-
-      <section class="forest-head glass-panel">
-        <p id="treeNameDisplay" class="tree-name-display">이름 없는 나무</p>
-        <div class="forest-meta">
-          <span id="todayDateChip" class="meta-chip">오늘 0000.00.00</span>
-          <span id="stageBadge" class="meta-chip">첫 기록을 기다리는 씨앗</span>
-          <span id="totalDays" class="meta-chip">0일</span>
-          <span id="todayStateChip" class="meta-chip">오늘 기록 전</span>
-        </div>
-      </section>
-
-      <section class="garden-card visual-card">
-        <div class="garden-stage visual-stage" id="sky" aria-label="내 밤 숲속 자리">
-          <div class="stage-dim garden-dim"></div>
-          <div class="garden-depth depth-back"></div>
-          <div class="garden-moon-glow"></div>
-          <div class="garden-fog fog-a"></div>
-          <div class="garden-fog fog-b"></div>
-          <div class="garden-focus-clearing" aria-hidden="true"></div>
-          <div class="tree-planting-ground" aria-hidden="true"></div>
-          <div class="garden-foreground"></div>
-
-          <div class="firefly firefly-1"></div>
-          <div class="firefly firefly-2"></div>
-          <div class="firefly firefly-3"></div>
-          <div class="firefly firefly-4"></div>
-          <div class="firefly firefly-5"></div>
-          <div class="firefly firefly-6"></div>
-
-          <div id="effectLayer" class="effect-layer" aria-hidden="true"></div>
-          <div id="gardenMarkerLayer" class="garden-marker-layer" aria-hidden="true"></div>
-          <div id="gardenActivityLog" class="garden-activity-log" aria-live="polite" aria-atomic="true" role="status"></div>
-          <div id="bird" class="creature bird" aria-label="새">
-            <img src="assets/garden/bird-silhouette-v3.png" alt="" />
-          </div>
-
-          <div id="tree" class="tree tree-image-layer tree-stage-seed" aria-label="내 나무">
-            <img class="tree-shadow-image" src="assets/garden/tree-shadow.svg" alt="" />
-            <div class="tree-glow"></div>
-            <div class="tree-image-stack">
-              <img id="treeImage" class="tree-image" src="assets/garden/tree-seed.svg" alt="첫 기록을 기다리는 씨앗" />
-            </div>
-          </div>
-
-          <div id="squirrel" class="creature squirrel" aria-label="다람쥐">
-            <img src="assets/garden/squirrel-silhouette-v3.png" alt="" />
-          </div>
-
-          <div id="treeCareStageDock" class="tree-care-stage-dock hidden" aria-live="polite">
-            <span class="tree-care-stage-label">오늘의 작은 돌봄</span>
-            <p id="treeCareStageText" class="tree-care-stage-text">기록 후 나무 가까이에서 바로 돌볼 수 있어요.</p>
-            <div class="tree-care-stage-actions">
-              <button type="button" data-care-action="water"><span>💧</span><em>물</em></button>
-              <button type="button" data-care-action="light"><span>☀️</span><em>빛</em></button>
-              <button type="button" data-care-action="rest"><span>🌙</span><em>쉼</em></button>
-            </div>
-          </div>
-
-          <div class="stage-message glass-panel">
-            <p id="growthMessage" class="message-main">오늘의 상태를 선택하면 나무가 자라요.</p>
-            <p id="creatureMessage" class="message-sub">어떤 선택도 성장으로 남아요.</p>
-          </div>
-        </div>
-      </section>
-      </section>
-
-      <section id="forestSoundCard" class="forest-sound-card glass-panel" aria-live="polite">
-        <span class="forest-sound-kicker">숲의 소리</span>
-        <p id="forestSoundTitle" class="forest-sound-title">내 정원에 어울리는 소리를 켜보세요</p>
-        <p id="forestSoundText" class="forest-sound-text">바람, 물방울, 밤벌레 중 하나를 누르면 이 기기에서만 짧은 숲 분위기가 재생돼요.</p>
-        <div class="forest-sound-actions">
-          <button type="button" data-forest-sound="wind"><span>🍃</span>바람</button>
-          <button type="button" data-forest-sound="water"><span>💧</span>물방울</button>
-          <button type="button" data-forest-sound="night"><span>🌙</span>밤벌레</button>
-          <button id="stopForestSoundBtn" type="button" class="forest-sound-stop">끄기</button>
-        </div>
-        <p id="forestSoundMessage" class="forest-sound-message">소리는 저장 데이터에 영향을 주지 않는 몰입용 기능이에요.</p>
-      </section>
-
-      <section id="nameCard" class="name-card glass-panel">
-        <p class="one-action-title">나무 이름 짓기</p>
-        <p class="one-action-sub">처음 심을 나무 이름을 정해줘요.</p>
-        <form id="treeNameForm" class="tree-name-form">
-          <input
-            id="treeNameInput"
-            type="text"
-            maxlength="16"
-            placeholder="예: 반짝이"
-            aria-label="내 나무 이름 입력"
-          />
-          <button type="submit">시작하기</button>
-        </form>
-        <p id="treeNameMessage" class="tree-name-message">마음에 드는 이름으로 시작해요.</p>
-      </section>
-
-
-      <section id="returnMemoryCard" class="return-memory-card glass-panel hidden" aria-live="polite">
-        <span class="return-memory-kicker">이어지는 숲</span>
-        <p id="returnMemoryTitle" class="return-memory-title">어제의 마음이 아직 숲에 남아 있어요</p>
-        <p id="returnMemoryText" class="return-memory-text">오늘의 마음을 더하면 어제의 성장 위에 새로운 변화가 이어져요.</p>
-        <p id="returnStreakText" class="return-streak-text">이어 키우는 중</p>
-      </section>
-
-      <section id="streakRewardCard" class="streak-reward-card glass-panel hidden" aria-live="polite">
-        <span class="streak-reward-kicker">다음 숲 보상</span>
-        <p id="streakRewardTitle" class="streak-reward-title">계속 기록하면 변화가 생겨요</p>
-        <p id="streakRewardText" class="streak-reward-text">며칠 더 이어서 기록하면 내 나무와 월드 숲에 작은 변화가 생겨요.</p>
-        <div class="streak-reward-progress" aria-hidden="true">
-          <span id="streakRewardFill" class="streak-reward-fill"></span>
-        </div>
-        <p id="streakRewardMeta" class="streak-reward-meta">다음 변화까지 확인 중</p>
-      </section>
-
-      <section class="mood-card glass-panel">
-        <p id="moodGuide" class="mood-guide">오늘 기분은?</p>
-
-        <div class="mood-buttons">
-          <button type="button" data-mood="good">
-            <span>😄</span>
-            좋음
-          </button>
-          <button type="button" data-mood="normal">
-            <span>😐</span>
-            보통
-          </button>
-          <button type="button" data-mood="tired">
-            <span>😵</span>
-            피곤
-          </button>
-        </div>
-
-        <p id="todayStatus" class="today-status">아직 오늘의 상태를 기록하지 않았어요.</p>
-      </section>
-
-      <section id="completeCard" class="complete-card glass-panel hidden" aria-live="polite">
-        <span class="complete-kicker">오늘 숲 완료</span>
-        <p id="completeMessage">오늘 마음이 숲에 남았어요.</p>
-      </section>
-
-      <section id="todayChangeCard" class="today-change-card glass-panel hidden" aria-live="polite">
-        <span class="today-change-kicker">오늘의 변화</span>
-        <p id="todayChangeTitle" class="today-change-title">내 나무가 반응했어요</p>
-        <p id="todayChangeText" class="today-change-text">오늘의 마음이 나무와 월드 숲에 작은 변화로 남았어요.</p>
-      </section>
-
-      <section id="tomorrowPromiseCard" class="tomorrow-promise-card glass-panel hidden" aria-live="polite">
-        <span class="tomorrow-promise-kicker">내일 이어질 성장</span>
-        <p id="tomorrowPromiseTitle" class="tomorrow-promise-title">내일 다시 오면 이어져요</p>
-        <p id="tomorrowPromiseText" class="tomorrow-promise-text">내일의 마음을 한 번 더 남기면 오늘의 변화 위에 새로운 성장이 이어져요.</p>
-      </section>
-
-      <section id="finishGuideCard" class="finish-guide-card glass-panel hidden" aria-live="polite">
-        <span class="finish-guide-kicker">오늘은 여기까지</span>
-        <p id="finishGuideTitle" class="finish-guide-title">오늘 숲 완성!</p>
-        <p id="finishGuideText" class="finish-guide-text">내일 다시 오면 나무가 조금 더 자라요.</p>
-        <div class="finish-guide-actions">
-          <button id="finishSeedBtn" class="primary-btn finish-seed-btn" type="button">내일 한마디 남기기</button>
-          <button id="finishForestBtn" class="ghost-btn finish-forest-btn" type="button">숲 보기</button>
-        </div>
-        <p id="finishGuideMeta" class="finish-guide-meta">오늘은 기록 하나면 충분해요.</p>
-      </section>
-
-
-      <section id="tomorrowSeedCard" class="tomorrow-seed-card glass-panel" aria-live="polite">
-        <span class="tomorrow-seed-kicker">내일 한마디</span>
-        <p id="tomorrowSeedTitle" class="tomorrow-seed-title">내일의 나에게 한마디</p>
-        <p id="tomorrowSeedText" class="tomorrow-seed-text">내일 다시 왔을 때 먼저 보여줄게요.</p>
-        <form id="tomorrowSeedForm" class="tomorrow-seed-form">
-          <input id="tomorrowSeedInput" type="text" maxlength="64" placeholder="내일의 나에게 한마디" aria-label="내일 한마디 문장 입력" />
-          <button id="saveTomorrowSeedBtn" type="submit">남기기</button>
-        </form>
-        <p id="tomorrowSeedMessage" class="tomorrow-seed-message">오늘 기록 후 사용 가능</p>
-      </section>
-
-      <section id="forestDiaryCard" class="forest-diary-card glass-panel" aria-live="polite">
-        <span class="forest-diary-kicker">숲 일기장</span>
-        <p class="forest-diary-title">최근 숲 기록</p>
-        <p id="forestDiaryToday" class="forest-diary-today">오늘 기록 전에는 이전 숲 문장을 보고, 기록 후에는 오늘의 숲 문장이 남아요.</p>
-        <ul id="forestDiaryList" class="forest-diary-list"></ul>
-        <p id="forestDiaryEmpty" class="forest-diary-empty">아직 쌓인 숲 기록이 없어요.</p>
-        <p id="forestDiaryFlow" class="forest-diary-flow">첫 기록 전</p>
-      </section>
-
-      <section id="forestShareCard" class="forest-share-card glass-panel hidden" aria-live="polite">
-        <span class="forest-share-kicker">오늘의 숲 나누기</span>
-        <p id="forestShareTitle" class="forest-share-title">오늘의 숲 문장을 나눌 수 있어요</p>
-        <p id="forestShareText" class="forest-share-text">감정 기록 후 오늘의 숲 문장을 복사하거나 공유할 수 있어요.</p>
-        <div id="forestSharePreview" class="forest-share-preview">오늘 기록 후 공유 문장이 이곳에 준비돼요.</div>
-        <div class="forest-share-actions">
-          <button id="copyForestShareBtn" class="ghost-btn" type="button">문장 복사</button>
-          <button id="nativeForestShareBtn" class="primary-btn" type="button">공유하기</button>
-        </div>
-        <p id="forestShareMessage" class="forest-share-message">오늘 기록 후 사용 가능</p>
-      </section>
-
-      <section id="treeCareCard" class="tree-care-card glass-panel" aria-live="polite">
-        <span class="tree-care-kicker">오늘의 작은 돌봄</span>
-        <p id="treeCareTitle" class="tree-care-title">오늘 기록 후 내 나무를 돌볼 수 있어요</p>
-        <p id="treeCareText" class="tree-care-text">마음을 기록한 뒤, 내 나무에게 하루 한 번 작은 돌봄을 남겨요.</p>
-        <div class="tree-care-actions">
-          <button type="button" data-care-action="water"><span>💧</span>물 주기</button>
-          <button type="button" data-care-action="light"><span>☀️</span>빛 쬐기</button>
-          <button type="button" data-care-action="rest"><span>🌙</span>쉬게 하기</button>
-        </div>
-        <p id="treeCareMessage" class="tree-care-message">오늘 기록 후 사용 가능</p>
-      </section>
-
-      <section id="forestTrailCard" class="forest-trail-card glass-panel" aria-live="polite">
-        <span class="forest-trail-kicker">오늘의 숲길 산책</span>
-        <p id="forestTrailTitle" class="forest-trail-title">오늘 기록 후 숲길 하나를 걸을 수 있어요</p>
-        <p id="forestTrailText" class="forest-trail-text">감정 기록을 마친 뒤, 내 숲에서 오늘 어울리는 길을 하나 골라 짧은 산책 흔적을 남겨요.</p>
-        <div class="forest-trail-actions">
-          <button type="button" data-forest-trail="moss"><span>🌿</span>이끼길</button>
-          <button type="button" data-forest-trail="sunbeam"><span>✨</span>햇살길</button>
-          <button type="button" data-forest-trail="quiet"><span>🍃</span>고요한 길</button>
-        </div>
-        <p id="forestTrailMessage" class="forest-trail-message">오늘 기록 후 사용 가능</p>
-      </section>
-
-      <section id="selfCareCard" class="self-care-card glass-panel" aria-live="polite">
-        <span class="self-care-kicker">나를 위한 작은 실천</span>
-        <p id="selfCareTitle" class="self-care-title">오늘 기록 후 나를 위한 작은 실천을 고를 수 있어요</p>
-        <p id="selfCareText" class="self-care-text">내 나무를 돌보는 것처럼, 오늘의 나에게도 아주 작은 행동 하나를 남겨요.</p>
-        <div class="self-care-actions">
-          <button type="button" data-self-care="breathe" aria-pressed="false"><span>🫧</span>숨 고르기</button>
-          <button type="button" data-self-care="sip" aria-pressed="false"><span>🥤</span>물 한 모금</button>
-          <button type="button" data-self-care="stretch" aria-pressed="false"><span>🧘</span>어깨 풀기</button>
-        </div>
-        <p id="selfCareMessage" class="self-care-message">오늘 기록 후 사용 가능</p>
-      </section>
-
-      <section id="weeklyForestLetterCard" class="weekly-forest-letter-card glass-panel" aria-live="polite">
-        <span class="weekly-forest-letter-kicker">주간 숲 편지</span>
-        <p id="weeklyForestLetterTitle" class="weekly-forest-letter-title">기록이 3개 쌓이면 숲이 편지를 보내요</p>
-        <p id="weeklyForestLetterText" class="weekly-forest-letter-text">최근 며칠의 마음과 작은 행동이 모이면, 내 숲이 짧은 편지처럼 흐름을 정리해줘요.</p>
-        <div id="weeklyForestLetterStats" class="weekly-forest-letter-stats" aria-label="주간 숲 요약"></div>
-        <p id="weeklyForestLetterMeta" class="weekly-forest-letter-meta">최근 기록 3개부터 열려요.</p>
-      </section>
-
-      <section id="forestArchiveCard" class="forest-archive-card forest-management-card glass-panel" aria-live="polite">
-        <span class="forest-archive-kicker">내 숲 관리실</span>
-        <p id="forestArchiveTitle" class="forest-archive-title">내 숲을 보관하고 다시 불러올 수 있어요</p>
-        <p id="forestArchiveText" class="forest-archive-text">이 기기에 저장된 나무 이름, 감정 기록, 숲 일기장, 작은 선택들을 관리실에서 한 번에 확인해요.</p>
-        <div id="forestArchiveStats" class="forest-archive-stats" aria-label="내 숲 관리 요약"></div>
-        <div class="forest-archive-actions forest-management-actions">
-          <button id="downloadForestArchiveBtn" class="primary-btn" type="button">보관 파일 받기</button>
-          <button id="copyForestArchiveBtn" class="ghost-btn" type="button">요약 복사</button>
-          <button id="importForestArchiveBtn" class="ghost-btn" type="button">보관 파일 불러오기</button>
-          <input id="forestArchiveImportInput" class="hidden" type="file" accept="application/json,.json" />
-        </div>
-        <p id="forestArchiveMessage" class="forest-archive-message">복원은 현재 이 기기의 숲을 덮어쓸 수 있으니, 먼저 보관 파일을 받아두는 것을 추천해요.</p>
-        <div class="forest-backup-note" aria-label="선택형 백업 준비 안내">
-          <strong>선택형 백업 준비</strong>
-          <p>아직 로그인이나 서버 저장은 없어요. 지금은 보관 파일로 직접 백업하고, 나중에 계정 백업으로 확장할 수 있게 데이터 구조를 정리해둔 단계예요.</p>
-        </div>
-      </section>
-
-      <section id="forestCalendarCard" class="forest-calendar-card glass-panel" aria-live="polite">
-        <span class="forest-calendar-kicker">숲 달력</span>
-        <p id="forestCalendarTitle" class="forest-calendar-title">최근 기록을 날짜로 볼 수 있어요</p>
-        <p id="forestCalendarText" class="forest-calendar-text">최근 14일 동안 마음을 남긴 날을 작은 숲 점으로 표시해요.</p>
-        <div id="forestCalendarGrid" class="forest-calendar-grid" aria-label="최근 14일 숲 달력"></div>
-        <p id="forestCalendarMessage" class="forest-calendar-message">기록한 날이 쌓이면 달력에 작은 흔적이 남아요.</p>
-      </section>
-
-      <section id="forestMemoryCard" class="forest-memory-card glass-panel" aria-live="polite">
-        <span class="forest-memory-kicker">내 숲 기억 찾기</span>
-        <p id="forestMemoryTitle" class="forest-memory-title">쌓인 기록을 종류별로 다시 볼 수 있어요</p>
-        <p id="forestMemoryText" class="forest-memory-text">감정, 돌봄, 산책, 작은 실천, 내일 한마디을 골라 최근 기억을 찾아요.</p>
-        <div class="forest-memory-filters" role="group" aria-label="숲 기억 필터">
-          <button type="button" data-memory-filter="all" class="active">전체</button>
-          <button type="button" data-memory-filter="mood">감정</button>
-          <button type="button" data-memory-filter="care">돌봄</button>
-          <button type="button" data-memory-filter="trail">산책</button>
-          <button type="button" data-memory-filter="self">실천</button>
-          <button type="button" data-memory-filter="seed">씨앗</button>
-        </div>
-        <div id="forestMemoryList" class="forest-memory-list" aria-label="내 숲 기억 목록"></div>
-        <p id="forestMemoryMessage" class="forest-memory-message">최근 기억을 최대 6개까지 보여줘요.</p>
-      </section>
-
-      <section id="gardenMarkerCard" class="garden-marker-card glass-panel" aria-live="polite">
-        <span class="garden-marker-kicker">내 정원 표식</span>
-        <p id="gardenMarkerTitle" class="garden-marker-title">내 정원에 작은 표식을 놓아보세요</p>
-        <p id="gardenMarkerText" class="garden-marker-text">들꽃, 조약돌, 작은 등불 중 하나를 골라 내 나무 곁 분위기를 정할 수 있어요.</p>
-        <div class="garden-marker-actions">
-          <button type="button" data-garden-marker="wildflower" aria-pressed="false"><span>🌼</span>들꽃</button>
-          <button type="button" data-garden-marker="pebble" aria-pressed="false"><span>🪨</span>조약돌</button>
-          <button type="button" data-garden-marker="lantern" aria-pressed="false"><span>🕯️</span>작은 등불</button>
-        </div>
-        <p id="gardenMarkerMessage" class="garden-marker-message">표식은 성장 수치가 아니라 내 정원을 구분하는 작은 개인화 요소예요.</p>
-      </section>
-
-      <section id="forestBadgeCard" class="forest-badge-card glass-panel" aria-live="polite">
-        <span class="forest-badge-kicker">내 숲 배지</span>
-        <p id="forestBadgeTitle" class="forest-badge-title">내 숲에 남은 배지</p>
-        <p id="forestBadgeText" class="forest-badge-text">기록, 일기장, 나눔이 쌓이면 작은 배지가 남아요.</p>
-        <div id="forestBadgeList" class="forest-badge-list"></div>
-        <p id="forestBadgeMeta" class="forest-badge-meta">첫 배지를 기다리는 중</p>
-      </section>
-
-      <section id="visitorTraceCard" class="visitor-trace-card glass-panel" aria-live="polite">
-        <span class="visitor-trace-kicker">오늘 남은 흔적</span>
-        <p id="visitorTraceTitle" class="visitor-trace-title">오늘은 조용한 정원이에요</p>
-        <p id="visitorTraceText" class="visitor-trace-text">방문자가 다녀가면 이곳에 작은 흔적이 남아요.</p>
-        <p id="visitorTraceMeta" class="visitor-trace-meta">오늘 기록 후 확인 가능</p>
-      </section>
-
-      <section id="visitorLogCard" class="visitor-log-card glass-panel" aria-live="polite">
-        <span class="visitor-log-kicker">숲의 방문 기록</span>
-        <p id="visitorLogTitle" class="visitor-log-title">최근 숲에 다녀간 친구들</p>
-        <ul id="visitorLogList" class="visitor-log-list"></ul>
-        <p id="visitorLogEmpty" class="visitor-log-empty">아직 남은 방문 기록이 없어요.</p>
-      </section>
-
-      <button id="backToWorldBtnBottom" class="primary-btn return-btn" type="button">전체 숲으로 돌아가기</button>
-      <p class="storage-note">지금은 기록이 이 기기에만 저장돼요. 친구 숲 감각은 먼저 보여주고, 실제 확장 기능은 다음 단계에서 이어갈 예정이에요.</p>
-    </section>
-
-
-    <section class="support-revenue-area" aria-labelledby="supportRevenueTitle">
-      <p class="support-revenue-kicker">운영 안내</p>
-      <h2 id="supportRevenueTitle" class="support-revenue-title">이 숲이 오래 이어질 수 있도록</h2>
-      <p class="support-revenue-text">후원은 선택이며, 작은 광고는 숲과 나무를 가리지 않는 위치에서만 조용히 보여줍니다.</p>
-      <div class="support-revenue-actions">
-        <button id="openSupportModalBtn" class="support-revenue-btn" type="button">🌱 후원 안내</button>
-        <a class="support-revenue-btn" href="privacy.html">개인정보·광고 안내</a>
-      </div>
-      <div class="support-ad-placeholder" role="complementary" aria-label="광고 안내 영역">
-        <span>작은 광고가 표시될 수 있습니다<br />정원과 나무를 가리지 않음</span>
-      </div>
-    </section>
-
-    <footer class="site-footer-links" aria-label="오늘의숲 문서 링크">
-      <a href="whitepaper.html">오늘의숲 백서</a>
-      <span aria-hidden="true">·</span>
-      <a href="privacy.html">개인정보·광고 안내</a>
-      <span aria-hidden="true">·</span>
-      <span>마음이 나무가 되는 작은 숲</span>
-    </footer>
-  </main>
-
-  <div id="gardenActionModal" class="garden-action-modal hidden" role="dialog" aria-modal="true" aria-labelledby="gardenActionModalTitle" aria-describedby="gardenActionModalDesc">
-    <div class="garden-action-dialog glass-panel">
-      <div class="garden-action-head">
-        <div>
-          <span class="garden-action-kicker">내 정원 기능</span>
-          <h2 id="gardenActionModalTitle">오늘 기록</h2>
-          <p id="gardenActionModalDesc">정원 화면은 그대로 두고, 필요한 기능만 이 창에서 열어요.</p>
-        </div>
-        <button id="closeGardenActionModalBtn" class="ghost-btn small-btn garden-action-close" type="button" aria-label="정원 기능 닫기">닫기</button>
-      </div>
-      <div id="gardenActionModalBody" class="garden-action-body"></div>
-    </div>
-  </div>
-
-
-
-  <div id="supportModal" class="support-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="supportModalTitle" aria-describedby="supportModalDesc">
-    <div class="support-modal-dialog">
-      <div class="support-modal-head">
-        <div>
-          <span class="support-modal-kicker">후원 안내</span>
-          <h2 id="supportModalTitle" class="support-modal-title">이 숲이 오래 이어질 수 있도록</h2>
-        </div>
-        <button id="closeSupportModalBtn" class="support-modal-close" type="button" aria-label="후원 안내 닫기">×</button>
-      </div>
-      <div id="supportModalDesc" class="support-modal-body">
-        <p>오늘의숲은 누구나 부담 없이 마음을 남길 수 있는 작은 숲입니다.</p>
-        <p>작은 후원은 이미지 제작, 서비스 유지, 기능 개선에 사용됩니다.</p>
-        <p>후원은 선택이며, 후원하지 않아도 기본 기록 기능은 그대로 사용할 수 있습니다.</p>
-        <p class="support-modal-note">후원 방법은 준비 중입니다.</p>
-      </div>
-    </div>
-  </div>
-
-
-
-  <div id="onboardingOverlay" class="onboarding-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle" aria-describedby="onboardingDesc">
-    <div class="onboarding-dialog">
-      <button id="closeOnboardingBtn" class="onboarding-close" type="button" aria-label="안내 닫기">×</button>
-      <span class="onboarding-kicker">처음이라면 30초만</span>
-      <h2 id="onboardingTitle">오늘 할 일은 딱 하나예요</h2>
-      <p id="onboardingDesc" class="onboarding-desc">이 화면에서는 딱 하나만 하면 돼요. 내 나무 이름을 정하고 지금의 마음을 골라보세요.</p>
-      <div class="onboarding-cards" aria-label="첫 방문 튜토리얼">
-        <article>
-          <span>🌱</span>
-          <strong>나무를 심어요</strong>
-          <p>나무 이름은 짧게 적어도 괜찮아요.</p>
-        </article>
-        <article>
-          <span>💛</span>
-          <strong>마음을 골라요</strong>
-          <p>좋음·보통·피곤 중 하나만 선택해요.</p>
-        </article>
-        <article>
-          <span>✨</span>
-          <strong>변화를 봐요</strong>
-          <p>기록이 내 나무와 숲 일기장에 남아요.</p>
-        </article>
-      </div>
-      <div class="onboarding-actions">
-        <button id="onboardingStartBtn" class="primary-btn" type="button">내 숲 시작하기</button>
-        <button id="onboardingLaterBtn" class="ghost-btn" type="button">나중에 볼게요</button>
-      </div>
-    </div>
-  </div>
-
-  <aside id="testModePanel" class="test-mode-panel hidden" aria-label="개발자 테스트 모드">
-    <div class="test-mode-head">
-      <div>
-        <strong>개발자 테스트 모드</strong>
-        <p>일반 기록과 분리된 테스트 저장소를 사용해요.</p>
-      </div>
-      <a href="index.html" class="test-normal-link">일반 화면</a>
-    </div>
-
-    <p class="test-storage-line">저장키: <span id="testModeStorageKey">livingForestV012_TEST</span></p>
-    <p class="test-storage-line">데이터: <span id="testModeDataInfo">광고·후원 안내 준비</span></p>
-
-    <div class="test-preset-buttons">
-      <button type="button" data-test-preset="first">첫 방문자</button>
-      <button type="button" data-test-preset="named">이름만 있음</button>
-      <button type="button" data-test-preset="waiting">오늘 기록 전</button>
-      <button type="button" data-test-preset="done">오늘 기록 완료</button>
-      <button type="button" data-test-preset="grown">깊어진 나무</button>
-      <button type="button" data-test-preset="legacy">구버전 보정</button>
-      <button type="button" data-test-preset="visitor-before-care">방문 조건 기록 전</button>
-      <button type="button" data-test-preset="visitor-after-care">방문 조건 기록 후</button>
-      <button type="button" data-test-preset="visitor-bird">방문자 새</button>
-      <button type="button" data-test-preset="visitor-squirrel">방문자 다람쥐</button>
-      <button type="button" data-test-preset="visitor-history">방문 기록 3개</button>
-      <a class="test-time-link" href="index.html?test=1&worldTime=day">낮 숲</a>
-      <a class="test-time-link" href="index.html?test=1&worldTime=sunset">노을 숲</a>
-      <a class="test-time-link" href="index.html?test=1&worldTime=night">밤 숲</a>
-      <button type="button" id="clearTestDataBtn">테스트 초기화</button>
-    </div>
-  </aside>
-
-
-  <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.1/kakao.min.js"></script>
-
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>오늘의숲 | 마음을 심는 내 정원</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
+  <link rel="stylesheet" href="style.css" />
   <script>
+    // 운영 통계에는 닉네임·나무 이름·계정 ID·편지 내용처럼 개인을 식별할 수 있는 값을 보내지 않습니다.
     (function () {
-      const modal = document.getElementById('supportModal');
-      const openBtn = document.getElementById('openSupportModalBtn');
-      const closeBtn = document.getElementById('closeSupportModalBtn');
-
-      if (!modal || !openBtn || !closeBtn) return;
-
-      const openModal = () => {
-        modal.classList.remove('hidden');
-        closeBtn.focus();
+      const query = new URLSearchParams(window.location.search);
+      window.TODAYFOREST_ANALYTICS = {
+        measurementId: "G-YC872G7MH1",
+        enabled: true,
+        debug: query.get("analyticsDebug") === "1",
+        build: "operation-v1",
       };
 
-      const closeModal = () => {
-        modal.classList.add('hidden');
-        openBtn.focus();
+      window.TODAYFOREST_SHEETS = {
+        endpointUrl: "https://script.google.com/macros/s/AKfycbyeqnUwroduXytKBFMs9Tpl2gngoJ0f6JmF9oKbEA-QAoJY0aFJ-bvOUWS15SFeErgkiA/exec",
+        projectKey: "living_forest_v1",
+        enabled: true,
+        debug: query.get("sheetsDebug") === "1",
+        environment: "production",
+        build: "operation-v1",
       };
 
-      openBtn.addEventListener('click', openModal);
-      closeBtn.addEventListener('click', closeModal);
-      modal.addEventListener('click', (event) => {
-        if (event.target === modal) closeModal();
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
+      window.gtag("js", new Date());
+      window.gtag("config", window.TODAYFOREST_ANALYTICS.measurementId, {
+        send_page_view: true,
       });
-      document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
-      });
+
+      const tag = document.createElement("script");
+      tag.async = true;
+      tag.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(window.TODAYFOREST_ANALYTICS.measurementId);
+      document.head.appendChild(tag);
     })();
   </script>
-  <script src="app.js?v=1.73.12-tree-growth-time-assets"></script>
+</head>
+<body>
+  <section class="auth-screen" id="authScreen" aria-label="오늘의숲 시작">
+    <div class="auth-sky-glow auth-glow-one" aria-hidden="true"></div>
+    <div class="auth-sky-glow auth-glow-two" aria-hidden="true"></div>
+    <div class="auth-card">
+      <p class="eyebrow">TODAYFOREST · MY GARDEN</p>
+      <h1>마음을 심는<br />내 정원</h1>
+      <p class="auth-copy">오늘의 마음을 나무에 남기고,<br />내 기록과 편지를 차분히 이어가요.</p>
+      <img class="auth-tree" src="assets/garden/tree_growth/tree_stage4_morning.png" alt="꽃과 잎이 피어난 마음 나무" />
+      <button type="button" class="kakao-login-button" id="signInKakao">
+        <span class="kakao-mark" aria-hidden="true">●</span>
+        카카오로 내 정원 시작하기
+      </button>
+      <p class="auth-note">카카오 계정으로 내 정원을 이어서 볼 수 있어요.</p>
+      <p class="auth-error hidden" id="authError" role="alert"></p>
+    </div>
+  </section>
+
+  <main class="garden-app hidden" id="gardenApp" aria-label="오늘의숲 내 정원">
+    <header class="garden-header">
+      <div>
+        <p class="eyebrow">TODAYFOREST · MY GARDEN</p>
+        <h1>내 정원</h1>
+      </div>
+      <div class="header-actions">
+        <div class="account-pill" id="accountButton" aria-label="내 정원 이름">
+          <span class="account-dot" aria-hidden="true"></span>
+          <span id="accountName">내 정원</span>
+        </div>
+        <button class="friend-pill" id="openFriends" type="button" aria-label="친구 관리 열기">
+          <span aria-hidden="true">♡</span>
+          <span id="friendCount">친구 0명</span>
+        </button>
+        <button class="quiet-pill" id="weatherButton" type="button" aria-label="오늘 날씨 바꾸기">
+          <span id="weatherIcon" aria-hidden="true">☁️</span>
+          <span id="weatherText">바람이 가볍게 불어요</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="garden-stage" id="gardenStage" aria-label="내 나무가 있는 정원">
+      <div class="pastel-glow glow-one"></div>
+      <div class="pastel-glow glow-two"></div>
+      <div class="cloud cloud-one"></div>
+      <div class="cloud cloud-two"></div>
+      <div class="rain-layer" id="rainLayer" aria-hidden="true"></div>
+      <div class="sparkle-layer" aria-hidden="true">
+        <i></i><i></i><i></i><i></i><i></i>
+      </div>
+
+      <div class="stage-topline">
+        <span id="treeNameLabel" class="tree-name-label">내 마음 나무</span>
+        <span class="dot">·</span>
+        <span id="dayCount">마음 0일째</span>
+        <span class="dot">·</span>
+        <span id="treeStageLabel">처음 깨어난 새싹</span>
+      </div>
+
+      <button class="visitor-card" id="visitorButton" type="button" aria-label="오늘의 방문자 보기">
+        <img id="visitorImage" src="assets/garden/bird-silhouette-v3.png" alt="오늘 내 나무를 찾아온 작은 새" hidden />
+        <span class="visitor-emoji" id="visitorEmoji" aria-hidden="true">🐦</span>
+        <span>
+          <b id="visitorName">숲친구가 정원에 놀러왔어요</b>
+          <small id="visitorHint">편지를 맡기면 바로 배송을 위해 떠나요.</small>
+        </span>
+      </button>
+
+      <button class="active-animal animal-bird" id="activeAnimal" type="button" aria-label="작은 새에게 편지 맡기기">
+        <span class="animal-speech" id="activeAnimalSpeech">작은 새가 가지에서 편지를 기다리고 있어요.</span>
+        <span class="active-animal-emoji" id="activeAnimalEmoji" aria-hidden="true">🐦</span>
+      </button>
+
+      <button class="animal-trace" id="animalTrace" type="button" aria-label="숲친구가 남긴 흔적 보기" hidden>
+        <span id="animalTraceIcon" aria-hidden="true">🪶</span>
+      </button>
+
+      <div class="tree-wrap" id="treeWrap">
+        <div class="tree-aura" aria-hidden="true"></div>
+        <img
+          id="treeImage"
+          class="tree-image"
+          src="assets/garden/tree_growth/tree_stage4_morning.png"
+          alt="꽃과 잎이 피어난 내 마음 나무"
+        />
+        <div class="branch-letters" id="branchLetters" aria-live="polite" aria-label="나뭇가지에 도착한 새 편지"></div>
+      </div>
+
+      <div class="found-items-layer" id="foundItemsLayer" aria-label="숲에서 찾은 작은 것"></div>
+      <button class="found-item-sparkle" id="foundItemSparkle" type="button" hidden>
+        <span aria-hidden="true">✦</span>
+      </button>
+
+      <div class="garden-decorate-controls" id="gardenDecorateControls" hidden aria-live="polite">
+        <button class="garden-decorate-button" id="openGardenDecorate" type="button" aria-label="발견한 작은 것 꾸미기">
+          <span aria-hidden="true">🍃</span>
+          <span>꾸미기</span>
+        </button>
+        <div class="garden-decorate-edit-actions hidden" id="gardenDecorateEditActions">
+          <p class="garden-decorate-guide" id="gardenDecorateGuide">발견한 작은 것만 원하는 곳으로 옮겨보세요.</p>
+          <div class="garden-decorate-action-row">
+            <button class="garden-decorate-cancel" id="cancelGardenDecorate" type="button">취소</button>
+            <button class="garden-decorate-save" id="saveGardenDecorate" type="button">배치 저장</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ground-shadow" aria-hidden="true"></div>
+      <p class="stage-message" id="stageMessage">오늘의 마음은 나무 가까이에 조용히 남아요.</p>
+    </section>
+
+    <section class="growth-note" aria-label="나무 성장 안내">
+      <div class="growth-note-icon" aria-hidden="true">🌱</div>
+      <div>
+        <p class="growth-note-kicker">다음 방문자</p>
+        <p class="growth-note-text" id="nextVisitorText">마음 3번을 더 남기면 조금 더 빠른 새가 찾아와요.</p>
+      </div>
+    </section>
+
+    <section class="install-card hidden" id="installCard" aria-live="polite" aria-label="홈 화면에 오늘의숲 추가하기">
+      <div class="install-card-icon" aria-hidden="true">🌿</div>
+      <div class="install-card-copy">
+        <p>매일 찾아오는 작은 숲이에요.<br />홈 화면에 심어두면 더 쉽게 만날 수 있어요. 🌿</p>
+        <p class="install-help hidden" id="installHelp"></p>
+      </div>
+      <div class="install-card-actions">
+        <button class="install-app-button" id="installAppButton" type="button">내 폰에 심기</button>
+        <button class="install-later-button" id="dismissInstallCard" type="button">나중에</button>
+      </div>
+    </section>
+
+    <nav class="garden-nav" aria-label="내 정원 메뉴">
+      <button type="button" class="nav-action nav-primary" id="openRecord">
+        <span class="nav-icon" aria-hidden="true">✦</span>
+        <span>마음 남기기</span>
+      </button>
+      <button type="button" class="nav-action" id="openRecords">
+        <span class="nav-icon" aria-hidden="true">▤</span>
+        <span>내 기록</span>
+      </button>
+      <button type="button" class="nav-action" id="openLetters">
+        <span class="nav-icon" aria-hidden="true">✉</span>
+        <span>편지</span>
+        <em class="nav-badge hidden" id="navLetterBadge">0</em>
+      </button>
+      <button type="button" class="nav-action" id="openFeedback">
+        <span class="nav-icon" aria-hidden="true">✎</span>
+        <span>의견 남기기</span>
+      </button>
+    </nav>
+
+    <div class="garden-footer-actions">
+      <p class="database-note">내 기록과 내 나무 상태는 로그인한 계정의 정원에 저장돼요.</p>
+      <div class="garden-footer-link-row">
+        <button id="openSupport" class="support-footer-link" type="button">🌱 운영 안내</button>
+        <button id="signOutButton" class="reset-link signout-link" type="button">로그아웃</button>
+      </div>
+    </div>
+  </main>
+
+
+  <main class="garden-app friend-visit hidden" id="friendVisit" aria-label="친구 정원 방문">
+    <header class="garden-header friend-visit-header">
+      <div>
+        <p class="eyebrow">VISITING FRIEND'S GARDEN</p>
+        <h1 id="friendVisitName">친구의 정원</h1>
+      </div>
+      <button class="friend-return-top" id="returnToMyGardenTop" type="button">← 내 정원</button>
+    </header>
+
+    <section class="garden-stage friend-visit-stage" id="friendVisitStage" aria-label="친구의 마음 나무가 있는 정원">
+      <div class="pastel-glow glow-one"></div>
+      <div class="pastel-glow glow-two"></div>
+      <div class="cloud cloud-one"></div>
+      <div class="cloud cloud-two"></div>
+      <div class="rain-layer" id="friendVisitRainLayer" aria-hidden="true"></div>
+      <div class="sparkle-layer" aria-hidden="true">
+        <i></i><i></i><i></i><i></i><i></i>
+      </div>
+
+      <div class="stage-topline">
+        <span id="friendVisitDayCount">마음 0일째</span>
+        <span class="dot">·</span>
+        <span id="friendVisitStageLabel">처음 깨어난 새싹</span>
+      </div>
+
+      <div class="friend-visit-weather" aria-live="polite">
+        <span id="friendVisitWeatherIcon" aria-hidden="true">🍃</span>
+        <span id="friendVisitWeatherText">바람이 가볍게 불어요</span>
+      </div>
+
+      <div class="tree-wrap friend-visit-tree-wrap" id="friendVisitTreeWrap">
+        <div class="tree-aura" aria-hidden="true"></div>
+        <img id="friendVisitTree" class="tree-image" src="assets/garden/tree_growth/tree_stage1_morning.png" alt="친구의 마음 나무" />
+      </div>
+
+      <div class="ground-shadow" aria-hidden="true"></div>
+      <p class="stage-message" id="friendVisitMessage">친구의 나무가 오늘도 조용히 자라고 있어요.</p>
+    </section>
+
+    <section class="friend-visit-note" aria-label="친구 정원 방문 안내">
+      <div class="friend-visit-note-icon" aria-hidden="true">🌿</div>
+      <div>
+        <p class="growth-note-kicker">FRIEND'S TREE</p>
+        <p class="friend-visit-note-text">이곳에서는 친구의 나무와 정원 분위기만 볼 수 있어요. 기록의 내용은 서로 보이지 않아요.</p>
+      </div>
+    </section>
+
+    <button class="friend-return-button" id="returnToMyGarden" type="button">내 정원으로 돌아가기</button>
+  </main>
+
+
+
+  <main class="garden-app shared-tree-view hidden" id="sharedTreeView" aria-label="친구와 함께 키우는 나무">
+    <header class="garden-header shared-tree-header">
+      <div>
+        <p class="eyebrow">OUR LITTLE TREE</p>
+        <h1 id="sharedTreePartnerName">친구와 함께 키우는 나무</h1>
+      </div>
+      <button class="friend-return-top" id="returnToFriendsFromSharedTree" type="button">← 친구</button>
+    </header>
+
+    <section class="shared-tree-stage" aria-label="둘만의 공유나무">
+      <div class="shared-tree-sunset-glow glow-one" aria-hidden="true"></div>
+      <div class="shared-tree-sunset-glow glow-two" aria-hidden="true"></div>
+      <div class="shared-tree-fireflies" id="sharedTreeFireflies" aria-hidden="true"></div>
+      <div class="shared-tree-person-lights" aria-hidden="true">
+        <span class="shared-tree-person-light shared-tree-person-light--me" id="sharedTreeMyLight"></span>
+        <span class="shared-tree-person-light shared-tree-person-light--partner" id="sharedTreePartnerLight"></span>
+        <span class="shared-tree-lights-meet" id="sharedTreeLightsMeet"></span>
+      </div>
+      <div class="shared-tree-plant" aria-hidden="true">
+        <img
+          class="shared-tree-image"
+          id="sharedTreeImage"
+          src="assets/garden/tree_growth/tree_stage1_sunset.png"
+          alt=""
+        >
+        <div class="shared-tree-seed-glow" id="sharedTreeSeedGlow" aria-hidden="true">✦</div>
+      </div>
+      <p class="shared-tree-stage-copy" id="sharedTreeStageCopy">두 개의 작은 빛이 씨앗 곁에서 조용히 기다리고 있어요.</p>
+    </section>
+
+    <section class="shared-tree-progress-card" aria-label="공유나무 진행">
+      <div class="shared-tree-progress-heading">
+        <div>
+          <p class="growth-note-kicker">LIGHT LEAVES</p>
+          <p class="shared-tree-progress-copy" id="sharedTreeProgressCopy">각자가 오늘의 빛을 남길 때마다 빛 조각이 하나씩 쌓여요.</p>
+        </div>
+        <span class="shared-tree-progress-count" id="sharedTreeProgressCount" aria-live="polite">0 / 20</span>
+      </div>
+      <div class="shared-tree-leaves" id="sharedTreeLeaves" aria-label="빛 조각 20개"></div>
+      <div class="shared-tree-today-row" id="sharedTreeTodayRow"></div>
+      <button class="shared-tree-record-light-button" id="sharedTreeRecordLightButton" type="button">오늘의 빛 남기기</button>
+    </section>
+
+    <section class="shared-tree-note" aria-label="공유나무 안내">
+      <span aria-hidden="true">🌿</span>
+      <p>서로의 기록 내용은 보이지 않아요. 각자가 오늘의 빛을 남길 때마다 둘만의 나무가 조금씩 자라요.</p>
+    </section>
+  </main>
+
+  <section class="bottom-sheet hidden" id="treeNameSheet" role="dialog" aria-modal="true" aria-labelledby="treeNameSheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head tree-name-sheet-head">
+      <div>
+        <p class="sheet-kicker">MY TREE NAME</p>
+        <h2 id="treeNameSheetTitle">내 나무 이름을 지어줘</h2>
+      </div>
+    </div>
+    <form id="treeNameForm" class="record-form">
+      <label class="write-label" for="treeNameInput">나무를 어떻게 부를까?</label>
+      <input id="treeNameInput" name="treeName" maxlength="24" autocomplete="off" placeholder="예: 여름의 나무" />
+      <p class="sheet-footnote tree-name-lock-note">카카오 닉네임과 별개로, 내 정원에서만 보이는 이름이에요.<br><b>한 번 정한 나무 이름은 바꿀 수 없어요.</b></p>
+      <button class="save-record" type="submit">이 이름으로 정하기</button>
+    </form>
+  </section>
+
+  <div class="sheet-overlay hidden" id="sheetOverlay" aria-hidden="true"></div>
+
+  <section class="bottom-sheet hidden" id="recordSheet" role="dialog" aria-modal="true" aria-labelledby="recordSheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="sheet-kicker">TODAY'S LEAF</p>
+        <h2 id="recordSheetTitle">오늘 어떤 하루였어?</h2>
+      </div>
+      <button class="close-button" data-close="recordSheet" type="button" aria-label="마음 남기기 닫기">×</button>
+    </div>
+
+    <form id="recordForm" class="record-form">
+      <fieldset class="mood-picker">
+        <legend>오늘의 기분</legend>
+        <div class="mood-grid">
+          <button type="button" class="mood-choice selected" data-mood="good" data-icon="🙂" data-label="괜찮았어"><span>🙂</span>괜찮았어</button>
+          <button type="button" class="mood-choice" data-mood="calm" data-icon="😌" data-label="차분했어"><span>😌</span>차분했어</button>
+          <button type="button" class="mood-choice" data-mood="tired" data-icon="😮‍💨" data-label="조금 지쳤어"><span>😮‍💨</span>조금 지쳤어</button>
+          <button type="button" class="mood-choice" data-mood="happy" data-icon="🌷" data-label="기뻤어"><span>🌷</span>기뻤어</button>
+        </div>
+      </fieldset>
+
+      <label class="write-label" for="oneLine">오늘 마음에 남은 한 줄</label>
+      <textarea id="oneLine" name="oneLine" maxlength="120" rows="3" placeholder="아주 짧아도 괜찮아요. 오늘의 마음 한 조각을 남겨볼래요?"></textarea>
+      <button type="button" class="more-writing" id="toggleDetail">조금 더 적기 <span aria-hidden="true">⌄</span></button>
+      <div class="detail-wrap hidden" id="detailWrap">
+        <label class="write-label" for="detailText">조금 더 남기고 싶은 이야기</label>
+        <textarea id="detailText" name="detailText" maxlength="1000" rows="6" placeholder="길게 적고 싶은 날에만 편하게 써요."></textarea>
+      </div>
+      <button class="save-record" type="submit">나무에 마음 남기기</button>
+      <p class="sheet-footnote">하루에 한 번, 오늘의 마음이 내 나무를 한 칸 자라게 해요.</p>
+    </form>
+  </section>
+
+  <section class="bottom-sheet tall-sheet hidden" id="recordsSheet" role="dialog" aria-modal="true" aria-labelledby="recordsSheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="sheet-kicker">MY LEAVES</p>
+        <h2 id="recordsSheetTitle">내 기록</h2>
+      </div>
+      <button class="close-button" data-close="recordsSheet" type="button" aria-label="내 기록 닫기">×</button>
+    </div>
+    <div class="records-summary" id="recordsSummary"></div>
+    <div class="record-list" id="recordList" aria-live="polite"></div>
+  </section>
+
+  <section class="bottom-sheet hidden" id="feedbackSheet" role="dialog" aria-modal="true" aria-labelledby="feedbackSheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="sheet-kicker">A NOTE FOR THE FOREST</p>
+        <h2 id="feedbackSheetTitle">숲에 말 남기기</h2>
+      </div>
+      <button class="close-button" data-close="feedbackSheet" type="button" aria-label="숲에 말 남기기 닫기">×</button>
+    </div>
+
+    <div class="feedback-tabs" role="tablist" aria-label="숲에 말 남기기 메뉴">
+      <button class="feedback-tab selected" id="feedbackWriteTab" type="button" role="tab" aria-selected="true" aria-controls="feedbackWritePanel" data-feedback-tab="write">말 남기기</button>
+      <button class="feedback-tab" id="feedbackHistoryTab" type="button" role="tab" aria-selected="false" aria-controls="feedbackHistoryPanel" data-feedback-tab="history">내가 남긴 말</button>
+    </div>
+
+    <div id="feedbackWritePanel" role="tabpanel" aria-labelledby="feedbackWriteTab">
+      <div class="feedback-intro">
+        <span aria-hidden="true">✦</span>
+        <p>남겨주신 말은 운영자에게만 전달돼요.<br>답장이 오면 <b>내가 남긴 말</b>에서 조용히 확인할 수 있어요.</p>
+      </div>
+
+      <form id="feedbackForm" class="feedback-form">
+        <fieldset class="feedback-category-picker">
+          <legend>어떤 이야기를 남길까요?</legend>
+          <div class="feedback-category-grid">
+            <button class="feedback-category" type="button" data-feedback-category="issue" aria-pressed="false">
+              <span aria-hidden="true">🌿</span>불편한 점
+            </button>
+            <button class="feedback-category selected" type="button" data-feedback-category="idea" aria-pressed="true">
+              <span aria-hidden="true">✦</span>바라는 점
+            </button>
+            <button class="feedback-category" type="button" data-feedback-category="cheer" aria-pressed="false">
+              <span aria-hidden="true">💌</span>응원 한마디
+            </button>
+          </div>
+        </fieldset>
+
+        <label class="write-label" for="feedbackMessage">전하고 싶은 말</label>
+        <textarea id="feedbackMessage" name="feedbackMessage" maxlength="1000" rows="6" placeholder="편했던 점, 아쉬운 점, 바라는 점을 편하게 들려주세요."></textarea>
+        <button class="feedback-submit" type="submit">운영자에게 말 남기기</button>
+        <p class="sheet-footnote">다른 사용자에게는 보이지 않아요.</p>
+      </form>
+    </div>
+
+    <div class="feedback-history-panel hidden" id="feedbackHistoryPanel" role="tabpanel" aria-labelledby="feedbackHistoryTab">
+      <p class="feedback-history-guide">내가 남긴 말과 운영자의 답장은 이곳에서만 조용히 확인할 수 있어요.</p>
+      <div class="feedback-history-list" id="feedbackHistoryList" aria-live="polite"></div>
+    </div>
+  </section>
+
+
+
+  <section class="bottom-sheet hidden" id="supportSheet" role="dialog" aria-modal="true" aria-labelledby="supportSheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="sheet-kicker">KEEPING THE FOREST</p>
+        <h2 id="supportSheetTitle">이 숲이 오래 이어질 수 있도록</h2>
+      </div>
+      <button class="close-button" data-close="supportSheet" type="button" aria-label="운영 안내 닫기">×</button>
+    </div>
+
+    <div class="support-intro">
+      <span class="support-intro-icon" aria-hidden="true">🌱</span>
+      <p>오늘의숲은 누구나 부담 없이 마음을 남기고, 친구와 조용히 이어질 수 있는 작은 공간으로 남고 싶어요.</p>
+    </div>
+
+    <div class="support-point-list">
+      <article class="support-point">
+        <span class="support-point-icon" aria-hidden="true">🤍</span>
+        <div>
+          <b>후원은 선택이에요</b>
+          <p>후원 방법은 아직 준비 중이에요. 준비가 되면 이곳에서만 조용히 알려드릴게요. 후원하지 않아도 기본 기록과 정원 기능은 그대로 이용할 수 있어요.</p>
+        </div>
+      </article>
+      <article class="support-point">
+        <span class="support-point-icon" aria-hidden="true">🍃</span>
+        <div>
+          <b>광고는 정원을 가리지 않아요</b>
+          <p>광고가 표시되더라도 나무, 기록, 편지를 가리지 않는 위치에만 조용히 보여드릴게요. 현재 이 화면에는 광고가 표시되지 않아요.</p>
+        </div>
+      </article>
+    </div>
+
+    <div class="support-doc-links">
+      <a class="support-privacy-link" href="privacy.html">개인정보·광고 안내 읽기 <span aria-hidden="true">→</span></a>
+      <a class="support-privacy-link" href="whitepaper.html">오늘의숲 소개 읽기 <span aria-hidden="true">→</span></a>
+    </div>
+    <p class="sheet-footnote support-footnote">운영 방식이나 광고에 대한 의견은 아래의 ‘의견 남기기’에서 들려주세요.</p>
+  </section>
+
+  <section class="bottom-sheet tall-sheet hidden" id="friendsSheet" role="dialog" aria-modal="true" aria-labelledby="friendsSheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="sheet-kicker">GARDEN FRIENDS</p>
+        <h2 id="friendsSheetTitle">친구</h2>
+      </div>
+      <button class="close-button" data-close="friendsSheet" type="button" aria-label="친구 닫기">×</button>
+    </div>
+
+    <div class="friend-invite-box">
+      <div class="friend-invite-copy">
+        <span class="friend-invite-icon" aria-hidden="true">🌿</span>
+        <div>
+          <b>친구를 내 정원으로 초대해요</b>
+          <p>링크를 받은 친구가 카카오로 로그인한 뒤 수락하면, 서로의 나무 성장을 볼 수 있어요.</p>
+        </div>
+      </div>
+      <button id="createInviteButton" class="create-invite-button" type="button">친구 초대 링크 만들기</button>
+      <div class="invite-link-wrap hidden" id="inviteLinkWrap">
+        <input id="inviteLink" type="text" readonly aria-label="친구 초대 링크" />
+        <button id="copyInviteLink" type="button">복사</button>
+      </div>
+      <p class="invite-expiry hidden" id="inviteExpiry"></p>
+    </div>
+
+    <div class="friends-section-head">
+      <div>
+        <p class="sheet-kicker">MY FRIENDS</p>
+        <h3>함께 자라는 친구</h3>
+      </div>
+      <span class="friends-total" id="friendsTotal">0명</span>
+    </div>
+    <div class="friends-list" id="friendsList" aria-live="polite"></div>
+  </section>
+
+  <section class="bottom-sheet tall-sheet hidden" id="lettersSheet" role="dialog" aria-modal="true" aria-labelledby="lettersSheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="sheet-kicker">LETTER NEST</p>
+        <h2 id="lettersSheetTitle">편지</h2>
+      </div>
+      <button class="close-button" data-close="lettersSheet" type="button" aria-label="편지함 닫기">×</button>
+    </div>
+
+    <div class="write-letter-box">
+      <div class="write-letter-copy">
+        <span class="write-letter-icon" aria-hidden="true">🕊️</span>
+        <div>
+          <b>친구의 나뭇가지에 마음을 걸어둘래?</b>
+          <p id="letterFriendHint">친구와 연결되면 새에게 편지를 맡길 수 있어요.</p>
+        </div>
+      </div>
+      <button id="openLetterComposer" class="open-letter-composer" type="button">새에게 편지 맡기기</button>
+    </div>
+
+    <section class="sent-letter-section" aria-labelledby="sentLettersTitle">
+      <div class="letter-section-head">
+        <div>
+          <p class="sheet-kicker">ON THE WAY</p>
+          <h3 id="sentLettersTitle">날아가는 편지</h3>
+        </div>
+      </div>
+      <div class="sent-letter-list" id="sentLetterList" aria-live="polite"></div>
+    </section>
+
+    <section class="received-letter-section" aria-labelledby="receivedLettersTitle">
+      <div class="letter-section-head">
+        <div>
+          <p class="sheet-kicker">ON THE BRANCH</p>
+          <h3 id="receivedLettersTitle">나뭇가지에 도착한 편지</h3>
+        </div>
+      </div>
+      <p class="letter-intro">아직 열지 않은 편지만 이곳에 머물러요. 읽은 마음은 바람을 타고 정원에 스며들어요.</p>
+      <div class="letter-list" id="letterList" aria-live="polite"></div>
+    </section>
+  </section>
+
+  <section class="bottom-sheet tall-sheet hidden" id="letterComposerSheet" role="dialog" aria-modal="true" aria-labelledby="letterComposerTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="sheet-kicker">FOREST POST</p>
+        <h2 id="letterComposerTitle">편지를 맡기기</h2>
+      </div>
+      <button class="close-button" data-close="letterComposerSheet" type="button" aria-label="편지 쓰기 닫기">×</button>
+    </div>
+
+    <form id="letterForm" class="letter-form">
+      <p class="write-label">누구의 나뭇가지에 걸어둘까?</p>
+      <div class="letter-recipient-list" id="letterRecipientList" aria-live="polite"></div>
+
+      <div class="carrier-preview" id="letterCarrierPreview">
+        <span class="carrier-icon" aria-hidden="true">🐦</span>
+        <p>작은 새가 편지를 맡아, 1분 뒤 친구의 나뭇가지에 걸어둘 거예요.</p>
+      </div>
+
+      <label class="write-label" for="letterTitle">편지 제목</label>
+      <input id="letterTitle" name="letterTitle" maxlength="100" autocomplete="off" placeholder="오늘도 수고했어" />
+
+      <label class="write-label" for="letterMessage">전하고 싶은 이야기</label>
+      <textarea id="letterMessage" name="letterMessage" maxlength="2000" rows="7" placeholder="친구에게 전하고 싶은 마음을 편하게 적어 주세요."></textarea>
+
+      <button class="send-letter-button" type="submit">새에게 편지 맡기기</button>
+      <p class="sheet-footnote" id="letterComposerFootnote">지금은 개발 테스트라 모든 편지가 1분 뒤 도착해요.</p>
+    </form>
+  </section>
+
+
+
+
+  <section class="letter-modal hidden" id="friendInviteModal" role="dialog" aria-modal="true" aria-labelledby="friendInviteTitle">
+    <div class="letter-card friend-invite-card">
+      <button class="letter-close" id="closeFriendInviteModal" type="button" aria-label="친구 초대 닫기">×</button>
+      <p class="letter-delivery">GARDEN INVITATION</p>
+      <p class="letter-from" id="friendInviteFrom">친구의 정원</p>
+      <h2 id="friendInviteTitle">내 정원을 함께 키울래?</h2>
+      <p class="letter-body">친구가 마음을 남기며 나무를 키우는 정원으로 초대했어요. 수락하면 서로의 나무 성장 모습만 가볍게 볼 수 있어요. 기록 내용은 서로 보이지 않아요.</p>
+      <button class="letter-confirm" id="acceptFriendInviteButton" type="button">친구 되기</button>
+      <button class="secondary-sheet-button" id="declineFriendInviteButton" type="button">나중에 하기</button>
+    </div>
+  </section>
+
+
+
+  <section class="letter-modal hidden" id="sharedTreeInviteModal" role="dialog" aria-modal="true" aria-labelledby="sharedTreeInviteTitle">
+    <div class="letter-card shared-tree-invite-card">
+      <button class="letter-close" id="closeSharedTreeInviteModal" type="button" aria-label="공유나무 제안 닫기">×</button>
+      <p class="letter-delivery">A LITTLE SEED</p>
+      <p class="letter-from" id="sharedTreeInviteFrom">친구의 정원</p>
+      <h2 id="sharedTreeInviteTitle">우리 둘만의 나무 하나 키워볼래? 🌿</h2>
+      <p class="letter-body">각자의 하루가 닿을 때마다 조금씩 자라요. 서로의 기록 내용은 보이지 않고, 둘만의 작은 나무만 남아요.</p>
+      <button class="letter-confirm" id="acceptSharedTreeInviteButton" type="button">함께 심기</button>
+      <button class="secondary-sheet-button" id="laterSharedTreeInviteButton" type="button">지금은 나중에</button>
+    </div>
+  </section>
+
+
+  <section class="letter-modal hidden" id="letterModal" role="dialog" aria-modal="true" aria-labelledby="letterModalTitle">
+    <div class="letter-card">
+      <button class="letter-close" id="closeLetterModal" type="button" aria-label="편지 닫기">×</button>
+      <p class="letter-delivery" id="letterDelivery">새싹새가 가지에 걸어두고 갔어요</p>
+      <p class="letter-from" id="letterFrom">민지의 마음</p>
+      <h2 id="letterModalTitle">오늘도 잘 지나가고 있어?</h2>
+      <p class="letter-body" id="letterBody">네 나무가 조금씩 자라고 있다는 얘기를 들었어. 오늘은 마음이 어떤 모양이었는지 궁금해. 무리하지 말고, 좋은 밤 보내.</p>
+      <p class="letter-date" id="letterDate"></p>
+      <button class="letter-confirm" id="readLetterButton" type="button">마음을 받았어요</button>
+    </div>
+  </section>
+
+  <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="app.js"></script>
 </body>
 </html>

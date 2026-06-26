@@ -3,86 +3,53 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>살아있는 숲 관리자 대시보드</title>
-  <link rel="stylesheet" href="admin.css?v=1.70.3-test" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#eef1ff" />
+  <title>오늘의숲 · 운영 통계</title>
+  <link rel="stylesheet" href="admin.css" />
 </head>
 <body>
-  <main class="admin-shell">
-    <section id="loginPanel" class="login-panel">
-      <div class="brand-pill">Living Forest Admin · V1.70.9 test</div>
-      <h1>살아있는 숲 관리자</h1>
-      <p>운영 확인용 임시 관리자 페이지입니다.<br />일반 방문자 화면에는 노출되지 않습니다.</p>
-      <label for="adminPassword">관리자 비밀번호</label>
-      <div class="password-row">
-        <input id="adminPassword" type="password" placeholder="비밀번호 입력" autocomplete="current-password" />
-        <button id="loginButton" type="button">들어가기</button>
+  <main class="stats-shell">
+    <header class="stats-header">
+      <div>
+        <p class="eyebrow">TODAYFOREST · OPERATION</p>
+        <h1>운영 통계</h1>
+        <p class="header-copy">개인 식별 정보 없이, 오늘의숲의 세 가지 핵심 흐름만 확인해요.</p>
       </div>
-      <p id="loginMessage" class="login-message"></p>
-      <small>초기 테스트용 비밀번호 방식입니다. GitHub Pages 특성상 완전한 보안용은 아니며, 민감한 개인정보는 표시하지 않습니다.</small>
+      <button type="button" id="refreshButton" class="refresh-button">새로고침</button>
+    </header>
+
+    <section class="range-row" aria-label="기간 선택">
+      <button type="button" class="range-button selected" data-range="all">전체</button>
+      <button type="button" class="range-button" data-range="today">오늘</button>
+      <button type="button" class="range-button" data-range="last7">최근 7일</button>
     </section>
 
-    <section id="dashboardPanel" class="dashboard-panel hidden">
-      <header class="dashboard-header">
-        <div>
-          <div class="brand-pill">Living Forest Admin · V1.70.9 test</div>
-          <h1>살아있는 숲 운영 대시보드</h1>
-          <p>Google Sheets / Apps Script 자동 집계 데이터를 기간별로 불러와 실제 운영 숫자를 표시하는 관리자 화면입니다.</p>
-        </div>
-        <div class="header-actions">
-          <button id="refreshButton" type="button">새로고침</button>
-          <button id="logoutButton" type="button">나가기</button>
-        </div>
-      </header>
+    <p class="status-line" id="statusLine" role="status">통계를 불러오는 중이에요.</p>
 
-      <section class="notice-card" id="statusCard">
-        <strong id="statusTitle">연결 준비중</strong>
-        <p id="statusText">
-          Apps Script 웹 앱 URL이 연결되었습니다. 아래에서 오늘, 어제, 최근 7일, 전체 기준을 선택할 수 있습니다.
-        </p>
-      </section>
+    <section class="metric-grid" aria-live="polite">
+      <article class="metric-card">
+        <span class="metric-icon" aria-hidden="true">🌱</span>
+        <p>오늘 마음 남김</p>
+        <strong id="moodCount">–</strong>
+      </article>
+      <article class="metric-card">
+        <span class="metric-icon" aria-hidden="true">✉️</span>
+        <p>친구에게 편지 보냄</p>
+        <strong id="letterCount">–</strong>
+      </article>
+      <article class="metric-card">
+        <span class="metric-icon" aria-hidden="true">🌿</span>
+        <p>친구 연결됨</p>
+        <strong id="friendCount">–</strong>
+      </article>
+    </section>
 
-      <section class="range-card" aria-label="집계 기준 선택">
-        <div>
-          <strong>집계 기준</strong>
-          <p>현재 선택: <span id="selectedRangeLabel">오늘</span></p>
-        </div>
-        <div class="range-buttons">
-          <button type="button" data-range="today" class="active" aria-pressed="true">오늘</button>
-          <button type="button" data-range="yesterday" aria-pressed="false">어제</button>
-          <button type="button" data-range="last7" aria-pressed="false">최근 7일</button>
-          <button type="button" data-range="all" aria-pressed="false">전체</button>
-        </div>
-      </section>
-
-      <section class="summary-grid">
-        <article class="metric-card good"><span>방문자 수</span><strong id="visitorsValue">준비중</strong><small>기간 내 고유 방문자</small></article>
-        <article class="metric-card"><span>내 정원 클릭</span><strong id="gardenClickValue">준비중</strong><small>go_garden_click</small></article>
-        <article class="metric-card"><span>이름 저장</span><strong id="nameSaveValue">준비중</strong><small>tree_name_saved</small></article>
-        <article class="metric-card primary"><span>감정 기록</span><strong id="moodRecordValue">준비중</strong><small>mood_recorded</small></article>
-        <article class="metric-card"><span>공유 클릭</span><strong id="shareClickValue">준비중</strong><small>share_click</small></article>
-        <article class="metric-card"><span>재방문</span><strong id="returnVisitValue">준비중</strong><small>return_visit</small></article>
-      </section>
-
-      <section class="rate-grid">
-        <article class="rate-card"><span>내 정원 클릭률</span><strong id="gardenRateValue">-</strong><p>방문자 중 내 나무 화면으로 들어간 비율</p></article>
-        <article class="rate-card"><span>이름 저장률</span><strong id="nameRateValue">-</strong><p>방문자 중 나무 이름을 저장한 비율</p></article>
-        <article class="rate-card"><span>감정 기록률</span><strong id="moodRateValue">-</strong><p>방문자 중 핵심 행동까지 도달한 비율</p></article>
-        <article class="rate-card"><span>공유 클릭률</span><strong id="shareRateValue">-</strong><p>방문자 중 공유를 시도한 비율</p></article>
-      </section>
-
-      <section class="analysis-card">
-        <h2>선택 기간 판단</h2>
-        <p id="analysisText">자동 데이터 연결 전입니다. 선택한 기간의 방문자 수·감정 기록률·공유율을 기준으로 판단을 자동 표시합니다.</p>
-      </section>
-
-      <section class="event-list-card">
-        <h2>추적 중인 이벤트</h2>
-        <div class="event-list">
-          <span>app_opened</span><span>go_garden_click</span><span>tree_name_saved</span><span>mood_recorded</span><span>return_world_click</span><span>share_click</span><span>return_visit</span><span>growth_day_7_reached</span><span>focus_my_tree_click</span><span>tree_care_selected</span>
-        </div>
-      </section>
+    <section class="note-card">
+      <b>이 페이지는 운영 확인용이에요.</b>
+      <p>카카오 닉네임, 나무 이름, 계정 ID, 편지 제목·본문은 이 통계에 저장하지 않아요.</p>
     </section>
   </main>
-  <script src="admin.js?v=1.70.3-test"></script>
+  <script src="admin.js"></script>
 </body>
 </html>
