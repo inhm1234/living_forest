@@ -144,8 +144,42 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .cloud-one { top: 104px; left: 9%; animation: floatCloud 15s ease-in-out infinite; }
 .cloud-two { top: 162px; right: 8%; transform: scale(0.72); opacity: 0.68; animation: floatCloud 18s ease-in-out infinite reverse; }
 
+/* COORDINATE-WORLD-V1
+   장식의 position_x / position_y는 이제 화면 전체가 아닌 390×540 정원 세계를 기준으로 읽습니다.
+   화면이 넓어져도 이 정원 세계 전체가 한 덩어리로 확대·축소되어, 나무와 장식의 관계가 유지됩니다. */
+.garden-stage {
+  --garden-world-width: 390px;
+  --garden-world-height: 540px;
+  --garden-world-scale: 1;
+}
+.garden-world-viewport {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.garden-world {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--garden-world-width);
+  height: var(--garden-world-height);
+  transform: translate(-50%, -50%) scale(var(--garden-world-scale));
+  transform-origin: 50% 50%;
+  pointer-events: none;
+  will-change: transform;
+}
+.garden-world .active-animal,
+.garden-world .animal-trace,
+.garden-world .found-item-sparkle,
+.garden-world .found-items-layer.is-decorating {
+  pointer-events: auto;
+}
+
 .stage-topline {
   position: absolute;
+  z-index: 8;
   top: 19px;
   left: 50%;
   display: flex;
@@ -168,7 +202,7 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 
 .visitor-card {
   position: absolute;
-  z-index: 4;
+  z-index: 8;
   top: 68px;
   right: 18px;
   display: flex;
@@ -236,6 +270,24 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 }
 .tree-wrap.wind-active { animation: treeSway 3.4s ease-in-out infinite; }
 .tree-wrap.tree-pulse { animation: treePulse 900ms ease-out; }
+
+/* 내 정원만 공통 좌표 세계를 사용합니다. 친구 정원 화면은 이번 수정 범위에서 제외합니다. */
+.garden-world .tree-wrap {
+  bottom: 66px;
+  width: 360px;
+}
+.garden-world .active-animal.animal-bird { top: 30%; right: 20%; }
+.garden-world .active-animal.animal-squirrel { top: 53%; right: 22%; }
+.garden-world .active-animal.animal-rabbit { right: 16%; bottom: 16%; }
+.garden-world .active-animal.animal-hedgehog { left: 13%; bottom: 15%; }
+.garden-world .animal-trace.trace-bird { top: 42%; right: 18%; }
+.garden-world .animal-trace.trace-squirrel { top: 62%; right: 24%; }
+.garden-world .animal-trace.trace-rabbit { right: 17%; bottom: 18%; }
+.garden-world .animal-trace.trace-hedgehog { left: 15%; bottom: 17%; }
+.garden-world .branch-letter-item.item-1 { top: 25%; right: 15%; }
+.garden-world .branch-letter-item.item-2 { top: 33%; right: 29%; }
+.garden-world .branch-letter-item.item-3 { top: 18%; right: 32%; }
+.garden-world .branch-letter-bundle { top: 21%; right: 17%; }
 
 .tree-aura {
   position: absolute;
@@ -353,7 +405,8 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .branch-letters.letter-placement-high-branches .branch-letter-bundle { top: 29%; right: 16%; transform: rotate(4deg); }
 
 .ground-shadow { position: absolute; z-index: 1; left: 50%; bottom: 76px; width: min(63%, 315px); height: 35px; border-radius: 50%; background: rgba(78, 128, 89, 0.14); filter: blur(12px); transform: translateX(-50%); }
-.stage-message { position: absolute; z-index: 5; bottom: 22px; left: 50%; width: max-content; max-width: calc(100% - 42px); margin: 0; padding: 9px 13px; border: 1px solid rgba(255,255,255,0.7); border-radius: 999px; background: rgba(255,255,255,0.52); color: #708395; font-size: 12px; font-weight: 800; text-align: center; transform: translateX(-50%); backdrop-filter: blur(8px); }
+.garden-world .ground-shadow { bottom: 68px; width: 255px; height: 30px; }
+.stage-message { position: absolute; z-index: 8; bottom: 22px; left: 50%; width: max-content; max-width: calc(100% - 42px); margin: 0; padding: 9px 13px; border: 1px solid rgba(255,255,255,0.7); border-radius: 999px; background: rgba(255,255,255,0.52); color: #708395; font-size: 12px; font-weight: 800; text-align: center; transform: translateX(-50%); backdrop-filter: blur(8px); }
 
 .rain-layer { position: absolute; z-index: 6; inset: 0; pointer-events: none; opacity: 0; transition: opacity .35s ease; overflow: hidden; }
 .rain-layer.active { opacity: 1; }

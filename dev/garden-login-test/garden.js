@@ -281,6 +281,10 @@ let retentionCleanupRanOnThisPage = false;
 let deferredInstallPrompt = null;
 let installHelpVisible = false;
 let treeNamePromptedForUserId = "";
+let gardenWorldResizeObserver = null;
+
+// COORDINATE-WORLD-V1: 모든 기기에서 같은 정원 구도를 쓰는 내부 기준 크기입니다.
+const GARDEN_WORLD = Object.freeze({ width: 390, height: 540 });
 
 // 발견한 작은 것은 평소에는 고정돼 있고, 꾸미기 모드에서만 사용자가 옮길 수 있습니다.
 // 실제 저장 전의 위치는 별도 초안으로만 들고 있어 취소하면 바로 원래 자리로 돌아갑니다.
@@ -293,6 +297,7 @@ const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 const els = {
   gardenStage: $("#gardenStage"),
+  gardenWorld: $("#gardenWorld"),
   treeWrap: $("#treeWrap"),
   treeImage: $("#treeImage"),
   treeNameLabel: $("#treeNameLabel"),
@@ -1811,6 +1816,41 @@ function roundedFoundItemPosition(value) {
   return Number(Number(value).toFixed(3));
 }
 
+function syncGardenWorldScale() {
+  const stageRect = els.gardenStage?.getBoundingClientRect();
+  const world = els.gardenWorld;
+  if (!world || !stageRect?.width || !stageRect?.height) return;
+
+  const scale = Math.min(
+    stageRect.width / GARDEN_WORLD.width,
+    stageRect.height / GARDEN_WORLD.height
+  );
+  world.style.setProperty("--garden-world-scale", String(Number(scale.toFixed(5))));
+}
+
+function setupGardenWorldSizing() {
+  if (!els.gardenStage || !els.gardenWorld) return;
+  syncGardenWorldScale();
+
+  if ("ResizeObserver" in window) {
+    gardenWorldResizeObserver?.disconnect();
+    gardenWorldResizeObserver = new ResizeObserver(() => syncGardenWorldScale());
+    gardenWorldResizeObserver.observe(els.gardenStage);
+  }
+  window.addEventListener("resize", syncGardenWorldScale, { passive: true });
+}
+
+function gardenWorldPositionForFoundItemElement(element) {
+  const worldRect = els.gardenWorld?.getBoundingClientRect();
+  const itemRect = element?.getBoundingClientRect();
+  if (!worldRect?.width || !worldRect?.height || !itemRect) return null;
+
+  return {
+    x: clamp(roundedFoundItemPosition(((itemRect.left + (itemRect.width / 2) - worldRect.left) / worldRect.width) * 100), 0, 100),
+    y: clamp(roundedFoundItemPosition(((itemRect.top - worldRect.top) / worldRect.height) * 100), 0, 100),
+  };
+}
+
 function savedFoundItemPosition(item) {
   const x = Number(item?.positionX);
   const y = Number(item?.positionY);
@@ -1881,17 +1921,6 @@ function renderFoundItems() {
   );
 }
 
-function stagePositionForFoundItemElement(element) {
-  const stageRect = els.gardenStage?.getBoundingClientRect();
-  const itemRect = element?.getBoundingClientRect();
-  if (!stageRect?.width || !stageRect?.height || !itemRect) return null;
-
-  return {
-    x: clamp(roundedFoundItemPosition(((itemRect.left + (itemRect.width / 2) - stageRect.left) / stageRect.width) * 100), 0, 100),
-    y: clamp(roundedFoundItemPosition(((itemRect.top - stageRect.top) / stageRect.height) * 100), 0, 100),
-  };
-}
-
 function startGardenDecorateMode() {
   const foundItems = (state.foundItems || []).filter((item) => foundItemCatalog[item.itemKey]);
   if (!foundItems.length || gardenDecorateSaving) return;
@@ -1929,17 +1958,17 @@ function applyFoundItemDraftPosition(element, position) {
 function beginFoundItemDrag(event) {
   if (!gardenDecorateMode || gardenDecorateSaving || event.button > 0) return;
   const element = event.target.closest(".found-item[data-found-item-id]");
-  if (!element || !els.gardenStage?.contains(element)) return;
+  if (!element || !els.gardenWorld?.contains(element)) return;
 
-  const stageRect = els.gardenStage.getBoundingClientRect();
+  const worldRect = els.gardenWorld.getBoundingClientRect();
   const itemRect = element.getBoundingClientRect();
-  if (!stageRect.width || !stageRect.height || !itemRect.width || !itemRect.height) return;
+  if (!worldRect.width || !worldRect.height || !itemRect.width || !itemRect.height) return;
 
   event.preventDefault();
   const itemId = element.dataset.foundItemId;
   if (!itemId) return;
 
-  const currentPosition = stagePositionForFoundItemElement(element);
+  const currentPosition = gardenWorldPositionForFoundItemElement(element);
   if (currentPosition) {
     gardenDecorateDraftPositions.set(itemId, currentPosition);
     applyFoundItemDraftPosition(element, currentPosition);
@@ -1949,7 +1978,7 @@ function beginFoundItemDrag(event) {
     pointerId: event.pointerId,
     itemId,
     element,
-    stageRect,
+    worldRect,
     itemWidth: itemRect.width,
     itemHeight: itemRect.height,
     pointerOffsetX: event.clientX - (itemRect.left + (itemRect.width / 2)),
@@ -1965,21 +1994,21 @@ function moveFoundItemDrag(event) {
   if (!drag || drag.pointerId !== event.pointerId) return;
   event.preventDefault();
 
-  const stageRect = drag.stageRect;
+  const worldRect = drag.worldRect;
   const halfWidth = drag.itemWidth / 2;
   const centerX = clamp(
-    event.clientX - stageRect.left - drag.pointerOffsetX,
+    event.clientX - worldRect.left - drag.pointerOffsetX,
     halfWidth,
-    stageRect.width - halfWidth
+    worldRect.width - halfWidth
   );
   const topY = clamp(
-    event.clientY - stageRect.top - drag.pointerOffsetY,
+    event.clientY - worldRect.top - drag.pointerOffsetY,
     0,
-    Math.max(0, stageRect.height - drag.itemHeight)
+    Math.max(0, worldRect.height - drag.itemHeight)
   );
   const position = {
-    x: roundedFoundItemPosition((centerX / stageRect.width) * 100),
-    y: roundedFoundItemPosition((topY / stageRect.height) * 100),
+    x: roundedFoundItemPosition((centerX / worldRect.width) * 100),
+    y: roundedFoundItemPosition((topY / worldRect.height) * 100),
   };
 
   gardenDecorateDraftPositions.set(drag.itemId, position);
@@ -2263,6 +2292,7 @@ function renderGarden() {
 
   renderFoundItems();
   renderBranchLetters(unread);
+  window.requestAnimationFrame(syncGardenWorldScale);
   playExpiredLetterReturnIfNeeded();
   playRetentionNextVisitNoticeIfNeeded();
   els.navLetterBadge.textContent = unread.length;
@@ -3868,6 +3898,7 @@ async function init() {
     updateInstallCard();
   });
   bindEvents();
+  setupGardenWorldSizing();
   renderFeedbackCategorySelection();
   await handleOAuthCallback();
   await syncSession();

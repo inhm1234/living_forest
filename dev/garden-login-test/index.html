@@ -99,8 +99,40 @@
       <div class="cloud cloud-one"></div>
       <div class="cloud cloud-two"></div>
       <div class="rain-layer" id="rainLayer" aria-hidden="true"></div>
-      <div class="sparkle-layer" aria-hidden="true">
-        <i></i><i></i><i></i><i></i><i></i>
+
+      <!-- COORDINATE-WORLD-V1: 나무·장식·동물은 한 개의 고정 비율 정원 안에서 함께 확대/축소됩니다. -->
+      <div class="garden-world-viewport">
+        <div class="garden-world" id="gardenWorld">
+          <div class="sparkle-layer" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i>
+          </div>
+
+          <button class="active-animal animal-bird" id="activeAnimal" type="button" aria-label="작은 새에게 편지 맡기기">
+            <span class="animal-speech" id="activeAnimalSpeech">작은 새가 가지에서 편지를 기다리고 있어요.</span>
+            <span class="active-animal-emoji" id="activeAnimalEmoji" aria-hidden="true">🐦</span>
+          </button>
+
+          <button class="animal-trace" id="animalTrace" type="button" aria-label="숲친구가 남긴 흔적 보기" hidden>
+            <span id="animalTraceIcon" aria-hidden="true">🪶</span>
+          </button>
+
+          <div class="tree-wrap" id="treeWrap">
+            <div class="tree-aura" aria-hidden="true"></div>
+            <img
+              id="treeImage"
+              class="tree-image"
+              src="../../assets/garden/tree_growth/tree_stage4_morning.png"
+              alt="꽃과 잎이 피어난 내 마음 나무"
+            />
+            <div class="branch-letters" id="branchLetters" aria-live="polite" aria-label="나뭇가지에 도착한 새 편지"></div>
+          </div>
+
+          <div class="found-items-layer" id="foundItemsLayer" aria-label="숲에서 찾은 작은 것"></div>
+          <button class="found-item-sparkle" id="foundItemSparkle" type="button" hidden>
+            <span aria-hidden="true">✦</span>
+          </button>
+          <div class="ground-shadow" aria-hidden="true"></div>
+        </div>
       </div>
 
       <div class="stage-topline">
@@ -120,31 +152,6 @@
         </span>
       </button>
 
-      <button class="active-animal animal-bird" id="activeAnimal" type="button" aria-label="작은 새에게 편지 맡기기">
-        <span class="animal-speech" id="activeAnimalSpeech">작은 새가 가지에서 편지를 기다리고 있어요.</span>
-        <span class="active-animal-emoji" id="activeAnimalEmoji" aria-hidden="true">🐦</span>
-      </button>
-
-      <button class="animal-trace" id="animalTrace" type="button" aria-label="숲친구가 남긴 흔적 보기" hidden>
-        <span id="animalTraceIcon" aria-hidden="true">🪶</span>
-      </button>
-
-      <div class="tree-wrap" id="treeWrap">
-        <div class="tree-aura" aria-hidden="true"></div>
-        <img
-          id="treeImage"
-          class="tree-image"
-          src="../../assets/garden/tree_growth/tree_stage4_morning.png"
-          alt="꽃과 잎이 피어난 내 마음 나무"
-        />
-        <div class="branch-letters" id="branchLetters" aria-live="polite" aria-label="나뭇가지에 도착한 새 편지"></div>
-      </div>
-
-      <div class="found-items-layer" id="foundItemsLayer" aria-label="숲에서 찾은 작은 것"></div>
-      <button class="found-item-sparkle" id="foundItemSparkle" type="button" hidden>
-        <span aria-hidden="true">✦</span>
-      </button>
-
       <div class="garden-decorate-controls" id="gardenDecorateControls" hidden aria-live="polite">
         <button class="garden-decorate-button" id="openGardenDecorate" type="button" aria-label="발견한 작은 것 꾸미기">
           <span aria-hidden="true">🍃</span>
@@ -159,7 +166,6 @@
         </div>
       </div>
 
-      <div class="ground-shadow" aria-hidden="true"></div>
       <p class="stage-message" id="stageMessage">오늘의 마음은 나무 가까이에 조용히 남아요.</p>
     </section>
 
