@@ -258,6 +258,36 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .animal-trace.trace-squirrel { top: 62%; right: 24%; }
 .animal-trace.trace-rabbit { right: 17%; bottom: 18%; }
 .animal-trace.trace-hedgehog { left: 15%; bottom: 17%; }
+.animal-trace.trace-generic { right: 17%; bottom: 18%; }
+
+
+/* 동물 방문 v1: 서버가 ‘다가오는 중’일 때만 정원 안에 작은 기척을 보입니다.
+   실제 동물은 arrives_at 이후 서버 상태가 visiting으로 바뀐 뒤에 나타납니다. */
+.garden-world.is-animal-approaching::before {
+  content: "";
+  position: absolute;
+  z-index: 7;
+  right: 48px;
+  bottom: 106px;
+  width: 76px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 60%, rgba(178, 222, 178, .52), rgba(210, 241, 205, .12) 58%, transparent 72%);
+  filter: blur(1px);
+  animation: animalApproachRustle 1.65s ease-in-out infinite;
+  pointer-events: none;
+}
+.garden-world.is-animal-approaching::after {
+  content: "🍃";
+  position: absolute;
+  z-index: 8;
+  right: 69px;
+  bottom: 111px;
+  font-size: 24px;
+  opacity: .82;
+  animation: animalApproachLeaf 1.65s ease-in-out infinite;
+  pointer-events: none;
+}
 
 .tree-wrap {
   position: absolute;
@@ -603,6 +633,8 @@ textarea::placeholder { color: #a7b4bd; }
   22%, 100% { opacity: 0; transform: translateX(-50%) translateY(-1px) scale(calc(var(--splash-scale) * 1.16)); }
 }
 @keyframes letterRest { 0%,100% { translate: 0 0; } 50% { translate: 0 -2px; } }
+@keyframes animalApproachRustle { 0%,100% { transform: translateX(-5px) scale(.88); opacity: .30; } 50% { transform: translateX(7px) scale(1.08); opacity: .82; } }
+@keyframes animalApproachLeaf { 0%,100% { transform: translate(-6px, 2px) rotate(-11deg); opacity: .36; } 50% { transform: translate(8px, -5px) rotate(11deg); opacity: .92; } }
 @keyframes animalSettle { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-4px) rotate(1deg); } }
 @keyframes animalDepart { 0% { transform: translate3d(0,0,0) scale(1); opacity: 1; } 100% { transform: translate3d(88px,-76px,0) scale(.72); opacity: 0; } }
 @keyframes animalDepartGround { 0% { transform: translate3d(0,0,0) scale(1); opacity: 1; } 100% { transform: translate3d(96px,13px,0) scale(.78); opacity: 0; } }
