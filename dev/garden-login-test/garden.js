@@ -2428,6 +2428,7 @@ async function sendGardenLetter(event) {
         p_recipient_id: selectedLetterRecipientId,
         p_title: title,
         p_body: body,
+        p_delivery_kind: animal.kind,
       });
 
     if (result.error) {
@@ -2436,12 +2437,15 @@ async function sendGardenLetter(event) {
 
     const letter = normalizeRpcRow(result.data) || {};
     const recipientName = letter.recipient_nickname || selectedFriend?.name || "친구";
-    const availableAt = letter.available_at || new Date(Date.now() + 60000).toISOString();
+    const fallbackDeliveryMs = isDevTestFriend
+      ? 60000
+      : animal.deliveryHours * 60 * 60 * 1000;
+    const availableAt = letter.available_at || new Date(Date.now() + fallbackDeliveryMs).toISOString();
     const sentAt = new Date().toISOString();
     const outgoingId = letter.letter_id || `pending-${Date.now()}`;
 
-    // 현재 데이터베이스 RPC는 개발용 1분 배송을 유지합니다.
-    // 대신 어떤 동물에게 맡겼는지는 브라우저 보조 저장으로 남겨, 편지함에서 정확한 동물·진행률을 보여줍니다.
+    // 실제 친구에게 보내는 편지는 DB에도 선택한 동물과 운영 배송 시간이 저장됩니다.
+    // DEV 테스트 친구만 별도 1분 배송 RPC를 사용합니다.
     rememberAnimalDelivery(outgoingId, animal, sentAt, availableAt, { to: recipientName, title, isDevTest: isDevTestFriend });
 
     // 전송이 성공한 즉시, 재조회가 늦더라도 보낸 편지 목록에 확실히 표시합니다.
