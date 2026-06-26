@@ -437,7 +437,7 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .install-app-button { border: 0; background: #87bd98; color: #fff; box-shadow: 0 8px 15px rgba(101,157,120,.18); }
 .install-later-button { border: 1px solid rgba(124,142,157,.16); background: rgba(255,255,255,.62); color: #8492a0; }
 
-.garden-nav { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 9px; }
+.garden-nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; }
 .nav-action { position: relative; display: grid; place-items: center; gap: 3px; min-height: 66px; padding: 8px 5px; border: 1px solid rgba(255,255,255,0.78); border-radius: 20px; background: rgba(255,255,255,0.65); color: #708396; box-shadow: 0 10px 20px rgba(100,125,148,0.08); cursor: pointer; }
 .nav-action span:last-child { font-size: 12px; font-weight: 900; }
 .nav-action .nav-icon { color: #80a48c; font-size: 18px; line-height: 1; }
@@ -646,6 +646,10 @@ textarea::placeholder { color: #a7b4bd; }
 .signout-link { color: #b08c94; }
 
 @media (max-width: 470px) {
+  .garden-nav { gap: 6px; }
+  .nav-action { min-height: 62px; padding-inline: 2px; border-radius: 18px; }
+  .nav-action span:last-child { font-size: 10px; letter-spacing: -0.03em; white-space: nowrap; }
+
   .auth-card { border-radius: 29px; padding: 30px 19px 24px; }
   .auth-tree { height: 240px; }
   .garden-header { align-items: flex-start; }
