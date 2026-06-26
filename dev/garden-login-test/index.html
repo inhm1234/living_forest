@@ -65,6 +65,8 @@
       </div>
 
       <div class="stage-topline">
+        <span id="treeNameLabel" class="tree-name-label">내 마음 나무</span>
+        <span class="dot">·</span>
         <span id="dayCount">마음 0일째</span>
         <span class="dot">·</span>
         <span id="treeStageLabel">처음 깨어난 새싹</span>
@@ -164,6 +166,7 @@
 
     <div class="garden-footer-actions">
       <p class="database-note">내 기록과 내 나무 상태는 로그인한 계정의 정원에 저장돼요.</p>
+      <button id="openTreeName" class="text-link-button" type="button">나무 이름</button>
       <button id="signOutButton" class="reset-link signout-link" type="button">로그아웃</button>
     </div>
   </main>
@@ -269,6 +272,23 @@
       <p>서로의 기록 내용은 보이지 않아요. 각자가 오늘의 빛을 남길 때마다 둘만의 나무가 조금씩 자라요.</p>
     </section>
   </main>
+
+  <section class="bottom-sheet hidden" id="treeNameSheet" role="dialog" aria-modal="true" aria-labelledby="treeNameSheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="sheet-kicker">MY TREE NAME · DEV</p>
+        <h2 id="treeNameSheetTitle">내 나무 이름</h2>
+      </div>
+      <button class="close-button" data-close="treeNameSheet" type="button" aria-label="나무 이름 닫기">×</button>
+    </div>
+    <form id="treeNameForm" class="record-form">
+      <label class="write-label" for="treeNameInput">나무를 어떻게 부를까?</label>
+      <input id="treeNameInput" name="treeName" maxlength="24" autocomplete="off" placeholder="예: 여름의 나무" />
+      <p class="sheet-footnote">카카오 닉네임과 별개로, 내 정원에서만 보이는 나무 이름이에요.</p>
+      <button class="save-record" type="submit">나무 이름 저장</button>
+    </form>
+  </section>
 
   <div class="sheet-overlay hidden" id="sheetOverlay" aria-hidden="true"></div>
 
