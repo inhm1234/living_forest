@@ -166,6 +166,7 @@ let retentionWindRefreshBusy = false;
 let retentionCleanupRanOnThisPage = false;
 let deferredInstallPrompt = null;
 let installHelpVisible = false;
+let treeNamePromptedForUserId = "";
 
 // 발견한 작은 것은 평소에는 고정돼 있고, 꾸미기 모드에서만 사용자가 옮길 수 있습니다.
 // 실제 저장 전의 위치는 별도 초안으로만 들고 있어 취소하면 바로 원래 자리로 돌아갑니다.
@@ -220,7 +221,6 @@ const els = {
   treeNameSheet: $("#treeNameSheet"),
   treeNameForm: $("#treeNameForm"),
   treeNameInput: $("#treeNameInput"),
-  openTreeName: $("#openTreeName"),
   letterComposerSheet: $("#letterComposerSheet"),
   openFeedback: $("#openFeedback"),
   feedbackWriteTab: $("#feedbackWriteTab"),
@@ -1106,6 +1106,16 @@ async function loadGardenState() {
   await consumeRetentionNextVisitNoticeIfNeeded();
 }
 
+function promptForFirstTreeNameIfNeeded() {
+  if (!currentUser || !isTreeNameSetupRequired()) return;
+  if (treeNamePromptedForUserId === currentUser.id) return;
+  treeNamePromptedForUserId = currentUser.id;
+  window.setTimeout(() => {
+    if (!currentUser || !isTreeNameSetupRequired()) return;
+    openTreeNameSheet();
+  }, 160);
+}
+
 async function hydrateGardenForCurrentUser() {
   if (!currentUser) return;
   try {
@@ -1117,6 +1127,7 @@ async function hydrateGardenForCurrentUser() {
     configureRetentionWindPolling();
     restoreSharedTreeFromUrl();
     await previewFriendInviteFromUrl();
+    promptForFirstTreeNameIfNeeded();
   } catch (error) {
     state = cloneDefault();
     renderAuthUI();
@@ -1132,11 +1143,17 @@ function openSheet(element) {
   window.setTimeout(() => element.querySelector("button, textarea, input")?.focus(), 60);
 }
 
-function closeAllSheets() {
+function isTreeNameSetupRequired() {
+  return Boolean(currentUser) && !String(state.treeName || "").trim();
+}
+
+function closeAllSheets({ force = false } = {}) {
+  const treeNameSheetIsOpen = els.treeNameSheet && !els.treeNameSheet.classList.contains("hidden");
+  if (!force && treeNameSheetIsOpen && isTreeNameSetupRequired()) return;
   const wasViewingLetters = !els.lettersSheet.classList.contains("hidden");
   [els.recordSheet, els.recordsSheet, els.friendsSheet, els.lettersSheet, els.feedbackSheet, els.letterComposerSheet, els.treeNameSheet].filter(Boolean).forEach((sheet) => sheet.classList.add("hidden"));
   els.sheetOverlay.classList.add("hidden");
-  // 도착 완료 장면은 편지 화면을 확인하는 동안만 머물고, 닫으면 조용히 사라집니다.
+  // 봉투 화면을 닫을 때만 배송 도착 알림을 다음 진입 시점으로 넘깁니다.
   if (wasViewingLetters) clearAnimalDeliveryArrivals();
 }
 
@@ -3435,7 +3452,7 @@ function renderAuthUI() {
     const accountName = state.profileName || displayName(currentUser);
     const gardenName = state.treeName || accountName;
     els.accountName.textContent = `${gardenName}의 정원`;
-    els.accountButton.setAttribute("aria-label", `${gardenName}의 나무 이름 설정`);
+    els.accountButton.setAttribute("aria-label", `${gardenName}의 정원`);
   }
 }
 
@@ -3525,6 +3542,7 @@ async function signOut() {
     return;
   }
   currentUser = null;
+  treeNamePromptedForUserId = "";
   configureRetentionWindPolling();
   state = cloneDefault();
   selectedLetterRecipientId = "";
@@ -3550,15 +3568,15 @@ async function openLettersSheet() {
 }
 
 function openTreeNameSheet() {
-  if (!currentUser) return;
-  els.treeNameInput.value = state.treeName || "";
+  if (!currentUser || !isTreeNameSetupRequired()) return;
+  els.treeNameInput.value = "";
   openSheet(els.treeNameSheet);
   window.setTimeout(() => els.treeNameInput.focus(), 60);
 }
 
 async function saveTreeName(event) {
   event.preventDefault();
-  if (!currentUser) return;
+  if (!currentUser || !isTreeNameSetupRequired()) return;
 
   const treeName = els.treeNameInput.value.trim();
   if (!treeName) {
@@ -3567,10 +3585,14 @@ async function saveTreeName(event) {
     return;
   }
 
+  const confirmed = window.confirm(`“${treeName}”로 정할까요?
+한 번 정한 나무 이름은 바꿀 수 없어요.`);
+  if (!confirmed) return;
+
   const submitButton = els.treeNameForm.querySelector('button[type="submit"]');
   const original = submitButton.textContent;
   submitButton.disabled = true;
-  submitButton.textContent = "나무 이름을 남기는 중이에요";
+  submitButton.textContent = "나무 이름을 정하는 중이에요";
 
   try {
     const { data, error } = await supabase.rpc("set_my_garden_tree_name", { p_tree_name: treeName });
@@ -3579,17 +3601,24 @@ async function saveTreeName(event) {
     const row = normalizeRpcRow(data);
     state.treeName = row?.saved_tree_name || row?.tree_name || treeName;
     renderAll();
-    closeAllSheets();
-    showToast("내 나무 이름을 저장했어요.");
+    closeAllSheets({ force: true });
+    showToast("내 나무 이름을 정했어요.");
   } catch (error) {
     console.error("TodayForest DEV tree-name save error:", error);
     const detail = String(error?.message || "");
-    showToast(detail.includes("set_my_garden_tree_name") || detail.includes("tree_name")
-      ? "나무 이름 저장소를 아직 준비하지 못했어요. SQL을 먼저 적용해 주세요."
-      : "나무 이름을 저장하지 못했어요. 잠시 뒤 다시 시도해 주세요.");
+    if (detail.includes("TREE_NAME_ALREADY_SET") || detail.includes("TREE_NAME_LOCKED")) {
+      await loadGardenState();
+      renderAll();
+      closeAllSheets({ force: true });
+      showToast("나무 이름은 한 번 정하면 바꿀 수 없어요.");
+    } else {
+      showToast(detail.includes("set_my_garden_tree_name") || detail.includes("tree_name")
+        ? "나무 이름 저장소를 아직 준비하지 못했어요. SQL을 먼저 적용해 주세요."
+        : "나무 이름을 저장하지 못했어요. 잠시 뒤 다시 시도해 주세요.");
+    }
   } finally {
     submitButton.disabled = false;
-    submitButton.textContent = original || "나무 이름 저장";
+    submitButton.textContent = original || "이 이름으로 정하기";
   }
 }
 
@@ -3606,8 +3635,6 @@ function bindEvents() {
   els.foundItemsLayer.addEventListener("pointerup", endFoundItemDrag);
   els.foundItemsLayer.addEventListener("pointercancel", endFoundItemDrag);
   els.signOutButton.addEventListener("click", signOut);
-  els.accountButton.addEventListener("click", openTreeNameSheet);
-  els.openTreeName.addEventListener("click", openTreeNameSheet);
   els.treeNameForm.addEventListener("submit", saveTreeName);
   $("#openRecord").addEventListener("click", () => {
     if (hasSavedToday()) {

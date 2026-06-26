@@ -1572,23 +1572,9 @@ textarea::placeholder { color: #a7b4bd; }
 
 
 
-/* DEV 검수: 내 나무 이름 */
+/* DEV 검수: 한 번만 정하는 내 나무 이름 */
 .tree-name-label { color: #577083; font-weight: 950; }
-.text-link-button {
-  margin-top: 4px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: #788f82;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 900;
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.text-link-button:focus-visible {
-  outline: 3px solid rgba(120, 171, 141, .28);
-  outline-offset: 3px;
-  border-radius: 8px;
-}
+.account-pill { cursor: default; }
+.tree-name-sheet-head { padding-right: 0; }
+.tree-name-lock-note { color: #798c97; }
+.tree-name-lock-note b { color: #5f7a6c; }

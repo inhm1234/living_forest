@@ -39,10 +39,10 @@
         <h1>내 정원</h1>
       </div>
       <div class="header-actions">
-        <button class="account-pill" id="accountButton" type="button" aria-label="내 계정 정보 보기">
+        <div class="account-pill" id="accountButton" aria-label="내 정원 이름">
           <span class="account-dot" aria-hidden="true"></span>
           <span id="accountName">내 정원</span>
-        </button>
+        </div>
         <button class="friend-pill" id="openFriends" type="button" aria-label="친구 관리 열기">
           <span aria-hidden="true">♡</span>
           <span id="friendCount">친구 0명</span>
@@ -166,7 +166,6 @@
 
     <div class="garden-footer-actions">
       <p class="database-note">내 기록과 내 나무 상태는 로그인한 계정의 정원에 저장돼요.</p>
-      <button id="openTreeName" class="text-link-button" type="button">나무 이름</button>
       <button id="signOutButton" class="reset-link signout-link" type="button">로그아웃</button>
     </div>
   </main>
@@ -275,18 +274,17 @@
 
   <section class="bottom-sheet hidden" id="treeNameSheet" role="dialog" aria-modal="true" aria-labelledby="treeNameSheetTitle">
     <div class="sheet-handle"></div>
-    <div class="sheet-head">
+    <div class="sheet-head tree-name-sheet-head">
       <div>
-        <p class="sheet-kicker">MY TREE NAME · DEV</p>
-        <h2 id="treeNameSheetTitle">내 나무 이름</h2>
+        <p class="sheet-kicker">MY TREE NAME</p>
+        <h2 id="treeNameSheetTitle">내 나무 이름을 지어줘</h2>
       </div>
-      <button class="close-button" data-close="treeNameSheet" type="button" aria-label="나무 이름 닫기">×</button>
     </div>
     <form id="treeNameForm" class="record-form">
       <label class="write-label" for="treeNameInput">나무를 어떻게 부를까?</label>
       <input id="treeNameInput" name="treeName" maxlength="24" autocomplete="off" placeholder="예: 여름의 나무" />
-      <p class="sheet-footnote">카카오 닉네임과 별개로, 내 정원에서만 보이는 나무 이름이에요.</p>
-      <button class="save-record" type="submit">나무 이름 저장</button>
+      <p class="sheet-footnote tree-name-lock-note">카카오 닉네임과 별개로, 내 정원에서만 보이는 이름이에요.<br><b>한 번 정한 나무 이름은 바꿀 수 없어요.</b></p>
+      <button class="save-record" type="submit">이 이름으로 정하기</button>
     </form>
   </section>
 
