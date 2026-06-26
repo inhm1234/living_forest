@@ -11,6 +11,49 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   },
 });
 
+
+// GA4에는 닉네임·편지 제목·본문·계정 ID처럼 개인을 식별할 수 있는 값은 보내지 않습니다.
+// DEV에서는 ?analyticsDebug=1 일 때 콘솔에만 이벤트를 보여주고, 실제 GA4 전송은 하지 않습니다.
+const TODAYFOREST_ANALYTICS = window.TODAYFOREST_ANALYTICS || {
+  measurementId: "",
+  enabled: false,
+  debug: false,
+  build: "unknown",
+};
+
+function analyticsSafeValue(value) {
+  if (value === null || value === undefined) return undefined;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "boolean") return value ? "yes" : "no";
+  return String(value).slice(0, 40);
+}
+
+function trackTodayForestEvent(eventName, params = {}) {
+  try {
+    const payload = {
+      app_area: "my_garden",
+      build: TODAYFOREST_ANALYTICS.build || "unknown",
+    };
+
+    Object.entries(params).forEach(([key, value]) => {
+      const safeValue = analyticsSafeValue(value);
+      if (safeValue !== undefined) payload[key] = safeValue;
+    });
+
+    if (TODAYFOREST_ANALYTICS.enabled && typeof window.gtag === "function") {
+      window.gtag("event", eventName, payload);
+    }
+
+    if (TODAYFOREST_ANALYTICS.debug) {
+      window.__todayForestAnalyticsEvents = window.__todayForestAnalyticsEvents || [];
+      window.__todayForestAnalyticsEvents.push({ eventName, payload, at: new Date().toISOString() });
+      console.info("[TodayForest analytics]", eventName, payload);
+    }
+  } catch (error) {
+    console.warn("TodayForest analytics skipped:", error);
+  }
+}
+
 const DEFAULT_STATE = {
   growth: 0,
   records: [],
@@ -2490,6 +2533,13 @@ async function sendGardenLetter(event) {
     }
 
     const letter = normalizeRpcRow(result.data) || {};
+    // 테스트 새싹은 실제 운영 분석에서 제외합니다.
+    if (!isDevTestFriend) {
+      trackTodayForestEvent("garden_letter_sent", {
+        delivery_kind: animal.kind,
+        delivery_hours: animal.deliveryHours,
+      });
+    }
     const recipientName = letter.recipient_nickname || selectedFriend?.name || "친구";
     const fallbackDeliveryMs = isDevTestFriend
       ? 60000
@@ -3272,6 +3322,11 @@ async function saveRecord(event) {
     return;
   }
 
+  trackTodayForestEvent("garden_mood_saved", {
+    mood: selectedMood,
+    detail_added: detail ? "yes" : "no",
+  });
+
   els.recordForm.reset();
   selectedMood = "good";
   renderMoodSelection();
@@ -3354,6 +3409,9 @@ async function acceptFriendInvite() {
   }
 
   const friend = normalizeRpcRow(data);
+  trackTodayForestEvent("garden_friend_connected", {
+    connection_method: "invite_accept",
+  });
   clearInviteFromUrl();
   pendingFriendInvite = null;
   els.friendInviteModal.classList.add("hidden");

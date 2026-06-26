@@ -13,6 +13,34 @@
   <link rel="icon" type="image/png" sizes="192x192" href="../../assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="../../assets/pwa/apple-touch-icon.png" />
   <link rel="stylesheet" href="garden.css" />
+  <script>
+    // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
+    // 운영 루트(/)에 같은 파일을 반영하면 G-YC872G7MH1로 자동 전송됩니다.
+    (function () {
+      const isDevPath = /\/dev(?:\/|$)/.test(window.location.pathname);
+      const query = new URLSearchParams(window.location.search);
+      window.TODAYFOREST_ANALYTICS = {
+        measurementId: "G-YC872G7MH1",
+        enabled: !isDevPath,
+        debug: query.get("analyticsDebug") === "1",
+        build: isDevPath ? "dev" : "operation",
+      };
+
+      if (!window.TODAYFOREST_ANALYTICS.enabled) return;
+
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
+      window.gtag("js", new Date());
+      window.gtag("config", window.TODAYFOREST_ANALYTICS.measurementId, {
+        send_page_view: true,
+      });
+
+      const tag = document.createElement("script");
+      tag.async = true;
+      tag.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(window.TODAYFOREST_ANALYTICS.measurementId);
+      document.head.appendChild(tag);
+    })();
+  </script>
 </head>
 <body>
   <section class="auth-screen" id="authScreen" aria-label="오늘의숲 시작">
