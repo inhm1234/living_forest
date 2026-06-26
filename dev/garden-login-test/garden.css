@@ -301,8 +301,27 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 
 /* 장식은 처음에는 숲이 정한 자리에 놓이고, 꾸미기 모드에서만 사용자가 옮길 수 있습니다. */
 .found-items-layer { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
-.found-items-layer.is-decorating { z-index: 9; pointer-events: auto; touch-action: none; }
-.found-item { position: absolute; width: 78px; transform: translate(-50%, 0); filter: drop-shadow(0 6px 7px rgba(72, 112, 79, .12)); animation: foundItemSettle .7s ease both; }
+.found-items-layer.is-decorating {
+  z-index: 9;
+  pointer-events: auto;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.found-item {
+  position: absolute;
+  width: 78px;
+  transform: translate(-50%, 0);
+  filter: drop-shadow(0 6px 7px rgba(72, 112, 79, .12));
+  animation: foundItemSettle .7s ease both;
+}
+.found-items-layer.is-decorating .found-item,
+.found-items-layer.is-decorating .found-item img {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
 .found-item img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
 .found-item-tree_base_left { left: 39%; bottom: 37%; width: 68px; }
 .found-item-tree_base_right { left: 61%; bottom: 37%; width: 68px; }

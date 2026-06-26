@@ -1925,22 +1925,41 @@ function startGardenDecorateMode() {
   const foundItems = (state.foundItems || []).filter((item) => foundItemCatalog[item.itemKey]);
   if (!foundItems.length || gardenDecorateSaving) return;
 
-  // 꾸미기 버튼을 누르는 것만으로는 현재 화면의 장식 위치를 좌표로 바꾸지 않습니다.
-  // 기본 placement_slot 장식은 그대로 두고, 이미 저장된 사용자 배치만 초안에 넣습니다.
-  // 실제로 사용자가 집어 옮긴 장식만 드래그 시작 시점의 화면 위치를 좌표로 바꿉니다.
+  // 꾸미기를 시작하는 순간, 눈에 보이는 현재 위치를 공통 정원 세계의 초안 좌표로 잡습니다.
+  // 예전에 화면 전체 기준으로 저장된 위치도 이 단계에서는 화면에 보이는 자리 그대로
+  // 새 좌표 세계로 옮길 수 있고, 취소하면 DB에는 아무것도 저장하지 않습니다.
   gardenDecorateDraftPositions = new Map();
-  foundItems.forEach((item) => {
-    const saved = savedFoundItemPosition(item);
-    if (saved) gardenDecorateDraftPositions.set(item.id, saved);
-  });
-
   gardenDecorateMode = true;
   renderFoundItems();
-  showToast("작은 것을 꾹 눌러 원하는 자리에 옮겨보세요.");
+
+  foundItems.forEach((item) => {
+    const element = els.foundItemsLayer?.querySelector(`[data-found-item-id="${CSS.escape(String(item.id))}"]`);
+    const visiblePosition = gardenWorldPositionForFoundItemElement(element);
+    if (!visiblePosition) return;
+    gardenDecorateDraftPositions.set(item.id, visiblePosition);
+    applyFoundItemDraftPosition(element, visiblePosition);
+  });
+
+  showToast("작은 것을 잡아 원하는 자리에 옮겨보세요.");
+}
+
+function releaseFoundItemPointer(pointerId) {
+  if (!Number.isFinite(pointerId) || !els.foundItemsLayer) return;
+  try {
+    if (els.foundItemsLayer.hasPointerCapture?.(pointerId)) {
+      els.foundItemsLayer.releasePointerCapture(pointerId);
+    }
+  } catch (error) {
+    // 브라우저가 이미 포인터를 정리한 경우에는 조용히 넘어갑니다.
+  }
 }
 
 function cancelGardenDecorateMode() {
   if (gardenDecorateSaving) return;
+  if (activeFoundItemDrag) {
+    activeFoundItemDrag.element.classList.remove("is-moving");
+    releaseFoundItemPointer(activeFoundItemDrag.pointerId);
+  }
   activeFoundItemDrag = null;
   gardenDecorateMode = false;
   gardenDecorateDraftPositions = new Map();
@@ -1956,7 +1975,10 @@ function applyFoundItemDraftPosition(element, position) {
 }
 
 function beginFoundItemDrag(event) {
-  if (!gardenDecorateMode || gardenDecorateSaving || event.button > 0) return;
+  // 마우스는 왼쪽 버튼만, 터치는 pointerdown 한 번으로 바로 잡을 수 있게 합니다.
+  if (!gardenDecorateMode || gardenDecorateSaving) return;
+  if (event.pointerType === "mouse" && event.button !== 0) return;
+
   const element = event.target.closest(".found-item[data-found-item-id]");
   if (!element || !els.gardenWorld?.contains(element)) return;
 
@@ -1968,6 +1990,12 @@ function beginFoundItemDrag(event) {
   const itemId = element.dataset.foundItemId;
   if (!itemId) return;
 
+  // 이전 드래그가 남아 있으면 먼저 조용히 정리합니다.
+  if (activeFoundItemDrag) {
+    activeFoundItemDrag.element.classList.remove("is-moving");
+    releaseFoundItemPointer(activeFoundItemDrag.pointerId);
+  }
+
   const currentPosition = gardenWorldPositionForFoundItemElement(element);
   if (currentPosition) {
     gardenDecorateDraftPositions.set(itemId, currentPosition);
@@ -1978,7 +2006,6 @@ function beginFoundItemDrag(event) {
     pointerId: event.pointerId,
     itemId,
     element,
-    worldRect,
     itemWidth: itemRect.width,
     itemHeight: itemRect.height,
     pointerOffsetX: event.clientX - (itemRect.left + (itemRect.width / 2)),
@@ -1986,7 +2013,13 @@ function beginFoundItemDrag(event) {
   };
 
   element.classList.add("is-moving");
-  element.setPointerCapture?.(event.pointerId);
+  // 확대·축소되는 내부 정원에서도 포인터가 장식 밖으로 벗어나지 않도록
+  // 레이어가 포인터를 계속 붙잡고, 이동·종료는 window에서 추적합니다.
+  try {
+    els.foundItemsLayer?.setPointerCapture?.(event.pointerId);
+  } catch (error) {
+    // Pointer Capture를 지원하지 않는 브라우저도 window 이벤트로 계속 동작합니다.
+  }
 }
 
 function moveFoundItemDrag(event) {
@@ -1994,7 +2027,10 @@ function moveFoundItemDrag(event) {
   if (!drag || drag.pointerId !== event.pointerId) return;
   event.preventDefault();
 
-  const worldRect = drag.worldRect;
+  // 화면 회전·브라우저 UI 변화가 있어도 현재 내부 정원 실제 크기를 기준으로 계산합니다.
+  const worldRect = els.gardenWorld?.getBoundingClientRect();
+  if (!worldRect?.width || !worldRect?.height) return;
+
   const halfWidth = drag.itemWidth / 2;
   const centerX = clamp(
     event.clientX - worldRect.left - drag.pointerOffsetX,
@@ -2019,13 +2055,7 @@ function endFoundItemDrag(event) {
   const drag = activeFoundItemDrag;
   if (!drag || (event && drag.pointerId !== event.pointerId)) return;
   drag.element.classList.remove("is-moving");
-  if (event) {
-    try {
-      drag.element.releasePointerCapture?.(event.pointerId);
-    } catch (error) {
-      // 브라우저가 이미 포인터를 정리한 경우에는 조용히 넘어갑니다.
-    }
-  }
+  releaseFoundItemPointer(drag.pointerId);
   activeFoundItemDrag = null;
 }
 
@@ -3795,10 +3825,16 @@ function bindEvents() {
   els.openGardenDecorate.addEventListener("click", startGardenDecorateMode);
   els.cancelGardenDecorate.addEventListener("click", cancelGardenDecorateMode);
   els.saveGardenDecorate.addEventListener("click", () => { void saveGardenDecorateMode(); });
-  els.foundItemsLayer.addEventListener("pointerdown", beginFoundItemDrag);
-  els.foundItemsLayer.addEventListener("pointermove", moveFoundItemDrag);
-  els.foundItemsLayer.addEventListener("pointerup", endFoundItemDrag);
-  els.foundItemsLayer.addEventListener("pointercancel", endFoundItemDrag);
+  els.foundItemsLayer.addEventListener("pointerdown", beginFoundItemDrag, { passive: false });
+  // 드래그 시작 뒤에는 장식 밖으로 손가락·마우스가 벗어나도 끊기지 않도록
+  // window 캡처 단계에서 이동과 종료를 받습니다.
+  window.addEventListener("pointermove", moveFoundItemDrag, { capture: true, passive: false });
+  window.addEventListener("pointerup", endFoundItemDrag, { capture: true });
+  window.addEventListener("pointercancel", endFoundItemDrag, { capture: true });
+  window.addEventListener("blur", () => endFoundItemDrag());
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) endFoundItemDrag();
+  });
   els.signOutButton.addEventListener("click", signOut);
   els.treeNameForm.addEventListener("submit", saveTreeName);
   $("#openRecord").addEventListener("click", () => {
