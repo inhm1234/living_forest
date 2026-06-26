@@ -2371,11 +2371,20 @@ function renderLetterComposer() {
   }
 
   const submitButton = els.letterForm.querySelector('button[type="submit"]');
+  const isDevTestFriend = Boolean(chosenFriend?.isDevTest);
   els.letterComposerTitle.textContent = `${animal.name}에게 편지를 맡기기`;
-  els.letterCarrierPreview.innerHTML = `<span class="carrier-icon" aria-hidden="true">${animal.icon}</span><p>${animal.name}에게 맡기면 바로 숲길로 출발해요. 실제 배송시간은 ${animal.deliveryHours}시간이에요. DEV에서는 기존 1분 배송으로 흐름을 확인해요.</p>`;
+
+  if (isDevTestFriend) {
+    els.letterCarrierPreview.innerHTML = `<span class="carrier-icon" aria-hidden="true">${animal.icon}</span><p>${animal.name}에게 맡기면 바로 숲길로 출발해요. 테스트 새싹에게 보내는 편지는 DEV 확인용으로 1분 뒤 도착해요.</p>`;
+    submitButton.textContent = `${animal.icon} 테스트 배송 · 1분`;
+    els.letterComposerFootnote.textContent = "테스트 새싹에게만 적용되는 개발 확인용 배송이에요. 실제 친구에게 보내는 편지는 동물별 운영 시간으로 전해져요.";
+  } else {
+    els.letterCarrierPreview.innerHTML = `<span class="carrier-icon" aria-hidden="true">${animal.icon}</span><p>${animal.name}에게 맡기면 바로 숲길로 출발해요. 약 ${animal.deliveryHours}시간의 숲길을 따라 친구에게 전해져요.</p>`;
+    submitButton.textContent = `${animal.icon} ${animal.name}에게 맡기기 · 약 ${animal.deliveryHours}시간`;
+    els.letterComposerFootnote.textContent = "실제 친구에게 보내는 편지는 선택한 동물과 배송 시간이 함께 저장돼요.";
+  }
+
   submitButton.disabled = false;
-  submitButton.textContent = `${animal.icon} ${animal.name}에게 맡기기 · DEV 1분`;
-  els.letterComposerFootnote.textContent = "DEV 단계에서는 기존 1분 도착으로 화면 흐름을 확인해요. 동물별 실제 배송시간 저장은 다음 데이터 연결 단계에서 적용합니다.";
 }
 
 async function sendGardenLetter(event) {
