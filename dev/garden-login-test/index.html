@@ -26,6 +26,17 @@
         build: isDevPath ? "dev" : "operation",
       };
 
+      // Google Sheets 운영 통계도 DEV와 운영을 분리합니다.
+      // DEV에서는 ?sheetsDebug=1일 때 콘솔에만 보이고, 운영 루트에서만 실제 전송합니다.
+      window.TODAYFOREST_SHEETS = {
+        endpointUrl: "https://script.google.com/macros/s/AKfycbyeqnUwroduXytKBFMs9Tpl2gngoJ0f6JmF9oKbEA-QAoJY0aFJ-bvOUWS15SFeErgkiA/exec",
+        projectKey: "living_forest_v1",
+        enabled: !isDevPath,
+        debug: query.get("sheetsDebug") === "1",
+        environment: isDevPath ? "dev" : "production",
+        build: isDevPath ? "dev-v8" : "operation-v8",
+      };
+
       if (!window.TODAYFOREST_ANALYTICS.enabled) return;
 
       window.dataLayer = window.dataLayer || [];

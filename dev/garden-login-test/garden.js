@@ -54,6 +54,77 @@ function trackTodayForestEvent(eventName, params = {}) {
   }
 }
 
+// Sheets에는 개인을 식별할 수 있는 값(닉네임, 계정 ID, 편지 제목·본문)을 보내지 않습니다.
+// 새 운영 통계는 예전 events 시트와 분리된 todayforest_events 시트에만 기록합니다.
+const TODAYFOREST_SHEETS = window.TODAYFOREST_SHEETS || {
+  endpointUrl: "",
+  projectKey: "",
+  enabled: false,
+  debug: false,
+  environment: "dev",
+  build: "unknown",
+};
+
+const TODAYFOREST_SHEETS_EVENT_NAMES = new Set([
+  "garden_mood_saved",
+  "garden_letter_sent",
+  "garden_friend_connected",
+]);
+
+function sheetsSafeValue(value) {
+  if (value === null || value === undefined) return undefined;
+  if (typeof value === "number" && Number.isFinite(value)) return String(value).slice(0, 20);
+  if (typeof value === "boolean") return value ? "yes" : "no";
+  return String(value).slice(0, 40);
+}
+
+function trackTodayForestSheetsEvent(eventName, params = {}) {
+  try {
+    if (!TODAYFOREST_SHEETS_EVENT_NAMES.has(eventName)) return;
+
+    const payload = {
+      environment: TODAYFOREST_SHEETS.environment || "unknown",
+      build: TODAYFOREST_SHEETS.build || "unknown",
+      page_path: window.location.pathname || "/",
+    };
+
+    Object.entries(params).forEach(([key, value]) => {
+      const safeValue = sheetsSafeValue(value);
+      if (safeValue !== undefined) payload[key] = safeValue;
+    });
+
+    if (TODAYFOREST_SHEETS.debug) {
+      window.__todayForestSheetsEvents = window.__todayForestSheetsEvents || [];
+      window.__todayForestSheetsEvents.push({ eventName, payload, at: new Date().toISOString() });
+      console.info("[TodayForest Sheets]", eventName, payload);
+    }
+
+    if (!TODAYFOREST_SHEETS.enabled || !TODAYFOREST_SHEETS.endpointUrl || !TODAYFOREST_SHEETS.projectKey) {
+      return;
+    }
+
+    const url = new URL(TODAYFOREST_SHEETS.endpointUrl);
+    url.searchParams.set("action", "track_todayforest_event");
+    url.searchParams.set("key", TODAYFOREST_SHEETS.projectKey);
+    url.searchParams.set("event_name", eventName);
+    Object.entries(payload).forEach(([key, value]) => {
+      url.searchParams.set(key, value);
+    });
+
+    // 기존 운영판과 같은 이미지 비콘 방식: CORS 응답을 읽지 않고도 기록 요청만 보냅니다.
+    const beacon = new Image();
+    beacon.referrerPolicy = "no-referrer-when-downgrade";
+    beacon.src = url.toString();
+  } catch (error) {
+    console.warn("TodayForest Sheets tracking skipped:", error);
+  }
+}
+
+function trackTodayForestOperationalEvent(eventName, params = {}) {
+  trackTodayForestEvent(eventName, params);
+  trackTodayForestSheetsEvent(eventName, params);
+}
+
 const DEFAULT_STATE = {
   growth: 0,
   records: [],
@@ -2535,7 +2606,7 @@ async function sendGardenLetter(event) {
     const letter = normalizeRpcRow(result.data) || {};
     // 테스트 새싹은 실제 운영 분석에서 제외합니다.
     if (!isDevTestFriend) {
-      trackTodayForestEvent("garden_letter_sent", {
+      trackTodayForestOperationalEvent("garden_letter_sent", {
         delivery_kind: animal.kind,
         delivery_hours: animal.deliveryHours,
       });
@@ -3322,7 +3393,7 @@ async function saveRecord(event) {
     return;
   }
 
-  trackTodayForestEvent("garden_mood_saved", {
+  trackTodayForestOperationalEvent("garden_mood_saved", {
     mood: selectedMood,
     detail_added: detail ? "yes" : "no",
   });
@@ -3409,7 +3480,7 @@ async function acceptFriendInvite() {
   }
 
   const friend = normalizeRpcRow(data);
-  trackTodayForestEvent("garden_friend_connected", {
+  trackTodayForestOperationalEvent("garden_friend_connected", {
     connection_method: "invite_accept",
   });
   clearInviteFromUrl();
