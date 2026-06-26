@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#eef1ff" />
+  <meta name="color-scheme" content="light" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>오늘의숲 · 숲의 편지함 관리</title>
+  <link rel="icon" type="image/png" sizes="192x192" href="../assets/pwa/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/pwa/apple-touch-icon.png" />
+  <link rel="stylesheet" href="feedback-admin.css" />
+</head>
+<body>
+  <section class="auth-screen" id="authScreen" aria-label="운영자 로그인">
+    <div class="soft-glow glow-one" aria-hidden="true"></div>
+    <div class="soft-glow glow-two" aria-hidden="true"></div>
+    <div class="auth-card">
+      <p class="eyebrow">TODAYFOREST · OPERATOR</p>
+      <h1>숲의 편지함<br />관리</h1>
+      <p class="auth-copy">사용자가 남긴 말에 조용히 답장을 남겨요.<br />이 페이지는 운영자만 볼 수 있어요.</p>
+      <button id="signInKakao" class="kakao-login-button" type="button">
+        <span class="kakao-mark" aria-hidden="true">●</span>
+        카카오로 운영자 로그인
+      </button>
+      <p class="auth-note">오늘의숲에 사용하는 카카오 계정으로 로그인해 주세요.</p>
+      <p class="auth-error hidden" id="authError" role="alert"></p>
+    </div>
+  </section>
+
+  <section class="access-screen hidden" id="accessDenied" aria-labelledby="accessDeniedTitle">
+    <div class="auth-card denied-card">
+      <p class="eyebrow">PRIVATE FOREST</p>
+      <h1 id="accessDeniedTitle">운영자 전용<br />편지함이에요</h1>
+      <p class="auth-copy">이 페이지의 문의 내용과 답장은<br />등록된 운영자 계정에서만 볼 수 있어요.</p>
+      <button class="quiet-button" id="signOutDenied" type="button">다른 계정으로 로그인</button>
+    </div>
+  </section>
+
+  <main class="admin-app hidden" id="adminApp" aria-label="오늘의숲 운영자 문의함">
+    <header class="admin-header">
+      <div>
+        <p class="eyebrow">TODAYFOREST · PRIVATE INBOX</p>
+        <h1>숲의 편지함</h1>
+        <p class="header-copy">남겨진 말에 답장을 보내면, 사용자의 <b>내가 남긴 말</b>에 조용히 도착해요.</p>
+      </div>
+      <div class="header-actions">
+        <span class="operator-pill" id="operatorName">운영자</span>
+        <button class="signout-button" id="signOutButton" type="button">로그아웃</button>
+      </div>
+    </header>
+
+    <section class="inbox-summary" aria-label="문의 요약">
+      <article class="summary-card summary-new">
+        <span>새 문의</span>
+        <strong id="newCount">0</strong>
+      </article>
+      <article class="summary-card">
+        <span>읽음</span>
+        <strong id="readCount">0</strong>
+      </article>
+      <article class="summary-card">
+        <span>답장 완료</span>
+        <strong id="repliedCount">0</strong>
+      </article>
+    </section>
+
+    <section class="inbox-panel" aria-label="사용자 문의 관리">
+      <aside class="inbox-list-pane">
+        <div class="inbox-list-head">
+          <div>
+            <p class="section-kicker">INBOX</p>
+            <h2>도착한 말</h2>
+          </div>
+          <button class="refresh-button" id="refreshButton" type="button" aria-label="문의 새로고침">↻</button>
+        </div>
+
+        <div class="filter-row">
+          <label>
+            <span>상태</span>
+            <select id="statusFilter">
+              <option value="all">전체</option>
+              <option value="new">새 문의</option>
+              <option value="read">읽음</option>
+              <option value="replied">답장 완료</option>
+            </select>
+          </label>
+          <label>
+            <span>분류</span>
+            <select id="categoryFilter">
+              <option value="all">전체</option>
+              <option value="issue">불편한 점</option>
+              <option value="idea">바라는 점</option>
+              <option value="cheer">응원 한마디</option>
+            </select>
+          </label>
+        </div>
+
+        <p class="inbox-loading" id="inboxLoading">문의함을 불러오고 있어요.</p>
+        <div class="feedback-list" id="feedbackList" aria-live="polite"></div>
+      </aside>
+
+      <section class="feedback-detail" id="feedbackDetail" aria-labelledby="feedbackDetailTitle">
+        <div class="detail-empty" id="detailEmpty">
+          <span aria-hidden="true">✉</span>
+          <h2>도착한 말을 골라 주세요</h2>
+          <p>왼쪽에서 한 통을 열면 내용과 답장칸이 보여요.</p>
+        </div>
+
+        <div class="detail-content hidden" id="detailContent">
+          <div class="detail-topline">
+            <span class="status-chip" id="detailStatus">새 문의</span>
+            <time id="detailDate"></time>
+          </div>
+          <h2 id="feedbackDetailTitle">사용자가 남긴 말</h2>
+          <p class="detail-from" id="detailFrom"></p>
+          <article class="message-card">
+            <p id="detailMessage"></p>
+          </article>
+
+          <div class="detail-actions">
+            <button class="mark-read-button hidden" id="markReadButton" type="button">읽음으로 표시</button>
+          </div>
+
+          <form class="reply-form" id="replyForm">
+            <label for="replyMessage">숲에서 보낼 답장</label>
+            <textarea id="replyMessage" maxlength="1200" rows="7" placeholder="답장을 편하게 적어 주세요. 저장하면 사용자에게 바로 보입니다."></textarea>
+            <div class="reply-form-foot">
+              <p id="replyState">답장을 저장하면 사용자의 '내가 남긴 말'에 표시돼요.</p>
+              <div class="reply-form-actions">
+                <button class="edit-reply-button hidden" id="editReplyButton" type="button">수정</button>
+                <button class="save-reply-button" id="saveReplyButton" type="submit">답장 보내기</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="feedback-admin.js"></script>
+</body>
+</html>
