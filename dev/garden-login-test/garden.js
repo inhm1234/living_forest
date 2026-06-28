@@ -332,6 +332,7 @@ let deferredInstallPrompt = null;
 let installHelpVisible = false;
 let treeNamePromptedForUserId = "";
 let gardenWorldResizeObserver = null;
+let friendGardenWorldResizeObserver = null;
 
 // COORDINATE-WORLD-V1: 모든 기기에서 같은 정원 구도를 쓰는 내부 기준 크기입니다.
 const GARDEN_WORLD = Object.freeze({ width: 390, height: 540 });
@@ -429,6 +430,8 @@ const els = {
   enableDevFriendButton: $("#enableDevFriendButton"),
   friendVisit: $("#friendVisit"),
   friendVisitStage: $("#friendVisitStage"),
+  friendGardenWorld: $("#friendGardenWorld"),
+  friendFoundItemsLayer: $("#friendFoundItemsLayer"),
   friendVisitName: $("#friendVisitName"),
   friendVisitTree: $("#friendVisitTree"),
   friendVisitDayCount: $("#friendVisitDayCount"),
@@ -1960,6 +1963,30 @@ function setupGardenWorldSizing() {
   window.addEventListener("resize", syncGardenWorldScale, { passive: true });
 }
 
+// 친구 정원도 내 정원과 같은 390×540 기준을 사용해야, 친구가 꾸민 실제 위치가 기기마다 어긋나지 않습니다.
+function syncFriendGardenWorldScale() {
+  const stageRect = els.friendVisitStage?.getBoundingClientRect();
+  const world = els.friendGardenWorld;
+  if (!world || !stageRect?.width || !stageRect?.height) return;
+
+  const scale = Math.min(
+    stageRect.width / GARDEN_WORLD.width,
+    stageRect.height / GARDEN_WORLD.height
+  );
+  world.style.setProperty("--garden-world-scale", String(Number(scale.toFixed(5))));
+}
+
+function setupFriendGardenWorldSizing() {
+  if (!els.friendVisitStage || !els.friendGardenWorld) return;
+
+  if ("ResizeObserver" in window) {
+    friendGardenWorldResizeObserver?.disconnect();
+    friendGardenWorldResizeObserver = new ResizeObserver(() => syncFriendGardenWorldScale());
+    friendGardenWorldResizeObserver.observe(els.friendVisitStage);
+  }
+  window.addEventListener("resize", syncFriendGardenWorldScale, { passive: true });
+}
+
 function gardenWorldPositionForFoundItemElement(element) {
   const worldRect = els.gardenWorld?.getBoundingClientRect();
   const itemRect = element?.getBoundingClientRect();
@@ -3205,6 +3232,62 @@ function returnToFriendsFromSharedTree() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function friendFoundItemPositionStyle(item) {
+  const position = savedFoundItemPosition(item);
+  if (!position) return "";
+  return ` style="--found-item-x:${position.x}%; --found-item-y:${position.y}%;"`;
+}
+
+function normalizeFriendFoundItem(row) {
+  return {
+    id: row?.id || "",
+    itemKey: row?.item_key || "",
+    placementSlot: row?.placement_slot || "front_bed_left",
+    positionX: row?.position_x,
+    positionY: row?.position_y,
+  };
+}
+
+function renderFriendFoundItems(friendName, rows) {
+  if (!els.friendFoundItemsLayer) return 0;
+
+  const foundItems = (rows || [])
+    .map(normalizeFriendFoundItem)
+    .filter((item) => item.id && foundItemCatalog[item.itemKey]);
+
+  els.friendFoundItemsLayer.innerHTML = foundItems.map((item) => {
+    const catalogItem = foundItemCatalog[item.itemKey];
+    const position = savedFoundItemPosition(item);
+    const positionClass = position ? " has-custom-position" : "";
+    const itemName = `${friendName}가 찾은 ${catalogItem.name}`;
+    return `
+      <button class="friend-found-item found-item found-item-${escapeAttr(item.placementSlot)}${positionClass}" type="button" data-friend-found-item-key="${escapeAttr(item.itemKey)}" data-friend-found-item-name="${escapeAttr(friendName)}" aria-label="${escapeAttr(itemName)}" title="${escapeAttr(itemName)}"${friendFoundItemPositionStyle(item)}>
+        <img src="${escapeAttr(catalogItem.asset)}" alt="" draggable="false" />
+      </button>
+    `;
+  }).join("");
+
+  els.friendFoundItemsLayer.setAttribute(
+    "aria-label",
+    friendName
+      ? `${friendName}가 정원에 놓아둔 작은 것 ${foundItems.length}개`
+      : "친구가 정원에 놓아둔 작은 것"
+  );
+
+  return foundItems.length;
+}
+
+function handleFriendFoundItemClick(event) {
+  const button = event.target.closest("[data-friend-found-item-key]");
+  if (!button || !els.friendFoundItemsLayer?.contains(button)) return;
+
+  const catalogItem = foundItemCatalog[button.dataset.friendFoundItemKey];
+  if (!catalogItem) return;
+
+  const friendName = button.dataset.friendFoundItemName || "친구";
+  showToast(`${friendName}가 숲에서 찾은 ${catalogItem.name}이에요.`);
+}
+
 async function openFriendGarden(friendId) {
   const fallbackFriend = (state.friends || []).find((friend) => friend.id === friendId);
   if (!friendId || !fallbackFriend) {
@@ -3212,7 +3295,15 @@ async function openFriendGarden(friendId) {
     return;
   }
 
-  const { data, error } = await supabase.rpc("get_my_garden_friend_view", { p_friend_id: friendId });
+  // 이전에 방문한 친구의 장식이 잠깐 남아 보이지 않도록, 새 조회를 시작하기 전에 비웁니다.
+  renderFriendFoundItems("", []);
+
+  const [friendViewResult, friendItemsResult] = await Promise.all([
+    supabase.rpc("get_my_garden_friend_view", { p_friend_id: friendId }),
+    supabase.rpc("list_my_garden_friend_dev_found_items", { p_friend_id: friendId }),
+  ]);
+
+  const { data, error } = friendViewResult;
   if (error) {
     console.error("TodayForest friend garden load error:", error);
     showToast(databaseErrorMessage(error));
@@ -3229,6 +3320,14 @@ async function openFriendGarden(friendId) {
   const weather = weatherForGarden(friend.friend_id || friendId);
   const stage = stageForGrowth(growth);
   const name = friend.nickname || fallbackFriend.name || "친구";
+  const friendDecorationCount = friendItemsResult.error
+    ? 0
+    : renderFriendFoundItems(name, friendItemsResult.data || []);
+
+  if (friendItemsResult.error) {
+    // 친구 정원 본문은 계속 열되, DEV 읽기 RPC 연결 문제는 콘솔에서만 확인합니다.
+    console.warn("TodayForest friend decoration load skipped:", friendItemsResult.error);
+  }
 
   activeFriendGardenId = friend.friend_id || friendId;
   els.friendVisitName.textContent = `${name}의 정원`;
@@ -3238,12 +3337,15 @@ async function openFriendGarden(friendId) {
   els.friendVisitStageLabel.textContent = stage.label;
   els.friendVisitWeatherIcon.textContent = weather.icon;
   els.friendVisitWeatherText.textContent = weather.text;
-  els.friendVisitMessage.textContent = `${name}의 나무에도 ${weather.message}`;
+  els.friendVisitMessage.textContent = friendDecorationCount > 0
+    ? `${name}의 정원에는 숲에서 찾은 작은 것 ${friendDecorationCount}개가 놓여 있어요.`
+    : `${name}의 나무에도 ${weather.message}`;
   applyWeatherVisuals(els.friendVisitStage, els.friendVisitTreeWrap, els.friendVisitRainLayer, weather, `${friend.friend_id || friendId}:${seoulDateKey()}:friend-garden`);
 
   closeAllSheets();
   els.gardenApp.classList.add("hidden");
   els.friendVisit.classList.remove("hidden");
+  window.requestAnimationFrame(syncFriendGardenWorldScale);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -3253,6 +3355,7 @@ function returnToMyGarden() {
   els.friendVisitRainLayer.classList.remove("active");
   els.friendVisitTreeWrap.classList.remove("wind-active");
   els.friendVisitStage.classList.remove("weather-rain");
+  renderFriendFoundItems("", []);
   activeFriendGardenId = "";
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -4032,6 +4135,7 @@ function bindEvents() {
   els.letterModal.addEventListener("click", (event) => { if (event.target === els.letterModal) closeLetterModal(); });
   els.returnToMyGarden.addEventListener("click", returnToMyGarden);
   els.returnToMyGardenTop.addEventListener("click", returnToMyGarden);
+  els.friendFoundItemsLayer?.addEventListener("click", handleFriendFoundItemClick);
   els.createInviteButton.addEventListener("click", createFriendInvite);
   els.copyInviteLink.addEventListener("click", copyFriendInviteLink);
   els.enableDevFriendButton.addEventListener("click", enableDevTestFriend);
@@ -4086,6 +4190,7 @@ async function init() {
   });
   bindEvents();
   setupGardenWorldSizing();
+  setupFriendGardenWorldSizing();
   renderFeedbackCategorySelection();
   await handleOAuthCallback();
   await syncSession();

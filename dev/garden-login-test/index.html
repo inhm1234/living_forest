@@ -234,8 +234,22 @@
       <div class="cloud cloud-one"></div>
       <div class="cloud cloud-two"></div>
       <div class="rain-layer" id="friendVisitRainLayer" aria-hidden="true"></div>
-      <div class="sparkle-layer" aria-hidden="true">
-        <i></i><i></i><i></i><i></i><i></i>
+
+      <!-- FRIEND-DECORATIONS-V1: 친구가 저장한 공통 정원 좌표를 같은 390×540 세계에서 읽습니다. -->
+      <div class="friend-garden-world-viewport" aria-hidden="false">
+        <div class="garden-world friend-garden-world" id="friendGardenWorld">
+          <div class="sparkle-layer" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i>
+          </div>
+
+          <div class="tree-wrap friend-visit-tree-wrap" id="friendVisitTreeWrap">
+            <div class="tree-aura" aria-hidden="true"></div>
+            <img id="friendVisitTree" class="tree-image" src="../../assets/garden/tree_growth/tree_stage1_morning.png" alt="친구의 마음 나무" />
+          </div>
+
+          <div class="found-items-layer friend-found-items-layer" id="friendFoundItemsLayer" aria-live="polite" aria-label="친구가 정원에 놓아둔 작은 것"></div>
+          <div class="ground-shadow" aria-hidden="true"></div>
+        </div>
       </div>
 
       <div class="stage-topline">
@@ -249,12 +263,6 @@
         <span id="friendVisitWeatherText">바람이 가볍게 불어요</span>
       </div>
 
-      <div class="tree-wrap friend-visit-tree-wrap" id="friendVisitTreeWrap">
-        <div class="tree-aura" aria-hidden="true"></div>
-        <img id="friendVisitTree" class="tree-image" src="../../assets/garden/tree_growth/tree_stage1_morning.png" alt="친구의 마음 나무" />
-      </div>
-
-      <div class="ground-shadow" aria-hidden="true"></div>
       <p class="stage-message" id="friendVisitMessage">친구의 나무가 오늘도 조용히 자라고 있어요.</p>
     </section>
 

@@ -1714,3 +1714,53 @@ textarea::placeholder { color: #a7b4bd; }
 .support-privacy-link span { font-size: 16px; line-height: 1; }
 .support-privacy-link:hover, .support-privacy-link:focus-visible { border-color: rgba(115, 164, 188, .45); background: #f1f8ff; }
 .support-footnote { margin-bottom: 3px; text-align: center; }
+
+/* FRIEND-DECORATIONS-V1
+   친구 정원도 내 정원과 같은 390×540 공통 좌표 세계를 사용합니다.
+   그래서 모바일/PC 어느 쪽에서 봐도 친구가 배치한 장식과 나무의 관계가 유지됩니다. */
+.friend-garden-world-viewport {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.friend-garden-world {
+  pointer-events: none;
+}
+.friend-garden-world .friend-visit-tree-wrap {
+  bottom: 66px;
+  width: 360px;
+}
+.friend-garden-world .friend-found-items-layer {
+  z-index: 3;
+  pointer-events: auto;
+}
+.friend-found-item {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+.friend-found-item img {
+  transition: transform .18s ease, filter .18s ease;
+}
+.friend-found-item:hover img,
+.friend-found-item:focus-visible img {
+  transform: translateY(-2px) scale(1.035);
+  filter: brightness(1.04);
+}
+.friend-found-item:focus-visible {
+  outline: 2px solid rgba(255,255,255,.96);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgba(114,168,129,.44);
+}
+.friend-visit-stage .friend-found-items-layer .found-item {
+  animation-delay: calc(var(--friend-decoration-order, 0) * 55ms);
+}
+
