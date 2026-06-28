@@ -924,22 +924,22 @@ function configureRetentionWindPolling() {
 }
 
 async function loadFoundGardenItems() {
-  // position_x / position_y SQL이 아직 적용되지 않은 개발 배포 순간에도
-  // 기존 장식 발견·표시 기능이 사라지지 않도록, 이전 열만 읽는 안전한 대체 경로를 둡니다.
+  // DEV 전용 장식 테이블을 읽습니다. position_x / position_y가 없는 배포 순간에도
+  // 기존 장식 표시가 사라지지 않도록 이전 열만 읽는 안전한 대체 경로를 둡니다.
   const positionedResult = await supabase
-    .from("garden_found_items")
+    .from("garden_dev_found_items")
     .select("id, record_id, item_key, placement_slot, position_x, position_y, found_at, created_at")
     .order("created_at", { ascending: true });
 
   if (!positionedResult.error) return positionedResult;
 
   const legacyResult = await supabase
-    .from("garden_found_items")
+    .from("garden_dev_found_items")
     .select("id, record_id, item_key, placement_slot, found_at, created_at")
     .order("created_at", { ascending: true });
 
   if (!legacyResult.error) {
-    console.warn("TodayForest found-item position columns are not ready yet:", positionedResult.error);
+    console.warn("TodayForest DEV found-item position columns are not ready yet:", positionedResult.error);
     return legacyResult;
   }
 
@@ -2205,7 +2205,7 @@ async function saveGardenDecorateMode() {
   }
   renderGardenDecorateControls((state.foundItems || []).filter((item) => foundItemCatalog[item.itemKey]));
 
-  const { error } = await supabase.rpc("save_my_garden_found_item_positions", { p_positions: positions });
+  const { error } = await supabase.rpc("save_my_garden_dev_found_item_positions", { p_positions: positions });
 
   gardenDecorateSaving = false;
   if (els.saveGardenDecorate) {
@@ -2216,7 +2216,7 @@ async function saveGardenDecorateMode() {
   if (error) {
     renderGardenDecorateControls((state.foundItems || []).filter((item) => foundItemCatalog[item.itemKey]));
     showToast("배치를 저장하지 못했어요. 잠시 뒤 다시 해주세요.");
-    console.warn("TodayForest found-item layout save failed:", error);
+    console.warn("TodayForest DEV found-item layout save failed:", error);
     return;
   }
 
@@ -2241,7 +2241,7 @@ async function claimFoundItem() {
   if (!record || foundItemForRecord(record.id)) return;
 
   els.foundItemSparkle.disabled = true;
-  const { data, error } = await supabase.rpc("claim_garden_found_item", { p_record_id: record.id });
+  const { data, error } = await supabase.rpc("claim_garden_dev_found_item", { p_record_id: record.id });
   els.foundItemSparkle.disabled = false;
 
   if (error) {
