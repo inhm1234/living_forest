@@ -146,6 +146,8 @@ const weatherOptions = [
   { icon: "🌧️", text: "조용히 비가 내려요", className: "rain", message: "구름 아래로 빗방울이 조용히 정원에 내려앉아요." },
 ];
 
+// 장식은 하루 기록마다 하나씩 발견합니다. 같은 종류가 다시 찾아와도
+// 각 발견 기록의 id가 달라서 따로 표시·이동·저장됩니다.
 const foundItemCatalog = {
   pink_wildflower: {
     name: "분홍 들꽃",
@@ -167,8 +169,47 @@ const foundItemCatalog = {
     detail: "이끼 낀 둥근 돌이 숲길 곁에 놓였어요.",
     asset: "../../assets/decorations/mossy-round-rock.png",
   },
+  amber_mushroom: {
+    name: "주황 버섯",
+    detail: "햇살빛 주황 버섯이 풀숲에서 고개를 내밀었어요.",
+    asset: "../../assets/decorations/amber-mushroom.png",
+  },
+  leafy_pile: {
+    name: "낙엽 더미",
+    detail: "바람이 모아둔 낙엽이 포근하게 쌓였어요.",
+    asset: "../../assets/decorations/leafy-pile.png",
+  },
+  tiny_hedgehog: {
+    name: "작은 고슴도치",
+    detail: "작은 고슴도치가 잠시 정원 가장자리에 쉬어가요.",
+    asset: "../../assets/decorations/tiny-hedgehog.png",
+  },
+  tiny_squirrel: {
+    name: "작은 다람쥐",
+    detail: "작은 다람쥐가 도토리를 꼭 안고 앉았어요.",
+    asset: "../../assets/decorations/tiny-squirrel.png",
+  },
+  branch_letter: {
+    name: "낮은 가지의 봉투",
+    detail: "낮은 가지에 작은 봉투 하나가 살며시 걸렸어요.",
+    asset: "../../assets/decorations/branch-letter.png",
+  },
+  forest_ribbon: {
+    name: "숲 리본",
+    detail: "바람에 살랑이는 리본이 정원을 꾸며줘요.",
+    asset: "../../assets/decorations/forest-ribbon.png",
+  },
+  firefly_jar: {
+    name: "반딧불 병",
+    detail: "작은 빛들이 유리병 안에서 조용히 반짝여요.",
+    asset: "../../assets/decorations/firefly-jar.png",
+  },
+  little_sign: {
+    name: "작은 표지판",
+    detail: "숲길을 가리키는 작은 표지판이 세워졌어요.",
+    asset: "../../assets/decorations/little-sign.png",
+  },
 };
-const foundItemKeys = Object.keys(foundItemCatalog);
 
 const animalVisitors = {
   bird: {
@@ -1882,11 +1923,9 @@ function foundItemForRecord(recordId) {
 
 function canDiscoverFoundItem() {
   const todayRecord = todayGardenRecord();
-  return Boolean(
-    todayRecord
-    && !foundItemForRecord(todayRecord.id)
-    && (state.foundItems || []).length < foundItemKeys.length
-  );
+  // 장식 수나 이미 가진 종류가 아니라, 오늘 기록에 아직 장식이 연결되지 않았는지만 봅니다.
+  // 하루 1개 제한은 Supabase의 record_id UNIQUE 제약이 계속 지킵니다.
+  return Boolean(todayRecord && !foundItemForRecord(todayRecord.id));
 }
 
 function clamp(value, min, max) {
@@ -2212,9 +2251,9 @@ async function claimFoundItem() {
 
   const claimed = Array.isArray(data) ? data[0] : data;
   if (!claimed?.item_key || !foundItemCatalog[claimed.item_key]) {
-    // 초기 네 가지를 모두 찾은 뒤에는 반짝임을 더 띄우지 않습니다.
+    // SQL 반영 전이거나 서버가 오늘의 장식을 고르지 못한 경우입니다.
     renderFoundItems();
-    showToast("오늘은 숲이 조용히 쉬고 있어요.");
+    showToast("오늘의 작은 것을 아직 찾지 못했어요. 잠시 뒤 다시 해주세요.");
     return;
   }
 

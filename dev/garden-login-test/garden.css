@@ -353,10 +353,19 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
   -webkit-user-drag: none;
 }
 .found-item img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
+/* 기본 자리는 숲이 정해 주고, 꾸미기에서 모두 공통 좌표로 옮길 수 있습니다. */
 .found-item-tree_base_left { left: 39%; bottom: 37%; width: 68px; }
 .found-item-tree_base_right { left: 61%; bottom: 37%; width: 68px; }
 .found-item-front_bed_left { left: 28%; bottom: 35%; width: 66px; }
 .found-item-front_bed_right { left: 74%; bottom: 34%; width: 70px; }
+.found-item-meadow_left { left: 18%; bottom: 25%; width: 68px; }
+.found-item-meadow_right { left: 83%; bottom: 25%; width: 68px; }
+.found-item-path_left { left: 32%; bottom: 17%; width: 66px; }
+.found-item-path_right { left: 69%; bottom: 16%; width: 66px; }
+.found-item-low_branch_left { left: 31%; bottom: 51%; width: 56px; }
+.found-item-low_branch_right { left: 70%; bottom: 50%; width: 56px; }
+.found-item-back_garden_left { left: 21%; bottom: 48%; width: 60px; }
+.found-item-back_garden_right { left: 80%; bottom: 47%; width: 60px; }
 .found-item.has-custom-position { left: var(--found-item-x); top: var(--found-item-y); bottom: auto; }
 .garden-stage.is-garden-decorating .found-item { cursor: grab; animation: none; filter: drop-shadow(0 7px 9px rgba(72, 112, 79, .16)); }
 .garden-stage.is-garden-decorating .found-item::after { content: ""; position: absolute; inset: -7px; border: 1.5px dashed rgba(119, 167, 116, .72); border-radius: 15px; background: rgba(255,255,255,.14); box-shadow: 0 0 0 3px rgba(255,255,255,.22); pointer-events: none; }
