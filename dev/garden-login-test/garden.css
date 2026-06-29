@@ -2140,62 +2140,148 @@ textarea::placeholder { color: #a7b4bd; }
 
 
 
-/* FIRST-WALK TUTORIAL v1
-   첫날에는 기능을 설명하지 않고 "마음 남기기 → 숲의 작은 발견"만 경험하게 합니다.
-   카드 자체는 클릭을 막지 않아 사용자가 바로 실제 버튼을 누를 수 있습니다. */
-.garden-tutorial-note {
-  position: absolute;
-  z-index: 22;
-  top: 92px;
-  left: 18px;
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  width: min(188px, calc(100% - 210px));
-  padding: 10px 11px;
-  border: 1px solid rgba(255,255,255,.88);
-  border-radius: 17px;
-  background: rgba(255,255,255,.88);
-  color: #5d7384;
-  box-shadow: 0 12px 24px rgba(79,104,124,.13);
-  backdrop-filter: blur(10px);
+/* FIRST-WALK TUTORIAL v2
+   첫날에는 설명문을 넘기지 않고, 숲빛을 따라 “나무 → 마음 남기기 → 작은 발견”을 직접 경험합니다. */
+.first-walk-tutorial {
+  position: fixed;
+  z-index: 45;
+  inset: 0;
   pointer-events: none;
-  animation: firstWalkNoteIn .42s ease both;
+  --first-walk-guide-x: 50vw;
+  --first-walk-guide-y: 45vh;
+  --first-walk-card-bottom: max(22px, env(safe-area-inset-bottom));
 }
-.garden-tutorial-note.hidden { display: none; }
-.garden-tutorial-note p { margin: 0; font-size: 11px; font-weight: 850; line-height: 1.5; }
-.garden-tutorial-sparkle { flex: 0 0 auto; color: #e6bd67; font-size: 16px; line-height: 1.1; text-shadow: 0 0 12px rgba(242,210,122,.58); }
-.garden-tutorial-note[data-phase="record"] { border-color: rgba(179,222,191,.96); background: rgba(247,255,248,.92); }
-.garden-tutorial-note[data-phase="discovery"] { border-color: rgba(248,222,165,.94); background: rgba(255,252,241,.92); }
-
-.nav-action.is-tutorial-focus {
-  position: relative;
-  z-index: 2;
-  animation: firstWalkButtonBreathe 1.45s ease-in-out infinite;
+.first-walk-tutorial.hidden { display: none; }
+.first-walk-tutorial-scrim {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: rgba(48, 64, 79, .34);
+  backdrop-filter: blur(2.5px) saturate(.88);
+  cursor: pointer;
+  pointer-events: auto;
 }
-.nav-action.is-tutorial-focus::after {
+.first-walk-tutorial::before {
+  content: "";
+  position: fixed;
+  z-index: 1;
+  left: var(--first-walk-guide-x);
+  top: var(--first-walk-guide-y);
+  width: min(320px, 62vw);
+  height: min(320px, 62vw);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,217,.42) 0 12%, rgba(255,250,196,.20) 30%, rgba(255,245,194,.06) 52%, transparent 70%);
+  filter: blur(2px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: left .76s cubic-bezier(.22,.8,.3,1), top .76s cubic-bezier(.22,.8,.3,1), opacity .25s ease;
+}
+.first-walk-guide-light {
+  position: fixed;
+  z-index: 3;
+  left: var(--first-walk-guide-x);
+  top: var(--first-walk-guide-y);
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  color: #fff7b1;
+  filter: drop-shadow(0 0 12px rgba(255,233,134,.9));
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: left .76s cubic-bezier(.22,.8,.3,1), top .76s cubic-bezier(.22,.8,.3,1), opacity .25s ease;
+}
+.first-walk-guide-light.is-instant { transition: none !important; }
+.first-walk-guide-light::before,
+.first-walk-guide-light::after,
+.first-walk-guide-light i {
   content: "";
   position: absolute;
-  inset: -5px;
-  border: 2px solid rgba(255,245,187,.96);
-  border-radius: 24px;
-  box-shadow: 0 0 0 5px rgba(119,190,139,.18);
-  pointer-events: none;
+  display: block;
+  border-radius: 50%;
+  background: rgba(255,253,212,.95);
 }
-.found-item-sparkle.is-tutorial-focus { animation: foundItemSparkle 2.1s ease-in-out infinite, firstWalkSparkleBreathe 1.35s ease-in-out infinite; }
+.first-walk-guide-light::before { width: 20px; height: 20px; box-shadow: 0 0 20px rgba(255,241,152,.95), 0 0 42px rgba(255,236,145,.62); animation: firstWalkGlow 1.8s ease-in-out infinite; }
+.first-walk-guide-light::after { width: 38px; height: 38px; border: 1px solid rgba(255,248,183,.64); background: transparent; animation: firstWalkRing 1.8s ease-out infinite; }
+.first-walk-guide-light i:nth-of-type(1) { width: 5px; height: 5px; left: 2px; top: 8px; animation: firstWalkSpark 1.4s ease-in-out infinite; }
+.first-walk-guide-light i:nth-of-type(2) { width: 4px; height: 4px; right: 3px; bottom: 8px; animation: firstWalkSpark 1.4s ease-in-out .45s infinite; }
+.first-walk-guide-light span { position: relative; z-index: 1; font-size: 23px; line-height: 1; text-shadow: 0 0 16px rgba(255,247,165,.95); animation: firstWalkStarFloat 1.8s ease-in-out infinite; }
+
+.first-walk-tutorial-card {
+  position: fixed;
+  z-index: 4;
+  left: 50%;
+  bottom: var(--first-walk-card-bottom);
+  width: min(calc(100vw - 34px), 410px);
+  padding: 15px 16px 13px;
+  border: 1px solid rgba(255,255,255,.88);
+  border-radius: 24px;
+  background: linear-gradient(140deg, rgba(255,255,252,.97), rgba(241,250,243,.96));
+  color: #58706c;
+  box-shadow: 0 18px 38px rgba(40,63,63,.24), inset 0 1px 0 rgba(255,255,255,.92);
+  transform: translateX(-50%);
+  pointer-events: none;
+  animation: firstWalkCardIn .36s ease both;
+}
+.first-walk-card-topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #8e9e90; font-size: 10px; font-weight: 950; letter-spacing: .02em; }
+.first-walk-card-topline span:last-child { color: #76a889; }
+.first-walk-progress { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin: 9px 0 11px; }
+.first-walk-progress i { height: 4px; border-radius: 99px; background: #e3ebe5; }
+.first-walk-tutorial[data-phase="intro"] .first-walk-progress i:nth-child(1),
+.first-walk-tutorial[data-phase="record"] .first-walk-progress i:nth-child(-n + 2),
+.first-walk-tutorial[data-phase="discovery"] .first-walk-progress i,
+.first-walk-tutorial[data-phase="complete"] .first-walk-progress i { background: linear-gradient(90deg, #93cda4, #d7e993); box-shadow: 0 2px 8px rgba(120,183,133,.25); }
+.first-walk-tutorial-card h2 { margin: 0; color: #426353; font-size: clamp(18px, 4.6vw, 21px); letter-spacing: -.055em; line-height: 1.25; }
+.first-walk-tutorial-card p { margin: 7px 0 0; color: #687e76; font-size: 13px; font-weight: 750; line-height: 1.55; }
+.first-walk-tutorial-card small { display: block; margin-top: 10px; color: #8ca294; font-size: 11px; font-weight: 900; line-height: 1.35; }
+.first-walk-tutorial[data-phase="record"] .first-walk-tutorial-card { background: linear-gradient(140deg, rgba(250,255,248,.98), rgba(237,249,241,.97)); }
+.first-walk-tutorial[data-phase="discovery"] .first-walk-tutorial-card { background: linear-gradient(140deg, rgba(255,253,244,.98), rgba(246,252,238,.97)); }
+.first-walk-tutorial[data-phase="discovery"] .first-walk-tutorial-scrim { background: rgba(48,64,79,.20); pointer-events: none; }
+.first-walk-tutorial[data-phase="discovery"]::before { width: 220px; height: 220px; }
+.first-walk-tutorial[data-phase="complete"] { pointer-events: none; }
+.first-walk-tutorial[data-phase="complete"] .first-walk-tutorial-scrim { background: rgba(48,64,79,.12); pointer-events: none; }
+.first-walk-tutorial[data-phase="complete"]::before { opacity: .7; }
+.first-walk-tutorial[data-phase="complete"] .first-walk-guide-light { opacity: .62; }
+
+.garden-app.is-first-walk-guide #openRecord.is-tutorial-focus {
+  position: relative;
+  z-index: 46;
+  box-shadow: 0 0 0 4px rgba(255,255,255,.90), 0 0 0 10px rgba(166,222,173,.34), 0 17px 32px rgba(75,148,96,.32);
+  animation: firstWalkButtonBreathe 1.35s ease-in-out infinite;
+}
+.garden-app.is-first-walk-guide #openRecord.is-tutorial-focus::after {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border: 2px solid rgba(255,246,174,.98);
+  border-radius: 25px;
+  pointer-events: none;
+  animation: firstWalkFocusRing 1.35s ease-in-out infinite;
+}
+.found-item-sparkle.is-tutorial-focus {
+  animation: foundItemSparkle 2.1s ease-in-out infinite, firstWalkSparkleBreathe 1.25s ease-in-out infinite;
+}
 .found-item-sparkle.is-tutorial-focus::after {
   content: "";
   position: absolute;
-  inset: -9px;
-  border: 2px solid rgba(255,235,160,.9);
+  inset: -10px;
+  border: 2px solid rgba(255,235,160,.95);
   border-radius: 50%;
-  box-shadow: 0 0 0 7px rgba(255,231,157,.15);
+  box-shadow: 0 0 0 7px rgba(255,231,157,.16);
 }
+
 .record-tutorial-note {
+  display: grid;
+  gap: 5px;
   margin: -2px 0 16px;
-  padding: 10px 12px;
+  padding: 11px 12px;
   border: 1px solid rgba(194,224,201,.86);
-  border-radius: 15px;
+  border-radius: 16px;
   background: linear-gradient(135deg, rgba(239,250,240,.96), rgba(250,255,247,.96));
   color: #5d7b69;
   font-size: 12px;
@@ -2203,16 +2289,32 @@ textarea::placeholder { color: #a7b4bd; }
   line-height: 1.5;
 }
 .record-tutorial-note.hidden { display: none; }
+.record-tutorial-step { color: #78a587; font-size: 10px; font-weight: 950; letter-spacing: .015em; }
 
-@keyframes firstWalkNoteIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes firstWalkButtonBreathe { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-2px) scale(1.025); } }
-@keyframes firstWalkSparkleBreathe { 0%,100% { filter: drop-shadow(0 4px 9px rgba(232,191,91,.36)); } 50% { filter: drop-shadow(0 4px 14px rgba(246,203,86,.78)); } }
+@keyframes firstWalkCardIn { from { opacity: 0; transform: translateX(-50%) translateY(10px) scale(.985); } to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } }
+@keyframes firstWalkGlow { 0%,100% { transform: scale(.82); opacity: .72; } 50% { transform: scale(1.1); opacity: 1; } }
+@keyframes firstWalkRing { 0% { transform: scale(.55); opacity: .92; } 100% { transform: scale(1.28); opacity: 0; } }
+@keyframes firstWalkSpark { 0%,100% { transform: translateY(0) scale(.8); opacity: .4; } 50% { transform: translateY(-7px) scale(1); opacity: 1; } }
+@keyframes firstWalkStarFloat { 0%,100% { transform: translateY(1px) rotate(0deg); } 50% { transform: translateY(-3px) rotate(9deg); } }
+@keyframes firstWalkButtonBreathe { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-2px) scale(1.03); } }
+@keyframes firstWalkFocusRing { 0%,100% { opacity: .88; transform: scale(.98); } 50% { opacity: .35; transform: scale(1.06); } }
+@keyframes firstWalkSparkleBreathe { 0%,100% { filter: drop-shadow(0 4px 9px rgba(232,191,91,.36)); } 50% { filter: drop-shadow(0 4px 16px rgba(246,203,86,.92)); } }
 
 @media (max-width: 520px) {
-  .garden-tutorial-note { width: min(180px, calc(100% - 178px)); }
+  .first-walk-tutorial-card { width: min(calc(100vw - 26px), 410px); padding: 14px 14px 12px; border-radius: 22px; }
+  .first-walk-tutorial-card h2 { font-size: 18px; }
+  .first-walk-tutorial-card p { font-size: 12px; }
+  .first-walk-tutorial::before { width: min(260px, 72vw); height: min(260px, 72vw); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .garden-tutorial-note,
-  .nav-action.is-tutorial-focus,
-  .found-item-sparkle.is-tutorial-focus { animation: none; }
+  .first-walk-guide-light,
+  .first-walk-tutorial::before,
+  .first-walk-guide-light::before,
+  .first-walk-guide-light::after,
+  .first-walk-guide-light i,
+  .first-walk-guide-light span,
+  .first-walk-tutorial-card,
+  .garden-app.is-first-walk-guide #openRecord.is-tutorial-focus,
+  .garden-app.is-first-walk-guide #openRecord.is-tutorial-focus::after,
+  .found-item-sparkle.is-tutorial-focus { animation: none; transition: none; }
 }

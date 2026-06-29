@@ -337,11 +337,12 @@ let installHelpVisible = false;
 let treeNamePromptedForUserId = "";
 let gardenWorldResizeObserver = null;
 let friendGardenWorldResizeObserver = null;
-// 첫 방문 안내는 기록이 없는 계정에서만 자연스럽게 나타납니다.
-// 별도 DB 컬럼 없이도 첫 기록이 저장되는 순간 자동으로 끝나며, 중간에 나가면 다음 접속 때 다시 길을 보여줍니다.
-let gardenTutorialIntroShownForUserId = "";
+// FIRST-WALK TUTORIAL v2
+// 기록이 없는 계정에게만 “숲빛을 따라 첫 기록을 남기는” 짧은 산책을 보여줍니다.
+// DB 컬럼 없이도 첫 기록·첫 발견이 끝나면 자동으로 사라지고, 중간에 나가면 다음 접속에 다시 이어집니다.
 let gardenTutorialPhase = "";
 let gardenTutorialTimer = null;
+let firstWalkGuideLayoutTimer = null;
 
 // COORDINATE-WORLD-V1: 모든 기기에서 같은 정원 구도를 쓰는 내부 기준 크기입니다.
 const GARDEN_WORLD = Object.freeze({ width: 390, height: 540 });
@@ -402,8 +403,15 @@ const els = {
   saveGardenDecorate: $("#saveGardenDecorate"),
   navLetterBadge: $("#navLetterBadge"),
   stageMessage: $("#stageMessage"),
-  gardenTutorialNote: $("#gardenTutorialNote"),
-  gardenTutorialCopy: $("#gardenTutorialCopy"),
+  gardenApp: $("#gardenApp"),
+  firstWalkTutorial: $("#firstWalkTutorial"),
+  firstWalkTutorialTap: $("#firstWalkTutorialTap"),
+  firstWalkGuideLight: $("#firstWalkGuideLight"),
+  firstWalkTutorialLabel: $("#firstWalkTutorialLabel"),
+  firstWalkTutorialCount: $("#firstWalkTutorialCount"),
+  firstWalkTutorialTitle: $("#firstWalkTutorialTitle"),
+  firstWalkTutorialBody: $("#firstWalkTutorialBody"),
+  firstWalkTutorialHint: $("#firstWalkTutorialHint"),
   recordTutorialNote: $("#recordTutorialNote"),
   sheetOverlay: $("#sheetOverlay"),
   recordSheet: $("#recordSheet"),
@@ -2173,6 +2181,11 @@ function setupGardenWorldSizing() {
     gardenWorldResizeObserver.observe(els.gardenStage);
   }
   window.addEventListener("resize", syncGardenWorldScale, { passive: true });
+  window.addEventListener("resize", () => {
+    if (["intro", "record", "discovery", "complete"].includes(gardenTutorialPhase)) {
+      positionFirstWalkGuide(gardenTutorialPhase, { animate: false });
+    }
+  }, { passive: true });
 }
 
 // 친구 정원도 내 정원과 같은 390×540 기준을 사용해야, 친구가 꾸민 실제 위치가 기기마다 어긋나지 않습니다.
@@ -2496,6 +2509,7 @@ async function claimFoundItem() {
     return;
   }
 
+  const wasFirstWalkDiscovery = gardenTutorialPhase === "discovery" && firstDiscoveryGuideIsAvailable();
   const nextItem = {
     id: claimed.id,
     recordId: record.id,
@@ -2510,7 +2524,8 @@ async function claimFoundItem() {
   else state.foundItems.push(nextItem);
 
   renderFoundItems();
-  renderFirstWalkTutorial();
+  if (wasFirstWalkDiscovery) showFirstWalkCompletion();
+  else renderFirstWalkTutorial();
   const catalogItem = foundItemCatalog[nextItem.itemKey];
   showToast(`숲에서 작은 것을 찾았어요. ${catalogItem.detail}`);
 }
@@ -4174,31 +4189,152 @@ function anotherSheetIsOpen() {
 
 function clearGardenTutorialTimer() {
   if (gardenTutorialTimer) window.clearTimeout(gardenTutorialTimer);
+  if (firstWalkGuideLayoutTimer) window.clearTimeout(firstWalkGuideLayoutTimer);
   gardenTutorialTimer = null;
+  firstWalkGuideLayoutTimer = null;
 }
 
-function hideGardenTutorial() {
-  clearGardenTutorialTimer();
-  gardenTutorialPhase = "";
-  els.gardenTutorialNote?.classList.add("hidden");
-  els.gardenTutorialNote?.removeAttribute("data-phase");
-  if (els.gardenTutorialCopy) els.gardenTutorialCopy.textContent = "";
-  els.recordTutorialNote?.classList.add("hidden");
-  $("#openRecord")?.classList.remove("is-tutorial-focus");
-  els.foundItemSparkle?.classList.remove("is-tutorial-focus");
+const firstWalkScenes = Object.freeze({
+  intro: {
+    label: "첫날의 작은 산책",
+    count: "1 / 3",
+    title: "안녕, 이곳은 너의 작은 정원이야.",
+    body: "오늘의 마음이 머무는 만큼, 나무도 천천히 자라요.",
+    hint: "화면을 살짝 눌러 숲빛을 따라가요",
+  },
+  record: {
+    label: "첫날의 작은 산책",
+    count: "2 / 3",
+    title: "숲빛이 오늘의 마음으로 내려갔어.",
+    body: "지금 마음 하나만, 나무에 남겨볼래?",
+    hint: "아래의 ‘마음 남기기’를 눌러주세요",
+  },
+  discovery: {
+    label: "첫날의 작은 산책",
+    count: "3 / 3",
+    title: "오늘의 마음이 나무에 닿았어.",
+    body: "풀숲에 작은 빛이 보여. 눌러서 오늘의 작은 것을 찾아봐.",
+    hint: "반짝이는 별빛을 눌러주세요",
+  },
+  complete: {
+    label: "첫날의 작은 산책",
+    count: "완료",
+    title: "이제 이곳은 너의 정원이야.",
+    body: "오늘 찾은 작은 것이 숲에 남았어. 내일도 천천히 들러줘.",
+    hint: "",
+  },
+});
+
+function firstWalkTargetForPhase(phase) {
+  if (phase === "record") return $("#openRecord");
+  if (phase === "discovery") return els.foundItemSparkle;
+  return els.treeWrap;
 }
 
-function showGardenTutorialNote(phase, copy) {
-  if (!els.gardenTutorialNote || !els.gardenTutorialCopy) return;
-  gardenTutorialPhase = phase;
-  els.gardenTutorialCopy.textContent = copy;
-  els.gardenTutorialNote.dataset.phase = phase;
-  els.gardenTutorialNote.classList.remove("hidden");
+function setFirstWalkCardPosition(target, phase) {
+  if (!els.firstWalkTutorial) return;
+  if (phase !== "record" || !target?.getBoundingClientRect) {
+    els.firstWalkTutorial.style.removeProperty("--first-walk-card-bottom");
+    return;
+  }
+  const rect = target.getBoundingClientRect();
+  const desiredBottom = Math.max(22, window.innerHeight - rect.top + 16);
+  const maxBottom = Math.max(22, window.innerHeight - 170);
+  els.firstWalkTutorial.style.setProperty(
+    "--first-walk-card-bottom",
+    `${Math.round(Math.min(desiredBottom, maxBottom))}px`
+  );
+}
+
+function positionFirstWalkGuide(phase, { animate = true } = {}) {
+  const guide = els.firstWalkGuideLight;
+  const tutorial = els.firstWalkTutorial;
+  const target = firstWalkTargetForPhase(phase);
+  if (!guide || !tutorial || !target?.getBoundingClientRect) return;
+
+  const rect = target.getBoundingClientRect();
+  let x = rect.left + (rect.width / 2);
+  let y = rect.top + (rect.height / 2);
+
+  if (phase === "intro" || phase === "complete") {
+    y = rect.top + (rect.height * 0.38);
+  } else if (phase === "record") {
+    y = rect.top - 16;
+  }
+
+  if (!animate) guide.classList.add("is-instant");
+  tutorial.style.setProperty("--first-walk-guide-x", `${Math.round(x)}px`);
+  tutorial.style.setProperty("--first-walk-guide-y", `${Math.round(y)}px`);
+  setFirstWalkCardPosition(target, phase);
+  void guide.offsetWidth;
+  if (!animate) {
+    window.requestAnimationFrame(() => guide.classList.remove("is-instant"));
+  }
+}
+
+function updateFirstWalkSceneCopy(phase) {
+  const scene = firstWalkScenes[phase] || firstWalkScenes.intro;
+  if (els.firstWalkTutorialLabel) els.firstWalkTutorialLabel.textContent = scene.label;
+  if (els.firstWalkTutorialCount) els.firstWalkTutorialCount.textContent = scene.count;
+  if (els.firstWalkTutorialTitle) els.firstWalkTutorialTitle.textContent = scene.title;
+  if (els.firstWalkTutorialBody) els.firstWalkTutorialBody.textContent = scene.body;
+  if (els.firstWalkTutorialHint) els.firstWalkTutorialHint.textContent = scene.hint;
+}
+
+function setFirstWalkTargetFocus(phase) {
   $("#openRecord")?.classList.toggle("is-tutorial-focus", phase === "record");
   els.foundItemSparkle?.classList.toggle("is-tutorial-focus", phase === "discovery");
 }
 
+function hideGardenTutorial({ keepPhase = false } = {}) {
+  clearGardenTutorialTimer();
+  if (!keepPhase) gardenTutorialPhase = "";
+  els.firstWalkTutorial?.classList.add("hidden");
+  els.firstWalkTutorial?.removeAttribute("data-phase");
+  els.gardenApp?.classList.remove("is-first-walk-guide");
+  els.recordTutorialNote?.classList.add("hidden");
+  setFirstWalkTargetFocus("");
+}
+
+function showFirstWalkTutorialScene(phase, { animateGuide = true } = {}) {
+  if (!els.firstWalkTutorial) return;
+  gardenTutorialPhase = phase;
+  updateFirstWalkSceneCopy(phase);
+  els.firstWalkTutorial.dataset.phase = phase;
+  els.firstWalkTutorial.classList.remove("hidden");
+  els.gardenApp?.classList.toggle("is-first-walk-guide", phase !== "complete");
+  setFirstWalkTargetFocus(phase);
+  positionFirstWalkGuide(phase, { animate: animateGuide });
+}
+
+function beginFirstWalkRecordScene() {
+  if (gardenTutorialPhase !== "intro") return;
+  gardenTutorialPhase = "record";
+  updateFirstWalkSceneCopy("record");
+  els.firstWalkTutorial.dataset.phase = "record";
+  els.gardenApp?.classList.add("is-first-walk-guide");
+  setFirstWalkTargetFocus("record");
+
+  const recordButton = $("#openRecord");
+  const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  recordButton?.scrollIntoView?.({ block: "end", behavior: reducedMotion ? "auto" : "smooth" });
+
+  clearGardenTutorialTimer();
+  firstWalkGuideLayoutTimer = window.setTimeout(() => {
+    firstWalkGuideLayoutTimer = null;
+    positionFirstWalkGuide("record", { animate: true });
+  }, reducedMotion ? 0 : 360);
+}
+
+function showFirstWalkCompletion() {
+  clearGardenTutorialTimer();
+  showFirstWalkTutorialScene("complete", { animateGuide: false });
+  gardenTutorialTimer = window.setTimeout(() => hideGardenTutorial(), 2800);
+}
+
 function renderFirstWalkTutorial() {
+  if (gardenTutorialPhase === "complete" && gardenTutorialTimer) return;
+
   const shouldGuideFirstWalk = firstWalkGuideIsAvailable();
   const shouldGuideDiscovery = firstDiscoveryGuideIsAvailable();
   const preview = tutorialPreviewPhase();
@@ -4209,16 +4345,14 @@ function renderFirstWalkTutorial() {
   }
 
   if (anotherSheetIsOpen()) {
-    hideGardenTutorial();
+    hideGardenTutorial({ keepPhase: true });
     return;
   }
 
   if (shouldGuideFirstWalk && recordSheetIsOpen()) {
     clearGardenTutorialTimer();
     gardenTutorialPhase = "record-form";
-    els.gardenTutorialNote?.classList.add("hidden");
-    $("#openRecord")?.classList.remove("is-tutorial-focus");
-    els.foundItemSparkle?.classList.remove("is-tutorial-focus");
+    hideGardenTutorial({ keepPhase: true });
     els.recordTutorialNote?.classList.remove("hidden");
     return;
   }
@@ -4226,28 +4360,12 @@ function renderFirstWalkTutorial() {
   els.recordTutorialNote?.classList.add("hidden");
 
   if (shouldGuideDiscovery) {
-    clearGardenTutorialTimer();
-    showGardenTutorialNote("discovery", "풀숲에서 작은 것이 반짝여요. 빛을 눌러 찾아보세요.");
+    showFirstWalkTutorialScene("discovery", { animateGuide: gardenTutorialPhase !== "discovery" });
     return;
   }
 
-  const introStillPlaying = gardenTutorialPhase === "intro" && Boolean(gardenTutorialTimer);
-  const shouldStartIntro = preview === "intro" || gardenTutorialIntroShownForUserId !== currentUser?.id;
-
-  if (shouldStartIntro && !introStillPlaying) {
-    gardenTutorialIntroShownForUserId = currentUser?.id || "preview";
-    showGardenTutorialNote("intro", "여기는 오늘의 마음이 머무는 작은 정원이에요.");
-    clearGardenTutorialTimer();
-    gardenTutorialTimer = window.setTimeout(() => {
-      gardenTutorialTimer = null;
-      if (!firstWalkGuideIsAvailable() || recordSheetIsOpen() || anotherSheetIsOpen()) return;
-      showGardenTutorialNote("record", "오늘의 마음 하나를 나무에 남겨볼까요?");
-    }, 2300);
-    return;
-  }
-
-  if (introStillPlaying) return;
-  showGardenTutorialNote("record", "오늘의 마음 하나를 나무에 남겨볼까요?");
+  const shouldResumeRecord = preview === "record" || gardenTutorialPhase === "record" || gardenTutorialPhase === "record-form";
+  showFirstWalkTutorialScene(shouldResumeRecord ? "record" : "intro", { animateGuide: false });
 }
 
 function renderAll() {
@@ -4456,6 +4574,9 @@ function bindEvents() {
   els.accountButton?.addEventListener("click", openAccountMenu);
   els.openInstallFromAccount?.addEventListener("click", () => { void requestAppInstallFromAccountMenu(); });
   els.treeNameForm.addEventListener("submit", saveTreeName);
+  els.firstWalkTutorialTap?.addEventListener("click", () => {
+    if (gardenTutorialPhase === "intro") beginFirstWalkRecordScene();
+  });
   $("#openRecord").addEventListener("click", () => {
     if (hasSavedToday()) {
       showToast("오늘의 마음은 이미 나무에 남겼어요. 내일 다시 와요.");
