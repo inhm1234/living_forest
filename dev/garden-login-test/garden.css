@@ -1990,7 +1990,78 @@ textarea::placeholder { color: #a7b4bd; }
 
 /* DEV 검수: 한 번만 정하는 내 나무 이름 */
 .tree-name-label { color: #577083; font-weight: 950; }
-.account-pill { cursor: default; }
+.account-pill {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.account-pill:hover,
+.account-pill:focus-visible {
+  border-color: rgba(105, 151, 125, .32);
+  background: rgba(255,255,255,.74);
+}
+.account-pill:focus-visible {
+  outline: 2px solid rgba(116, 178, 136, .52);
+  outline-offset: 3px;
+}
+.account-menu-sheet { max-width: 560px; }
+.account-menu-summary {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 18px 0 12px;
+  padding: 13px;
+  border: 1px solid rgba(139, 190, 158, .18);
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f2faf1, #fbf8ff);
+}
+.account-menu-summary-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 37px;
+  height: 37px;
+  border-radius: 13px;
+  background: rgba(255,255,255,.78);
+  font-size: 18px;
+}
+.account-menu-summary b { display: block; color: #526d62; font-size: 13px; font-weight: 950; }
+.account-menu-summary p { margin: 4px 0 0; color: #748a7d; font-size: 11px; font-weight: 750; line-height: 1.5; }
+.account-menu-list { display: grid; gap: 9px; }
+.account-menu-action {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 11px;
+  padding: 13px;
+  border: 1px solid rgba(133, 173, 195, .22);
+  border-radius: 18px;
+  background: #f7fbff;
+  color: #617d92;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.account-menu-action:hover,
+.account-menu-action:focus-visible {
+  border-color: rgba(115, 164, 188, .45);
+  background: #f1f8ff;
+}
+.account-menu-action:focus-visible { outline: 2px solid rgba(115, 164, 188, .5); outline-offset: 3px; }
+.account-menu-action-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 13px;
+  background: rgba(255,255,255,.82);
+  font-size: 17px;
+}
+.account-menu-action-copy { min-width: 0; flex: 1; }
+.account-menu-action-copy b { display: block; color: #5c7890; font-size: 13px; font-weight: 950; }
+.account-menu-action-copy small { display: block; margin-top: 4px; color: #8297a7; font-size: 11px; font-weight: 750; line-height: 1.42; }
+.account-menu-action-arrow { color: #85a1b2; font-size: 25px; font-weight: 400; line-height: 1; }
+.account-menu-footnote { margin-top: 13px; }
 .tree-name-sheet-head { padding-right: 0; }
 .tree-name-lock-note { color: #798c97; }
 .tree-name-lock-note b { color: #5f7a6c; }

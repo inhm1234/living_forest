@@ -499,6 +499,10 @@ const els = {
   signOutButton: $("#signOutButton"),
   accountButton: $("#accountButton"),
   accountName: $("#accountName"),
+  accountMenuSheet: $("#accountMenuSheet"),
+  accountMenuName: $("#accountMenuName"),
+  openInstallFromAccount: $("#openInstallFromAccount"),
+  accountInstallHint: $("#accountInstallHint"),
   openFriends: $("#openFriends"),
 };
 
@@ -584,10 +588,13 @@ function dismissInstallCardForAWhile() {
 }
 
 function showInstallHelp(message) {
-  if (!els.installHelp) return;
   installHelpVisible = true;
-  els.installHelp.textContent = message;
-  els.installHelp.classList.remove("hidden");
+  if (els.installHelp) {
+    els.installHelp.textContent = message;
+    els.installHelp.classList.remove("hidden");
+  }
+  // 자동 설치 카드가 숨겨진 상태에서도, 계정 메뉴에서 누른 안내는 보이도록 합니다.
+  showToast(message);
 }
 
 function showIosInstallHelp() {
@@ -615,6 +622,11 @@ function openChromeFromKakaoTalk() {
 }
 
 async function requestAppInstall() {
+  if (isStandaloneApp()) {
+    showToast("이미 홈 화면에 심긴 오늘의숲을 열고 있어요.");
+    return;
+  }
+
   if (isKakaoTalkInAppBrowser()) {
     openChromeFromKakaoTalk();
     return;
@@ -640,6 +652,30 @@ async function requestAppInstall() {
   }
 
   showToast("브라우저 메뉴에서 ‘앱 설치’ 또는 ‘홈 화면에 추가’를 눌러 주세요.");
+}
+
+function accountInstallHintText() {
+  if (isStandaloneApp()) return "이미 홈 화면에 심겨 있어요.";
+  if (isKakaoTalkInAppBrowser()) {
+    return isAndroidDevice()
+      ? "Chrome에서 열어 홈 화면에 심어요."
+      : "Safari에서 열어 홈 화면에 추가해요.";
+  }
+  if (isIosBrowser()) return "Safari의 공유 메뉴에서 홈 화면에 추가해요.";
+  return "브라우저에서 홈 화면에 추가할 수 있어요.";
+}
+
+function openAccountMenu() {
+  if (!currentUser || !els.accountMenuSheet) return;
+  const accountName = state.treeName || state.profileName || displayName(currentUser);
+  if (els.accountMenuName) els.accountMenuName.textContent = `${accountName}의 정원`;
+  if (els.accountInstallHint) els.accountInstallHint.textContent = accountInstallHintText();
+  openSheet(els.accountMenuSheet);
+}
+
+async function requestAppInstallFromAccountMenu() {
+  closeAllSheets();
+  await requestAppInstall();
 }
 
 function registerPwaServiceWorker() {
@@ -1347,7 +1383,7 @@ function closeAllSheets({ force = false } = {}) {
   const treeNameSheetIsOpen = els.treeNameSheet && !els.treeNameSheet.classList.contains("hidden");
   if (!force && treeNameSheetIsOpen && isTreeNameSetupRequired()) return;
   const wasViewingLetters = !els.lettersSheet.classList.contains("hidden");
-  [els.recordSheet, els.recordsSheet, els.friendsSheet, els.lettersSheet, els.feedbackSheet, els.supportSheet, els.letterComposerSheet, els.treeNameSheet].filter(Boolean).forEach((sheet) => sheet.classList.add("hidden"));
+  [els.recordSheet, els.recordsSheet, els.friendsSheet, els.lettersSheet, els.feedbackSheet, els.supportSheet, els.accountMenuSheet, els.letterComposerSheet, els.treeNameSheet].filter(Boolean).forEach((sheet) => sheet.classList.add("hidden"));
   els.sheetOverlay.classList.add("hidden");
   // 봉투 화면을 닫을 때만 배송 도착 알림을 다음 진입 시점으로 넘깁니다.
   if (wasViewingLetters) clearAnimalDeliveryArrivals();
@@ -4286,6 +4322,8 @@ function bindEvents() {
     }
   });
   els.signOutButton.addEventListener("click", signOut);
+  els.accountButton?.addEventListener("click", openAccountMenu);
+  els.openInstallFromAccount?.addEventListener("click", () => { void requestAppInstallFromAccountMenu(); });
   els.treeNameForm.addEventListener("submit", saveTreeName);
   $("#openRecord").addEventListener("click", () => {
     if (hasSavedToday()) {
