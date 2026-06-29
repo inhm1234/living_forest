@@ -812,102 +812,108 @@ textarea::placeholder { color: #a7b4bd; }
 .animal-v2-trace.trace-rabbit { right: 16%; bottom: 17%; }
 .animal-v2-trace.trace-hedgehog { left: 14%; bottom: 16%; }
 
-.animal-encounter-card {
-  position: relative;
+/* 동물 카드 안전 구역
+   카드가 실제 정원 안에서 열리되, 다른 고정 UI와 살아 있는 나무·장식을 가리지 않도록
+   왼쪽 하늘의 전용 좌석에만 둡니다. 이 자리는 공통 좌표 세계와 분리된 stage 기준이라
+   PC·모바일에서 같은 화면 구역을 유지합니다. */
+.garden-stage > .animal-encounter-card {
+  position: absolute;
+  z-index: 10;
+  top: clamp(92px, 19%, 116px);
+  left: clamp(10px, 3%, 16px);
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr);
-  gap: 6px 10px;
-  width: calc(100% - 8px);
-  max-width: 420px;
-  box-sizing: border-box;
-  margin: 12px auto 0;
-  padding: 11px 12px 11px;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 4px 7px;
+  width: min(164px, calc(38% - 4px));
+  min-width: 148px;
+  padding: 8px 9px 8px;
   border: 1px solid rgba(255,255,255,.88);
-  border-radius: 19px;
-  background: rgba(255,255,255,.86);
+  border-radius: 16px;
+  background: rgba(255,255,255,.90);
   color: #617487;
-  box-shadow: 0 12px 24px rgba(80,97,116,.12);
+  box-shadow: 0 11px 22px rgba(80,97,116,.14);
   backdrop-filter: blur(14px);
+  pointer-events: auto;
   animation: animalEncounterIn .22s ease-out both;
 }
-/* 카드가 숨겨져 있을 때는 공간도 차지하지 않습니다. */
-.animal-encounter-card[hidden] { display: none; }
-.animal-encounter-close {
+.garden-stage > .animal-encounter-card[hidden] { display: none; }
+.garden-stage > .animal-encounter-card .animal-encounter-close {
   position: absolute;
-  top: 6px;
-  right: 7px;
+  top: 4px;
+  right: 5px;
   display: grid;
   place-items: center;
-  width: 23px;
-  height: 23px;
+  width: 20px;
+  height: 20px;
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: rgba(238,244,245,.78);
+  background: rgba(238,244,245,.84);
   color: #8797a3;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1;
   cursor: pointer;
 }
-.animal-encounter-icon {
+.garden-stage > .animal-encounter-card .animal-encounter-icon {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   margin-top: 1px;
   border: 1px solid rgba(255,255,255,.84);
   border-radius: 50%;
   background: rgba(244,250,246,.9);
-  font-size: 25px;
+  font-size: 20px;
 }
-.animal-encounter-copy { min-width: 0; padding-right: 18px; }
-.animal-encounter-kicker {
-  margin: 0 0 2px;
+.garden-stage > .animal-encounter-card .animal-encounter-copy { min-width: 0; padding-right: 12px; }
+.garden-stage > .animal-encounter-card .animal-encounter-kicker {
+  margin: 0 0 1px;
   color: #94a69c;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 900;
-  letter-spacing: .03em;
+  letter-spacing: .02em;
 }
-.animal-encounter-copy h3 {
+.garden-stage > .animal-encounter-card .animal-encounter-copy h3 {
   margin: 0;
   color: #5f7481;
-  font-size: 12px;
+  font-size: 10px;
+  line-height: 1.3;
+}
+.garden-stage > .animal-encounter-card .animal-encounter-copy > p:not(.animal-encounter-kicker):not(.animal-encounter-time) {
+  margin: 2px 0 0;
+  color: #7b8d99;
+  font-size: 8px;
+  font-weight: 700;
   line-height: 1.32;
 }
-.animal-encounter-copy > p:not(.animal-encounter-kicker):not(.animal-encounter-time) {
+.garden-stage > .animal-encounter-card .animal-encounter-time {
   margin: 3px 0 0;
-  color: #7b8d99;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.4;
-}
-.animal-encounter-time {
-  margin: 4px 0 0;
   color: #9b7f69;
-  font-size: 10px;
+  font-size: 8px;
   font-weight: 900;
+  line-height: 1.28;
 }
-.animal-encounter-actions {
+.garden-stage > .animal-encounter-card .animal-encounter-actions {
   grid-column: 1 / -1;
   display: flex;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 4px;
   margin-top: 1px;
 }
-.animal-encounter-actions button {
-  min-height: 31px;
-  padding: 0 10px;
-  border-radius: 10px;
-  font-size: 10px;
+.garden-stage > .animal-encounter-card .animal-encounter-actions button {
+  min-height: 25px;
+  padding: 0 6px;
+  border-radius: 8px;
+  font-size: 8px;
   font-weight: 900;
   cursor: pointer;
 }
-.animal-encounter-quiet {
+.garden-stage > .animal-encounter-card .animal-encounter-quiet {
   border: 1px solid rgba(201,214,215,.72);
-  background: rgba(255,255,255,.62);
+  background: rgba(255,255,255,.64);
   color: #7b9095;
 }
-.animal-encounter-send {
+.garden-stage > .animal-encounter-card .animal-encounter-send {
   border: 1px solid rgba(247,220,226,.96);
   background: rgba(255,239,243,.96);
   color: #b56e83;
@@ -971,7 +977,6 @@ textarea::placeholder { color: #a7b4bd; }
   .animal-v2-squirrel { top: 53%; right: 17%; }
   .animal-v2-rabbit { right: 11%; bottom: 16%; }
   .animal-v2-hedgehog { left: 8%; bottom: 15%; }
-  .animal-encounter-card { width: calc(100% - 8px); margin-top: 10px; padding: 10px 11px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
