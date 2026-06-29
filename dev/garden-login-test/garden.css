@@ -676,6 +676,303 @@ textarea::placeholder { color: #a7b4bd; }
   .mood-choice { font-size: 10px; }
 }
 
+
+
+/* -------------------------------------------------------------------------
+   DEV Animal Visit v2
+   V1의 단일 버튼을 쓰지 않고, 각 방문 행을 독립적인 작은 숲친구로 그립니다.
+   ------------------------------------------------------------------------- */
+.garden-world .animal-v2-layer,
+.garden-world .animal-v2-trace-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+}
+.garden-world .animal-v2-layer { z-index: 8; }
+.garden-world .animal-v2-layer[hidden],
+.garden-world .animal-v2-trace-layer[hidden] { display: none; }
+
+.animal-v2-visitor,
+.animal-v2-trace,
+.animal-v2-approach {
+  position: absolute;
+  pointer-events: auto;
+}
+.animal-v2-visitor {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  filter: drop-shadow(0 10px 9px rgba(65, 92, 76, .17));
+  animation: animalV2Settle 2.8s ease-in-out infinite;
+  touch-action: manipulation;
+}
+.animal-v2-visitor:focus-visible,
+.animal-v2-trace:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, .96);
+  outline-offset: 3px;
+}
+.animal-v2-visitor .animal-v2-emoji {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(255,255,255,.80);
+  border-radius: 50%;
+  background: rgba(255,255,255,.67);
+  font-size: 33px;
+  box-shadow: 0 9px 17px rgba(83,108,115,.13);
+  backdrop-filter: blur(5px);
+}
+.animal-v2-visitor .animal-v2-envelope {
+  position: absolute;
+  right: -2px;
+  bottom: 0;
+  display: grid;
+  place-items: center;
+  width: 21px;
+  height: 21px;
+  border: 1px solid rgba(255,255,255,.9);
+  border-radius: 50%;
+  background: rgba(255, 247, 250, .95);
+  color: #b8758d;
+  font-size: 12px;
+  box-shadow: 0 4px 10px rgba(121,91,103,.13);
+}
+.animal-v2-visitor .animal-v2-glimmer {
+  position: absolute;
+  top: -8px;
+  left: -5px;
+  color: #f2bd59;
+  font-size: 16px;
+  text-shadow: 0 0 10px rgba(255,239,164,.88);
+  animation: animalV2Glimmer 1.35s ease-in-out infinite;
+}
+.animal-v2-visitor.is-arriving { animation: animalV2Arrive .72s cubic-bezier(.25,.8,.32,1) both, animalV2Settle 2.8s .72s ease-in-out infinite; }
+.animal-v2-visitor.is-departing { pointer-events: none; animation: animalV2Depart .82s cubic-bezier(.25,.85,.32,1) both; }
+.animal-v2-visitor.animal-v2-squirrel.is-departing { animation-name: animalV2DepartUp; }
+.animal-v2-visitor.animal-v2-rabbit.is-departing { animation-name: animalV2DepartHop; }
+.animal-v2-visitor.animal-v2-hedgehog.is-departing { animation-name: animalV2DepartHide; }
+.animal-v2-visitor.is-letter-departing { animation-duration: 1.45s; }
+.animal-v2-visitor.is-letter-departing .animal-v2-envelope {
+  animation: animalV2LetterReceived 1.45s ease-in-out both;
+}
+.animal-v2-bird { top: 27%; right: 19%; }
+.animal-v2-squirrel { top: 50%; right: 22%; }
+.animal-v2-rabbit { right: 15%; bottom: 15%; }
+.animal-v2-hedgehog { left: 12%; bottom: 14%; }
+
+.animal-v2-approach {
+  display: grid;
+  place-items: center;
+  width: 82px;
+  height: 35px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 60%, rgba(178, 222, 178, .54), rgba(210, 241, 205, .12) 58%, transparent 72%);
+  color: rgba(92, 140, 104, .92);
+  font-size: 23px;
+  pointer-events: none;
+  filter: blur(.15px);
+  animation: animalV2Rustle 1.65s ease-in-out infinite;
+}
+.animal-v2-approach::after {
+  content: "🍃";
+  display: block;
+  animation: animalV2Leaf 1.65s ease-in-out infinite;
+}
+.animal-v2-approach.approach-bird { top: 32%; right: 19%; }
+.animal-v2-approach.approach-squirrel { top: 54%; right: 19%; }
+.animal-v2-approach.approach-rabbit { right: 13%; bottom: 17%; }
+.animal-v2-approach.approach-hedgehog { left: 9%; bottom: 15%; }
+
+.animal-v2-trace {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,.6);
+  border-radius: 50%;
+  background: rgba(255,255,255,.44);
+  color: #7d9279;
+  font-size: 21px;
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(82,103,88,.08);
+  backdrop-filter: blur(4px);
+  animation: animalV2Trace 3.2s ease-in-out infinite;
+}
+.animal-v2-trace.trace-bird { top: 41%; right: 18%; }
+.animal-v2-trace.trace-squirrel { top: 61%; right: 24%; }
+.animal-v2-trace.trace-rabbit { right: 16%; bottom: 17%; }
+.animal-v2-trace.trace-hedgehog { left: 14%; bottom: 16%; }
+
+.animal-encounter-card {
+  position: absolute;
+  z-index: 12;
+  right: 16px;
+  bottom: 15px;
+  left: 16px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 11px;
+  padding: 15px 15px 13px;
+  border: 1px solid rgba(255,255,255,.84);
+  border-radius: 21px;
+  background: rgba(255,255,255,.88);
+  color: #617487;
+  box-shadow: 0 17px 34px rgba(80,97,116,.18);
+  backdrop-filter: blur(14px);
+  animation: animalEncounterIn .24s ease-out both;
+}
+.animal-encounter-card[hidden] { display: none; }
+.animal-encounter-close {
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(238,244,245,.78);
+  color: #8797a3;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.animal-encounter-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-top: 2px;
+  border: 1px solid rgba(255,255,255,.84);
+  border-radius: 50%;
+  background: rgba(244,250,246,.9);
+  font-size: 29px;
+}
+.animal-encounter-copy { min-width: 0; padding-right: 18px; }
+.animal-encounter-kicker {
+  margin: 0 0 3px;
+  color: #94a69c;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .03em;
+}
+.animal-encounter-copy h3 {
+  margin: 0;
+  color: #5f7481;
+  font-size: 14px;
+  line-height: 1.35;
+}
+.animal-encounter-copy > p:not(.animal-encounter-kicker):not(.animal-encounter-time) {
+  margin: 5px 0 0;
+  color: #7b8d99;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.animal-encounter-time {
+  margin: 7px 0 0;
+  color: #9b7f69;
+  font-size: 11px;
+  font-weight: 900;
+}
+.animal-encounter-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+  margin-top: 1px;
+}
+.animal-encounter-actions button {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 11px;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.animal-encounter-quiet {
+  border: 1px solid rgba(201,214,215,.72);
+  background: rgba(255,255,255,.62);
+  color: #7b9095;
+}
+.animal-encounter-send {
+  border: 1px solid rgba(247,220,226,.96);
+  background: rgba(255,239,243,.96);
+  color: #b56e83;
+}
+
+@keyframes animalV2Settle {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-4px) rotate(1deg); }
+}
+@keyframes animalV2Arrive {
+  0% { transform: translate3d(0,-22px,0) scale(.62); opacity: 0; }
+  100% { transform: translate3d(0,0,0) scale(1); opacity: 1; }
+}
+@keyframes animalV2Depart {
+  0% { transform: translate3d(0,0,0) scale(1); opacity: 1; }
+  100% { transform: translate3d(64px,-70px,0) scale(.7); opacity: 0; }
+}
+@keyframes animalV2DepartUp {
+  0% { transform: translate3d(0,0,0) scale(1); opacity: 1; }
+  100% { transform: translate3d(-22px,-96px,0) scale(.7); opacity: 0; }
+}
+@keyframes animalV2DepartHop {
+  0% { transform: translate3d(0,0,0) scale(1); opacity: 1; }
+  46% { transform: translate3d(30px,-19px,0) scale(.95); opacity: 1; }
+  100% { transform: translate3d(100px,9px,0) scale(.72); opacity: 0; }
+}
+@keyframes animalV2DepartHide {
+  0% { transform: translate3d(0,0,0) scale(1); opacity: 1; }
+  55% { transform: translate3d(21px,9px,0) scale(.88); opacity: .9; }
+  100% { transform: translate3d(43px,13px,0) scale(.56); opacity: 0; }
+}
+@keyframes animalV2LetterReceived {
+  0%, 44% { transform: scale(0); opacity: 0; }
+  54% { transform: scale(1.22) rotate(-8deg); opacity: 1; }
+  76% { transform: scale(1) rotate(0); opacity: 1; }
+  100% { transform: scale(.82) rotate(8deg); opacity: .96; }
+}
+@keyframes animalV2Rustle {
+  0%,100% { transform: translateX(-5px) scale(.88); opacity: .30; }
+  50% { transform: translateX(7px) scale(1.08); opacity: .84; }
+}
+@keyframes animalV2Leaf {
+  0%,100% { transform: translate(-6px, 2px) rotate(-11deg); opacity: .36; }
+  50% { transform: translate(8px, -5px) rotate(11deg); opacity: .93; }
+}
+@keyframes animalV2Trace {
+  0%,100% { transform: translateY(0) scale(.94); opacity: .66; }
+  50% { transform: translateY(-2px) scale(1.04); opacity: 1; }
+}
+@keyframes animalV2Glimmer {
+  0%,100% { transform: scale(.72) rotate(-8deg); opacity: .42; }
+  50% { transform: scale(1.22) rotate(10deg); opacity: 1; }
+}
+@keyframes animalEncounterIn {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 470px) {
+  .animal-v2-bird { top: 30%; right: 15%; }
+  .animal-v2-squirrel { top: 53%; right: 17%; }
+  .animal-v2-rabbit { right: 11%; bottom: 16%; }
+  .animal-v2-hedgehog { left: 8%; bottom: 15%; }
+  .animal-encounter-card { right: 12px; bottom: 12px; left: 12px; padding: 13px 13px 12px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
 }
