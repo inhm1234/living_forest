@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="../../assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="../../assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="garden.css?v=first-walk-tutorial-v2-1" />
+  <link rel="stylesheet" href="garden.css?v=first-walk-tutorial-v2-2" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
     // 운영 루트(/)에 같은 파일을 반영하면 G-YC872G7MH1로 자동 전송됩니다.
@@ -240,7 +240,7 @@
       </div>
     </div>
 
-    <!-- FIRST-WALK TUTORIAL v2.1: 첫날의 작은 산책. 화면을 읽는 대신 숲빛을 따라 직접 첫 기록을 남깁니다. -->
+    <!-- FIRST-WALK TUTORIAL v2.2: 첫날의 작은 산책. 화면을 읽는 대신 숲빛을 따라 직접 첫 기록을 남깁니다. -->
     <section class="first-walk-tutorial hidden" id="firstWalkTutorial" aria-live="polite" aria-atomic="true">
       <button class="first-walk-tutorial-scrim" id="firstWalkTutorialTap" type="button" aria-label="첫 안내 이어가기"></button>
       <div class="first-walk-guide-trail" id="firstWalkGuideTrail" aria-hidden="true">
@@ -436,6 +436,7 @@
       <p class="record-tutorial-note hidden" id="recordTutorialNote">
         <span class="record-tutorial-step">첫날의 작은 산책 · 2 / 3</span>
         <span>정답은 없어요. 오늘과 가장 가까운 마음 하나면 충분해요.</span>
+        <span class="record-tutorial-preview hidden" id="recordTutorialPreview">미리보기에서는 실제 기록이나 나무 성장에 저장되지 않아요.</span>
       </p>
       <fieldset class="mood-picker">
         <legend>오늘의 기분</legend>
@@ -725,6 +726,6 @@
 
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="garden.js?v=first-walk-tutorial-v2-1"></script>
+  <script type="module" src="garden.js?v=first-walk-tutorial-v2-2"></script>
 </body>
 </html>

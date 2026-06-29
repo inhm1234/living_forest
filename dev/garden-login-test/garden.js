@@ -337,7 +337,7 @@ let installHelpVisible = false;
 let treeNamePromptedForUserId = "";
 let gardenWorldResizeObserver = null;
 let friendGardenWorldResizeObserver = null;
-// FIRST-WALK TUTORIAL v2.1
+// FIRST-WALK TUTORIAL v2.2
 // 기록이 없는 계정에게만 “숲빛을 따라 첫 기록을 남기는” 짧은 산책을 보여줍니다.
 // DB 컬럼 없이도 첫 기록·첫 발견이 끝나면 자동으로 사라지고, 중간에 나가면 다음 접속에 다시 이어집니다.
 let gardenTutorialPhase = "";
@@ -345,6 +345,9 @@ let gardenTutorialTimer = null;
 let firstWalkGuideLayoutTimer = null;
 let firstWalkGuideTravelTimer = null;
 let firstWalkGuidePosition = null;
+// ?tutorialPreview=intro 는 실제 기록·성장·장식을 건드리지 않는 검수 전용 산책입니다.
+// 이미 오늘 기록한 계정에서도 처음부터 끝까지 확인할 수 있도록 메모리에서만 진행 상태를 가집니다.
+const tutorialSandbox = { recorded: false, found: false };
 
 // COORDINATE-WORLD-V1: 모든 기기에서 같은 정원 구도를 쓰는 내부 기준 크기입니다.
 const GARDEN_WORLD = Object.freeze({ width: 390, height: 540 });
@@ -416,6 +419,7 @@ const els = {
   firstWalkTutorialBody: $("#firstWalkTutorialBody"),
   firstWalkTutorialHint: $("#firstWalkTutorialHint"),
   recordTutorialNote: $("#recordTutorialNote"),
+  recordTutorialPreview: $("#recordTutorialPreview"),
   sheetOverlay: $("#sheetOverlay"),
   recordSheet: $("#recordSheet"),
   recordsSheet: $("#recordsSheet"),
@@ -2148,6 +2152,9 @@ function foundItemForRecord(recordId) {
 }
 
 function canDiscoverFoundItem() {
+  // 첫날 튜토리얼 미리보기는 실제 기록·장식 DB와 분리된 한 번의 가상 발견만 보여줍니다.
+  if (isTutorialSandboxPreview()) return tutorialSandbox.recorded && !tutorialSandbox.found;
+
   const todayRecord = todayGardenRecord();
   // 장식 수나 이미 가진 종류가 아니라, 오늘 기록에 아직 장식이 연결되지 않았는지만 봅니다.
   // 하루 1개 제한은 Supabase의 record_id UNIQUE 제약이 계속 지킵니다.
@@ -2271,10 +2278,23 @@ function renderGardenDecorateControls(foundItems) {
   }
 }
 
+function tutorialSandboxFoundItems() {
+  if (!isTutorialSandboxPreview() || !tutorialSandbox.found) return [];
+  // 첫날의 보상은 기존 장식 시스템과 같은 모양으로만 보이고, 실제 계정 장식에는 저장하지 않습니다.
+  return [{
+    id: 'tutorial-sandbox-pink-wildflower',
+    recordId: 'tutorial-sandbox-record',
+    itemKey: 'pink_wildflower',
+    placementSlot: 'front_bed_left',
+    foundAt: new Date().toISOString(),
+  }];
+}
+
 function renderFoundItems() {
   if (!els.foundItemsLayer || !els.foundItemSparkle) return;
 
-  const foundItems = (state.foundItems || []).filter((item) => foundItemCatalog[item.itemKey]);
+  const foundItems = [...(state.foundItems || []), ...tutorialSandboxFoundItems()]
+    .filter((item) => foundItemCatalog[item.itemKey]);
   els.foundItemsLayer.innerHTML = foundItems.map((item) => {
     const catalogItem = foundItemCatalog[item.itemKey];
     const position = foundItemDisplayPosition(item);
@@ -2491,6 +2511,15 @@ async function saveGardenDecorateMode() {
 }
 
 async function claimFoundItem() {
+  if (isTutorialSandboxPreview()) {
+    if (!tutorialSandbox.recorded || tutorialSandbox.found) return;
+    tutorialSandbox.found = true;
+    renderFoundItems();
+    showFirstWalkCompletion();
+    showToast('미리보기에서 작은 들꽃을 찾았어요. 실제 정원에는 저장되지 않아요.');
+    return;
+  }
+
   if (!currentUser) return;
   const record = todayGardenRecord();
   if (!record || foundItemForRecord(record.id)) return;
@@ -2536,7 +2565,8 @@ async function claimFoundItem() {
 function updateTodayRecordAction() {
   const action = $("#openRecord");
   const label = action?.querySelector("span:last-child");
-  const savedToday = hasSavedToday();
+  // 미리보기에서는 실제 오늘 기록 여부 대신 가상 산책의 진행 상태만 보여줍니다.
+  const savedToday = isTutorialSandboxPreview() ? tutorialSandbox.recorded : hasSavedToday();
   if (!action || !label) return;
   action.classList.toggle("record-complete", savedToday);
   action.setAttribute("aria-label", savedToday ? "오늘 마음 남기기 완료" : "마음 남기기");
@@ -3901,6 +3931,35 @@ async function saveRecord(event) {
   const detail = els.detailText.value.trim();
   const submitButton = els.recordForm.querySelector('button[type="submit"]');
 
+  if (isTutorialSandboxPreview()) {
+    if (!oneLine) {
+      showToast("튜토리얼에서도 오늘 마음에 남은 한 줄을 적어보세요.");
+      els.oneLine.focus();
+      return;
+    }
+
+    submitButton.disabled = true;
+    submitButton.textContent = "숲빛이 마음을 품고 있어요";
+    await new Promise((resolve) => window.setTimeout(resolve, 460));
+    tutorialSandbox.recorded = true;
+    tutorialSandbox.found = false;
+    submitButton.disabled = false;
+    submitButton.textContent = "나무에 마음 남기기";
+
+    els.recordForm.reset();
+    selectedMood = "good";
+    renderMoodSelection();
+    els.detailWrap.classList.add("hidden");
+    els.toggleDetail.innerHTML = '조금 더 적기 <span aria-hidden="true">⌄</span>';
+    closeAllSheets({ force: true });
+    renderAll();
+    els.treeWrap.classList.remove("tree-pulse");
+    void els.treeWrap.offsetWidth;
+    els.treeWrap.classList.add("tree-pulse");
+    showToast("미리보기에서 마음이 나무에 닿았어요. 이제 풀숲의 빛을 따라가요.");
+    return;
+  }
+
   if (hasSavedToday()) {
     closeAllSheets();
     renderGarden();
@@ -4153,9 +4212,15 @@ function tutorialPreviewPhase() {
   return ["intro", "record", "discovery"].includes(preview) ? preview : "";
 }
 
+function isTutorialSandboxPreview() {
+  // intro 주소는 첫 인사 → 기록 → 발견까지 전부 검수하는 안전한 샌드박스입니다.
+  return tutorialPreviewPhase() === "intro";
+}
+
 function firstWalkGuideIsAvailable() {
   const preview = tutorialPreviewPhase();
-  if (preview === "intro" || preview === "record") return true;
+  if (isTutorialSandboxPreview()) return !tutorialSandbox.recorded && !tutorialSandbox.found;
+  if (preview === "record") return true;
   return Boolean(currentUser)
     && !isTreeNameSetupRequired()
     && Array.isArray(state.records)
@@ -4164,6 +4229,7 @@ function firstWalkGuideIsAvailable() {
 
 function firstDiscoveryGuideIsAvailable() {
   const preview = tutorialPreviewPhase();
+  if (isTutorialSandboxPreview()) return tutorialSandbox.recorded && !tutorialSandbox.found;
   if (preview === "discovery") return true;
   return Boolean(currentUser)
     && !isTreeNameSetupRequired()
@@ -4397,10 +4463,12 @@ function renderFirstWalkTutorial() {
     gardenTutorialPhase = "record-form";
     hideGardenTutorial({ keepPhase: true });
     els.recordTutorialNote?.classList.remove("hidden");
+    els.recordTutorialPreview?.classList.toggle("hidden", !isTutorialSandboxPreview());
     return;
   }
 
   els.recordTutorialNote?.classList.add("hidden");
+  els.recordTutorialPreview?.classList.add("hidden");
 
   if (shouldGuideDiscovery) {
     showFirstWalkTutorialScene("discovery", { animateGuide: gardenTutorialPhase !== "discovery" });
@@ -4621,7 +4689,11 @@ function bindEvents() {
     if (gardenTutorialPhase === "intro") beginFirstWalkRecordScene();
   });
   $("#openRecord").addEventListener("click", () => {
-    if (hasSavedToday()) {
+    if (isTutorialSandboxPreview() && tutorialSandbox.recorded) {
+      showToast("미리보기에서는 첫 마음을 남겼어요. 풀숲의 빛을 따라가요.");
+      return;
+    }
+    if (!isTutorialSandboxPreview() && hasSavedToday()) {
       showToast("오늘의 마음은 이미 나무에 남겼어요. 내일 다시 와요.");
       return;
     }

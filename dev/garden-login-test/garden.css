@@ -2140,7 +2140,7 @@ textarea::placeholder { color: #a7b4bd; }
 
 
 
-/* FIRST-WALK TUTORIAL v2.1
+/* FIRST-WALK TUTORIAL v2.2
    첫날에는 설명문을 넘기지 않고, 숲빛을 따라 “나무 → 마음 남기기 → 작은 발견”을 직접 경험합니다. */
 .first-walk-tutorial {
   position: fixed;
@@ -2316,6 +2316,8 @@ textarea::placeholder { color: #a7b4bd; }
 }
 .record-tutorial-note.hidden { display: none; }
 .record-tutorial-step { color: #78a587; font-size: 10px; font-weight: 950; letter-spacing: .015em; }
+.record-tutorial-preview { color: #8a9c8e; font-size: 10px; font-weight: 800; line-height: 1.35; }
+.record-tutorial-preview.hidden { display: none; }
 
 @keyframes firstWalkCardIn { from { opacity: 0; transform: translateX(-50%) translateY(10px) scale(.985); } to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } }
 @keyframes firstWalkGlow { 0%,100% { transform: scale(.82); opacity: .72; } 50% { transform: scale(1.1); opacity: 1; } }
