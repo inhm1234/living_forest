@@ -173,7 +173,8 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .garden-world .active-animal,
 .garden-world .animal-trace,
 .garden-world .found-item-sparkle,
-.garden-world .found-items-layer.is-decorating {
+.garden-world .found-items-layer.is-decorating,
+.garden-world .animal-encounter-card {
   pointer-events: auto;
 }
 
