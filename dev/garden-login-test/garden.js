@@ -337,14 +337,16 @@ let installHelpVisible = false;
 let treeNamePromptedForUserId = "";
 let gardenWorldResizeObserver = null;
 let friendGardenWorldResizeObserver = null;
-// FIRST-WALK TUTORIAL v2.2
+// FIRST-WALK TUTORIAL v2.3
 // 기록이 없는 계정에게만 “숲빛을 따라 첫 기록을 남기는” 짧은 산책을 보여줍니다.
 // DB 컬럼 없이도 첫 기록·첫 발견이 끝나면 자동으로 사라지고, 중간에 나가면 다음 접속에 다시 이어집니다.
+// 마지막에는 발견한 작은 것을 잠깐 바라볼 수 있는 마무리 카드를 보여줍니다.
 let gardenTutorialPhase = "";
 let gardenTutorialTimer = null;
 let firstWalkGuideLayoutTimer = null;
 let firstWalkGuideTravelTimer = null;
 let firstWalkGuidePosition = null;
+let firstWalkCompletionFoundItemId = "";
 // ?tutorialPreview=intro 는 실제 기록·성장·장식을 건드리지 않는 검수 전용 산책입니다.
 // 이미 오늘 기록한 계정에서도 처음부터 끝까지 확인할 수 있도록 메모리에서만 진행 상태를 가집니다.
 const tutorialSandbox = { recorded: false, found: false };
@@ -2514,9 +2516,10 @@ async function claimFoundItem() {
   if (isTutorialSandboxPreview()) {
     if (!tutorialSandbox.recorded || tutorialSandbox.found) return;
     tutorialSandbox.found = true;
+    const sandboxFoundItemId = "tutorial-sandbox-pink-wildflower";
     renderFoundItems();
-    showFirstWalkCompletion();
-    showToast('미리보기에서 작은 들꽃을 찾았어요. 실제 정원에는 저장되지 않아요.');
+    // 마지막 카드를 가리는 토스트 대신, 발견한 들꽃 자체를 잠시 바라보게 합니다.
+    showFirstWalkCompletion({ foundItemId: sandboxFoundItemId });
     return;
   }
 
@@ -2556,8 +2559,12 @@ async function claimFoundItem() {
   else state.foundItems.push(nextItem);
 
   renderFoundItems();
-  if (wasFirstWalkDiscovery) showFirstWalkCompletion();
-  else renderFirstWalkTutorial();
+  if (wasFirstWalkDiscovery) {
+    // 첫 산책의 끝은 별도 토스트 없이 마무리 카드가 맡아, 발견의 여운을 남깁니다.
+    showFirstWalkCompletion({ foundItemId: nextItem.id });
+    return;
+  }
+  renderFirstWalkTutorial();
   const catalogItem = foundItemCatalog[nextItem.itemKey];
   showToast(`숲에서 작은 것을 찾았어요. ${catalogItem.detail}`);
 }
@@ -4290,16 +4297,23 @@ const firstWalkScenes = Object.freeze({
   },
   complete: {
     label: "첫날의 작은 산책",
-    count: "완료",
-    title: "이제 이곳은 너의 정원이야.",
-    body: "오늘 찾은 작은 것이 숲에 남았어. 내일도 천천히 들러줘.",
+    count: "마침",
+    title: "오늘의 작은 산책을 마쳤어요.",
+    body: "오늘 찾은 작은 것이 네 정원에 자리를 잡았어. 내일도 천천히 들러줘.",
     hint: "",
   },
 });
 
+function firstWalkCompletionItem() {
+  if (!firstWalkCompletionFoundItemId || !els.foundItemsLayer) return null;
+  return Array.from(els.foundItemsLayer.querySelectorAll(".found-item"))
+    .find((item) => item.dataset.foundItemId === firstWalkCompletionFoundItemId) || null;
+}
+
 function firstWalkTargetForPhase(phase) {
   if (phase === "record") return $("#openRecord");
   if (phase === "discovery") return els.foundItemSparkle;
+  if (phase === "complete") return firstWalkCompletionItem() || els.treeWrap;
   return els.treeWrap;
 }
 
@@ -4386,23 +4400,29 @@ function updateFirstWalkSceneCopy(phase) {
   if (els.firstWalkTutorialCount) els.firstWalkTutorialCount.textContent = scene.count;
   if (els.firstWalkTutorialTitle) els.firstWalkTutorialTitle.textContent = scene.title;
   if (els.firstWalkTutorialBody) els.firstWalkTutorialBody.textContent = scene.body;
-  if (els.firstWalkTutorialHint) els.firstWalkTutorialHint.textContent = scene.hint;
+  if (els.firstWalkTutorialHint) {
+    els.firstWalkTutorialHint.textContent = scene.hint;
+    els.firstWalkTutorialHint.hidden = !scene.hint;
+  }
 }
 
 function setFirstWalkTargetFocus(phase) {
   $("#openRecord")?.classList.toggle("is-tutorial-focus", phase === "record");
   els.foundItemSparkle?.classList.toggle("is-tutorial-focus", phase === "discovery");
+  firstWalkCompletionItem()?.classList.toggle("is-tutorial-complete-focus", phase === "complete");
 }
 
 function hideGardenTutorial({ keepPhase = false } = {}) {
   clearGardenTutorialTimer();
+  // 완료 직전의 발견물 강조는 ID를 비우기 전에 먼저 걷어냅니다.
+  setFirstWalkTargetFocus("");
   if (!keepPhase) gardenTutorialPhase = "";
   if (!keepPhase) firstWalkGuidePosition = null;
+  if (!keepPhase) firstWalkCompletionFoundItemId = "";
   els.firstWalkTutorial?.classList.add("hidden");
   els.firstWalkTutorial?.removeAttribute("data-phase");
   els.gardenApp?.classList.remove("is-first-walk-guide");
   els.recordTutorialNote?.classList.add("hidden");
-  setFirstWalkTargetFocus("");
 }
 
 function showFirstWalkTutorialScene(phase, { animateGuide = true } = {}) {
@@ -4435,10 +4455,12 @@ function beginFirstWalkRecordScene() {
   }, reducedMotion ? 0 : 360);
 }
 
-function showFirstWalkCompletion() {
+function showFirstWalkCompletion({ foundItemId = "" } = {}) {
   clearGardenTutorialTimer();
+  firstWalkCompletionFoundItemId = String(foundItemId || "");
   showFirstWalkTutorialScene("complete", { animateGuide: false });
-  gardenTutorialTimer = window.setTimeout(() => hideGardenTutorial(), 2800);
+  // 마지막 문장이 지나갈 만큼만 머물고, 사용자의 정원으로 조용히 돌아갑니다.
+  gardenTutorialTimer = window.setTimeout(() => hideGardenTutorial(), 3400);
 }
 
 function renderFirstWalkTutorial() {

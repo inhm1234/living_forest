@@ -2140,8 +2140,9 @@ textarea::placeholder { color: #a7b4bd; }
 
 
 
-/* FIRST-WALK TUTORIAL v2.2
-   첫날에는 설명문을 넘기지 않고, 숲빛을 따라 “나무 → 마음 남기기 → 작은 발견”을 직접 경험합니다. */
+/* FIRST-WALK TUTORIAL v2.3
+   첫날에는 설명문을 넘기지 않고, 숲빛을 따라 “나무 → 마음 남기기 → 작은 발견”을 직접 경험합니다.
+   발견 뒤에는 작은 것이 자리를 잡는 여운을 위한 짧은 마무리 카드를 보여줍니다. */
 .first-walk-tutorial {
   position: fixed;
   z-index: 45;
@@ -2272,7 +2273,31 @@ textarea::placeholder { color: #a7b4bd; }
 .first-walk-tutorial[data-phase="complete"] { pointer-events: none; }
 .first-walk-tutorial[data-phase="complete"] .first-walk-tutorial-scrim { background: rgba(48,64,79,.12); pointer-events: none; }
 .first-walk-tutorial[data-phase="complete"]::before { opacity: .7; }
-.first-walk-tutorial[data-phase="complete"] .first-walk-guide-light { opacity: .62; }
+.first-walk-tutorial[data-phase="complete"] .first-walk-guide-light { opacity: .58; }
+.first-walk-tutorial[data-phase="complete"] .first-walk-tutorial-card {
+  bottom: max(34px, env(safe-area-inset-bottom));
+  border-color: rgba(232,238,177,.94);
+  background: linear-gradient(140deg, rgba(255,255,246,.985), rgba(240,251,235,.98));
+  box-shadow: 0 20px 42px rgba(48,80,65,.24), inset 0 1px 0 rgba(255,255,255,.96);
+}
+.first-walk-tutorial[data-phase="complete"] .first-walk-card-topline span:last-child { color: #8aa85d; }
+.first-walk-tutorial[data-phase="complete"] .first-walk-tutorial-card h2 { color: #4f7754; }
+.first-walk-tutorial[data-phase="complete"] .first-walk-tutorial-card p { color: #6d866f; }
+.found-item.is-tutorial-complete-focus {
+  z-index: 4;
+  filter: drop-shadow(0 0 12px rgba(255,231,141,.92)) drop-shadow(0 8px 9px rgba(74,115,81,.18));
+  animation: firstWalkFoundItemSettle 1.45s ease-in-out infinite;
+}
+.found-item.is-tutorial-complete-focus::after {
+  content: "";
+  position: absolute;
+  inset: -11px;
+  border: 1.5px solid rgba(255,237,151,.88);
+  border-radius: 18px;
+  box-shadow: 0 0 0 6px rgba(255,242,178,.15);
+  pointer-events: none;
+  animation: firstWalkFoundItemRing 1.45s ease-in-out infinite;
+}
 
 .garden-app.is-first-walk-guide #openRecord.is-tutorial-focus {
   position: relative;
@@ -2328,6 +2353,8 @@ textarea::placeholder { color: #a7b4bd; }
 @keyframes firstWalkButtonBreathe { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-2px) scale(1.03); } }
 @keyframes firstWalkFocusRing { 0%,100% { opacity: .88; transform: scale(.98); } 50% { opacity: .35; transform: scale(1.06); } }
 @keyframes firstWalkSparkleBreathe { 0%,100% { filter: drop-shadow(0 4px 9px rgba(232,191,91,.36)); } 50% { filter: drop-shadow(0 4px 16px rgba(246,203,86,.92)); } }
+@keyframes firstWalkFoundItemSettle { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-3px) scale(1.045); } }
+@keyframes firstWalkFoundItemRing { 0%,100% { opacity: .86; transform: scale(.96); } 50% { opacity: .28; transform: scale(1.08); } }
 
 @media (max-width: 520px) {
   .first-walk-tutorial-card { width: min(calc(100vw - 26px), 410px); padding: 14px 14px 12px; border-radius: 22px; }
@@ -2345,5 +2372,7 @@ textarea::placeholder { color: #a7b4bd; }
   .first-walk-tutorial-card,
   .garden-app.is-first-walk-guide #openRecord.is-tutorial-focus,
   .garden-app.is-first-walk-guide #openRecord.is-tutorial-focus::after,
-  .found-item-sparkle.is-tutorial-focus { animation: none; transition: none; }
+  .found-item-sparkle.is-tutorial-focus,
+  .found-item.is-tutorial-complete-focus,
+  .found-item.is-tutorial-complete-focus::after { animation: none; transition: none; }
 }
