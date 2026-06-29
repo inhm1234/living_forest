@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="../../assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="../../assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="garden.css?v=animal-v2-card-instage-safe-v2" />
+  <link rel="stylesheet" href="garden.css?v=first-walk-tutorial-v1" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
     // 운영 루트(/)에 같은 파일을 반영하면 G-YC872G7MH1로 자동 전송됩니다.
@@ -189,6 +189,10 @@
       </div>
 
       <p class="stage-message" id="stageMessage">오늘의 마음은 나무 가까이에 조용히 남아요.</p>
+      <aside class="garden-tutorial-note hidden" id="gardenTutorialNote" aria-live="polite" aria-atomic="true">
+        <span class="garden-tutorial-sparkle" aria-hidden="true">✦</span>
+        <p id="gardenTutorialCopy"></p>
+      </aside>
     </section>
 
 
@@ -412,6 +416,7 @@
     </div>
 
     <form id="recordForm" class="record-form">
+      <p class="record-tutorial-note hidden" id="recordTutorialNote">정답은 없어요. 오늘과 가장 가까운 마음 하나면 충분해요.</p>
       <fieldset class="mood-picker">
         <legend>오늘의 기분</legend>
         <div class="mood-grid">
@@ -700,6 +705,6 @@
 
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="garden.js?v=animal-visit-v1-step2"></script>
+  <script type="module" src="garden.js?v=first-walk-tutorial-v1"></script>
 </body>
 </html>

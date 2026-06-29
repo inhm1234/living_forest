@@ -2138,3 +2138,81 @@ textarea::placeholder { color: #a7b4bd; }
   animation-delay: calc(var(--friend-decoration-order, 0) * 55ms);
 }
 
+
+
+/* FIRST-WALK TUTORIAL v1
+   첫날에는 기능을 설명하지 않고 "마음 남기기 → 숲의 작은 발견"만 경험하게 합니다.
+   카드 자체는 클릭을 막지 않아 사용자가 바로 실제 버튼을 누를 수 있습니다. */
+.garden-tutorial-note {
+  position: absolute;
+  z-index: 22;
+  top: 92px;
+  left: 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: min(188px, calc(100% - 210px));
+  padding: 10px 11px;
+  border: 1px solid rgba(255,255,255,.88);
+  border-radius: 17px;
+  background: rgba(255,255,255,.88);
+  color: #5d7384;
+  box-shadow: 0 12px 24px rgba(79,104,124,.13);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+  animation: firstWalkNoteIn .42s ease both;
+}
+.garden-tutorial-note.hidden { display: none; }
+.garden-tutorial-note p { margin: 0; font-size: 11px; font-weight: 850; line-height: 1.5; }
+.garden-tutorial-sparkle { flex: 0 0 auto; color: #e6bd67; font-size: 16px; line-height: 1.1; text-shadow: 0 0 12px rgba(242,210,122,.58); }
+.garden-tutorial-note[data-phase="record"] { border-color: rgba(179,222,191,.96); background: rgba(247,255,248,.92); }
+.garden-tutorial-note[data-phase="discovery"] { border-color: rgba(248,222,165,.94); background: rgba(255,252,241,.92); }
+
+.nav-action.is-tutorial-focus {
+  position: relative;
+  z-index: 2;
+  animation: firstWalkButtonBreathe 1.45s ease-in-out infinite;
+}
+.nav-action.is-tutorial-focus::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border: 2px solid rgba(255,245,187,.96);
+  border-radius: 24px;
+  box-shadow: 0 0 0 5px rgba(119,190,139,.18);
+  pointer-events: none;
+}
+.found-item-sparkle.is-tutorial-focus { animation: foundItemSparkle 2.1s ease-in-out infinite, firstWalkSparkleBreathe 1.35s ease-in-out infinite; }
+.found-item-sparkle.is-tutorial-focus::after {
+  content: "";
+  position: absolute;
+  inset: -9px;
+  border: 2px solid rgba(255,235,160,.9);
+  border-radius: 50%;
+  box-shadow: 0 0 0 7px rgba(255,231,157,.15);
+}
+.record-tutorial-note {
+  margin: -2px 0 16px;
+  padding: 10px 12px;
+  border: 1px solid rgba(194,224,201,.86);
+  border-radius: 15px;
+  background: linear-gradient(135deg, rgba(239,250,240,.96), rgba(250,255,247,.96));
+  color: #5d7b69;
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.5;
+}
+.record-tutorial-note.hidden { display: none; }
+
+@keyframes firstWalkNoteIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes firstWalkButtonBreathe { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-2px) scale(1.025); } }
+@keyframes firstWalkSparkleBreathe { 0%,100% { filter: drop-shadow(0 4px 9px rgba(232,191,91,.36)); } 50% { filter: drop-shadow(0 4px 14px rgba(246,203,86,.78)); } }
+
+@media (max-width: 520px) {
+  .garden-tutorial-note { width: min(180px, calc(100% - 178px)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .garden-tutorial-note,
+  .nav-action.is-tutorial-focus,
+  .found-item-sparkle.is-tutorial-focus { animation: none; }
+}

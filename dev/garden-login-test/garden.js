@@ -337,6 +337,11 @@ let installHelpVisible = false;
 let treeNamePromptedForUserId = "";
 let gardenWorldResizeObserver = null;
 let friendGardenWorldResizeObserver = null;
+// 첫 방문 안내는 기록이 없는 계정에서만 자연스럽게 나타납니다.
+// 별도 DB 컬럼 없이도 첫 기록이 저장되는 순간 자동으로 끝나며, 중간에 나가면 다음 접속 때 다시 길을 보여줍니다.
+let gardenTutorialIntroShownForUserId = "";
+let gardenTutorialPhase = "";
+let gardenTutorialTimer = null;
 
 // COORDINATE-WORLD-V1: 모든 기기에서 같은 정원 구도를 쓰는 내부 기준 크기입니다.
 const GARDEN_WORLD = Object.freeze({ width: 390, height: 540 });
@@ -397,6 +402,9 @@ const els = {
   saveGardenDecorate: $("#saveGardenDecorate"),
   navLetterBadge: $("#navLetterBadge"),
   stageMessage: $("#stageMessage"),
+  gardenTutorialNote: $("#gardenTutorialNote"),
+  gardenTutorialCopy: $("#gardenTutorialCopy"),
+  recordTutorialNote: $("#recordTutorialNote"),
   sheetOverlay: $("#sheetOverlay"),
   recordSheet: $("#recordSheet"),
   recordsSheet: $("#recordsSheet"),
@@ -1385,6 +1393,7 @@ function closeAllSheets({ force = false } = {}) {
   const wasViewingLetters = !els.lettersSheet.classList.contains("hidden");
   [els.recordSheet, els.recordsSheet, els.friendsSheet, els.lettersSheet, els.feedbackSheet, els.supportSheet, els.accountMenuSheet, els.letterComposerSheet, els.treeNameSheet].filter(Boolean).forEach((sheet) => sheet.classList.add("hidden"));
   els.sheetOverlay.classList.add("hidden");
+  window.setTimeout(() => renderFirstWalkTutorial(), 0);
   // 봉투 화면을 닫을 때만 배송 도착 알림을 다음 진입 시점으로 넘깁니다.
   if (wasViewingLetters) clearAnimalDeliveryArrivals();
 }
@@ -2501,6 +2510,7 @@ async function claimFoundItem() {
   else state.foundItems.push(nextItem);
 
   renderFoundItems();
+  renderFirstWalkTutorial();
   const catalogItem = foundItemCatalog[nextItem.itemKey];
   showToast(`숲에서 작은 것을 찾았어요. ${catalogItem.detail}`);
 }
@@ -4120,12 +4130,133 @@ function renderAuthUI() {
   }
 }
 
+function tutorialPreviewPhase() {
+  const preview = new URL(window.location.href).searchParams.get("tutorialPreview") || "";
+  return ["intro", "record", "discovery"].includes(preview) ? preview : "";
+}
+
+function firstWalkGuideIsAvailable() {
+  const preview = tutorialPreviewPhase();
+  if (preview === "intro" || preview === "record") return true;
+  return Boolean(currentUser)
+    && !isTreeNameSetupRequired()
+    && Array.isArray(state.records)
+    && state.records.length === 0;
+}
+
+function firstDiscoveryGuideIsAvailable() {
+  const preview = tutorialPreviewPhase();
+  if (preview === "discovery") return true;
+  return Boolean(currentUser)
+    && !isTreeNameSetupRequired()
+    && Array.isArray(state.records)
+    && state.records.length === 1
+    && canDiscoverFoundItem();
+}
+
+function recordSheetIsOpen() {
+  return Boolean(els.recordSheet && !els.recordSheet.classList.contains("hidden"));
+}
+
+function anotherSheetIsOpen() {
+  const sheets = [
+    els.recordsSheet,
+    els.friendsSheet,
+    els.lettersSheet,
+    els.feedbackSheet,
+    els.supportSheet,
+    els.accountMenuSheet,
+    els.letterComposerSheet,
+    els.treeNameSheet,
+  ];
+  return sheets.some((sheet) => sheet && !sheet.classList.contains("hidden"));
+}
+
+function clearGardenTutorialTimer() {
+  if (gardenTutorialTimer) window.clearTimeout(gardenTutorialTimer);
+  gardenTutorialTimer = null;
+}
+
+function hideGardenTutorial() {
+  clearGardenTutorialTimer();
+  gardenTutorialPhase = "";
+  els.gardenTutorialNote?.classList.add("hidden");
+  els.gardenTutorialNote?.removeAttribute("data-phase");
+  if (els.gardenTutorialCopy) els.gardenTutorialCopy.textContent = "";
+  els.recordTutorialNote?.classList.add("hidden");
+  $("#openRecord")?.classList.remove("is-tutorial-focus");
+  els.foundItemSparkle?.classList.remove("is-tutorial-focus");
+}
+
+function showGardenTutorialNote(phase, copy) {
+  if (!els.gardenTutorialNote || !els.gardenTutorialCopy) return;
+  gardenTutorialPhase = phase;
+  els.gardenTutorialCopy.textContent = copy;
+  els.gardenTutorialNote.dataset.phase = phase;
+  els.gardenTutorialNote.classList.remove("hidden");
+  $("#openRecord")?.classList.toggle("is-tutorial-focus", phase === "record");
+  els.foundItemSparkle?.classList.toggle("is-tutorial-focus", phase === "discovery");
+}
+
+function renderFirstWalkTutorial() {
+  const shouldGuideFirstWalk = firstWalkGuideIsAvailable();
+  const shouldGuideDiscovery = firstDiscoveryGuideIsAvailable();
+  const preview = tutorialPreviewPhase();
+
+  if (!shouldGuideFirstWalk && !shouldGuideDiscovery) {
+    hideGardenTutorial();
+    return;
+  }
+
+  if (anotherSheetIsOpen()) {
+    hideGardenTutorial();
+    return;
+  }
+
+  if (shouldGuideFirstWalk && recordSheetIsOpen()) {
+    clearGardenTutorialTimer();
+    gardenTutorialPhase = "record-form";
+    els.gardenTutorialNote?.classList.add("hidden");
+    $("#openRecord")?.classList.remove("is-tutorial-focus");
+    els.foundItemSparkle?.classList.remove("is-tutorial-focus");
+    els.recordTutorialNote?.classList.remove("hidden");
+    return;
+  }
+
+  els.recordTutorialNote?.classList.add("hidden");
+
+  if (shouldGuideDiscovery) {
+    clearGardenTutorialTimer();
+    showGardenTutorialNote("discovery", "풀숲에서 작은 것이 반짝여요. 빛을 눌러 찾아보세요.");
+    return;
+  }
+
+  const introStillPlaying = gardenTutorialPhase === "intro" && Boolean(gardenTutorialTimer);
+  const shouldStartIntro = preview === "intro" || gardenTutorialIntroShownForUserId !== currentUser?.id;
+
+  if (shouldStartIntro && !introStillPlaying) {
+    gardenTutorialIntroShownForUserId = currentUser?.id || "preview";
+    showGardenTutorialNote("intro", "여기는 오늘의 마음이 머무는 작은 정원이에요.");
+    clearGardenTutorialTimer();
+    gardenTutorialTimer = window.setTimeout(() => {
+      gardenTutorialTimer = null;
+      if (!firstWalkGuideIsAvailable() || recordSheetIsOpen() || anotherSheetIsOpen()) return;
+      showGardenTutorialNote("record", "오늘의 마음 하나를 나무에 남겨볼까요?");
+    }, 2300);
+    return;
+  }
+
+  if (introStillPlaying) return;
+  showGardenTutorialNote("record", "오늘의 마음 하나를 나무에 남겨볼까요?");
+}
+
 function renderAll() {
   renderMoodSelection();
   renderGarden();
   renderRecords();
   renderLetters();
   renderFriends();
+  renderFirstWalkTutorial();
 }
 
 async function beginKakaoLogin() {
@@ -4331,6 +4462,7 @@ function bindEvents() {
       return;
     }
     openSheet(els.recordSheet);
+    renderFirstWalkTutorial();
   });
   $("#openRecords").addEventListener("click", () => { renderRecords(); openSheet(els.recordsSheet); });
   els.openFriends.addEventListener("click", () => { renderFriends(); openSheet(els.friendsSheet); });
