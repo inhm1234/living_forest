@@ -111,22 +111,6 @@
           <div class="animal-v2-layer" id="animalV2Layer" aria-live="polite" aria-label="정원을 찾아온 숲친구"></div>
           <div class="animal-v2-trace-layer" id="animalV2TraceLayer" aria-live="polite" aria-label="숲친구가 남긴 작은 흔적"></div>
 
-          <!-- 동물을 눌렀을 때만, 하늘의 빈 공간에 작게 떠서 정원을 가리지 않습니다. -->
-          <section class="animal-encounter-card" id="animalEncounterCard" aria-live="polite" aria-label="숲친구와 만난 순간" hidden>
-            <button class="animal-encounter-close" id="animalEncounterClose" type="button" aria-label="숲친구 카드 닫기">×</button>
-            <div class="animal-encounter-icon" id="animalEncounterIcon" aria-hidden="true">🐦</div>
-            <div class="animal-encounter-copy">
-              <p class="animal-encounter-kicker" id="animalEncounterKicker">숲에서 만난 친구</p>
-              <h3 id="animalEncounterTitle">작은 새가 당신을 바라보고 있어요.</h3>
-              <p id="animalEncounterText">잠시 쉬어가던 이 아이에게 마음을 맡길 수 있어요.</p>
-              <p class="animal-encounter-time" id="animalEncounterTime">빠르게 전해줘요 · 약 2시간</p>
-            </div>
-            <div class="animal-encounter-actions">
-              <button class="animal-encounter-quiet" id="animalEncounterQuiet" type="button">조용히 둘러보기</button>
-              <button class="animal-encounter-send" id="animalEncounterSend" type="button">편지 맡기기</button>
-            </div>
-          </section>
-
           <!-- V1 요소는 DEV v2 연결 뒤에는 사용하지 않습니다. 기존 참조가 남아도 화면에는 보이지 않게만 유지합니다. -->
           <button class="active-animal animal-bird" id="activeAnimal" type="button" aria-label="작은 새에게 편지 맡기기" hidden>
             <span class="animal-speech" id="activeAnimalSpeech">작은 새가 가지에서 편지를 기다리고 있어요.</span>
@@ -188,6 +172,22 @@
       </div>
 
       <p class="stage-message" id="stageMessage">오늘의 마음은 나무 가까이에 조용히 남아요.</p>
+    </section>
+
+    <!-- 동물 카드는 정원 바깥의 전용 자리에서 열려, 나무·장식·상단 안내를 가리지 않습니다. -->
+    <section class="animal-encounter-card" id="animalEncounterCard" aria-live="polite" aria-label="숲친구와 만난 순간" hidden>
+      <button class="animal-encounter-close" id="animalEncounterClose" type="button" aria-label="숲친구 카드 닫기">×</button>
+      <div class="animal-encounter-icon" id="animalEncounterIcon" aria-hidden="true">🐦</div>
+      <div class="animal-encounter-copy">
+        <p class="animal-encounter-kicker" id="animalEncounterKicker">숲에서 만난 친구</p>
+        <h3 id="animalEncounterTitle">작은 새가 당신을 바라보고 있어요.</h3>
+        <p id="animalEncounterText">잠시 쉬어가던 이 아이에게 마음을 맡길 수 있어요.</p>
+        <p class="animal-encounter-time" id="animalEncounterTime">빠르게 전해줘요 · 약 2시간</p>
+      </div>
+      <div class="animal-encounter-actions">
+        <button class="animal-encounter-quiet" id="animalEncounterQuiet" type="button">조용히 둘러보기</button>
+        <button class="animal-encounter-send" id="animalEncounterSend" type="button">편지 맡기기</button>
+      </div>
     </section>
 
     <section class="growth-note" aria-label="나무 성장 안내">

@@ -173,8 +173,7 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .garden-world .active-animal,
 .garden-world .animal-trace,
 .garden-world .found-item-sparkle,
-.garden-world .found-items-layer.is-decorating,
-.garden-world .animal-encounter-card {
+.garden-world .found-items-layer.is-decorating {
   pointer-events: auto;
 }
 
@@ -814,93 +813,92 @@ textarea::placeholder { color: #a7b4bd; }
 .animal-v2-trace.trace-hedgehog { left: 14%; bottom: 16%; }
 
 .animal-encounter-card {
-  position: absolute;
-  z-index: 12;
-  top: 14px;
-  left: 14px;
+  position: relative;
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr);
-  gap: 5px 8px;
-  width: min(206px, calc(100% - 28px));
-  padding: 10px 11px 10px;
-  border: 1px solid rgba(255,255,255,.84);
-  border-radius: 17px;
-  background: rgba(255,255,255,.88);
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 6px 10px;
+  width: calc(100% - 8px);
+  max-width: 420px;
+  box-sizing: border-box;
+  margin: 12px auto 0;
+  padding: 11px 12px 11px;
+  border: 1px solid rgba(255,255,255,.88);
+  border-radius: 19px;
+  background: rgba(255,255,255,.86);
   color: #617487;
-  box-shadow: 0 12px 24px rgba(80,97,116,.15);
+  box-shadow: 0 12px 24px rgba(80,97,116,.12);
   backdrop-filter: blur(14px);
   animation: animalEncounterIn .22s ease-out both;
 }
-/* 정원을 덮지 않도록 빈 하늘 쪽에 머무릅니다. 우측 상단 안내와 겹치기 쉬운 고슴도치만 왼쪽에서 조금 아래로 내려요. */
-.animal-encounter-card[data-animal-kind="hedgehog"] { top: 62px; }
+/* 카드가 숨겨져 있을 때는 공간도 차지하지 않습니다. */
 .animal-encounter-card[hidden] { display: none; }
 .animal-encounter-close {
   position: absolute;
-  top: 5px;
-  right: 6px;
+  top: 6px;
+  right: 7px;
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  width: 23px;
+  height: 23px;
   padding: 0;
   border: 0;
   border-radius: 50%;
   background: rgba(238,244,245,.78);
   color: #8797a3;
-  font-size: 17px;
+  font-size: 18px;
   line-height: 1;
   cursor: pointer;
 }
 .animal-encounter-icon {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   margin-top: 1px;
   border: 1px solid rgba(255,255,255,.84);
   border-radius: 50%;
   background: rgba(244,250,246,.9);
-  font-size: 23px;
+  font-size: 25px;
 }
-.animal-encounter-copy { min-width: 0; padding-right: 14px; }
+.animal-encounter-copy { min-width: 0; padding-right: 18px; }
 .animal-encounter-kicker {
   margin: 0 0 2px;
   color: #94a69c;
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 900;
   letter-spacing: .03em;
 }
 .animal-encounter-copy h3 {
   margin: 0;
   color: #5f7481;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.32;
 }
 .animal-encounter-copy > p:not(.animal-encounter-kicker):not(.animal-encounter-time) {
   margin: 3px 0 0;
   color: #7b8d99;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 .animal-encounter-time {
   margin: 4px 0 0;
   color: #9b7f69;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 900;
 }
 .animal-encounter-actions {
   grid-column: 1 / -1;
   display: flex;
   justify-content: flex-end;
-  gap: 5px;
+  gap: 6px;
   margin-top: 1px;
 }
 .animal-encounter-actions button {
-  min-height: 27px;
-  padding: 0 8px;
-  border-radius: 9px;
-  font-size: 9px;
+  min-height: 31px;
+  padding: 0 10px;
+  border-radius: 10px;
+  font-size: 10px;
   font-weight: 900;
   cursor: pointer;
 }
@@ -973,8 +971,7 @@ textarea::placeholder { color: #a7b4bd; }
   .animal-v2-squirrel { top: 53%; right: 17%; }
   .animal-v2-rabbit { right: 11%; bottom: 16%; }
   .animal-v2-hedgehog { left: 8%; bottom: 15%; }
-  .animal-encounter-card { top: 10px; left: 10px; width: min(198px, calc(100% - 20px)); padding: 9px 10px; }
-  .animal-encounter-card[data-animal-kind="hedgehog"] { top: 56px; }
+  .animal-encounter-card { width: calc(100% - 8px); margin-top: 10px; padding: 10px 11px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
