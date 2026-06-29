@@ -1555,7 +1555,10 @@ function animalV2DeliveryLine(animal) {
 
 function closeAnimalEncounterCard() {
   animalEncounterVisitId = "";
-  if (els.animalEncounterCard) els.animalEncounterCard.hidden = true;
+  if (els.animalEncounterCard) {
+    els.animalEncounterCard.hidden = true;
+    delete els.animalEncounterCard.dataset.animalKind;
+  }
 }
 
 function openAnimalEncounterForVisit(visitId) {
@@ -1578,7 +1581,11 @@ function openAnimalEncounterForVisit(visitId) {
     els.animalEncounterSend.textContent = "편지 맡기기";
     els.animalEncounterSend.disabled = false;
   }
-  if (els.animalEncounterCard) els.animalEncounterCard.hidden = false;
+  if (els.animalEncounterCard) {
+    // 카드가 정원을 덮지 않도록 세계 안의 빈 하늘 위치에서 작게 보입니다.
+    els.animalEncounterCard.dataset.animalKind = animal.kind;
+    els.animalEncounterCard.hidden = false;
+  }
 }
 
 function openAnimalLetterComposer() {

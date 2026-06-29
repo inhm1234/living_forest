@@ -815,89 +815,91 @@ textarea::placeholder { color: #a7b4bd; }
 .animal-encounter-card {
   position: absolute;
   z-index: 12;
-  right: 16px;
-  bottom: 15px;
-  left: 16px;
+  top: 14px;
+  left: 14px;
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 10px 11px;
-  padding: 15px 15px 13px;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 5px 8px;
+  width: min(206px, calc(100% - 28px));
+  padding: 10px 11px 10px;
   border: 1px solid rgba(255,255,255,.84);
-  border-radius: 21px;
+  border-radius: 17px;
   background: rgba(255,255,255,.88);
   color: #617487;
-  box-shadow: 0 17px 34px rgba(80,97,116,.18);
+  box-shadow: 0 12px 24px rgba(80,97,116,.15);
   backdrop-filter: blur(14px);
-  animation: animalEncounterIn .24s ease-out both;
+  animation: animalEncounterIn .22s ease-out both;
 }
+/* 정원을 덮지 않도록 빈 하늘 쪽에 머무릅니다. 우측 상단 안내와 겹치기 쉬운 고슴도치만 왼쪽에서 조금 아래로 내려요. */
+.animal-encounter-card[data-animal-kind="hedgehog"] { top: 62px; }
 .animal-encounter-card[hidden] { display: none; }
 .animal-encounter-close {
   position: absolute;
-  top: 7px;
-  right: 8px;
+  top: 5px;
+  right: 6px;
   display: grid;
   place-items: center;
-  width: 27px;
-  height: 27px;
+  width: 22px;
+  height: 22px;
   padding: 0;
   border: 0;
   border-radius: 50%;
   background: rgba(238,244,245,.78);
   color: #8797a3;
-  font-size: 20px;
+  font-size: 17px;
   line-height: 1;
   cursor: pointer;
 }
 .animal-encounter-icon {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
-  margin-top: 2px;
+  width: 36px;
+  height: 36px;
+  margin-top: 1px;
   border: 1px solid rgba(255,255,255,.84);
   border-radius: 50%;
   background: rgba(244,250,246,.9);
-  font-size: 29px;
+  font-size: 23px;
 }
-.animal-encounter-copy { min-width: 0; padding-right: 18px; }
+.animal-encounter-copy { min-width: 0; padding-right: 14px; }
 .animal-encounter-kicker {
-  margin: 0 0 3px;
+  margin: 0 0 2px;
   color: #94a69c;
-  font-size: 10px;
+  font-size: 8px;
   font-weight: 900;
   letter-spacing: .03em;
 }
 .animal-encounter-copy h3 {
   margin: 0;
   color: #5f7481;
-  font-size: 14px;
-  line-height: 1.35;
+  font-size: 11px;
+  line-height: 1.32;
 }
 .animal-encounter-copy > p:not(.animal-encounter-kicker):not(.animal-encounter-time) {
-  margin: 5px 0 0;
+  margin: 3px 0 0;
   color: #7b8d99;
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 700;
-  line-height: 1.45;
+  line-height: 1.35;
 }
 .animal-encounter-time {
-  margin: 7px 0 0;
+  margin: 4px 0 0;
   color: #9b7f69;
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 900;
 }
 .animal-encounter-actions {
   grid-column: 1 / -1;
   display: flex;
   justify-content: flex-end;
-  gap: 7px;
+  gap: 5px;
   margin-top: 1px;
 }
 .animal-encounter-actions button {
-  min-height: 34px;
-  padding: 0 12px;
-  border-radius: 11px;
-  font-size: 11px;
+  min-height: 27px;
+  padding: 0 8px;
+  border-radius: 9px;
+  font-size: 9px;
   font-weight: 900;
   cursor: pointer;
 }
@@ -970,7 +972,8 @@ textarea::placeholder { color: #a7b4bd; }
   .animal-v2-squirrel { top: 53%; right: 17%; }
   .animal-v2-rabbit { right: 11%; bottom: 16%; }
   .animal-v2-hedgehog { left: 8%; bottom: 15%; }
-  .animal-encounter-card { right: 12px; bottom: 12px; left: 12px; padding: 13px 13px 12px; }
+  .animal-encounter-card { top: 10px; left: 10px; width: min(198px, calc(100% - 20px)); padding: 9px 10px; }
+  .animal-encounter-card[data-animal-kind="hedgehog"] { top: 56px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
