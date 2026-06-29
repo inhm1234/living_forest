@@ -2140,7 +2140,7 @@ textarea::placeholder { color: #a7b4bd; }
 
 
 
-/* FIRST-WALK TUTORIAL v2
+/* FIRST-WALK TUTORIAL v2.1
    첫날에는 설명문을 넘기지 않고, 숲빛을 따라 “나무 → 마음 남기기 → 작은 발견”을 직접 경험합니다. */
 .first-walk-tutorial {
   position: fixed;
@@ -2160,8 +2160,8 @@ textarea::placeholder { color: #a7b4bd; }
   height: 100%;
   padding: 0;
   border: 0;
-  background: rgba(48, 64, 79, .34);
-  backdrop-filter: blur(2.5px) saturate(.88);
+  background: rgba(48, 64, 79, .25);
+  backdrop-filter: blur(1.2px) saturate(.95);
   cursor: pointer;
   pointer-events: auto;
 }
@@ -2178,8 +2178,34 @@ textarea::placeholder { color: #a7b4bd; }
   filter: blur(2px);
   transform: translate(-50%, -50%);
   pointer-events: none;
-  transition: left .76s cubic-bezier(.22,.8,.3,1), top .76s cubic-bezier(.22,.8,.3,1), opacity .25s ease;
+  transition: left .92s cubic-bezier(.18,.88,.25,1), top .92s cubic-bezier(.18,.88,.25,1), opacity .25s ease;
 }
+.first-walk-guide-trail {
+  position: fixed;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+}
+.first-walk-guide-trail i {
+  position: fixed;
+  left: var(--first-walk-trail-x-1, -80px);
+  top: var(--first-walk-trail-y-1, -80px);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255,249,177,.98);
+  box-shadow: 0 0 11px rgba(255,235,133,.88);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.45);
+}
+.first-walk-guide-trail i:nth-child(2) { left: var(--first-walk-trail-x-2, -80px); top: var(--first-walk-trail-y-2, -80px); width: 6px; height: 6px; }
+.first-walk-guide-trail i:nth-child(3) { left: var(--first-walk-trail-x-3, -80px); top: var(--first-walk-trail-y-3, -80px); width: 5px; height: 5px; }
+.first-walk-guide-trail i:nth-child(4) { left: var(--first-walk-trail-x-4, -80px); top: var(--first-walk-trail-y-4, -80px); width: 4px; height: 4px; }
+.first-walk-tutorial.is-guide-traveling .first-walk-guide-trail i { animation: firstWalkTrailDot 1.28s ease-out both; }
+.first-walk-tutorial.is-guide-traveling .first-walk-guide-trail i:nth-child(1) { animation-delay: .14s; }
+.first-walk-tutorial.is-guide-traveling .first-walk-guide-trail i:nth-child(2) { animation-delay: .26s; }
+.first-walk-tutorial.is-guide-traveling .first-walk-guide-trail i:nth-child(3) { animation-delay: .38s; }
+.first-walk-tutorial.is-guide-traveling .first-walk-guide-trail i:nth-child(4) { animation-delay: .50s; }
 .first-walk-guide-light {
   position: fixed;
   z-index: 3;
@@ -2194,7 +2220,7 @@ textarea::placeholder { color: #a7b4bd; }
   filter: drop-shadow(0 0 12px rgba(255,233,134,.9));
   pointer-events: none;
   transform: translate(-50%, -50%);
-  transition: left .76s cubic-bezier(.22,.8,.3,1), top .76s cubic-bezier(.22,.8,.3,1), opacity .25s ease;
+  transition: left .92s cubic-bezier(.18,.88,.25,1), top .92s cubic-bezier(.18,.88,.25,1), opacity .25s ease;
 }
 .first-walk-guide-light.is-instant { transition: none !important; }
 .first-walk-guide-light::before,
@@ -2296,6 +2322,7 @@ textarea::placeholder { color: #a7b4bd; }
 @keyframes firstWalkRing { 0% { transform: scale(.55); opacity: .92; } 100% { transform: scale(1.28); opacity: 0; } }
 @keyframes firstWalkSpark { 0%,100% { transform: translateY(0) scale(.8); opacity: .4; } 50% { transform: translateY(-7px) scale(1); opacity: 1; } }
 @keyframes firstWalkStarFloat { 0%,100% { transform: translateY(1px) rotate(0deg); } 50% { transform: translateY(-3px) rotate(9deg); } }
+@keyframes firstWalkTrailDot { 0% { opacity: 0; transform: translate(-50%, 4px) scale(.35); } 22% { opacity: 1; transform: translate(-50%, -2px) scale(1); } 68% { opacity: .82; transform: translate(-50%, -9px) scale(.76); } 100% { opacity: 0; transform: translate(-50%, -17px) scale(.28); } }
 @keyframes firstWalkButtonBreathe { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-2px) scale(1.03); } }
 @keyframes firstWalkFocusRing { 0%,100% { opacity: .88; transform: scale(.98); } 50% { opacity: .35; transform: scale(1.06); } }
 @keyframes firstWalkSparkleBreathe { 0%,100% { filter: drop-shadow(0 4px 9px rgba(232,191,91,.36)); } 50% { filter: drop-shadow(0 4px 16px rgba(246,203,86,.92)); } }

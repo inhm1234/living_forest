@@ -337,12 +337,14 @@ let installHelpVisible = false;
 let treeNamePromptedForUserId = "";
 let gardenWorldResizeObserver = null;
 let friendGardenWorldResizeObserver = null;
-// FIRST-WALK TUTORIAL v2
+// FIRST-WALK TUTORIAL v2.1
 // 기록이 없는 계정에게만 “숲빛을 따라 첫 기록을 남기는” 짧은 산책을 보여줍니다.
 // DB 컬럼 없이도 첫 기록·첫 발견이 끝나면 자동으로 사라지고, 중간에 나가면 다음 접속에 다시 이어집니다.
 let gardenTutorialPhase = "";
 let gardenTutorialTimer = null;
 let firstWalkGuideLayoutTimer = null;
+let firstWalkGuideTravelTimer = null;
+let firstWalkGuidePosition = null;
 
 // COORDINATE-WORLD-V1: 모든 기기에서 같은 정원 구도를 쓰는 내부 기준 크기입니다.
 const GARDEN_WORLD = Object.freeze({ width: 390, height: 540 });
@@ -407,6 +409,7 @@ const els = {
   firstWalkTutorial: $("#firstWalkTutorial"),
   firstWalkTutorialTap: $("#firstWalkTutorialTap"),
   firstWalkGuideLight: $("#firstWalkGuideLight"),
+  firstWalkGuideTrail: $("#firstWalkGuideTrail"),
   firstWalkTutorialLabel: $("#firstWalkTutorialLabel"),
   firstWalkTutorialCount: $("#firstWalkTutorialCount"),
   firstWalkTutorialTitle: $("#firstWalkTutorialTitle"),
@@ -4190,8 +4193,11 @@ function anotherSheetIsOpen() {
 function clearGardenTutorialTimer() {
   if (gardenTutorialTimer) window.clearTimeout(gardenTutorialTimer);
   if (firstWalkGuideLayoutTimer) window.clearTimeout(firstWalkGuideLayoutTimer);
+  if (firstWalkGuideTravelTimer) window.clearTimeout(firstWalkGuideTravelTimer);
   gardenTutorialTimer = null;
   firstWalkGuideLayoutTimer = null;
+  firstWalkGuideTravelTimer = null;
+  els.firstWalkTutorial?.classList.remove("is-guide-traveling");
 }
 
 const firstWalkScenes = Object.freeze({
@@ -4238,12 +4244,38 @@ function setFirstWalkCardPosition(target, phase) {
     return;
   }
   const rect = target.getBoundingClientRect();
-  const desiredBottom = Math.max(22, window.innerHeight - rect.top + 16);
+  // 카드와 버튼 사이에 숨 쉴 틈을 남겨, 시선이 카드 → 숲빛 → 버튼으로 이어지게 합니다.
+  const desiredBottom = Math.max(22, window.innerHeight - rect.top + 34);
   const maxBottom = Math.max(22, window.innerHeight - 170);
   els.firstWalkTutorial.style.setProperty(
     "--first-walk-card-bottom",
     `${Math.round(Math.min(desiredBottom, maxBottom))}px`
   );
+}
+
+function showFirstWalkGuideTrail(from, to) {
+  const tutorial = els.firstWalkTutorial;
+  if (!tutorial || !from || !to) return;
+
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const arc = Math.min(26, Math.max(10, Math.abs(dx) * 0.08 + 12));
+  const points = [0.20, 0.42, 0.64, 0.82];
+
+  points.forEach((ratio, index) => {
+    const bend = Math.sin(ratio * Math.PI) * arc;
+    tutorial.style.setProperty(`--first-walk-trail-x-${index + 1}`, `${Math.round(from.x + (dx * ratio) + bend)}px`);
+    tutorial.style.setProperty(`--first-walk-trail-y-${index + 1}`, `${Math.round(from.y + (dy * ratio))}px`);
+  });
+
+  tutorial.classList.remove("is-guide-traveling");
+  void tutorial.offsetWidth;
+  tutorial.classList.add("is-guide-traveling");
+  if (firstWalkGuideTravelTimer) window.clearTimeout(firstWalkGuideTravelTimer);
+  firstWalkGuideTravelTimer = window.setTimeout(() => {
+    firstWalkGuideTravelTimer = null;
+    tutorial.classList.remove("is-guide-traveling");
+  }, 1500);
 }
 
 function positionFirstWalkGuide(phase, { animate = true } = {}) {
@@ -4259,13 +4291,23 @@ function positionFirstWalkGuide(phase, { animate = true } = {}) {
   if (phase === "intro" || phase === "complete") {
     y = rect.top + (rect.height * 0.38);
   } else if (phase === "record") {
-    y = rect.top - 16;
+    // 숲빛이 버튼 위에 '도착'한 것처럼, 버튼 가운데보다 조금 위에 멈춥니다.
+    y = rect.top - 22;
   }
 
+  const previousPosition = firstWalkGuidePosition;
   if (!animate) guide.classList.add("is-instant");
   tutorial.style.setProperty("--first-walk-guide-x", `${Math.round(x)}px`);
   tutorial.style.setProperty("--first-walk-guide-y", `${Math.round(y)}px`);
   setFirstWalkCardPosition(target, phase);
+
+  if (phase === "record" && animate && previousPosition) {
+    showFirstWalkGuideTrail(previousPosition, { x, y });
+  } else if (phase !== "record") {
+    tutorial.classList.remove("is-guide-traveling");
+  }
+
+  firstWalkGuidePosition = { x, y };
   void guide.offsetWidth;
   if (!animate) {
     window.requestAnimationFrame(() => guide.classList.remove("is-instant"));
@@ -4289,6 +4331,7 @@ function setFirstWalkTargetFocus(phase) {
 function hideGardenTutorial({ keepPhase = false } = {}) {
   clearGardenTutorialTimer();
   if (!keepPhase) gardenTutorialPhase = "";
+  if (!keepPhase) firstWalkGuidePosition = null;
   els.firstWalkTutorial?.classList.add("hidden");
   els.firstWalkTutorial?.removeAttribute("data-phase");
   els.gardenApp?.classList.remove("is-first-walk-guide");
