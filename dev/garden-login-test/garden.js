@@ -5137,11 +5137,10 @@ async function init() {
   await handleOAuthCallback();
   await syncSession();
 
-  // 로그인하지 않은 방문자만 손님맞이 숲에서 시작합니다.
-  // OAuth가 끝난 뒤에는 currentUser가 생기므로 이 분기로 오지 않고,
-  // 기존 계정은 곧바로 기존 정원 UI·기존 상태 판단으로 이어집니다.
+  // 로그인 전에는 공통 로그인 화면을 먼저 보여줍니다.
+  // 손님맞이 장면은 로그인 후, 내 나무가 없는 신규 계정 전용으로 연결할 예정입니다.
   if (!currentUser) {
-    initWelcomePreview({ liveEntry: true });
+    renderAuthUI();
     return;
   }
 
