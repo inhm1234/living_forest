@@ -316,7 +316,6 @@ let pendingFriendInvite = null;
 let invitePreviewHandled = false;
 let toastTimer = null;
 let authBusy = false;
-let welcomePlantTimer = null;
 let activeFriendGardenId = "";
 let activeSharedTreeId = "";
 let pendingSharedTreeInvite = null;
@@ -351,6 +350,12 @@ let firstWalkCompletionFoundItemId = "";
 // ?tutorialPreview=intro 는 실제 기록·성장·장식을 건드리지 않는 검수 전용 산책입니다.
 // 이미 오늘 기록한 계정에서도 처음부터 끝까지 확인할 수 있도록 메모리에서만 진행 상태를 가집니다.
 const tutorialSandbox = { recorded: false, found: false };
+
+// WELCOME PREVIEW v2
+// ?welcomePreview=1 은 실제 카카오 계정·기록·친구·편지 DB를 읽거나 바꾸지 않는 손님맞이 전용 검수 모드입니다.
+function isWelcomePreviewMode() {
+  return new URL(window.location.href).searchParams.get("welcomePreview") === "1";
+}
 
 // COORDINATE-WORLD-V1: 모든 기기에서 같은 정원 구도를 쓰는 내부 기준 크기입니다.
 const GARDEN_WORLD = Object.freeze({ width: 390, height: 540 });
@@ -519,14 +524,14 @@ const els = {
   dismissInstallCard: $("#dismissInstallCard"),
   installHelp: $("#installHelp"),
   authScreen: $("#authScreen"),
+  welcomePreview: $("#welcomePreview"),
+  welcomePlantButton: $("#welcomePlantButton"),
+  welcomeKakaoButton: $("#welcomeKakaoButton"),
+  welcomeReplay: $("#welcomeReplay"),
+  welcomePreviewHandoff: $("#welcomePreviewHandoff"),
   gardenApp: $("#gardenApp"),
   authError: $("#authError"),
   signInKakao: $("#signInKakao"),
-  startMyTree: $("#startMyTree"),
-  authStartPanel: $("#authStartPanel"),
-  welcomeForest: $("#welcomeForest"),
-  welcomeSoil: $("#welcomeSoil"),
-  welcomeLight: $("#welcomeLight"),
   signOutButton: $("#signOutButton"),
   accountButton: $("#accountButton"),
   accountName: $("#accountName"),
@@ -4208,36 +4213,10 @@ function setAuthError(message = "") {
   els.authError.classList.toggle("hidden", !message);
 }
 
-function resetWelcomeForest() {
-  if (!els.authScreen) return;
-  if (welcomePlantTimer) window.clearTimeout(welcomePlantTimer);
-  welcomePlantTimer = null;
-  els.authScreen.classList.remove("is-planting");
-  els.authStartPanel?.classList.add("hidden");
-  els.authStartPanel?.classList.remove("is-ready");
-  els.startMyTree?.removeAttribute("disabled");
-}
-
-function beginWelcomePlanting() {
-  if (!els.authScreen || !els.startMyTree || els.authScreen.classList.contains("is-planting")) return;
-
-  els.startMyTree.setAttribute("disabled", "disabled");
-  els.authScreen.classList.add("is-planting");
-  els.authStartPanel?.classList.add("hidden");
-  els.authStartPanel?.classList.remove("is-ready");
-
-  if (welcomePlantTimer) window.clearTimeout(welcomePlantTimer);
-  welcomePlantTimer = window.setTimeout(() => {
-    els.authStartPanel?.classList.remove("hidden");
-    els.authStartPanel?.classList.add("is-ready");
-  }, 980);
-}
-
 function renderAuthUI() {
   const isSignedIn = Boolean(currentUser);
   els.authScreen.classList.toggle("hidden", isSignedIn);
   els.gardenApp.classList.toggle("hidden", !isSignedIn);
-  if (!isSignedIn) resetWelcomeForest();
   if (isSignedIn) {
     const accountName = state.profileName || displayName(currentUser);
     const gardenName = state.treeName || accountName;
@@ -4548,7 +4527,7 @@ async function beginKakaoLogin() {
   setAuthError("");
   els.signInKakao.disabled = true;
   els.signInKakao.classList.add("is-loading");
-  els.signInKakao.querySelector(".kakao-button-label").textContent = "카카오 로그인으로 이동 중이에요";
+  els.signInKakao.lastChild.textContent = "카카오 로그인으로 이동 중이에요";
 
   const inviteToken = getInviteTokenFromUrl();
   if (inviteToken) {
@@ -4561,7 +4540,7 @@ async function beginKakaoLogin() {
     authBusy = false;
     els.signInKakao.disabled = false;
     els.signInKakao.classList.remove("is-loading");
-    els.signInKakao.querySelector(".kakao-button-label").textContent = "카카오로 내 숲 시작하기";
+    els.signInKakao.lastChild.textContent = "카카오로 내 정원 시작하기";
     setAuthError(`카카오 로그인 준비 중 문제가 생겼어요. ${error.message}`);
   }
 }
@@ -4711,7 +4690,6 @@ async function saveTreeName(event) {
 }
 
 function bindEvents() {
-  els.startMyTree?.addEventListener("click", beginWelcomePlanting);
   els.signInKakao.addEventListener("click", beginKakaoLogin);
   els.installAppButton.addEventListener("click", () => { void requestAppInstall(); });
   els.dismissInstallCard.addEventListener("click", dismissInstallCardForAWhile);
@@ -4850,7 +4828,52 @@ function bindEvents() {
   });
 }
 
+function resetWelcomePreview() {
+  const preview = els.welcomePreview;
+  if (!preview) return;
+
+  preview.classList.remove("is-seeded", "is-handoff");
+  preview.dataset.phase = "intro";
+  if (els.welcomeKakaoButton) els.welcomeKakaoButton.disabled = false;
+  // CSS 장면 애니메이션을 처음부터 다시 재생합니다.
+  preview.classList.add("is-resetting");
+  void preview.offsetWidth;
+  preview.classList.remove("is-resetting");
+}
+
+function initWelcomePreview() {
+  const preview = els.welcomePreview;
+  if (!preview) return;
+
+  // 이 모드에서는 아래의 로그인/DB 초기화를 하지 않습니다.
+  // 따라서 현재 카카오 로그인 여부나 실제 정원 데이터와 전혀 연결되지 않습니다.
+  document.body.classList.add("is-welcome-preview");
+  preview.classList.remove("hidden");
+  els.authScreen?.classList.add("hidden");
+  els.gardenApp?.classList.add("hidden");
+  resetWelcomePreview();
+
+  els.welcomePlantButton?.addEventListener("click", () => {
+    if (preview.classList.contains("is-seeded")) return;
+    preview.classList.add("is-seeded");
+    preview.dataset.phase = "seeded";
+  });
+
+  els.welcomeKakaoButton?.addEventListener("click", () => {
+    // 미리보기는 실제 OAuth를 시작하지 않습니다. 손님맞이 장면의 끝까지만 안전하게 검수합니다.
+    preview.classList.add("is-handoff");
+    els.welcomeKakaoButton.disabled = true;
+  });
+
+  els.welcomeReplay?.addEventListener("click", resetWelcomePreview);
+}
+
 async function init() {
+  if (isWelcomePreviewMode()) {
+    initWelcomePreview();
+    return;
+  }
+
   registerPwaServiceWorker();
   window.addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
