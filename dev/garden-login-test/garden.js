@@ -529,6 +529,17 @@ const els = {
   welcomeKakaoButton: $("#welcomeKakaoButton"),
   welcomeReplay: $("#welcomeReplay"),
   welcomePreviewHandoff: $("#welcomePreviewHandoff"),
+  welcomeNameSheet: $("#welcomeNameSheet"),
+  welcomeNameForm: $("#welcomeNameForm"),
+  welcomeNameInput: $("#welcomeNameInput"),
+  welcomeNameError: $("#welcomeNameError"),
+  welcomeWalkLayer: $("#welcomeWalkLayer"),
+  welcomeWalkIntro: $("#welcomeWalkIntro"),
+  welcomeWalkTreeName: $("#welcomeWalkTreeName"),
+  welcomeRecordCard: $("#welcomeRecordCard"),
+  welcomeRecordLine: $("#welcomeRecordLine"),
+  welcomeRecordSave: $("#welcomeRecordSave"),
+  welcomeRecordPreviewNote: $("#welcomeRecordPreviewNote"),
   gardenApp: $("#gardenApp"),
   authError: $("#authError"),
   signInKakao: $("#signInKakao"),
@@ -4829,23 +4840,67 @@ function bindEvents() {
 }
 
 let welcomeSeedTimer = null;
+let welcomeWalkTimer = null;
+let welcomeSelectedMood = "";
 
 function resetWelcomePreview() {
   const preview = els.welcomePreview;
   if (!preview) return;
 
-  if (welcomeSeedTimer) {
-    window.clearTimeout(welcomeSeedTimer);
-    welcomeSeedTimer = null;
-  }
+  [welcomeSeedTimer, welcomeWalkTimer].forEach((timer) => {
+    if (timer) window.clearTimeout(timer);
+  });
+  welcomeSeedTimer = null;
+  welcomeWalkTimer = null;
+  welcomeSelectedMood = "";
 
-  preview.classList.remove("is-seeded", "is-seed-ready", "is-handoff");
+  preview.classList.remove("is-seeded", "is-seed-ready", "is-handoff", "is-naming", "is-walk", "is-record-previewed");
   preview.dataset.phase = "intro";
+  els.welcomeNameSheet?.classList.add("hidden");
+  els.welcomeWalkLayer?.classList.add("hidden");
+  els.welcomeWalkIntro?.classList.remove("is-hidden");
+  els.welcomeRecordCard?.classList.remove("is-visible");
+  els.welcomeNameForm?.reset();
+  if (els.welcomeNameError) els.welcomeNameError.textContent = "";
+  if (els.welcomeRecordLine) els.welcomeRecordLine.value = "";
+  if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "";
+  $$(".welcome-mood-choice").forEach((button) => button.classList.remove("is-selected"));
   if (els.welcomeKakaoButton) els.welcomeKakaoButton.disabled = false;
+
   // CSS 장면 애니메이션을 처음부터 다시 재생합니다.
   preview.classList.add("is-resetting");
   void preview.offsetWidth;
   preview.classList.remove("is-resetting");
+}
+
+function openWelcomeNameSheet() {
+  const preview = els.welcomePreview;
+  if (!preview) return;
+  preview.classList.add("is-naming");
+  preview.dataset.phase = "name";
+  els.welcomeNameSheet?.classList.remove("hidden");
+  window.setTimeout(() => els.welcomeNameInput?.focus(), 180);
+}
+
+function startWelcomeFirstWalk(treeName) {
+  const preview = els.welcomePreview;
+  if (!preview) return;
+  const safeName = String(treeName || "내 나무").trim() || "내 나무";
+  preview.classList.remove("is-naming");
+  preview.classList.add("is-walk");
+  preview.dataset.phase = "first-walk";
+  els.welcomeNameSheet?.classList.add("hidden");
+  els.welcomeWalkLayer?.classList.remove("hidden");
+  if (els.welcomeWalkTreeName) els.welcomeWalkTreeName.textContent = safeName;
+  els.welcomeWalkIntro?.classList.remove("is-hidden");
+  els.welcomeRecordCard?.classList.remove("is-visible");
+
+  welcomeWalkTimer = window.setTimeout(() => {
+    els.welcomeWalkIntro?.classList.add("is-hidden");
+    els.welcomeRecordCard?.classList.add("is-visible");
+    preview.dataset.phase = "record";
+    welcomeWalkTimer = null;
+  }, 1150);
 }
 
 function initWelcomePreview() {
@@ -4864,12 +4919,8 @@ function initWelcomePreview() {
 
   els.welcomePlantButton?.addEventListener("click", () => {
     if (preview.classList.contains("is-seeded")) return;
-
-    // ‘내 나무 심기’는 실제 로그인으로 바로 보내지 않고,
-    // 먼저 씨앗이 공터에 자리를 찾는 장면을 보여줍니다.
     preview.classList.add("is-seeded");
     preview.dataset.phase = "seed";
-
     welcomeSeedTimer = window.setTimeout(() => {
       preview.classList.add("is-seed-ready");
       preview.dataset.phase = "seed-ready";
@@ -4878,11 +4929,42 @@ function initWelcomePreview() {
   });
 
   els.welcomeKakaoButton?.addEventListener("click", () => {
-    // 이 전용 미리보기에서는 실제 OAuth를 시작하지 않습니다.
-    // 카카오 시작 화면으로 이어지는 위치까지만 안전하게 검수합니다.
-    preview.classList.add("is-handoff");
-    preview.dataset.phase = "handoff";
+    // 실제 OAuth는 시작하지 않습니다. 이름 정하기부터 이어지는 신규 방문 흐름만 검수합니다.
+    if (preview.classList.contains("is-naming")) return;
     els.welcomeKakaoButton.disabled = true;
+    window.setTimeout(openWelcomeNameSheet, 220);
+  });
+
+  els.welcomeNameForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const treeName = els.welcomeNameInput?.value.trim() || "";
+    if (!treeName) {
+      if (els.welcomeNameError) els.welcomeNameError.textContent = "나무 이름을 한 글자 이상 적어주세요.";
+      els.welcomeNameInput?.focus();
+      return;
+    }
+    if (els.welcomeNameError) els.welcomeNameError.textContent = "";
+    startWelcomeFirstWalk(treeName);
+  });
+
+  $$(".welcome-mood-choice").forEach((button) => {
+    button.addEventListener("click", () => {
+      welcomeSelectedMood = button.dataset.welcomeMood || "";
+      $$(".welcome-mood-choice").forEach((choice) => choice.classList.toggle("is-selected", choice === button));
+      if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "";
+    });
+  });
+
+  els.welcomeRecordSave?.addEventListener("click", () => {
+    if (!welcomeSelectedMood) {
+      if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "오늘의 마음을 하나 골라주세요.";
+      return;
+    }
+    // 이 v9는 첫 기록 화면까지의 안전한 동선 검수입니다. 실제 기록 저장은 절대 하지 않습니다.
+    preview.classList.add("is-record-previewed");
+    if (els.welcomeRecordPreviewNote) {
+      els.welcomeRecordPreviewNote.textContent = "첫 마음이 씨앗 곁에 조용히 내려앉았어요.";
+    }
   });
 
   els.welcomeReplay?.addEventListener("click", resetWelcomePreview);
