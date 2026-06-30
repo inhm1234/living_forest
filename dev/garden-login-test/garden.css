@@ -2378,9 +2378,11 @@ textarea::placeholder { color: #a7b4bd; }
 }
 
 
-/* WELCOME PREVIEW v3 ------------------------------------------------------
-   ?welcomePreview=1 전용 정지 시안입니다.
-   기본 DEV, 실제 카카오 계정, 정원 데이터에는 연결되지 않습니다. */
+/* WELCOME PREVIEW v4 ------------------------------------------------------
+   ?welcomePreview=1 전용 카메라 움직임 시안입니다.
+   기본 DEV, 실제 카카오 계정, 정원 데이터에는 연결되지 않습니다.
+   이번 단계는 숲 전체에서 공터로 천천히 가까워지는 카메라만 검수합니다.
+   빛·씨앗·카카오 연결은 아직 넣지 않습니다. */
 .welcome-preview {
   position: fixed;
   z-index: 120;
@@ -2400,7 +2402,14 @@ textarea::placeholder { color: #a7b4bd; }
 .welcome-still-art {
   background: url("assets/welcome/welcome-forest-v1.png") center 51% / cover no-repeat;
   filter: saturate(.92) brightness(1.01);
-  transform: scale(1.015);
+  /* 숲 전체에서 시작해, 가운데 공터를 향해 한 번만 아주 천천히 가까워집니다. */
+  transform-origin: 50% 66%;
+  animation: welcome-camera-arrival 12s cubic-bezier(.18,.74,.24,1) forwards;
+  will-change: transform;
+}
+@keyframes welcome-camera-arrival {
+  from { transform: scale(1.015) translate3d(0, 0, 0); }
+  to { transform: scale(1.075) translate3d(0, -0.7%, 0); }
 }
 .welcome-scene::before {
   content: "";
@@ -2460,11 +2469,22 @@ textarea::placeholder { color: #a7b4bd; }
   cursor: default;
 }
 @media (max-width: 560px) {
-  .welcome-still-art { background-position: 51% 50%; transform: scale(1.03); }
+  .welcome-still-art {
+    background-position: 51% 50%;
+    transform-origin: 50% 66%;
+    animation: welcome-camera-arrival-mobile 12s cubic-bezier(.18,.74,.24,1) forwards;
+  }
+  @keyframes welcome-camera-arrival-mobile {
+    from { transform: scale(1.03) translate3d(0, 0, 0); }
+    to { transform: scale(1.085) translate3d(0, -0.55%, 0); }
+  }
   .welcome-brand { top: max(22px, env(safe-area-inset-top)); }
   .welcome-brand::before { width: 172px; height: 70px; }
   .welcome-start-button { min-height: 54px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .welcome-still-art { transform: none; }
+  .welcome-still-art {
+    animation: none;
+    transform: scale(1.015);
+  }
 }

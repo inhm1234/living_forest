@@ -4851,8 +4851,8 @@ function initWelcomePreview() {
   preview.classList.remove("hidden");
   els.authScreen?.classList.add("hidden");
   els.gardenApp?.classList.add("hidden");
-  // v3는 손님맞이 첫 정지 장면만 보는 단계입니다.
-  // 버튼·빛·카메라·카카오 연결은 이 시안이 통과한 뒤에만 다시 붙입니다.
+  // v4는 숲 전체에서 공터로 천천히 가까워지는 카메라만 보는 단계입니다.
+  // 작은 빛·씨앗·카카오 연결은 이 시안이 통과한 뒤에만 다시 붙입니다.
   if (preview.dataset.previewMode === "still") return;
 
   resetWelcomePreview();
