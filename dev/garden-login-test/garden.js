@@ -5003,6 +5003,38 @@ function startWelcomeGardenTransition() {
   }, 3050);
 }
 
+async function beginWelcomeKakaoLogin() {
+  if (authBusy) return;
+
+  const button = els.welcomeKakaoButton;
+  const preview = els.welcomePreview;
+  if (!button) return;
+
+  authBusy = true;
+  const originalLabel = button.textContent;
+  button.disabled = true;
+  button.textContent = "카카오 로그인으로 이동 중이에요";
+
+  // 손님맞이 검수 주소는 로그인 뒤에 남기지 않습니다.
+  // OAuth가 끝나면 일반 DEV 초기화가 실행되어, 실제 계정 상태를 읽습니다.
+  const redirectTo = `${window.location.origin}${window.location.pathname}`;
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "kakao",
+    options: { redirectTo },
+  });
+
+  if (!error) return;
+
+  authBusy = false;
+  button.disabled = false;
+  button.textContent = originalLabel || "카카오로 내 숲 시작하기";
+  if (els.welcomePreviewHandoff) {
+    els.welcomePreviewHandoff.textContent = "카카오 로그인 준비 중 문제가 있었어요. 잠시 뒤 다시 눌러주세요.";
+  }
+  preview?.classList.add("is-handoff");
+  console.error("TodayForest welcome Kakao login error:", error);
+}
+
 function initWelcomePreview() {
   const preview = els.welcomePreview;
   if (!preview) return;
@@ -5029,10 +5061,10 @@ function initWelcomePreview() {
   });
 
   els.welcomeKakaoButton?.addEventListener("click", () => {
-    // 실제 OAuth는 시작하지 않습니다. 이름 정하기부터 이어지는 신규 방문 흐름만 검수합니다.
-    if (preview.classList.contains("is-naming")) return;
-    els.welcomeKakaoButton.disabled = true;
-    window.setTimeout(openWelcomeNameSheet, 220);
+    // 이 단계만 실제 카카오 로그인으로 연결합니다.
+    // 로그인 뒤에는 ?welcomePreview=1 주소가 아닌 평소 DEV 화면으로 돌아가며,
+    // 실제 계정 상태(이름 없음 / 기록 0개 / 기록 있음)에 따라 기존 흐름이 이어집니다.
+    void beginWelcomeKakaoLogin();
   });
 
   els.welcomeNameForm?.addEventListener("submit", (event) => {
