@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="../../assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="../../assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="garden.css?v=welcome-preview-v2" />
+  <link rel="stylesheet" href="garden.css?v=welcome-static-v3" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
     // 운영 루트(/)에 같은 파일을 반영하면 G-YC872G7MH1로 자동 전송됩니다.
@@ -54,32 +54,14 @@
   </script>
 </head>
 <body>
-  <!-- WELCOME PREVIEW v2: ?welcomePreview=1 에서만 보이는 독립 손님맞이 검수 화면 -->
-  <section class="welcome-preview hidden" id="welcomePreview" aria-label="오늘의숲 첫 방문 미리보기" data-phase="intro">
+  <!-- WELCOME PREVIEW v3: ?welcomePreview=1 에서만 보이는 정지 시안 검수 화면 -->
+  <section class="welcome-preview hidden" id="welcomePreview" aria-label="오늘의숲 첫 방문 정지 시안" data-preview-mode="still">
     <div class="welcome-scene" aria-hidden="true">
-      <div class="welcome-camera">
-        <div class="welcome-backdrop"></div>
-        <img class="welcome-tree welcome-tree-one" src="../../assets/garden/tree_growth/tree_stage4_morning.png" alt="" />
-        <img class="welcome-tree welcome-tree-two" src="../../assets/garden/tree_growth/tree_stage3_morning.png" alt="" />
-        <img class="welcome-tree welcome-tree-three" src="../../assets/garden/tree_growth/tree_stage5_morning.png" alt="" />
-        <img class="welcome-tree welcome-tree-four" src="../../assets/garden/tree_growth/tree_stage4_morning.png" alt="" />
-        <img class="welcome-tree welcome-tree-five" src="../../assets/garden/tree_growth/tree_stage6_morning.png" alt="" />
-        <div class="welcome-leaf-drift welcome-leaf-drift-one"></div>
-        <div class="welcome-leaf-drift welcome-leaf-drift-two"></div>
-        <div class="welcome-soil">
-          <i></i><i></i><i></i>
-        </div>
-        <div class="welcome-mote"><span>✦</span></div>
-        <img class="welcome-seed" src="../../assets/garden/tree-seed.svg" alt="" />
-        <img class="welcome-sprout" src="../../assets/garden/tree-sprout-v2.png" alt="" />
-      </div>
+      <div class="welcome-still-art"></div>
     </div>
     <p class="welcome-brand">오늘의숲</p>
-    <button type="button" class="welcome-replay" id="welcomeReplay" aria-label="처음부터 다시 보기">↻</button>
     <div class="welcome-actions">
-      <button type="button" class="welcome-start-button" id="welcomePlantButton">내 나무 심기</button>
-      <button type="button" class="welcome-kakao-button" id="welcomeKakaoButton">카카오로 내 숲 시작하기</button>
-      <p class="welcome-preview-handoff" id="welcomePreviewHandoff">미리보기는 여기까지예요.</p>
+      <button type="button" class="welcome-start-button" aria-label="내 나무 심기 버튼 위치 확인용">내 나무 심기</button>
     </div>
   </section>
 
@@ -755,6 +737,6 @@
 
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="garden.js?v=welcome-preview-v2"></script>
+  <script type="module" src="garden.js?v=welcome-static-v3"></script>
 </body>
 </html>

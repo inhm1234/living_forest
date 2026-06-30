@@ -4851,6 +4851,10 @@ function initWelcomePreview() {
   preview.classList.remove("hidden");
   els.authScreen?.classList.add("hidden");
   els.gardenApp?.classList.add("hidden");
+  // v3는 손님맞이 첫 정지 장면만 보는 단계입니다.
+  // 버튼·빛·카메라·카카오 연결은 이 시안이 통과한 뒤에만 다시 붙입니다.
+  if (preview.dataset.previewMode === "still") return;
+
   resetWelcomePreview();
 
   els.welcomePlantButton?.addEventListener("click", () => {
