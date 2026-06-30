@@ -1403,10 +1403,18 @@ async function hydrateGardenForCurrentUser() {
     await ensureGardenProfile();
     await loadGardenState();
     await syncMyGardenAnimalVisit({ beginWhenReady: true, silent: true });
-    renderAuthUI();
-    renderAll();
     setAuthError("");
     configureRetentionWindPolling();
+
+    // 카카오 로그인 뒤 처음 만든 계정만 실제 손님맞이로 보냅니다.
+    // 이미 기록이나 성장이 있는 예전 사용자는 기존 정원으로 그대로 갑니다.
+    if (isFirstGardenOnboardingRequired()) {
+      startWelcomeOnboarding();
+      return;
+    }
+
+    renderAuthUI();
+    renderAll();
     restoreSharedTreeFromUrl();
     await previewFriendInviteFromUrl();
     promptForFirstTreeNameIfNeeded();
@@ -1427,6 +1435,16 @@ function openSheet(element) {
 
 function isTreeNameSetupRequired() {
   return Boolean(currentUser) && !String(state.treeName || "").trim();
+}
+
+// tree_name만 비어 있는 예전 사용자까지 신규 손님맞이로 보내지 않도록,
+// 이름·기록·성장 모두 없는 첫 계정만 대상으로 삼습니다.
+function isFirstGardenOnboardingRequired() {
+  return Boolean(currentUser)
+    && !String(state.treeName || "").trim()
+    && Number(state.growth || 0) === 0
+    && Array.isArray(state.records)
+    && state.records.length === 0;
 }
 
 function closeAllSheets({ force = false } = {}) {
@@ -4229,8 +4247,16 @@ function setAuthError(message = "") {
 
 function renderAuthUI() {
   const isSignedIn = Boolean(currentUser);
+  const onboardingVisible = welcomeFlowMode === "onboarding";
+  const welcomeSurfaceVisible = onboardingVisible || welcomeFlowMode === "transitioning";
+
   els.authScreen.classList.toggle("hidden", isSignedIn);
-  els.gardenApp.classList.toggle("hidden", !isSignedIn);
+  // 신규 사용자는 손님맞이 장면을 마칠 때까지 실제 정원 UI를 뒤에만 준비합니다.
+  els.gardenApp.classList.toggle("hidden", !isSignedIn || onboardingVisible);
+  if (!welcomeSurfaceVisible && !isWelcomePreviewMode()) {
+    els.welcomePreview?.classList.add("hidden");
+  }
+
   if (isSignedIn) {
     const accountName = state.profileName || displayName(currentUser);
     const gardenName = state.treeName || accountName;
@@ -4599,6 +4625,7 @@ async function syncSession() {
   if (!currentUser) {
     configureRetentionWindPolling();
     state = cloneDefault();
+    resetWelcomeOnboardingSurface();
   }
   renderAuthUI();
   if (currentUser) {
@@ -4626,6 +4653,7 @@ async function signOut() {
   treeNamePromptedForUserId = "";
   configureRetentionWindPolling();
   state = cloneDefault();
+  resetWelcomeOnboardingSurface();
   selectedLetterRecipientId = "";
   closeAllSheets();
   closeLetterModal();
@@ -4848,6 +4876,9 @@ let welcomeGardenTransitionTimer = null;
 let welcomeGardenArrivalTimer = null;
 let welcomeSelectedMood = "";
 let welcomeTreeName = "내 나무";
+// preview는 URL 검수 전용, onboarding은 카카오 로그인 뒤 신규 계정의 실제 첫 나무 흐름입니다.
+let welcomeFlowMode = "idle";
+let welcomeHandlersBound = false;
 
 function clearWelcomePreviewTimers() {
   [welcomeSeedTimer, welcomeWalkTimer, welcomeGardenTransitionTimer, welcomeGardenArrivalTimer].forEach((timer) => {
@@ -4857,6 +4888,26 @@ function clearWelcomePreviewTimers() {
   welcomeWalkTimer = null;
   welcomeGardenTransitionTimer = null;
   welcomeGardenArrivalTimer = null;
+}
+
+function isLiveWelcomeOnboarding() {
+  return welcomeFlowMode === "onboarding" && Boolean(currentUser);
+}
+
+function resetWelcomeOnboardingSurface() {
+  clearWelcomePreviewTimers();
+  if (welcomeFlowMode === "onboarding" || welcomeFlowMode === "transitioning") {
+    const preview = els.welcomePreview;
+    preview?.classList.add("hidden");
+    preview?.classList.remove(
+      "is-seeded", "is-seed-ready", "is-handoff", "is-naming", "is-walk",
+      "is-record-previewed", "is-tree-birth", "is-entering-garden", "is-leaving"
+    );
+    els.welcomeNameSheet?.classList.add("hidden");
+    els.welcomeWalkLayer?.classList.add("hidden");
+    document.body.classList.remove("is-welcome-preview", "is-welcome-live-entry");
+  }
+  welcomeFlowMode = "idle";
 }
 
 function resetWelcomeSandboxGarden() {
@@ -4978,7 +5029,37 @@ function prepareWelcomeSandboxGarden() {
   });
 }
 
-function startWelcomeGardenTransition() {
+function finishWelcomeOnboarding() {
+  const preview = els.welcomePreview;
+  if (!preview || !currentUser) return;
+
+  // 실제 저장이 끝난 뒤에만 화면을 넘깁니다. 정원은 아래에서 먼저 렌더링하고,
+  // 손님맞이 장면은 기존 CSS 전환 시간만큼 부드럽게 사라집니다.
+  welcomeFlowMode = "transitioning";
+  preview.classList.add("is-leaving");
+  preview.dataset.phase = "my-garden";
+  renderAuthUI();
+  renderAll();
+  window.requestAnimationFrame(() => syncGardenWorldScale());
+
+  window.setTimeout(async () => {
+    if (welcomeFlowMode !== "transitioning") return;
+    preview.classList.add("hidden");
+    preview.classList.remove(
+      "is-seeded", "is-seed-ready", "is-handoff", "is-naming", "is-walk",
+      "is-record-previewed", "is-tree-birth", "is-entering-garden", "is-leaving"
+    );
+    els.welcomeNameSheet?.classList.add("hidden");
+    els.welcomeWalkLayer?.classList.add("hidden");
+    document.body.classList.remove("is-welcome-preview", "is-welcome-live-entry");
+    welcomeFlowMode = "idle";
+    renderAuthUI();
+    renderAll();
+    await previewFriendInviteFromUrl();
+  }, 620);
+}
+
+function startWelcomeGardenTransition({ onboarding = isLiveWelcomeOnboarding() } = {}) {
   const preview = els.welcomePreview;
   if (!preview) return;
 
@@ -4996,9 +5077,13 @@ function startWelcomeGardenTransition() {
   }, 2450);
 
   welcomeGardenArrivalTimer = window.setTimeout(() => {
-    prepareWelcomeSandboxGarden();
-    preview.classList.add("is-leaving");
-    preview.dataset.phase = "my-garden";
+    if (onboarding) {
+      finishWelcomeOnboarding();
+    } else {
+      prepareWelcomeSandboxGarden();
+      preview.classList.add("is-leaving");
+      preview.dataset.phase = "my-garden";
+    }
     welcomeGardenArrivalTimer = null;
   }, 3050);
 }
@@ -5041,23 +5126,153 @@ async function beginWelcomeKakaoLogin() {
   console.error("TodayForest welcome Kakao login error:", error);
 }
 
-function initWelcomePreview({ liveEntry = false } = {}) {
+function startWelcomeOnboarding() {
+  if (!isFirstGardenOnboardingRequired()) return false;
+  initWelcomePreview({ onboarding: true });
+  return true;
+}
+
+async function saveWelcomeOnboardingTreeName(treeName) {
+  if (!isLiveWelcomeOnboarding() || !currentUser) return;
+
+  const submitButton = els.welcomeNameForm?.querySelector('button[type="submit"]');
+  const originalLabel = submitButton?.textContent || "이름 정하기";
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = "나무 이름을 정하는 중이에요";
+  }
+
+  try {
+    const { data, error } = await supabase.rpc("set_my_garden_tree_name", { p_tree_name: treeName });
+    if (error) throw error;
+
+    const row = normalizeRpcRow(data);
+    state.treeName = row?.saved_tree_name || row?.tree_name || treeName;
+    if (els.welcomeNameError) els.welcomeNameError.textContent = "";
+    startWelcomeFirstWalk(state.treeName);
+  } catch (error) {
+    console.error("TodayForest welcome tree-name save error:", error);
+    const detail = String(error?.message || "");
+    if (detail.includes("TREE_NAME_ALREADY_SET") || detail.includes("TREE_NAME_LOCKED")) {
+      try {
+        await loadGardenState();
+      } catch (loadError) {
+        console.warn("TodayForest welcome tree-name refresh skipped:", loadError);
+      }
+      if (String(state.treeName || "").trim()) {
+        startWelcomeFirstWalk(state.treeName);
+        return;
+      }
+    }
+    if (els.welcomeNameError) {
+      els.welcomeNameError.textContent = detail.includes("set_my_garden_tree_name") || detail.includes("tree_name")
+        ? "나무 이름 저장소를 준비하지 못했어요. 잠시 뒤 다시 시도해 주세요."
+        : "이름을 정하지 못했어요. 잠시 뒤 다시 시도해 주세요.";
+    }
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = originalLabel;
+    }
+  }
+}
+
+function welcomeMoodToRecordMood(value) {
+  return {
+    "포근해요": "good",
+    "평범해요": "calm",
+    "조금 지쳐요": "tired",
+  }[value] || "good";
+}
+
+async function saveWelcomeOnboardingFirstRecord() {
+  if (!isLiveWelcomeOnboarding() || !currentUser) return;
+
+  const oneLine = els.welcomeRecordLine?.value.trim() || "";
+  if (!welcomeSelectedMood) {
+    if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "오늘의 마음을 하나 골라주세요.";
+    return;
+  }
+  if (!oneLine) {
+    if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "오늘을 한 줄로 남겨주세요.";
+    els.welcomeRecordLine?.focus();
+    return;
+  }
+
+  const button = els.welcomeRecordSave;
+  const originalLabel = button?.textContent || "내 마음 심기";
+  if (button) {
+    button.disabled = true;
+    button.textContent = "첫 마음을 심는 중이에요";
+  }
+
+  try {
+    const { error } = await supabase.rpc("save_garden_record", {
+      p_mood: welcomeMoodToRecordMood(welcomeSelectedMood),
+      p_one_line: oneLine,
+      p_detail: null,
+    });
+    if (error) throw error;
+
+    await loadGardenState();
+    trackTodayForestOperationalEvent("garden_mood_saved", {
+      mood: welcomeMoodToRecordMood(welcomeSelectedMood),
+      detail_added: "no",
+    });
+    if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "";
+    els.welcomePreview?.classList.add("is-record-previewed");
+    els.welcomePreview.dataset.phase = "recorded";
+    window.setTimeout(() => startWelcomeGardenTransition({ onboarding: true }), 300);
+  } catch (error) {
+    console.error("TodayForest welcome first-record save error:", error);
+    const detail = String(error?.message || "");
+    if (detail.includes("TODAY_RECORD_ALREADY_SAVED")) {
+      try {
+        await loadGardenState();
+      } catch (loadError) {
+        console.warn("TodayForest welcome first-record refresh skipped:", loadError);
+      }
+      startWelcomeGardenTransition({ onboarding: true });
+      return;
+    }
+    if (els.welcomeRecordPreviewNote) {
+      els.welcomeRecordPreviewNote.textContent = databaseErrorMessage(error);
+    }
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalLabel;
+    }
+  }
+}
+
+function initWelcomePreview({ liveEntry = false, onboarding = false } = {}) {
   const preview = els.welcomePreview;
   if (!preview) return;
 
-  // welcomePreview=1은 검수 전용, liveEntry는 로그인하지 않은 실제 첫 방문자의 DEV 입구입니다.
-  // 두 경우 모두 로그인 전에는 실제 정원·기록 데이터를 읽거나 바꾸지 않습니다.
+  // welcomePreview=1은 검수 전용, onboarding은 로그인 뒤 신규 계정의 실제 첫 나무 흐름입니다.
+  welcomeFlowMode = onboarding ? "onboarding" : "preview";
   document.body.classList.add("is-welcome-preview");
   document.body.classList.toggle("is-welcome-live-entry", liveEntry);
   preview.classList.remove("hidden");
   els.authScreen?.classList.add("hidden");
   els.gardenApp?.classList.add("hidden");
-  if (liveEntry && els.welcomePreviewHandoff) {
-    els.welcomePreviewHandoff.classList.add("hidden");
+
+  const nameCopy = preview.querySelector(".welcome-sheet-copy");
+  if (onboarding) {
+    if (els.welcomeKakaoButton) els.welcomeKakaoButton.textContent = "이름 정하기";
+    if (els.welcomePreviewHandoff) els.welcomePreviewHandoff.classList.add("hidden");
+    if (nameCopy) nameCopy.textContent = "한 번 정한 나무 이름은 바꿀 수 없어요.";
+  } else {
+    if (els.welcomeKakaoButton) els.welcomeKakaoButton.textContent = "카카오로 내 숲 시작하기";
+    els.welcomePreviewHandoff?.classList.toggle("hidden", liveEntry);
+    if (nameCopy) nameCopy.textContent = "이름은 나중에 언제든 바꿀 수 있어요.";
   }
   if (preview.dataset.previewMode === "still") return;
 
   resetWelcomePreview();
+  if (welcomeHandlersBound) return;
+  welcomeHandlersBound = true;
 
   els.welcomePlantButton?.addEventListener("click", () => {
     if (preview.classList.contains("is-seeded")) return;
@@ -5071,9 +5286,11 @@ function initWelcomePreview({ liveEntry = false } = {}) {
   });
 
   els.welcomeKakaoButton?.addEventListener("click", () => {
-    // 이 단계만 실제 카카오 로그인으로 연결합니다.
-    // 로그인 뒤에는 ?welcomePreview=1 주소가 아닌 평소 DEV 화면으로 돌아가며,
-    // 실제 계정 상태(이름 없음 / 기록 0개 / 기록 있음)에 따라 기존 흐름이 이어집니다.
+    if (isLiveWelcomeOnboarding()) {
+      openWelcomeNameSheet();
+      return;
+    }
+    // 검수·비로그인 손님맞이에서만 카카오 로그인으로 연결합니다.
     void beginWelcomeKakaoLogin();
   });
 
@@ -5086,6 +5303,10 @@ function initWelcomePreview({ liveEntry = false } = {}) {
       return;
     }
     if (els.welcomeNameError) els.welcomeNameError.textContent = "";
+    if (isLiveWelcomeOnboarding()) {
+      void saveWelcomeOnboardingTreeName(treeName);
+      return;
+    }
     startWelcomeFirstWalk(treeName);
   });
 
@@ -5098,15 +5319,19 @@ function initWelcomePreview({ liveEntry = false } = {}) {
   });
 
   els.welcomeRecordSave?.addEventListener("click", () => {
+    if (isLiveWelcomeOnboarding()) {
+      void saveWelcomeOnboardingFirstRecord();
+      return;
+    }
     if (!welcomeSelectedMood) {
       if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "오늘의 마음을 하나 골라주세요.";
       return;
     }
-    // 실제 기록 저장 없이, 첫 마음이 첫 나무가 되고 내 정원으로 이어지는 장면만 검수합니다.
+    // 검수 화면에서는 실제 기록 저장 없이 장면만 이어집니다.
     preview.classList.add("is-record-previewed");
     preview.dataset.phase = "recorded";
     if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "";
-    window.setTimeout(startWelcomeGardenTransition, 300);
+    window.setTimeout(() => startWelcomeGardenTransition({ onboarding: false }), 300);
   });
 
   els.welcomeReplay?.addEventListener("click", resetWelcomePreview);
@@ -5179,6 +5404,7 @@ async function init() {
     if (!currentUser) {
       configureRetentionWindPolling();
       state = cloneDefault();
+      resetWelcomeOnboardingSurface();
     }
     renderAuthUI();
     if (currentUser) {
