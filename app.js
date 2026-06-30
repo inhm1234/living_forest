@@ -1,3 +1,4 @@
+/* Production mirror of dev/garden-login-test/garden.js v19. */
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 const SUPABASE_URL = "https://xdcsppaptcmgpvnzgoab.supabase.co";
@@ -10,9 +11,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     flowType: "pkce",
   },
 });
-
-// 이 파일은 운영 루트(/)용입니다. DEV 전용 미리보기·테스트 친구·1분 배송 경로는 실행하지 않습니다.
-const TODAYFOREST_OPERATION_BUILD = true;
 
 
 // GA4에는 닉네임·편지 제목·본문·계정 ID처럼 개인을 식별할 수 있는 값은 보내지 않습니다.
@@ -149,6 +147,8 @@ const weatherOptions = [
   { icon: "🌧️", text: "조용히 비가 내려요", className: "rain", message: "구름 아래로 빗방울이 조용히 정원에 내려앉아요." },
 ];
 
+// 장식은 하루 기록마다 하나씩 발견합니다. 같은 종류가 다시 찾아와도
+// 각 발견 기록의 id가 달라서 따로 표시·이동·저장됩니다.
 const foundItemCatalog = {
   pink_wildflower: {
     name: "분홍 들꽃",
@@ -170,8 +170,47 @@ const foundItemCatalog = {
     detail: "이끼 낀 둥근 돌이 숲길 곁에 놓였어요.",
     asset: "assets/decorations/mossy-round-rock.png",
   },
+  amber_mushroom: {
+    name: "주황 버섯",
+    detail: "햇살빛 주황 버섯이 풀숲에서 고개를 내밀었어요.",
+    asset: "assets/decorations/amber-mushroom.png",
+  },
+  leafy_pile: {
+    name: "낙엽 더미",
+    detail: "바람이 모아둔 낙엽이 포근하게 쌓였어요.",
+    asset: "assets/decorations/leafy-pile.png",
+  },
+  tiny_hedgehog: {
+    name: "작은 고슴도치",
+    detail: "작은 고슴도치가 잠시 정원 가장자리에 쉬어가요.",
+    asset: "assets/decorations/tiny-hedgehog.png",
+  },
+  tiny_squirrel: {
+    name: "작은 다람쥐",
+    detail: "작은 다람쥐가 도토리를 꼭 안고 앉았어요.",
+    asset: "assets/decorations/tiny-squirrel.png",
+  },
+  branch_letter: {
+    name: "낮은 가지의 봉투",
+    detail: "낮은 가지에 작은 봉투 하나가 살며시 걸렸어요.",
+    asset: "assets/decorations/branch-letter.png",
+  },
+  forest_ribbon: {
+    name: "숲 리본",
+    detail: "바람에 살랑이는 리본이 정원을 꾸며줘요.",
+    asset: "assets/decorations/forest-ribbon.png",
+  },
+  firefly_jar: {
+    name: "반딧불 병",
+    detail: "작은 빛들이 유리병 안에서 조용히 반짝여요.",
+    asset: "assets/decorations/firefly-jar.png",
+  },
+  little_sign: {
+    name: "작은 표지판",
+    detail: "숲길을 가리키는 작은 표지판이 세워졌어요.",
+    asset: "assets/decorations/little-sign.png",
+  },
 };
-const foundItemKeys = Object.keys(foundItemCatalog);
 
 const animalVisitors = {
   bird: {
@@ -220,8 +259,15 @@ const animalVisitors = {
   },
 };
 
-const animalVisitorOrder = ["bird", "squirrel", "rabbit", "hedgehog"];
-const ANIMAL_VISIT_STORAGE_PREFIX = "todayforest-dev-animal-visit-v1";
+// 서버는 퇴장 뒤 animal_kind를 비워 둡니다. 다른 기기에서도 같은 짧은 흔적을 보여주기 위한 공용 표시입니다.
+const genericAnimalTrace = {
+  kind: "trace",
+  name: "숲친구",
+  sceneClass: "generic",
+  traceIcon: "🍃",
+  traceStory: "숲친구가 풀잎을 살짝 흔들어 두고 숲길로 돌아갔어요.",
+};
+
 const ANIMAL_DELIVERY_STORAGE_PREFIX = "todayforest-dev-animal-delivery-v2";
 const ANIMAL_DELIVERY_QUEUE_STORAGE_PREFIX = "todayforest-dev-animal-delivery-queue-v3";
 // 배송을 마친 편지는 보낸 편지함에 쌓지 않습니다.
@@ -274,8 +320,14 @@ let authBusy = false;
 let activeFriendGardenId = "";
 let activeSharedTreeId = "";
 let pendingSharedTreeInvite = null;
+// DEV Animal Visit v2: V1의 한 마리 상태와 분리된, 최대 두 마리의 계정 공통 방문 목록입니다.
 let activeAnimalVisit = null;
+let activeAnimalV2Visits = [];
+let selectedAnimalV2VisitId = "";
+let animalVisitSyncBusy = false;
+let animalVisitArrivalTimer = null;
 let animalDepartureTimer = null;
+let animalEncounterVisitId = "";
 let pendingExpiredLetterReturn = null;
 let pendingRetentionNextVisitNoticeCount = 0;
 let retentionWindTimer = null;
@@ -284,25 +336,30 @@ let retentionCleanupRanOnThisPage = false;
 let deferredInstallPrompt = null;
 let installHelpVisible = false;
 let treeNamePromptedForUserId = "";
-
-// 신규 계정의 첫 방문 손님맞이 상태입니다. 별도 DB 컬럼 없이
-// 이름·성장·기록이 모두 없는 계정에서만 시작합니다.
-let welcomeFlowMode = "idle";
-let welcomeSeedTimer = null;
-let welcomeWalkTimer = null;
-let welcomeGardenTransitionTimer = null;
-let welcomeGardenArrivalTimer = null;
-let welcomeSelectedMood = "";
-let welcomeTreeName = "내 나무";
-
-// 첫 방문 튜토리얼은 DB에 새 컬럼을 더하지 않습니다.
-// "기록 0개 → 실제 첫 기록 → 첫 발견"이라는 기존 계정 데이터를 기준으로 한 번만 진행됩니다.
+let gardenWorldResizeObserver = null;
+let friendGardenWorldResizeObserver = null;
+// FIRST-WALK TUTORIAL v2.3
+// 기록이 없는 계정에게만 “숲빛을 따라 첫 기록을 남기는” 짧은 산책을 보여줍니다.
+// DB 컬럼 없이도 첫 기록·첫 발견이 끝나면 자동으로 사라지고, 중간에 나가면 다음 접속에 다시 이어집니다.
+// 마지막에는 발견한 작은 것을 잠깐 바라볼 수 있는 마무리 카드를 보여줍니다.
 let gardenTutorialPhase = "";
 let gardenTutorialTimer = null;
 let firstWalkGuideLayoutTimer = null;
 let firstWalkGuideTravelTimer = null;
 let firstWalkGuidePosition = null;
 let firstWalkCompletionFoundItemId = "";
+// ?tutorialPreview=intro 는 실제 기록·성장·장식을 건드리지 않는 검수 전용 산책입니다.
+// 이미 오늘 기록한 계정에서도 처음부터 끝까지 확인할 수 있도록 메모리에서만 진행 상태를 가집니다.
+const tutorialSandbox = { recorded: false, found: false };
+
+// WELCOME PREVIEW v5
+// ?welcomePreview=1 은 실제 카카오 계정·기록·친구·편지 DB를 읽거나 바꾸지 않는 손님맞이 전용 검수 모드입니다.
+function isWelcomePreviewMode() {
+  return new URL(window.location.href).searchParams.get("welcomePreview") === "1";
+}
+
+// COORDINATE-WORLD-V1: 모든 기기에서 같은 정원 구도를 쓰는 내부 기준 크기입니다.
+const GARDEN_WORLD = Object.freeze({ width: 390, height: 540 });
 
 // 발견한 작은 것은 평소에는 고정돼 있고, 꾸미기 모드에서만 사용자가 옮길 수 있습니다.
 // 실제 저장 전의 위치는 별도 초안으로만 들고 있어 취소하면 바로 원래 자리로 돌아갑니다.
@@ -315,6 +372,7 @@ const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 const els = {
   gardenStage: $("#gardenStage"),
+  gardenWorld: $("#gardenWorld"),
   treeWrap: $("#treeWrap"),
   treeImage: $("#treeImage"),
   treeNameLabel: $("#treeNameLabel"),
@@ -334,6 +392,17 @@ const els = {
   activeAnimalSpeech: $("#activeAnimalSpeech"),
   animalTrace: $("#animalTrace"),
   animalTraceIcon: $("#animalTraceIcon"),
+  animalV2Layer: $("#animalV2Layer"),
+  animalV2TraceLayer: $("#animalV2TraceLayer"),
+  animalEncounterCard: $("#animalEncounterCard"),
+  animalEncounterClose: $("#animalEncounterClose"),
+  animalEncounterQuiet: $("#animalEncounterQuiet"),
+  animalEncounterSend: $("#animalEncounterSend"),
+  animalEncounterIcon: $("#animalEncounterIcon"),
+  animalEncounterKicker: $("#animalEncounterKicker"),
+  animalEncounterTitle: $("#animalEncounterTitle"),
+  animalEncounterText: $("#animalEncounterText"),
+  animalEncounterTime: $("#animalEncounterTime"),
   letterComposerTitle: $("#letterComposerTitle"),
   letterComposerFootnote: $("#letterComposerFootnote"),
   nextVisitorText: $("#nextVisitorText"),
@@ -348,6 +417,18 @@ const els = {
   saveGardenDecorate: $("#saveGardenDecorate"),
   navLetterBadge: $("#navLetterBadge"),
   stageMessage: $("#stageMessage"),
+  gardenApp: $("#gardenApp"),
+  firstWalkTutorial: $("#firstWalkTutorial"),
+  firstWalkTutorialTap: $("#firstWalkTutorialTap"),
+  firstWalkGuideLight: $("#firstWalkGuideLight"),
+  firstWalkGuideTrail: $("#firstWalkGuideTrail"),
+  firstWalkTutorialLabel: $("#firstWalkTutorialLabel"),
+  firstWalkTutorialCount: $("#firstWalkTutorialCount"),
+  firstWalkTutorialTitle: $("#firstWalkTutorialTitle"),
+  firstWalkTutorialBody: $("#firstWalkTutorialBody"),
+  firstWalkTutorialHint: $("#firstWalkTutorialHint"),
+  recordTutorialNote: $("#recordTutorialNote"),
+  recordTutorialPreview: $("#recordTutorialPreview"),
   sheetOverlay: $("#sheetOverlay"),
   recordSheet: $("#recordSheet"),
   recordsSheet: $("#recordsSheet"),
@@ -396,6 +477,8 @@ const els = {
   enableDevFriendButton: $("#enableDevFriendButton"),
   friendVisit: $("#friendVisit"),
   friendVisitStage: $("#friendVisitStage"),
+  friendGardenWorld: $("#friendGardenWorld"),
+  friendFoundItemsLayer: $("#friendFoundItemsLayer"),
   friendVisitName: $("#friendVisitName"),
   friendVisitTree: $("#friendVisitTree"),
   friendVisitDayCount: $("#friendVisitDayCount"),
@@ -445,6 +528,8 @@ const els = {
   welcomePreview: $("#welcomePreview"),
   welcomePlantButton: $("#welcomePlantButton"),
   welcomeKakaoButton: $("#welcomeKakaoButton"),
+  welcomeReplay: $("#welcomeReplay"),
+  welcomePreviewHandoff: $("#welcomePreviewHandoff"),
   welcomeNameSheet: $("#welcomeNameSheet"),
   welcomeNameForm: $("#welcomeNameForm"),
   welcomeNameInput: $("#welcomeNameInput"),
@@ -456,22 +541,20 @@ const els = {
   welcomeRecordLine: $("#welcomeRecordLine"),
   welcomeRecordSave: $("#welcomeRecordSave"),
   welcomeRecordPreviewNote: $("#welcomeRecordPreviewNote"),
+  welcomeFirstTree: $("#welcomeFirstTree"),
+  welcomeFirstFlower: $("#welcomeFirstFlower"),
+  welcomeTreeBirthCopy: $("#welcomeTreeBirthCopy"),
   gardenApp: $("#gardenApp"),
   authError: $("#authError"),
   signInKakao: $("#signInKakao"),
   signOutButton: $("#signOutButton"),
   accountButton: $("#accountButton"),
   accountName: $("#accountName"),
+  accountMenuSheet: $("#accountMenuSheet"),
+  accountMenuName: $("#accountMenuName"),
+  openInstallFromAccount: $("#openInstallFromAccount"),
+  accountInstallHint: $("#accountInstallHint"),
   openFriends: $("#openFriends"),
-  firstWalkTutorial: $("#firstWalkTutorial"),
-  firstWalkTutorialTap: $("#firstWalkTutorialTap"),
-  firstWalkGuideLight: $("#firstWalkGuideLight"),
-  firstWalkTutorialLabel: $("#firstWalkTutorialLabel"),
-  firstWalkTutorialCount: $("#firstWalkTutorialCount"),
-  firstWalkTutorialTitle: $("#firstWalkTutorialTitle"),
-  firstWalkTutorialBody: $("#firstWalkTutorialBody"),
-  firstWalkTutorialHint: $("#firstWalkTutorialHint"),
-  recordTutorialNote: $("#recordTutorialNote"),
 };
 
 function cloneDefault() {
@@ -556,10 +639,13 @@ function dismissInstallCardForAWhile() {
 }
 
 function showInstallHelp(message) {
-  if (!els.installHelp) return;
   installHelpVisible = true;
-  els.installHelp.textContent = message;
-  els.installHelp.classList.remove("hidden");
+  if (els.installHelp) {
+    els.installHelp.textContent = message;
+    els.installHelp.classList.remove("hidden");
+  }
+  // 자동 설치 카드가 숨겨진 상태에서도, 계정 메뉴에서 누른 안내는 보이도록 합니다.
+  showToast(message);
 }
 
 function showIosInstallHelp() {
@@ -587,6 +673,11 @@ function openChromeFromKakaoTalk() {
 }
 
 async function requestAppInstall() {
+  if (isStandaloneApp()) {
+    showToast("이미 홈 화면에 심긴 오늘의숲을 열고 있어요.");
+    return;
+  }
+
   if (isKakaoTalkInAppBrowser()) {
     openChromeFromKakaoTalk();
     return;
@@ -612,6 +703,30 @@ async function requestAppInstall() {
   }
 
   showToast("브라우저 메뉴에서 ‘앱 설치’ 또는 ‘홈 화면에 추가’를 눌러 주세요.");
+}
+
+function accountInstallHintText() {
+  if (isStandaloneApp()) return "이미 홈 화면에 심겨 있어요.";
+  if (isKakaoTalkInAppBrowser()) {
+    return isAndroidDevice()
+      ? "Chrome에서 열어 홈 화면에 심어요."
+      : "Safari에서 열어 홈 화면에 추가해요.";
+  }
+  if (isIosBrowser()) return "Safari의 공유 메뉴에서 홈 화면에 추가해요.";
+  return "브라우저에서 홈 화면에 추가할 수 있어요.";
+}
+
+function openAccountMenu() {
+  if (!currentUser || !els.accountMenuSheet) return;
+  const accountName = state.treeName || state.profileName || displayName(currentUser);
+  if (els.accountMenuName) els.accountMenuName.textContent = `${accountName}의 정원`;
+  if (els.accountInstallHint) els.accountInstallHint.textContent = accountInstallHintText();
+  openSheet(els.accountMenuSheet);
+}
+
+async function requestAppInstallFromAccountMenu() {
+  closeAllSheets();
+  await requestAppInstall();
 }
 
 function registerPwaServiceWorker() {
@@ -642,6 +757,12 @@ function databaseErrorMessage(error) {
   }
   if (message.includes("bootstrap_my_garden_profile")) {
     return "새 정원을 준비하지 못했어요. 새 사용자 정원 보정 SQL을 먼저 실행해 주세요.";
+  }
+  if (message.includes("sync_my_garden_dev_animal_visits_v2") || message.includes("send_garden_letter_with_dev_animal_v2") || message.includes("garden_dev_animal_v2")) {
+    return "숲친구 방문 v2 준비를 하지 못했어요. DEV 동물 방문 v2 SQL 설정을 먼저 확인해 주세요.";
+  }
+  if (message.includes("sync_my_garden_animal_visit") || message.includes("depart_my_garden_animal_visit") || message.includes("garden_animal_visit_states")) {
+    return "숲친구 방문 준비를 하지 못했어요. 동물 방문 v1 SQL 설정을 먼저 확인해 주세요.";
   }
   if (message.includes("garden_profiles") || message.includes("garden_records") || message.includes("garden_letters")) {
     return "내 정원 저장소가 아직 준비되지 않았어요. Supabase SQL 설정을 먼저 실행해 주세요.";
@@ -738,18 +859,15 @@ function deliveryStatus(sentLetter) {
 
 
 function retentionTestModeFromUrl() {
-  if (TODAYFOREST_OPERATION_BUILD) return "";
   const raw = new URL(window.location.href).searchParams.get("retentionTest");
   return ["21", "wind", "31"].includes(raw) ? raw : "";
 }
 
 function retentionResetRequested() {
-  if (TODAYFOREST_OPERATION_BUILD) return false;
   return new URL(window.location.href).searchParams.get("retentionReset") === "1";
 }
 
 function retentionCleanupRequested() {
-  if (TODAYFOREST_OPERATION_BUILD) return false;
   return new URL(window.location.href).searchParams.get("retentionCleanup") === "1";
 }
 
@@ -914,22 +1032,22 @@ function configureRetentionWindPolling() {
 }
 
 async function loadFoundGardenItems() {
-  // position_x / position_y SQL이 아직 적용되지 않은 개발 배포 순간에도
-  // 기존 장식 발견·표시 기능이 사라지지 않도록, 이전 열만 읽는 안전한 대체 경로를 둡니다.
+  // DEV 전용 장식 테이블을 읽습니다. position_x / position_y가 없는 배포 순간에도
+  // 기존 장식 표시가 사라지지 않도록 이전 열만 읽는 안전한 대체 경로를 둡니다.
   const positionedResult = await supabase
-    .from("garden_found_items")
+    .from("garden_dev_found_items")
     .select("id, record_id, item_key, placement_slot, position_x, position_y, found_at, created_at")
     .order("created_at", { ascending: true });
 
   if (!positionedResult.error) return positionedResult;
 
   const legacyResult = await supabase
-    .from("garden_found_items")
+    .from("garden_dev_found_items")
     .select("id, record_id, item_key, placement_slot, found_at, created_at")
     .order("created_at", { ascending: true });
 
   if (!legacyResult.error) {
-    console.warn("TodayForest found-item position columns are not ready yet:", positionedResult.error);
+    console.warn("TodayForest DEV found-item position columns are not ready yet:", positionedResult.error);
     return legacyResult;
   }
 
@@ -1114,54 +1232,93 @@ async function loadGardenState() {
     return;
   }
 
+  // v9 검수는 reset 주소에서만 DEV 봉투를 준비하며, public.garden_letters는 건드리지 않습니다.
+  await prepareRetentionTestIfRequested();
+  await runRetentionDevCleanupIfRequested();
+
   const nowIso = new Date().toISOString();
-  const [profileResult, recordsResult, foundItemsResult, lettersResult, sentLettersResult, friendsResult, sharedTreesResult, sharedTreeInvitesResult] = await Promise.all([
+  const retentionTestActive = Boolean(retentionTestModeFromUrl());
+  const [profileResult, recordsResult, foundItemsResult, lettersResult, sentLettersResult, friendsResult, sharedTreesResult, sharedTreeInvitesResult, devFriendResult, devSentLettersResult, retentionDevLetters] = await Promise.all([
     loadMyGardenProfile(),
     supabase.from("garden_records").select("id, mood, one_line, detail, created_at").order("created_at", { ascending: false }),
     loadFoundGardenItems(),
-    supabase.from("garden_letters").select("id, sender_name, title, delivery_kind, sent_at, available_at, read_at, created_at").lte("available_at", nowIso).is("read_at", null).order("available_at", { ascending: true }).limit(60),
+    // 보관 정책 검수 주소에서는 실제 받은 편지를 아예 읽지 않습니다.
+    // 그래서 DEV 봉투가 실제 친구 편지와 같은 목록이나 나뭇가지에 섞이지 않습니다.
+    retentionTestActive
+      ? Promise.resolve({ data: [], error: null })
+      : supabase.from("garden_letters").select("id, sender_name, title, delivery_kind, sent_at, available_at, read_at, created_at").lte("available_at", nowIso).is("read_at", null).order("available_at", { ascending: true }).limit(60),
     supabase.rpc("list_my_sent_garden_letters"),
     supabase.rpc("list_my_garden_friends"),
     supabase.rpc("list_my_garden_shared_trees"),
     supabase.rpc("list_my_garden_shared_tree_invites"),
+    supabase.rpc("get_my_dev_test_friend"),
+    supabase.rpc("list_my_dev_test_sent_letters"),
+    loadRetentionDevLetters(),
   ]);
 
   // 내 정원의 기본 정보와 기록은 핵심 데이터라서 실패를 화면에 알려야 합니다.
   if (profileResult.error) throw profileResult.error;
   if (recordsResult.error) throw recordsResult.error;
 
-  // 작은 것·편지·친구는 각각 독립적으로 읽습니다.
+  // 작은 것 불러오기는 정원 기록과 분리합니다. 일시 오류가 있어도 기존 정원은 그대로 보여줍니다.
   if (foundItemsResult.error) console.warn("TodayForest found-item load skipped:", foundItemsResult.error);
+
+  // 편지/친구는 각각 독립적으로 읽습니다.
+  // 한 종류의 RPC가 잠시 실패해도 다른 저장 데이터를 0으로 초기화하지 않습니다.
   if (lettersResult.error) console.warn("TodayForest received-letter load skipped:", lettersResult.error);
   if (sentLettersResult.error) console.warn("TodayForest sent-letter load skipped:", sentLettersResult.error);
   if (friendsResult.error) console.warn("TodayForest friend load skipped:", friendsResult.error);
   if (sharedTreesResult.error) console.warn("TodayForest shared-tree load skipped:", sharedTreesResult.error);
   if (sharedTreeInvitesResult.error) console.warn("TodayForest shared-tree invite load skipped:", sharedTreeInvitesResult.error);
+  if (devFriendResult.error) console.warn("TodayForest DEV friend load skipped:", devFriendResult.error);
+  if (devSentLettersResult.error) console.warn("TodayForest DEV sent-letter load skipped:", devSentLettersResult.error);
 
   const profile = profileResult.data;
-  const realFriends = (friendsResult.data || [])
-    .filter((friend) => !friend.is_dev_test)
-    .map((friend) => ({
-      id: friend.friend_id,
-      name: friend.nickname || "친구",
-      avatarUrl: friend.avatar_url || "",
-      growth: Number(friend.growth_count || 0),
-      becameFriendsAt: friend.became_friends_at,
-      isDevTest: false,
-    }));
+  const realFriends = (friendsResult.data || []).map((friend) => ({
+    id: friend.friend_id,
+    name: friend.nickname || "친구",
+    avatarUrl: friend.avatar_url || "",
+    growth: Number(friend.growth_count || 0),
+    becameFriendsAt: friend.became_friends_at,
+    isDevTest: Boolean(friend.is_dev_test),
+  }));
+  const devFriends = (devFriendResult.data || []).map((friend) => ({
+    id: friend.friend_id,
+    name: friend.nickname || "테스트 새싹",
+    avatarUrl: friend.avatar_url || "",
+    growth: Number(friend.growth_count || 5),
+    becameFriendsAt: friend.became_friends_at,
+    isDevTest: true,
+  }));
+  const friendsById = new Map();
+  [...realFriends, ...devFriends].forEach((friend) => {
+    if (friend?.id) friendsById.set(friend.id, friend);
+  });
 
-  const realSentLetters = (sentLettersResult.data || [])
-    .filter((letter) => !letter.is_dev_test)
-    .map((letter) => ({
-      id: letter.id,
-      to: letter.recipient_name || "친구",
-      title: letter.title,
-      deliveryKind: letter.delivery_kind,
-      sentAt: letter.sent_at,
-      availableAt: letter.available_at,
-      readAt: letter.read_at,
-      isDevTest: false,
-    }));
+  const realSentLetters = (sentLettersResult.data || []).map((letter) => ({
+    id: letter.id,
+    to: letter.recipient_name || "친구",
+    title: letter.title,
+    deliveryKind: letter.delivery_kind,
+    sentAt: letter.sent_at,
+    availableAt: letter.available_at,
+    readAt: letter.read_at,
+    isDevTest: Boolean(letter.is_dev_test),
+  }));
+  const devSentLetters = (devSentLettersResult.data || []).map((letter) => ({
+    id: letter.id,
+    to: letter.recipient_name || "테스트 새싹",
+    title: letter.title,
+    deliveryKind: letter.delivery_kind,
+    sentAt: letter.sent_at,
+    availableAt: letter.available_at,
+    readAt: letter.read_at,
+    isDevTest: true,
+  }));
+  const sentById = new Map();
+  [...realSentLetters, ...devSentLetters].forEach((letter) => {
+    if (letter?.id) sentById.set(letter.id, letter);
+  });
 
   state = {
     growth: Number(profile?.growth_count || 0),
@@ -1178,6 +1335,7 @@ async function loadGardenState() {
       id: letter.id,
       from: letter.sender_name || "친구의 마음",
       title: letter.title,
+      // 본문은 봉투를 열 때 get_my_garden_letter_body RPC로 한 통만 읽습니다.
       body: null,
       bodyLoaded: false,
       delivery: deliveryText(letter.delivery_kind),
@@ -1185,8 +1343,8 @@ async function loadGardenState() {
       date: letter.available_at || letter.sent_at || letter.created_at,
       read: false,
     })),
-    sentLetters: realSentLetters.map(applyAnimalDeliveryMeta),
-    friends: realFriends,
+    sentLetters: Array.from(sentById.values()).map(applyAnimalDeliveryMeta),
+    friends: Array.from(friendsById.values()),
     sharedTrees: (sharedTreesResult.data || []).map((tree) => ({
       id: tree.tree_id,
       partnerId: tree.partner_id,
@@ -1215,251 +1373,19 @@ async function loadGardenState() {
         foundAt: item.found_at || item.created_at,
       })),
   };
-}
 
+  // 테스트 친구와의 공유나무는 실제 DB를 건드리지 않는 브라우저 전용 DEV 검수 상태입니다.
+  mergeDevSharedTreePreview(devFriends);
 
-function clearWelcomeTimers() {
-  [welcomeSeedTimer, welcomeWalkTimer, welcomeGardenTransitionTimer, welcomeGardenArrivalTimer].forEach((timer) => {
-    if (timer) window.clearTimeout(timer);
-  });
-  welcomeSeedTimer = null;
-  welcomeWalkTimer = null;
-  welcomeGardenTransitionTimer = null;
-  welcomeGardenArrivalTimer = null;
-}
-
-function isFirstGardenOnboardingRequired() {
-  return Boolean(currentUser)
-    && !String(state.treeName || "").trim()
-    && Number(state.growth || 0) === 0
-    && Array.isArray(state.records)
-    && state.records.length === 0;
-}
-
-function resetWelcomeOnboardingSurface() {
-  clearWelcomeTimers();
-  const preview = els.welcomePreview;
-  preview?.classList.add("hidden");
-  preview?.classList.remove(
-    "is-seeded", "is-seed-ready", "is-naming", "is-walk",
-    "is-record-previewed", "is-tree-birth", "is-entering-garden", "is-leaving"
-  );
-  els.welcomeNameSheet?.classList.add("hidden");
-  els.welcomeWalkLayer?.classList.add("hidden");
-  els.welcomeWalkIntro?.classList.remove("is-hidden");
-  els.welcomeRecordCard?.classList.remove("is-visible");
-  document.body.classList.remove("is-welcome-preview", "is-welcome-live-entry");
-  welcomeFlowMode = "idle";
-}
-
-function resetWelcomeOnboardingScene() {
-  const preview = els.welcomePreview;
-  if (!preview) return;
-  clearWelcomeTimers();
-  welcomeSelectedMood = "";
-  welcomeTreeName = "내 나무";
-  preview.classList.remove(
-    "is-seeded", "is-seed-ready", "is-naming", "is-walk",
-    "is-record-previewed", "is-tree-birth", "is-entering-garden", "is-leaving"
-  );
-  preview.dataset.phase = "intro";
-  els.welcomeNameSheet?.classList.add("hidden");
-  els.welcomeWalkLayer?.classList.add("hidden");
-  els.welcomeWalkIntro?.classList.remove("is-hidden");
-  els.welcomeRecordCard?.classList.remove("is-visible");
-  els.welcomeNameForm?.reset();
-  if (els.welcomeNameError) els.welcomeNameError.textContent = "";
-  if (els.welcomeRecordLine) els.welcomeRecordLine.value = "";
-  if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "";
-  $$(".welcome-mood-choice").forEach((button) => button.classList.remove("is-selected"));
-}
-
-function startWelcomeOnboarding() {
-  if (!isFirstGardenOnboardingRequired() || !els.welcomePreview) return false;
-  welcomeFlowMode = "onboarding";
-  resetWelcomeOnboardingScene();
-  document.body.classList.add("is-welcome-preview", "is-welcome-live-entry");
-  els.welcomePreview.classList.remove("hidden");
-  renderAuthUI();
-  return true;
-}
-
-function openWelcomeNameSheet() {
-  if (welcomeFlowMode !== "onboarding") return;
-  const preview = els.welcomePreview;
-  if (!preview) return;
-  preview.classList.add("is-naming");
-  preview.dataset.phase = "name";
-  if (els.welcomeNameError) els.welcomeNameError.textContent = "";
-  els.welcomeNameSheet?.classList.remove("hidden");
-  window.setTimeout(() => els.welcomeNameInput?.focus(), 180);
-}
-
-function startWelcomeFirstWalk(treeName) {
-  const preview = els.welcomePreview;
-  if (!preview) return;
-  const safeName = String(treeName || "내 나무").trim() || "내 나무";
-  welcomeTreeName = safeName;
-  preview.classList.remove("is-naming");
-  preview.classList.add("is-walk");
-  preview.dataset.phase = "first-walk";
-  els.welcomeNameSheet?.classList.add("hidden");
-  els.welcomeWalkLayer?.classList.remove("hidden");
-  if (els.welcomeWalkTreeName) els.welcomeWalkTreeName.textContent = safeName;
-  els.welcomeWalkIntro?.classList.remove("is-hidden");
-  els.welcomeRecordCard?.classList.remove("is-visible");
-  welcomeWalkTimer = window.setTimeout(() => {
-    els.welcomeWalkIntro?.classList.add("is-hidden");
-    els.welcomeRecordCard?.classList.add("is-visible");
-    preview.dataset.phase = "record";
-    welcomeWalkTimer = null;
-  }, 1150);
-}
-
-async function saveWelcomeOnboardingTreeName(treeName) {
-  if (welcomeFlowMode !== "onboarding" || !currentUser) return;
-  const submitButton = els.welcomeNameForm?.querySelector('button[type="submit"]');
-  const originalLabel = submitButton?.textContent || "이름 정하기";
-  if (submitButton) {
-    submitButton.disabled = true;
-    submitButton.textContent = "나무 이름을 정하는 중이에요";
-  }
-  try {
-    const { data, error } = await supabase.rpc("set_my_garden_tree_name", { p_tree_name: treeName });
-    if (error) throw error;
-    const row = normalizeRpcRow(data);
-    state.treeName = row?.saved_tree_name || row?.tree_name || treeName;
-    if (els.welcomeNameError) els.welcomeNameError.textContent = "";
-    startWelcomeFirstWalk(state.treeName);
-  } catch (error) {
-    console.error("TodayForest welcome tree-name save error:", error);
-    const detail = String(error?.message || "");
-    if (detail.includes("TREE_NAME_ALREADY_SET") || detail.includes("TREE_NAME_LOCKED")) {
-      try {
-        await loadGardenState();
-      } catch (loadError) {
-        console.warn("TodayForest welcome tree-name refresh skipped:", loadError);
-      }
-      if (String(state.treeName || "").trim()) {
-        startWelcomeFirstWalk(state.treeName);
-        return;
-      }
-    }
-    if (els.welcomeNameError) {
-      els.welcomeNameError.textContent = detail.includes("set_my_garden_tree_name") || detail.includes("tree_name")
-        ? "나무 이름 저장소를 준비하지 못했어요. 잠시 뒤 다시 시도해 주세요."
-        : "이름을 정하지 못했어요. 잠시 뒤 다시 시도해 주세요.";
-    }
-  } finally {
-    if (submitButton) {
-      submitButton.disabled = false;
-      submitButton.textContent = originalLabel;
-    }
-  }
-}
-
-function welcomeMoodToRecordMood(value) {
-  return {
-    "포근해요": "good",
-    "평범해요": "calm",
-    "조금 지쳐요": "tired",
-  }[value] || "good";
-}
-
-function startWelcomeGardenTransition() {
-  const preview = els.welcomePreview;
-  if (!preview) return;
-  els.welcomeRecordCard?.classList.remove("is-visible");
-  preview.classList.remove("is-walk");
-  preview.classList.add("is-tree-birth");
-  preview.dataset.phase = "tree-birth";
-
-  welcomeGardenTransitionTimer = window.setTimeout(() => {
-    preview.classList.add("is-entering-garden");
-    preview.dataset.phase = "entering-garden";
-    welcomeGardenTransitionTimer = null;
-  }, 2450);
-
-  welcomeGardenArrivalTimer = window.setTimeout(() => {
-    finishWelcomeOnboarding();
-    welcomeGardenArrivalTimer = null;
-  }, 3050);
-}
-
-function finishWelcomeOnboarding() {
-  const preview = els.welcomePreview;
-  if (!preview || !currentUser) return;
-  welcomeFlowMode = "transitioning";
-  preview.classList.add("is-leaving");
-  preview.dataset.phase = "my-garden";
-  renderAuthUI();
-  renderAll();
-  window.setTimeout(async () => {
-    if (welcomeFlowMode !== "transitioning") return;
-    resetWelcomeOnboardingSurface();
-    renderAuthUI();
-    renderAll();
-    await previewFriendInviteFromUrl();
-  }, 620);
-}
-
-async function saveWelcomeOnboardingFirstRecord() {
-  if (welcomeFlowMode !== "onboarding" || !currentUser) return;
-  const oneLine = els.welcomeRecordLine?.value.trim() || "";
-  if (!welcomeSelectedMood) {
-    if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "오늘의 마음을 하나 골라주세요.";
-    return;
-  }
-  if (!oneLine) {
-    if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "오늘을 한 줄로 남겨주세요.";
-    els.welcomeRecordLine?.focus();
-    return;
+  // v9 보관 정책 검수 봉투도 실제 수신 편지와 분리된 DEV 전용 데이터입니다.
+  if (retentionDevLetters.length) {
+    const existing = new Set((state.letters || []).map((letter) => String(letter.id)));
+    state.letters = [...state.letters, ...retentionDevLetters.filter((letter) => !existing.has(String(letter.id)))];
   }
 
-  const button = els.welcomeRecordSave;
-  const originalLabel = button?.textContent || "내 마음 심기";
-  if (button) {
-    button.disabled = true;
-    button.textContent = "첫 마음을 심는 중이에요";
-  }
-
-  try {
-    const { error } = await supabase.rpc("save_garden_record", {
-      p_mood: welcomeMoodToRecordMood(welcomeSelectedMood),
-      p_one_line: oneLine,
-      p_detail: null,
-    });
-    if (error) throw error;
-    await loadGardenState();
-    trackTodayForestOperationalEvent("garden_mood_saved", {
-      mood: welcomeMoodToRecordMood(welcomeSelectedMood),
-      detail_added: "no",
-    });
-    if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "";
-    els.welcomePreview?.classList.add("is-record-previewed");
-    if (els.welcomePreview) els.welcomePreview.dataset.phase = "recorded";
-    window.setTimeout(startWelcomeGardenTransition, 300);
-  } catch (error) {
-    console.error("TodayForest welcome first-record save error:", error);
-    const detail = String(error?.message || "");
-    if (detail.includes("TODAY_RECORD_ALREADY_SAVED")) {
-      try {
-        await loadGardenState();
-      } catch (loadError) {
-        console.warn("TodayForest welcome first-record refresh skipped:", loadError);
-      }
-      startWelcomeGardenTransition();
-      return;
-    }
-    if (els.welcomeRecordPreviewNote) {
-      els.welcomeRecordPreviewNote.textContent = databaseErrorMessage(error);
-    }
-  } finally {
-    if (button) {
-      button.disabled = false;
-      button.textContent = originalLabel;
-    }
-  }
+  // 개발 미리보기는 실제 수신 데이터와 분리된 로컬 봉투입니다.
+  mergeReceivedPreviewLetters();
+  await consumeRetentionNextVisitNoticeIfNeeded();
 }
 
 function promptForFirstTreeNameIfNeeded() {
@@ -1477,11 +1403,12 @@ async function hydrateGardenForCurrentUser() {
   try {
     await ensureGardenProfile();
     await loadGardenState();
+    await syncMyGardenAnimalVisit({ beginWhenReady: true, silent: true });
     setAuthError("");
     configureRetentionWindPolling();
 
-    // 이름·기록·성장이 모두 없는 첫 계정만 손님맞이로 연결합니다.
-    // 이미 기록하거나 나무 이름을 정한 기존 사용자는 기존 정원으로 바로 갑니다.
+    // 카카오 로그인 뒤 처음 만든 계정만 실제 손님맞이로 보냅니다.
+    // 이미 기록이나 성장이 있는 예전 사용자는 기존 정원으로 그대로 갑니다.
     if (isFirstGardenOnboardingRequired()) {
       startWelcomeOnboarding();
       return;
@@ -1511,13 +1438,22 @@ function isTreeNameSetupRequired() {
   return Boolean(currentUser) && !String(state.treeName || "").trim();
 }
 
+// tree_name만 비어 있는 예전 사용자까지 신규 손님맞이로 보내지 않도록,
+// 이름·기록·성장 모두 없는 첫 계정만 대상으로 삼습니다.
+function isFirstGardenOnboardingRequired() {
+  return Boolean(currentUser)
+    && !String(state.treeName || "").trim()
+    && Number(state.growth || 0) === 0
+    && Array.isArray(state.records)
+    && state.records.length === 0;
+}
+
 function closeAllSheets({ force = false } = {}) {
   const treeNameSheetIsOpen = els.treeNameSheet && !els.treeNameSheet.classList.contains("hidden");
   if (!force && treeNameSheetIsOpen && isTreeNameSetupRequired()) return;
   const wasViewingLetters = !els.lettersSheet.classList.contains("hidden");
-  [els.recordSheet, els.recordsSheet, els.friendsSheet, els.lettersSheet, els.feedbackSheet, els.supportSheet, els.letterComposerSheet, els.treeNameSheet].filter(Boolean).forEach((sheet) => sheet.classList.add("hidden"));
+  [els.recordSheet, els.recordsSheet, els.friendsSheet, els.lettersSheet, els.feedbackSheet, els.supportSheet, els.accountMenuSheet, els.letterComposerSheet, els.treeNameSheet].filter(Boolean).forEach((sheet) => sheet.classList.add("hidden"));
   els.sheetOverlay.classList.add("hidden");
-  // 기록 시트를 닫았다가 돌아와도, 첫 산책은 새 정원의 현재 단계에서 자연스럽게 이어집니다.
   window.setTimeout(() => renderFirstWalkTutorial(), 0);
   // 봉투 화면을 닫을 때만 배송 도착 알림을 다음 진입 시점으로 넘깁니다.
   if (wasViewingLetters) clearAnimalDeliveryArrivals();
@@ -1532,7 +1468,6 @@ function stageForGrowth(growth) {
 }
 
 function growthPreviewFromUrl() {
-  if (TODAYFOREST_OPERATION_BUILD) return null;
   // 개발 화면에서만 성장 단계별 편지 위치를 빠르게 확인하기 위한 시각 미리보기입니다.
   // ?growthPreview=0 / 7 / 21 처럼 붙여도 실제 성장 데이터는 바뀌지 않습니다.
   const raw = new URL(window.location.href).searchParams.get("growthPreview");
@@ -1544,114 +1479,330 @@ function visualGrowthForGarden() {
   return growthPreviewFromUrl() ?? state.growth;
 }
 
-function animalPreviewFromUrl() {
-  if (TODAYFOREST_OPERATION_BUILD) return null;
-  const preview = new URL(window.location.href).searchParams.get("animalPreview");
-  return animalVisitors[preview] || null;
-}
-
-function animalVisitStorageKey() {
-  return `${ANIMAL_VISIT_STORAGE_PREFIX}:${currentUser?.id || "guest"}:${seoulDateKey() || "today"}`;
-}
-
-function defaultAnimalKindForToday() {
-  const index = stableHash(`${currentUser?.id || "guest"}:${seoulDateKey()}:animal-v1`) % animalVisitorOrder.length;
-  return animalVisitorOrder[index];
-}
-
-function readAnimalVisit() {
-  const preview = animalPreviewFromUrl();
-  if (preview) {
-    return { dateKey: seoulDateKey(), kind: preview.kind, status: "visiting", source: "preview" };
-  }
-
-  try {
-    const raw = window.localStorage.getItem(animalVisitStorageKey());
-    if (raw) {
-      const saved = JSON.parse(raw);
-      if (saved?.kind && animalVisitors[saved.kind]) return saved;
-    }
-  } catch (error) {
-    console.warn("TodayForest animal visit read skipped:", error);
-  }
-
-  return { dateKey: seoulDateKey(), kind: defaultAnimalKindForToday(), status: "visiting", source: "default" };
-}
-
-function saveAnimalVisit(nextVisit) {
-  activeAnimalVisit = nextVisit;
-  if (nextVisit?.source === "preview") return;
-  try {
-    window.localStorage.setItem(animalVisitStorageKey(), JSON.stringify(nextVisit));
-  } catch (error) {
-    console.warn("TodayForest animal visit save skipped:", error);
+function clearAnimalVisitArrivalTimer() {
+  if (animalVisitArrivalTimer) {
+    window.clearTimeout(animalVisitArrivalTimer);
+    animalVisitArrivalTimer = null;
   }
 }
 
-function activeAnimalVisitForToday() {
-  const today = seoulDateKey();
-  if (activeAnimalVisit?.dateKey && activeAnimalVisit.dateKey !== today) activeAnimalVisit = null;
-  activeAnimalVisit = activeAnimalVisit || readAnimalVisit();
-  return activeAnimalVisit;
+function animalVisitMs(value) {
+  const time = new Date(value || "").getTime();
+  return Number.isFinite(time) ? time : 0;
+}
+
+function normalizeAnimalV2Visit(row) {
+  if (!row || typeof row !== "object") return null;
+  const kind = String(row.animal_kind || row.animalKind || "");
+  const visitState = String(row.visit_state || row.visitState || "");
+  const habitatZone = String(row.habitat_zone || row.habitatZone || "");
+  const traceKind = String(row.trace_kind || row.traceKind || "");
+  if (!row.visit_id || !animalVisitors[kind]) return null;
+  if (!["approaching", "visiting", "departing", "trace"].includes(visitState)) return null;
+  return {
+    id: String(row.visit_id),
+    kind,
+    habitatZone: ["branch", "ground"].includes(habitatZone) ? habitatZone : animalVisitors[kind].position,
+    visitState,
+    variant: String(row.visit_variant || row.visitVariant || "normal"),
+    approachStartedAt: row.approach_started_at || row.approachStartedAt || null,
+    arrivesAt: row.arrives_at || row.arrivesAt || null,
+    arrivedAt: row.arrived_at || row.arrivedAt || null,
+    leavesAt: row.leaves_at || row.leavesAt || null,
+    departingAt: row.departing_at || row.departingAt || null,
+    departureReason: row.departure_reason || row.departureReason || null,
+    traceKind: traceKind || null,
+    traceExpiresAt: row.trace_expires_at || row.traceExpiresAt || null,
+  };
+}
+
+function normalizeAnimalV2Sync(data) {
+  const row = normalizeRpcRow(data);
+  const rawVisits = Array.isArray(row?.visits) ? row.visits : [];
+  const visits = rawVisits
+    .map(normalizeAnimalV2Visit)
+    .filter(Boolean)
+    .filter((visit) => visit.visitState !== "trace" || animalVisitMs(visit.traceExpiresAt) > Date.now());
+  return {
+    serverNow: row?.server_now || row?.serverNow || null,
+    lastChangeAt: row?.last_change_at || row?.lastChangeAt || null,
+    visits,
+  };
+}
+
+function animalV2VisitsByState(...states) {
+  return activeAnimalV2Visits.filter((visit) => states.includes(visit.visitState));
+}
+
+function currentAnimalV2Visit() {
+  const visiting = animalV2VisitsByState("visiting");
+  if (!visiting.length) return null;
+  const selected = visiting.find((visit) => visit.id === selectedAnimalV2VisitId);
+  return selected || visiting[0];
 }
 
 function currentAnimalVisitor() {
-  const visit = activeAnimalVisitForToday();
-  if (!visit || visit.status !== "visiting") return null;
-  return animalVisitors[visit.kind] || null;
+  const visit = currentAnimalV2Visit();
+  return visit ? animalVisitors[visit.kind] || null : null;
+}
+
+function isAnimalApproaching() {
+  return animalV2VisitsByState("approaching").length > 0;
 }
 
 function lastAnimalTrace() {
-  const visit = activeAnimalVisitForToday();
-  if (!visit || visit.status !== "departed") return null;
-  return animalVisitors[visit.kind] || null;
+  const trace = animalV2VisitsByState("trace")[0];
+  if (!trace) return null;
+  const visitor = animalVisitors[trace.kind] || genericAnimalTrace;
+  return {
+    ...visitor,
+    traceIcon: visitor.traceIcon || "🍃",
+    traceStory: visitor.traceStory || genericAnimalTrace.traceStory,
+    traceKind: trace.traceKind,
+  };
+}
+
+function animalApproachMessage() {
+  const count = animalV2VisitsByState("approaching").length;
+  if (count >= 2) return "서로 다른 풀숲에서 작은 기척이 들려요.";
+  return "풀잎과 가지 사이에서 작은 기척이 들려요.";
+}
+
+function animalIdleMessage() {
+  return "정원을 보고 있으면 숲친구들이 자유롭게 찾아와요.";
 }
 
 function animalGrowthMessage() {
-  if (state.growth <= 6) return "작은 나무에도 숲친구가 하루에 여러 번 들러요.";
-  if (state.growth <= 13) return "나무가 자랄수록 더 다양한 숲친구가 찾아와요.";
-  if (state.growth <= 20) return "이제 가끔 빠른 숲친구도 편지를 전하러 올 수 있어요.";
-  if (state.growth <= 29) return "풍성한 나무에는 하루 동안 더 많은 숲친구가 들러요.";
-  return "완성된 나무에는 빠르고 특별한 숲친구도 가끔 찾아와요.";
+  if (state.growth <= 6) return "작은 나무에도 숲친구들이 자유롭게 드나들어요.";
+  if (state.growth <= 13) return "나무가 자라며 빠른 숲친구를 조금 더 자주 만날 수 있어요.";
+  if (state.growth <= 20) return "가끔 두 숲친구가 함께 머무는 장면을 만날 수 있어요.";
+  if (state.growth <= 29) return "풍성한 숲에는 빛나는 작은 방문이 더해져요.";
+  return "완성된 숲에는 빠르고 특별한 숲친구가 가끔 찾아와요.";
+}
+
+function animalV2TimingCandidates() {
+  const targets = [];
+  activeAnimalV2Visits.forEach((visit) => {
+    if (visit.visitState === "approaching") targets.push(animalVisitMs(visit.arrivesAt));
+    if (visit.visitState === "visiting") targets.push(animalVisitMs(visit.leavesAt));
+    if (visit.visitState === "departing") targets.push(animalVisitMs(visit.departingAt) + 1600);
+    if (visit.visitState === "trace") targets.push(animalVisitMs(visit.traceExpiresAt));
+  });
+  return targets.filter((time) => time > Date.now());
+}
+
+function scheduleAnimalVisitRefresh() {
+  clearAnimalVisitArrivalTimer();
+  if (!currentUser || document.hidden) return;
+  const targets = animalV2TimingCandidates();
+  if (!targets.length) return;
+  const nextAt = Math.min(...targets);
+  const wait = nextAt - Date.now();
+  if (wait > 0 && wait <= 6 * 60 * 60 * 1000) {
+    animalVisitArrivalTimer = window.setTimeout(() => {
+      void syncMyGardenAnimalVisit({ silent: true, rerender: true });
+    }, Math.max(150, wait + 150));
+  }
+}
+
+function reconcileAnimalV2Selection() {
+  const visiting = animalV2VisitsByState("visiting");
+  if (!visiting.some((visit) => visit.id === selectedAnimalV2VisitId)) {
+    selectedAnimalV2VisitId = visiting[0]?.id || "";
+  }
+  if (animalEncounterVisitId && !visiting.some((visit) => visit.id === animalEncounterVisitId)) {
+    closeAnimalEncounterCard();
+  }
+}
+
+async function syncMyGardenAnimalVisit({ silent = false, rerender = false } = {}) {
+  if (!currentUser || animalVisitSyncBusy || document.hidden) return activeAnimalV2Visits;
+
+  animalVisitSyncBusy = true;
+  try {
+    const { data, error } = await supabase.rpc("sync_my_garden_dev_animal_visits_v2");
+    if (error) throw error;
+
+    const synced = normalizeAnimalV2Sync(data);
+    activeAnimalV2Visits = synced.visits;
+    reconcileAnimalV2Selection();
+    scheduleAnimalVisitRefresh();
+    if (rerender) renderAll();
+    return activeAnimalV2Visits;
+  } catch (error) {
+    console.warn("TodayForest DEV animal v2 sync skipped:", error);
+    if (!silent) showToast("숲친구 방문 소식을 불러오지 못했어요. 잠시 뒤 다시 확인해 주세요.");
+    return activeAnimalV2Visits;
+  } finally {
+    animalVisitSyncBusy = false;
+  }
+}
+
+function animalV2MoodLine(kind) {
+  const lines = {
+    bird: "가지를 살짝 고르며 당신을 바라보고 있어요.",
+    rabbit: "풀잎 사이에서 귀를 쫑긋 세우고 있어요.",
+    squirrel: "나무 곁에서 작은 발을 멈췄어요.",
+    hedgehog: "낙엽 사이에서 조용히 숨을 고르고 있어요.",
+  };
+  return lines[kind] || "숲길을 걷다 잠시 쉬어가고 있어요.";
+}
+
+function animalV2DeliveryLine(animal) {
+  const mood = animal?.deliveryHours <= 2
+    ? "빠르게 전해줘요"
+    : animal?.deliveryHours <= 6
+      ? "가벼운 발걸음으로 전해줘요"
+      : animal?.deliveryHours <= 12
+        ? "숲길을 따라 전해줘요"
+        : "천천히 정성껏 전해줘요";
+  return `${mood} · 약 ${animal?.deliveryHours || 0}시간`;
+}
+
+function closeAnimalEncounterCard() {
+  animalEncounterVisitId = "";
+  if (els.animalEncounterCard) {
+    els.animalEncounterCard.hidden = true;
+    delete els.animalEncounterCard.dataset.animalKind;
+  }
+}
+
+function openAnimalEncounterForVisit(visitId) {
+  const visit = animalV2VisitsByState("visiting").find((item) => item.id === visitId);
+  const animal = visit ? animalVisitors[visit.kind] : null;
+  if (!visit || !animal) {
+    showToast("그 숲친구는 이미 숲길을 따라 떠났어요.");
+    closeAnimalEncounterCard();
+    return;
+  }
+
+  selectedAnimalV2VisitId = visit.id;
+  animalEncounterVisitId = visit.id;
+  if (els.animalEncounterIcon) els.animalEncounterIcon.textContent = animal.icon;
+  if (els.animalEncounterKicker) els.animalEncounterKicker.textContent = "숲에서 만난 친구";
+  if (els.animalEncounterTitle) els.animalEncounterTitle.textContent = `${animal.name}가 당신을 바라보고 있어요.`;
+  if (els.animalEncounterText) els.animalEncounterText.textContent = animalV2MoodLine(animal.kind);
+  if (els.animalEncounterTime) els.animalEncounterTime.textContent = animalV2DeliveryLine(animal);
+  if (els.animalEncounterSend) {
+    els.animalEncounterSend.textContent = "편지 맡기기";
+    els.animalEncounterSend.disabled = false;
+  }
+  if (els.animalEncounterCard) {
+    // 카드가 정원을 덮지 않도록 세계 안의 빈 하늘 위치에서 작게 보입니다.
+    els.animalEncounterCard.dataset.animalKind = animal.kind;
+    els.animalEncounterCard.hidden = false;
+  }
 }
 
 function openAnimalLetterComposer() {
+  const visit = currentAnimalV2Visit();
   const animal = currentAnimalVisitor();
-  if (!animal) {
-    showToast("지금은 다음 숲친구를 기다리고 있어요.");
+  if (!visit || !animal) {
+    if (isAnimalApproaching()) showToast("풀잎 사이의 기척이 조금 더 가까워지고 있어요.");
+    else showToast("지금은 정원을 조용히 둘러보고 있어요.");
     return;
   }
   if (!(state.friends || []).length) {
     showToast("친구와 연결되면 숲친구에게 편지를 맡길 수 있어요.");
     return;
   }
+  closeAnimalEncounterCard();
   renderLetterComposer();
   openSheet(els.letterComposerSheet);
 }
 
-function leaveAnimalWithLetter(animal) {
-  if (!animal) return Promise.resolve();
-  const animalButton = els.activeAnimal;
+function leaveAnimalWithLetter(animal, visitId) {
+  if (!animal || !visitId) return Promise.resolve();
+  const animalButton = els.animalV2Layer?.querySelector(`[data-animal-v2-visit="${CSS.escape(String(visitId))}"]`);
   if (animalButton) {
-    animalButton.classList.add("is-departing");
+    animalButton.classList.add("is-departing", "is-letter-departing");
     animalButton.setAttribute("aria-label", `${animal.name}가 편지를 품고 출발하는 중`);
   }
   return new Promise((resolve) => {
     window.clearTimeout(animalDepartureTimer);
-    animalDepartureTimer = window.setTimeout(resolve, 680);
+    animalDepartureTimer = window.setTimeout(resolve, 1050);
   });
 }
 
-function markAnimalDeparted(kind, reason = "letter") {
-  const previous = activeAnimalVisit || readAnimalVisit();
-  saveAnimalVisit({
-    dateKey: seoulDateKey(),
-    kind,
-    status: "departed",
-    departedAt: new Date().toISOString(),
-    departureReason: reason,
-  });
-  return previous;
+function v2TraceMeta(visit) {
+  const visitor = animalVisitors[visit.kind] || genericAnimalTrace;
+  const icons = {
+    feather: "🪶",
+    footprints: "〰️",
+    acorn_shell: "🌰",
+    ruffled_leaves: "🍂",
+  };
+  return {
+    icon: icons[visit.traceKind] || visitor.traceIcon || "🍃",
+    story: visitor.traceStory || genericAnimalTrace.traceStory,
+    sceneClass: visitor.sceneClass || "generic",
+  };
+}
+
+function renderAnimalV2Scene() {
+  if (!els.animalV2Layer || !els.animalV2TraceLayer) return;
+
+  const approaching = animalV2VisitsByState("approaching");
+  const active = animalV2VisitsByState("visiting", "departing");
+  const traces = animalV2VisitsByState("trace");
+
+  els.animalV2Layer.innerHTML = [
+    ...approaching.map((visit) => `
+      <span class="animal-v2-approach approach-${escapeAttr(visit.kind)}" aria-label="${escapeAttr(`${animalVisitors[visit.kind]?.name || "숲친구"}가 다가오는 기척`)}"></span>
+    `),
+    ...active.map((visit) => {
+      const animal = animalVisitors[visit.kind];
+      if (!animal) return "";
+      const isDeparting = visit.visitState === "departing";
+      const isArriving = visit.visitState === "visiting"
+        && animalVisitMs(visit.arrivedAt) > 0
+        && Date.now() - animalVisitMs(visit.arrivedAt) < 4500;
+      const classes = [
+        "animal-v2-visitor",
+        `animal-v2-${animal.sceneClass}`,
+        isDeparting ? "is-departing" : "",
+        visit.departureReason === "letter" ? "is-letter-departing" : "",
+        isArriving ? "is-arriving" : "",
+      ].filter(Boolean).join(" ");
+      const aria = isDeparting
+        ? `${animal.name}가 숲길을 따라 떠나는 중`
+        : `${animal.name}에게 편지 맡기기`;
+      return `
+        <button class="${classes}" type="button" data-animal-v2-visit="${escapeAttr(visit.id)}" aria-label="${escapeAttr(aria)}" ${isDeparting ? "disabled" : ""}>
+          <span class="animal-v2-emoji" aria-hidden="true">${animal.icon}</span>
+          ${isDeparting ? "" : '<span class="animal-v2-envelope" aria-hidden="true">✉</span>'}
+          ${visit.variant === "glimmer" ? '<span class="animal-v2-glimmer" aria-hidden="true">✦</span>' : ""}
+        </button>
+      `;
+    }),
+  ].join("");
+
+  els.animalV2TraceLayer.innerHTML = traces.map((visit) => {
+    const trace = v2TraceMeta(visit);
+    return `
+      <button class="animal-v2-trace trace-${escapeAttr(trace.sceneClass)}" type="button" data-animal-v2-trace="${escapeAttr(visit.id)}" aria-label="${escapeAttr(`${animalVisitors[visit.kind]?.name || "숲친구"}가 남긴 흔적 보기`)}">
+        <span aria-hidden="true">${trace.icon}</span>
+      </button>
+    `;
+  }).join("");
+
+  els.animalV2Layer.hidden = !(approaching.length || active.length);
+  els.animalV2TraceLayer.hidden = !traces.length;
+  if (els.gardenWorld) els.gardenWorld.classList.toggle("is-animal-v2-approaching", approaching.length > 0);
+}
+
+function handleAnimalV2LayerClick(event) {
+  const button = event.target.closest("[data-animal-v2-visit]");
+  if (!button || !els.animalV2Layer?.contains(button) || button.disabled) return;
+  openAnimalEncounterForVisit(button.dataset.animalV2Visit);
+}
+
+function handleAnimalV2TraceClick(event) {
+  const button = event.target.closest("[data-animal-v2-trace]");
+  if (!button || !els.animalV2TraceLayer?.contains(button)) return;
+  const visit = animalV2VisitsByState("trace").find((item) => item.id === button.dataset.animalV2Trace);
+  if (!visit) return;
+  showToast(v2TraceMeta(visit).story);
 }
 
 function animalDeliveryStorageKey() {
@@ -1931,7 +2082,6 @@ function getUnreadLetters() {
 }
 
 function receivedPreviewCountFromUrl() {
-  if (TODAYFOREST_OPERATION_BUILD) return 0;
   const raw = new URL(window.location.href).searchParams.get("receivedPreview");
   const count = Number.parseInt(raw || "0", 10);
   return Number.isFinite(count) ? Math.max(0, Math.min(6, count)) : 0;
@@ -2048,12 +2198,13 @@ function foundItemForRecord(recordId) {
 }
 
 function canDiscoverFoundItem() {
+  // 첫날 튜토리얼 미리보기는 실제 기록·장식 DB와 분리된 한 번의 가상 발견만 보여줍니다.
+  if (isTutorialSandboxPreview()) return tutorialSandbox.recorded && !tutorialSandbox.found;
+
   const todayRecord = todayGardenRecord();
-  return Boolean(
-    todayRecord
-    && !foundItemForRecord(todayRecord.id)
-    && (state.foundItems || []).length < foundItemKeys.length
-  );
+  // 장식 수나 이미 가진 종류가 아니라, 오늘 기록에 아직 장식이 연결되지 않았는지만 봅니다.
+  // 하루 1개 제한은 Supabase의 record_id UNIQUE 제약이 계속 지킵니다.
+  return Boolean(todayRecord && !foundItemForRecord(todayRecord.id));
 }
 
 function clamp(value, min, max) {
@@ -2062,6 +2213,70 @@ function clamp(value, min, max) {
 
 function roundedFoundItemPosition(value) {
   return Number(Number(value).toFixed(3));
+}
+
+function syncGardenWorldScale() {
+  const stageRect = els.gardenStage?.getBoundingClientRect();
+  const world = els.gardenWorld;
+  if (!world || !stageRect?.width || !stageRect?.height) return;
+
+  const scale = Math.min(
+    stageRect.width / GARDEN_WORLD.width,
+    stageRect.height / GARDEN_WORLD.height
+  );
+  world.style.setProperty("--garden-world-scale", String(Number(scale.toFixed(5))));
+}
+
+function setupGardenWorldSizing() {
+  if (!els.gardenStage || !els.gardenWorld) return;
+  syncGardenWorldScale();
+
+  if ("ResizeObserver" in window) {
+    gardenWorldResizeObserver?.disconnect();
+    gardenWorldResizeObserver = new ResizeObserver(() => syncGardenWorldScale());
+    gardenWorldResizeObserver.observe(els.gardenStage);
+  }
+  window.addEventListener("resize", syncGardenWorldScale, { passive: true });
+  window.addEventListener("resize", () => {
+    if (["intro", "record", "discovery", "complete"].includes(gardenTutorialPhase)) {
+      positionFirstWalkGuide(gardenTutorialPhase, { animate: false });
+    }
+  }, { passive: true });
+}
+
+// 친구 정원도 내 정원과 같은 390×540 기준을 사용해야, 친구가 꾸민 실제 위치가 기기마다 어긋나지 않습니다.
+function syncFriendGardenWorldScale() {
+  const stageRect = els.friendVisitStage?.getBoundingClientRect();
+  const world = els.friendGardenWorld;
+  if (!world || !stageRect?.width || !stageRect?.height) return;
+
+  const scale = Math.min(
+    stageRect.width / GARDEN_WORLD.width,
+    stageRect.height / GARDEN_WORLD.height
+  );
+  world.style.setProperty("--garden-world-scale", String(Number(scale.toFixed(5))));
+}
+
+function setupFriendGardenWorldSizing() {
+  if (!els.friendVisitStage || !els.friendGardenWorld) return;
+
+  if ("ResizeObserver" in window) {
+    friendGardenWorldResizeObserver?.disconnect();
+    friendGardenWorldResizeObserver = new ResizeObserver(() => syncFriendGardenWorldScale());
+    friendGardenWorldResizeObserver.observe(els.friendVisitStage);
+  }
+  window.addEventListener("resize", syncFriendGardenWorldScale, { passive: true });
+}
+
+function gardenWorldPositionForFoundItemElement(element) {
+  const worldRect = els.gardenWorld?.getBoundingClientRect();
+  const itemRect = element?.getBoundingClientRect();
+  if (!worldRect?.width || !worldRect?.height || !itemRect) return null;
+
+  return {
+    x: clamp(roundedFoundItemPosition(((itemRect.left + (itemRect.width / 2) - worldRect.left) / worldRect.width) * 100), 0, 100),
+    y: clamp(roundedFoundItemPosition(((itemRect.top - worldRect.top) / worldRect.height) * 100), 0, 100),
+  };
 }
 
 function savedFoundItemPosition(item) {
@@ -2109,10 +2324,23 @@ function renderGardenDecorateControls(foundItems) {
   }
 }
 
+function tutorialSandboxFoundItems() {
+  if (!isTutorialSandboxPreview() || !tutorialSandbox.found) return [];
+  // 첫날의 보상은 기존 장식 시스템과 같은 모양으로만 보이고, 실제 계정 장식에는 저장하지 않습니다.
+  return [{
+    id: 'tutorial-sandbox-pink-wildflower',
+    recordId: 'tutorial-sandbox-record',
+    itemKey: 'pink_wildflower',
+    placementSlot: 'front_bed_left',
+    foundAt: new Date().toISOString(),
+  }];
+}
+
 function renderFoundItems() {
   if (!els.foundItemsLayer || !els.foundItemSparkle) return;
 
-  const foundItems = (state.foundItems || []).filter((item) => foundItemCatalog[item.itemKey]);
+  const foundItems = [...(state.foundItems || []), ...tutorialSandboxFoundItems()]
+    .filter((item) => foundItemCatalog[item.itemKey]);
   els.foundItemsLayer.innerHTML = foundItems.map((item) => {
     const catalogItem = foundItemCatalog[item.itemKey];
     const position = foundItemDisplayPosition(item);
@@ -2134,37 +2362,45 @@ function renderFoundItems() {
   );
 }
 
-function stagePositionForFoundItemElement(element) {
-  const stageRect = els.gardenStage?.getBoundingClientRect();
-  const itemRect = element?.getBoundingClientRect();
-  if (!stageRect?.width || !stageRect?.height || !itemRect) return null;
-
-  return {
-    x: clamp(roundedFoundItemPosition(((itemRect.left + (itemRect.width / 2) - stageRect.left) / stageRect.width) * 100), 0, 100),
-    y: clamp(roundedFoundItemPosition(((itemRect.top - stageRect.top) / stageRect.height) * 100), 0, 100),
-  };
-}
-
 function startGardenDecorateMode() {
   const foundItems = (state.foundItems || []).filter((item) => foundItemCatalog[item.itemKey]);
   if (!foundItems.length || gardenDecorateSaving) return;
 
-  // 꾸미기 버튼을 누르는 것만으로는 현재 화면의 장식 위치를 좌표로 바꾸지 않습니다.
-  // 기본 placement_slot 장식은 그대로 두고, 이미 저장된 사용자 배치만 초안에 넣습니다.
-  // 실제로 사용자가 집어 옮긴 장식만 드래그 시작 시점의 화면 위치를 좌표로 바꿉니다.
+  // 꾸미기를 시작하는 순간, 눈에 보이는 현재 위치를 공통 정원 세계의 초안 좌표로 잡습니다.
+  // 예전에 화면 전체 기준으로 저장된 위치도 이 단계에서는 화면에 보이는 자리 그대로
+  // 새 좌표 세계로 옮길 수 있고, 취소하면 DB에는 아무것도 저장하지 않습니다.
   gardenDecorateDraftPositions = new Map();
-  foundItems.forEach((item) => {
-    const saved = savedFoundItemPosition(item);
-    if (saved) gardenDecorateDraftPositions.set(item.id, saved);
-  });
-
   gardenDecorateMode = true;
   renderFoundItems();
-  showToast("작은 것을 꾹 눌러 원하는 자리에 옮겨보세요.");
+
+  foundItems.forEach((item) => {
+    const element = els.foundItemsLayer?.querySelector(`[data-found-item-id="${CSS.escape(String(item.id))}"]`);
+    const visiblePosition = gardenWorldPositionForFoundItemElement(element);
+    if (!visiblePosition) return;
+    gardenDecorateDraftPositions.set(item.id, visiblePosition);
+    applyFoundItemDraftPosition(element, visiblePosition);
+  });
+
+  showToast("작은 것을 잡아 원하는 자리에 옮겨보세요.");
+}
+
+function releaseFoundItemPointer(pointerId) {
+  if (!Number.isFinite(pointerId) || !els.foundItemsLayer) return;
+  try {
+    if (els.foundItemsLayer.hasPointerCapture?.(pointerId)) {
+      els.foundItemsLayer.releasePointerCapture(pointerId);
+    }
+  } catch (error) {
+    // 브라우저가 이미 포인터를 정리한 경우에는 조용히 넘어갑니다.
+  }
 }
 
 function cancelGardenDecorateMode() {
   if (gardenDecorateSaving) return;
+  if (activeFoundItemDrag) {
+    activeFoundItemDrag.element.classList.remove("is-moving");
+    releaseFoundItemPointer(activeFoundItemDrag.pointerId);
+  }
   activeFoundItemDrag = null;
   gardenDecorateMode = false;
   gardenDecorateDraftPositions = new Map();
@@ -2180,19 +2416,28 @@ function applyFoundItemDraftPosition(element, position) {
 }
 
 function beginFoundItemDrag(event) {
-  if (!gardenDecorateMode || gardenDecorateSaving || event.button > 0) return;
-  const element = event.target.closest(".found-item[data-found-item-id]");
-  if (!element || !els.gardenStage?.contains(element)) return;
+  // 마우스는 왼쪽 버튼만, 터치는 pointerdown 한 번으로 바로 잡을 수 있게 합니다.
+  if (!gardenDecorateMode || gardenDecorateSaving) return;
+  if (event.pointerType === "mouse" && event.button !== 0) return;
 
-  const stageRect = els.gardenStage.getBoundingClientRect();
+  const element = event.target.closest(".found-item[data-found-item-id]");
+  if (!element || !els.gardenWorld?.contains(element)) return;
+
+  const worldRect = els.gardenWorld.getBoundingClientRect();
   const itemRect = element.getBoundingClientRect();
-  if (!stageRect.width || !stageRect.height || !itemRect.width || !itemRect.height) return;
+  if (!worldRect.width || !worldRect.height || !itemRect.width || !itemRect.height) return;
 
   event.preventDefault();
   const itemId = element.dataset.foundItemId;
   if (!itemId) return;
 
-  const currentPosition = stagePositionForFoundItemElement(element);
+  // 이전 드래그가 남아 있으면 먼저 조용히 정리합니다.
+  if (activeFoundItemDrag) {
+    activeFoundItemDrag.element.classList.remove("is-moving");
+    releaseFoundItemPointer(activeFoundItemDrag.pointerId);
+  }
+
+  const currentPosition = gardenWorldPositionForFoundItemElement(element);
   if (currentPosition) {
     gardenDecorateDraftPositions.set(itemId, currentPosition);
     applyFoundItemDraftPosition(element, currentPosition);
@@ -2202,7 +2447,6 @@ function beginFoundItemDrag(event) {
     pointerId: event.pointerId,
     itemId,
     element,
-    stageRect,
     itemWidth: itemRect.width,
     itemHeight: itemRect.height,
     pointerOffsetX: event.clientX - (itemRect.left + (itemRect.width / 2)),
@@ -2210,7 +2454,13 @@ function beginFoundItemDrag(event) {
   };
 
   element.classList.add("is-moving");
-  element.setPointerCapture?.(event.pointerId);
+  // 확대·축소되는 내부 정원에서도 포인터가 장식 밖으로 벗어나지 않도록
+  // 레이어가 포인터를 계속 붙잡고, 이동·종료는 window에서 추적합니다.
+  try {
+    els.foundItemsLayer?.setPointerCapture?.(event.pointerId);
+  } catch (error) {
+    // Pointer Capture를 지원하지 않는 브라우저도 window 이벤트로 계속 동작합니다.
+  }
 }
 
 function moveFoundItemDrag(event) {
@@ -2218,21 +2468,24 @@ function moveFoundItemDrag(event) {
   if (!drag || drag.pointerId !== event.pointerId) return;
   event.preventDefault();
 
-  const stageRect = drag.stageRect;
+  // 화면 회전·브라우저 UI 변화가 있어도 현재 내부 정원 실제 크기를 기준으로 계산합니다.
+  const worldRect = els.gardenWorld?.getBoundingClientRect();
+  if (!worldRect?.width || !worldRect?.height) return;
+
   const halfWidth = drag.itemWidth / 2;
   const centerX = clamp(
-    event.clientX - stageRect.left - drag.pointerOffsetX,
+    event.clientX - worldRect.left - drag.pointerOffsetX,
     halfWidth,
-    stageRect.width - halfWidth
+    worldRect.width - halfWidth
   );
   const topY = clamp(
-    event.clientY - stageRect.top - drag.pointerOffsetY,
+    event.clientY - worldRect.top - drag.pointerOffsetY,
     0,
-    Math.max(0, stageRect.height - drag.itemHeight)
+    Math.max(0, worldRect.height - drag.itemHeight)
   );
   const position = {
-    x: roundedFoundItemPosition((centerX / stageRect.width) * 100),
-    y: roundedFoundItemPosition((topY / stageRect.height) * 100),
+    x: roundedFoundItemPosition((centerX / worldRect.width) * 100),
+    y: roundedFoundItemPosition((topY / worldRect.height) * 100),
   };
 
   gardenDecorateDraftPositions.set(drag.itemId, position);
@@ -2243,13 +2496,7 @@ function endFoundItemDrag(event) {
   const drag = activeFoundItemDrag;
   if (!drag || (event && drag.pointerId !== event.pointerId)) return;
   drag.element.classList.remove("is-moving");
-  if (event) {
-    try {
-      drag.element.releasePointerCapture?.(event.pointerId);
-    } catch (error) {
-      // 브라우저가 이미 포인터를 정리한 경우에는 조용히 넘어갑니다.
-    }
-  }
+  releaseFoundItemPointer(drag.pointerId);
   activeFoundItemDrag = null;
 }
 
@@ -2279,7 +2526,7 @@ async function saveGardenDecorateMode() {
   }
   renderGardenDecorateControls((state.foundItems || []).filter((item) => foundItemCatalog[item.itemKey]));
 
-  const { error } = await supabase.rpc("save_my_garden_found_item_positions", { p_positions: positions });
+  const { error } = await supabase.rpc("save_my_garden_dev_found_item_positions", { p_positions: positions });
 
   gardenDecorateSaving = false;
   if (els.saveGardenDecorate) {
@@ -2290,7 +2537,7 @@ async function saveGardenDecorateMode() {
   if (error) {
     renderGardenDecorateControls((state.foundItems || []).filter((item) => foundItemCatalog[item.itemKey]));
     showToast("배치를 저장하지 못했어요. 잠시 뒤 다시 해주세요.");
-    console.warn("TodayForest found-item layout save failed:", error);
+    console.warn("TodayForest DEV found-item layout save failed:", error);
     return;
   }
 
@@ -2310,12 +2557,22 @@ async function saveGardenDecorateMode() {
 }
 
 async function claimFoundItem() {
+  if (isTutorialSandboxPreview()) {
+    if (!tutorialSandbox.recorded || tutorialSandbox.found) return;
+    tutorialSandbox.found = true;
+    const sandboxFoundItemId = "tutorial-sandbox-pink-wildflower";
+    renderFoundItems();
+    // 마지막 카드를 가리는 토스트 대신, 발견한 들꽃 자체를 잠시 바라보게 합니다.
+    showFirstWalkCompletion({ foundItemId: sandboxFoundItemId });
+    return;
+  }
+
   if (!currentUser) return;
   const record = todayGardenRecord();
   if (!record || foundItemForRecord(record.id)) return;
 
   els.foundItemSparkle.disabled = true;
-  const { data, error } = await supabase.rpc("claim_garden_found_item", { p_record_id: record.id });
+  const { data, error } = await supabase.rpc("claim_garden_dev_found_item", { p_record_id: record.id });
   els.foundItemSparkle.disabled = false;
 
   if (error) {
@@ -2325,9 +2582,9 @@ async function claimFoundItem() {
 
   const claimed = Array.isArray(data) ? data[0] : data;
   if (!claimed?.item_key || !foundItemCatalog[claimed.item_key]) {
-    // 초기 네 가지를 모두 찾은 뒤에는 반짝임을 더 띄우지 않습니다.
+    // SQL 반영 전이거나 서버가 오늘의 장식을 고르지 못한 경우입니다.
     renderFoundItems();
-    showToast("오늘은 숲이 조용히 쉬고 있어요.");
+    showToast("오늘의 작은 것을 아직 찾지 못했어요. 잠시 뒤 다시 해주세요.");
     return;
   }
 
@@ -2347,10 +2604,11 @@ async function claimFoundItem() {
 
   renderFoundItems();
   if (wasFirstWalkDiscovery) {
-    // 첫 산책의 끝은 별도 토스트가 아니라 발견물과 완료 카드가 맡습니다.
+    // 첫 산책의 끝은 별도 토스트 없이 마무리 카드가 맡아, 발견의 여운을 남깁니다.
     showFirstWalkCompletion({ foundItemId: nextItem.id });
     return;
   }
+  renderFirstWalkTutorial();
   const catalogItem = foundItemCatalog[nextItem.itemKey];
   showToast(`숲에서 작은 것을 찾았어요. ${catalogItem.detail}`);
 }
@@ -2358,7 +2616,8 @@ async function claimFoundItem() {
 function updateTodayRecordAction() {
   const action = $("#openRecord");
   const label = action?.querySelector("span:last-child");
-  const savedToday = hasSavedToday();
+  // 미리보기에서는 실제 오늘 기록 여부 대신 가상 산책의 진행 상태만 보여줍니다.
+  const savedToday = isTutorialSandboxPreview() ? tutorialSandbox.recorded : hasSavedToday();
   if (!action || !label) return;
   action.classList.toggle("record-complete", savedToday);
   action.setAttribute("aria-label", savedToday ? "오늘 마음 남기기 완료" : "마음 남기기");
@@ -2375,7 +2634,6 @@ function stableHash(value) {
 }
 
 function previewWeatherFromUrl() {
-  if (TODAYFOREST_OPERATION_BUILD) return null;
   // 개발 화면 검수용: ?weatherPreview=sun / wind / rain 을 붙인 경우에만 임시로 날씨를 고정합니다.
   const preview = new URL(window.location.href).searchParams.get("weatherPreview");
   return weatherOptions.find((weather) => weather.className === preview) || null;
@@ -2471,8 +2729,12 @@ function applyWeatherVisuals(stage, treeWrap, rainLayer, weather, rainSeed = "gu
 function renderGarden() {
   const visualGrowth = visualGrowthForGarden();
   const stage = stageForGrowth(visualGrowth);
-  const animal = currentAnimalVisitor();
-  const trace = lastAnimalTrace();
+  const visiting = animalV2VisitsByState("visiting");
+  const departing = animalV2VisitsByState("departing");
+  const approaching = animalV2VisitsByState("approaching");
+  const traces = animalV2VisitsByState("trace");
+  const primaryVisit = currentAnimalV2Visit();
+  const primaryAnimal = primaryVisit ? animalVisitors[primaryVisit.kind] : null;
   const weather = currentWeather();
   const unread = getUnreadLetters();
 
@@ -2483,46 +2745,68 @@ function renderGarden() {
   els.treeImage.src = `assets/garden/tree_growth/${stage.asset}`;
   els.treeImage.alt = stage.label;
 
-  if (animal) {
+  // V1 버튼은 호환을 위해 DOM에만 남기고, DEV v2에서는 동적 레이어만 사용합니다.
+  if (els.activeAnimal) els.activeAnimal.hidden = true;
+  if (els.animalTrace) els.animalTrace.hidden = true;
+
+  if (visiting.length) {
+    const names = visiting.map((visit) => animalVisitors[visit.kind]?.name || "숲친구");
     els.visitorImage.hidden = true;
     els.visitorEmoji.hidden = false;
-    els.visitorEmoji.textContent = animal.icon;
-    els.visitorName.textContent = `${animal.name}가 정원에 놀러왔어요`;
-    els.visitorHint.textContent = "편지를 맡기면 바로 배송을 위해 떠나요.";
-    els.visitorButton.setAttribute("aria-label", `${animal.name}에게 편지 맡기기`);
-
-    els.activeAnimal.hidden = false;
-    els.activeAnimal.className = `active-animal animal-${animal.sceneClass}`;
-    els.activeAnimalEmoji.textContent = animal.icon;
-    els.activeAnimalSpeech.textContent = animal.speech;
+    els.visitorEmoji.textContent = primaryAnimal?.icon || "🌿";
+    els.visitorName.textContent = visiting.length >= 2
+      ? `${names.join("와 ")}가 정원에 머물러 있어요`
+      : `${names[0]}가 정원에 놀러왔어요`;
+    els.visitorHint.textContent = "살며시 누르면 이 아이에게 편지를 맡길 수 있어요.";
+    els.visitorButton.setAttribute("aria-label", `${names[0]}에게 편지 맡기기`);
+  } else if (departing.length) {
+    const animal = animalVisitors[departing[0].kind];
+    els.visitorImage.hidden = true;
+    els.visitorEmoji.hidden = false;
+    els.visitorEmoji.textContent = animal?.icon || "🍃";
+    els.visitorName.textContent = `${animal?.name || "숲친구"}가 숲길로 돌아가고 있어요`;
+    els.visitorHint.textContent = departing[0].departureReason === "letter"
+      ? "마음을 품고 조용히 출발했어요."
+      : "잠시 쉬어가던 발걸음이 멀어지고 있어요.";
+    els.visitorButton.setAttribute("aria-label", "숲친구가 떠나는 중");
+  } else if (approaching.length) {
+    els.visitorImage.hidden = true;
+    els.visitorEmoji.hidden = false;
+    els.visitorEmoji.textContent = "🍃";
+    els.visitorName.textContent = approaching.length >= 2
+      ? "서로 다른 곳에서 작은 기척이 들려요"
+      : "숲길에서 작은 기척이 들려요";
+    els.visitorHint.textContent = "잠시 정원을 보고 있으면 숲친구가 모습을 드러낼 거예요.";
+    els.visitorButton.setAttribute("aria-label", "숲친구가 다가오는 중");
   } else {
     els.visitorImage.hidden = true;
     els.visitorEmoji.hidden = false;
-    els.visitorEmoji.textContent = "🌿";
-    els.visitorName.textContent = "다음 숲친구를 기다리고 있어요";
-    els.visitorHint.textContent = "편지를 맡긴 친구가 숲길을 따라 떠났어요.";
-    els.visitorButton.setAttribute("aria-label", "다음 숲친구를 기다리는 중");
-    els.activeAnimal.hidden = true;
+    els.visitorEmoji.textContent = traces.length ? v2TraceMeta(traces[0]).icon : "🌿";
+    els.visitorName.textContent = traces.length ? "숲친구가 작은 흔적을 남겼어요" : "숲이 조용히 숨을 고르고 있어요";
+    els.visitorHint.textContent = traces.length ? v2TraceMeta(traces[0]).story : animalIdleMessage();
+    els.visitorButton.setAttribute("aria-label", "정원의 숲친구 소식 보기");
   }
 
-  els.animalTrace.hidden = !trace;
-  if (trace) {
-    els.animalTrace.className = `animal-trace trace-${trace.sceneClass}`;
-    els.animalTraceIcon.textContent = trace.traceIcon;
-    els.animalTrace.setAttribute("aria-label", `${trace.name}가 남긴 흔적 보기`);
-  }
+  renderAnimalV2Scene();
 
   els.weatherIcon.textContent = weather.icon;
   els.weatherText.textContent = weather.text;
   applyWeatherVisuals(els.gardenStage, els.treeWrap, els.rainLayer, weather, `${currentUser?.id || "guest"}:${seoulDateKey()}:my-garden`);
-  els.stageMessage.textContent = animal
-    ? `${animal.name}가 정원 어딘가에서 편지를 기다리고 있어요.`
-    : weather.message;
+  els.stageMessage.textContent = visiting.length
+    ? visiting.length >= 2
+      ? "두 숲친구가 각자의 자리에서 잠시 쉬어가고 있어요."
+      : `${primaryAnimal?.name || "숲친구"}가 정원 어딘가에서 당신을 바라보고 있어요.`
+    : departing.length
+      ? "숲길 너머로 작은 발걸음이 멀어져요."
+      : approaching.length
+        ? animalApproachMessage()
+        : weather.message;
 
   els.nextVisitorText.textContent = animalGrowthMessage();
 
   renderFoundItems();
   renderBranchLetters(unread);
+  window.requestAnimationFrame(syncGardenWorldScale);
   playExpiredLetterReturnIfNeeded();
   playRetentionNextVisitNoticeIfNeeded();
   els.navLetterBadge.textContent = unread.length;
@@ -2695,16 +2979,16 @@ function renderSentLetters() {
       <article class="sent-letter-item ${letter.isDevTest ? "is-dev-test" : ""} has-animal-tracking">
         <div class="sent-letter-icon" aria-hidden="true">${carrier.icon}</div>
         <div class="sent-letter-main">
-          <div class="sent-letter-title">${escapeHTML(letter.to)}에게 · ${escapeHTML(letter.title)}</div>
+          <div class="sent-letter-title">${escapeHTML(letter.to)}에게 · ${escapeHTML(letter.title)}${letter.isDevTest ? '<span class="dev-test-tag">DEV</span>' : ""}</div>
           <div class="sent-letter-detail">${escapeHTML(carrier.name)} · ${escapeHTML(formatDate(letter.sentAt))}</div>
           <div class="animal-delivery-tracking" aria-label="${escapeAttr(`${carrier.name} 배송 진행 상태`)}">
             <p class="animal-delivery-story">${escapeHTML(animalDeliveryStory(carrier))}</p>
             <div class="animal-delivery-time-row">
-              <span>도착까지 ${escapeHTML(formatDeliveryCountdown(tracking.remainingMs))}</span>
+              <span>${letter.isDevTest ? "DEV 도착까지" : "도착까지"} ${escapeHTML(formatDeliveryCountdown(tracking.remainingMs))}</span>
               <span>${Math.round(tracking.progress)}%</span>
             </div>
             <span class="animal-delivery-progress" aria-hidden="true"><span style="width:${tracking.progress.toFixed(2)}%"></span></span>
-
+            ${letter.isDevTest ? `<p class="animal-delivery-dev-note">DEV 1분 테스트 · 실제 ${escapeHTML(String(tracking.meta.deliveryHours))}시간 배송</p>` : ""}
           </div>
         </div>
         <span class="sent-letter-status is-moving">배송 중</span>
@@ -2762,7 +3046,7 @@ function renderLetterComposer() {
       <button class="letter-recipient-choice ${friend.id === selectedLetterRecipientId ? "selected" : ""}" type="button" data-letter-recipient="${escapeAttr(friend.id)}">
         <span class="letter-recipient-avatar">${avatar}</span>
         <span>
-          <span class="letter-recipient-name">${escapeHTML(friend.name)}</span>
+          <span class="letter-recipient-name">${escapeHTML(friend.name)}${friend.isDevTest ? '<span class="dev-test-tag">DEV</span>' : ""}</span>
           <span class="letter-recipient-stage">마음 ${friend.growth}일째 · ${escapeHTML(stage.label)}${friend.isDevTest ? " · 개발 확인용" : ""}</span>
         </span>
       </button>
@@ -2794,7 +3078,7 @@ function renderLetterComposer() {
   els.letterComposerTitle.textContent = `${animal.name}에게 편지를 맡기기`;
 
   if (isDevTestFriend) {
-    els.letterCarrierPreview.innerHTML = `<span class="carrier-icon" aria-hidden="true">${animal.icon}</span><p>${animal.name}에게 맡기면 바로 숲길로 출발해요. 약 ${animal.deliveryHours}시간의 숲길을 따라 친구에게 전해져요.</p>`;
+    els.letterCarrierPreview.innerHTML = `<span class="carrier-icon" aria-hidden="true">${animal.icon}</span><p>${animal.name}에게 맡기면 바로 숲길로 출발해요. 테스트 새싹에게 보내는 편지는 DEV 확인용으로 1분 뒤 도착해요.</p>`;
     submitButton.textContent = `${animal.icon} 테스트 배송 · 1분`;
     els.letterComposerFootnote.textContent = "테스트 새싹에게만 적용되는 개발 확인용 배송이에요. 실제 친구에게 보내는 편지는 동물별 운영 시간으로 전해져요.";
   } else {
@@ -2830,15 +3114,16 @@ async function sendGardenLetter(event) {
     return;
   }
 
-  const animal = currentAnimalVisitor();
-  if (!animal) {
-    showToast("지금은 정원에 머무는 숲친구가 없어요.");
+  const visit = currentAnimalV2Visit();
+  const animal = visit ? animalVisitors[visit.kind] : null;
+  if (!visit || !animal) {
+    showToast("그 숲친구는 이미 숲길을 따라 떠났어요.");
     closeAllSheets();
     return;
   }
 
   const selectedFriend = (state.friends || []).find((friend) => friend.id === selectedLetterRecipientId);
-  const isDevTestFriend = false;
+  const isDevTestFriend = Boolean(selectedFriend?.isDevTest);
   const submitButton = els.letterForm.querySelector('button[type="submit"]');
   const originalText = submitButton.textContent;
 
@@ -2846,32 +3131,45 @@ async function sendGardenLetter(event) {
   submitButton.textContent = `${animal.name}가 편지를 품고 출발해요…`;
 
   try {
-    const result = await supabase.rpc("send_garden_letter", {
-      p_recipient_id: selectedLetterRecipientId,
-      p_title: title,
-      p_body: body,
-      p_delivery_kind: animal.kind,
-    });
+    // 편지 저장과 선택한 한 마리의 출발을 같은 DEV v2 RPC 안에서 처리합니다.
+    const result = isDevTestFriend
+      ? await supabase.rpc("send_dev_test_garden_letter_with_dev_animal_v2", {
+        p_visit_id: visit.id,
+        p_test_friend_id: selectedLetterRecipientId,
+        p_title: title,
+        p_body: body,
+      })
+      : await supabase.rpc("send_garden_letter_with_dev_animal_v2", {
+        p_visit_id: visit.id,
+        p_recipient_id: selectedLetterRecipientId,
+        p_title: title,
+        p_body: body,
+      });
 
-    if (result.error) {
-      throw result.error;
-    }
+    if (result.error) throw result.error;
 
     const letter = normalizeRpcRow(result.data) || {};
-    trackTodayForestOperationalEvent("garden_letter_sent", {
-      delivery_kind: animal.kind,
-      delivery_hours: animal.deliveryHours,
-    });
+    if (!isDevTestFriend) {
+      trackTodayForestOperationalEvent("garden_letter_sent", {
+        delivery_kind: animal.kind,
+        delivery_hours: animal.deliveryHours,
+      });
+    }
+
     const recipientName = letter.recipient_nickname || selectedFriend?.name || "친구";
-    const fallbackDeliveryMs = animal.deliveryHours * 60 * 60 * 1000;
+    const fallbackDeliveryMs = isDevTestFriend
+      ? 60000
+      : animal.deliveryHours * 60 * 60 * 1000;
     const availableAt = letter.available_at || new Date(Date.now() + fallbackDeliveryMs).toISOString();
     const sentAt = new Date().toISOString();
     const outgoingId = letter.letter_id || `pending-${Date.now()}`;
 
-    // 선택한 동물과 운영 배송 시간이 DB와 보낸 편지 목록에 함께 저장됩니다.
-    rememberAnimalDelivery(outgoingId, animal, sentAt, availableAt, { to: recipientName, title, isDevTest: false });
+    rememberAnimalDelivery(outgoingId, animal, sentAt, availableAt, {
+      to: recipientName,
+      title,
+      isDevTest: isDevTestFriend,
+    });
 
-    // 전송이 성공한 즉시, 재조회가 늦더라도 보낸 편지 목록에 확실히 표시합니다.
     state.sentLetters = [{
       id: outgoingId,
       to: recipientName,
@@ -2885,15 +3183,27 @@ async function sendGardenLetter(event) {
       isDevTest: isDevTestFriend,
     }, ...(state.sentLetters || [])];
 
+    // 서버도 이미 departing으로 전환했지만, 현재 화면에서는 1초 수령 반응을 먼저 보여줍니다.
+    activeAnimalV2Visits = activeAnimalV2Visits.map((item) => (
+      item.id === visit.id
+        ? {
+          ...item,
+          visitState: "departing",
+          departingAt: letter.departing_at || new Date().toISOString(),
+          departureReason: "letter",
+        }
+        : item
+    ));
+    closeAnimalEncounterCard();
     els.letterForm.reset();
     closeAllSheets();
-    await leaveAnimalWithLetter(animal);
-    markAnimalDeparted(animal.kind, "letter");
     renderAll();
+    await leaveAnimalWithLetter(animal, visit.id);
+
+    await syncMyGardenAnimalVisit({ silent: true, rerender: true });
     openSheet(els.lettersSheet);
     showToast(`${animal.name}가 ${recipientName}에게 보낼 편지를 품고 숲길로 출발했어요.`);
 
-    // 저장 성공 뒤의 재조회는 화면을 막지 않도록 별도로 처리합니다.
     try {
       await loadGardenState();
       renderAll();
@@ -2902,9 +3212,13 @@ async function sendGardenLetter(event) {
       console.warn("TodayForest sent-letter refresh skipped:", refreshError);
     }
   } catch (error) {
-    console.error("TodayForest letter send error:", error);
+    console.error("TodayForest DEV animal v2 letter send error:", error);
     const detail = String(error?.message || "").trim();
-    showToast(detail || "편지를 보내지 못했어요. 제목과 내용은 그대로 두었어요.");
+    if (detail.includes("ANIMAL_NOT_AVAILABLE")) {
+      showToast("그 숲친구가 막 숲길로 돌아갔어요. 다른 친구를 기다려 볼까요?");
+    } else {
+      showToast(detail || "편지를 보내지 못했어요. 제목과 내용은 그대로 두었어요.");
+    }
   } finally {
     submitButton.disabled = false;
     submitButton.textContent = originalText || "숲친구에게 편지 맡기기";
@@ -2921,6 +3235,18 @@ function sharedTreeInviteForFriend(friendId) {
 
 function sharedTreeActionMarkup(friend) {
   const tree = sharedTreeForFriend(friend.id);
+  if (friend.isDevTest) {
+    if (tree) {
+      return `<button class="shared-tree-open-button shared-tree-dev-open-button" type="button" data-view-shared-tree="${escapeAttr(tree.id)}">🌿 DEV · 함께 키우는 나무 보기</button>`;
+    }
+    return `
+      <button class="shared-tree-dev-create-button" type="button" data-create-dev-shared-tree="${escapeAttr(friend.id)}">
+        🌱 DEV · 함께 심어 보기
+      </button>
+      <span class="shared-tree-status muted">검수용 자동 수락 · 실제 친구 데이터는 건드리지 않아요</span>
+    `;
+  }
+
   if (tree) {
     const done = tree.completedAt ? "완성된 둘만의 나무" : "함께 키우는 나무 보기";
     return `<button class="shared-tree-open-button" type="button" data-view-shared-tree="${escapeAttr(tree.id)}">🌿 ${escapeHTML(done)}</button>`;
@@ -2942,7 +3268,7 @@ function renderFriends() {
   const hasDevTestFriend = friends.some((friend) => friend.isDevTest);
   els.friendCount.textContent = `친구 ${friends.length}명`;
   els.friendsTotal.textContent = `${friends.length}명`;
-  if (els.devTestFriendBox) els.devTestFriendBox.classList.toggle("is-active", hasDevTestFriend);
+  els.devTestFriendBox.classList.toggle("is-active", hasDevTestFriend);
 
   if (!friends.length) {
     els.friendsList.innerHTML = '<div class="empty-state">아직 함께 자라는 친구가 없어요.<br />초대 링크를 보내면 친구의 나무도 이곳에 찾아와요.</div>';
@@ -2961,7 +3287,7 @@ function renderFriends() {
           <button class="friend-garden-open" type="button" data-view-friend="${escapeAttr(friend.id)}" aria-label="${escapeAttr(friend.name)}의 정원 보기">
             <span class="friend-avatar">${avatar}</span>
             <span class="friend-main">
-              <span class="friend-name">${escapeHTML(friend.name)}</span>
+              <span class="friend-name">${escapeHTML(friend.name)}${friend.isDevTest ? '<span class="dev-test-tag">DEV</span>' : ""}</span>
               <span class="friend-stage">마음 ${friend.growth}일째 · ${escapeHTML(stage.label)}${friend.isDevTest ? " · 개발 확인용" : ""}</span>
             </span>
             <span class="friend-view-arrow" aria-hidden="true">›</span>
@@ -3242,6 +3568,62 @@ function returnToFriendsFromSharedTree() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function friendFoundItemPositionStyle(item) {
+  const position = savedFoundItemPosition(item);
+  if (!position) return "";
+  return ` style="--found-item-x:${position.x}%; --found-item-y:${position.y}%;"`;
+}
+
+function normalizeFriendFoundItem(row) {
+  return {
+    id: row?.id || "",
+    itemKey: row?.item_key || "",
+    placementSlot: row?.placement_slot || "front_bed_left",
+    positionX: row?.position_x,
+    positionY: row?.position_y,
+  };
+}
+
+function renderFriendFoundItems(friendName, rows) {
+  if (!els.friendFoundItemsLayer) return 0;
+
+  const foundItems = (rows || [])
+    .map(normalizeFriendFoundItem)
+    .filter((item) => item.id && foundItemCatalog[item.itemKey]);
+
+  els.friendFoundItemsLayer.innerHTML = foundItems.map((item) => {
+    const catalogItem = foundItemCatalog[item.itemKey];
+    const position = savedFoundItemPosition(item);
+    const positionClass = position ? " has-custom-position" : "";
+    const itemName = `${friendName}가 찾은 ${catalogItem.name}`;
+    return `
+      <button class="friend-found-item found-item found-item-${escapeAttr(item.placementSlot)}${positionClass}" type="button" data-friend-found-item-key="${escapeAttr(item.itemKey)}" data-friend-found-item-name="${escapeAttr(friendName)}" aria-label="${escapeAttr(itemName)}" title="${escapeAttr(itemName)}"${friendFoundItemPositionStyle(item)}>
+        <img src="${escapeAttr(catalogItem.asset)}" alt="" draggable="false" />
+      </button>
+    `;
+  }).join("");
+
+  els.friendFoundItemsLayer.setAttribute(
+    "aria-label",
+    friendName
+      ? `${friendName}가 정원에 놓아둔 작은 것 ${foundItems.length}개`
+      : "친구가 정원에 놓아둔 작은 것"
+  );
+
+  return foundItems.length;
+}
+
+function handleFriendFoundItemClick(event) {
+  const button = event.target.closest("[data-friend-found-item-key]");
+  if (!button || !els.friendFoundItemsLayer?.contains(button)) return;
+
+  const catalogItem = foundItemCatalog[button.dataset.friendFoundItemKey];
+  if (!catalogItem) return;
+
+  const friendName = button.dataset.friendFoundItemName || "친구";
+  showToast(`${friendName}가 숲에서 찾은 ${catalogItem.name}이에요.`);
+}
+
 async function openFriendGarden(friendId) {
   const fallbackFriend = (state.friends || []).find((friend) => friend.id === friendId);
   if (!friendId || !fallbackFriend) {
@@ -3249,7 +3631,15 @@ async function openFriendGarden(friendId) {
     return;
   }
 
-  const { data, error } = await supabase.rpc("get_my_garden_friend_view", { p_friend_id: friendId });
+  // 이전에 방문한 친구의 장식이 잠깐 남아 보이지 않도록, 새 조회를 시작하기 전에 비웁니다.
+  renderFriendFoundItems("", []);
+
+  const [friendViewResult, friendItemsResult] = await Promise.all([
+    supabase.rpc("get_my_garden_friend_view", { p_friend_id: friendId }),
+    supabase.rpc("list_my_garden_friend_dev_found_items", { p_friend_id: friendId }),
+  ]);
+
+  const { data, error } = friendViewResult;
   if (error) {
     console.error("TodayForest friend garden load error:", error);
     showToast(databaseErrorMessage(error));
@@ -3266,6 +3656,14 @@ async function openFriendGarden(friendId) {
   const weather = weatherForGarden(friend.friend_id || friendId);
   const stage = stageForGrowth(growth);
   const name = friend.nickname || fallbackFriend.name || "친구";
+  const friendDecorationCount = friendItemsResult.error
+    ? 0
+    : renderFriendFoundItems(name, friendItemsResult.data || []);
+
+  if (friendItemsResult.error) {
+    // 친구 정원 본문은 계속 열되, DEV 읽기 RPC 연결 문제는 콘솔에서만 확인합니다.
+    console.warn("TodayForest friend decoration load skipped:", friendItemsResult.error);
+  }
 
   activeFriendGardenId = friend.friend_id || friendId;
   els.friendVisitName.textContent = `${name}의 정원`;
@@ -3275,12 +3673,15 @@ async function openFriendGarden(friendId) {
   els.friendVisitStageLabel.textContent = stage.label;
   els.friendVisitWeatherIcon.textContent = weather.icon;
   els.friendVisitWeatherText.textContent = weather.text;
-  els.friendVisitMessage.textContent = `${name}의 나무에도 ${weather.message}`;
+  els.friendVisitMessage.textContent = friendDecorationCount > 0
+    ? `${name}의 정원에는 숲에서 찾은 작은 것 ${friendDecorationCount}개가 놓여 있어요.`
+    : `${name}의 나무에도 ${weather.message}`;
   applyWeatherVisuals(els.friendVisitStage, els.friendVisitTreeWrap, els.friendVisitRainLayer, weather, `${friend.friend_id || friendId}:${seoulDateKey()}:friend-garden`);
 
   closeAllSheets();
   els.gardenApp.classList.add("hidden");
   els.friendVisit.classList.remove("hidden");
+  window.requestAnimationFrame(syncFriendGardenWorldScale);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -3290,12 +3691,12 @@ function returnToMyGarden() {
   els.friendVisitRainLayer.classList.remove("active");
   els.friendVisitTreeWrap.classList.remove("wind-active");
   els.friendVisitStage.classList.remove("weather-rain");
+  renderFriendFoundItems("", []);
   activeFriendGardenId = "";
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 async function enableDevTestFriend() {
-  if (TODAYFOREST_OPERATION_BUILD) return;
   if (!currentUser) {
     showToast("내 정원을 먼저 로그인해 주세요.");
     return;
@@ -3351,7 +3752,6 @@ async function enableDevTestFriend() {
 }
 
 async function simulateDevFriendRead(letterId) {
-  if (TODAYFOREST_OPERATION_BUILD) return;
   const { error } = await supabase.rpc("mark_dev_test_garden_letter_read", { p_letter_id: letterId });
   if (error) {
     showToast(databaseErrorMessage(error));
@@ -3582,6 +3982,35 @@ async function saveRecord(event) {
   const detail = els.detailText.value.trim();
   const submitButton = els.recordForm.querySelector('button[type="submit"]');
 
+  if (isTutorialSandboxPreview()) {
+    if (!oneLine) {
+      showToast("튜토리얼에서도 오늘 마음에 남은 한 줄을 적어보세요.");
+      els.oneLine.focus();
+      return;
+    }
+
+    submitButton.disabled = true;
+    submitButton.textContent = "숲빛이 마음을 품고 있어요";
+    await new Promise((resolve) => window.setTimeout(resolve, 460));
+    tutorialSandbox.recorded = true;
+    tutorialSandbox.found = false;
+    submitButton.disabled = false;
+    submitButton.textContent = "나무에 마음 남기기";
+
+    els.recordForm.reset();
+    selectedMood = "good";
+    renderMoodSelection();
+    els.detailWrap.classList.add("hidden");
+    els.toggleDetail.innerHTML = '조금 더 적기 <span aria-hidden="true">⌄</span>';
+    closeAllSheets({ force: true });
+    renderAll();
+    els.treeWrap.classList.remove("tree-pulse");
+    void els.treeWrap.offsetWidth;
+    els.treeWrap.classList.add("tree-pulse");
+    showToast("미리보기에서 마음이 나무에 닿았어요. 이제 풀숲의 빛을 따라가요.");
+    return;
+  }
+
   if (hasSavedToday()) {
     closeAllSheets();
     renderGarden();
@@ -3646,17 +4075,11 @@ async function saveRecord(event) {
   els.treeWrap.classList.remove("tree-pulse");
   void els.treeWrap.offsetWidth;
   els.treeWrap.classList.add("tree-pulse");
-
-  // 첫 기록 직후에는 3/3 안내 카드가 이미 같은 메시지를 들려주므로,
-  // 토스트를 겹쳐 띄우지 않아 숲빛과 발견물에만 시선이 머물게 합니다.
-  const isFirstWalkDiscovery = gardenTutorialPhase === "discovery" && firstDiscoveryGuideIsAvailable();
-  if (!isFirstWalkDiscovery) {
-    showToast(
-      canDiscoverFoundItem()
-        ? "오늘의 마음이 내 정원에 저장됐어요. 풀숲 어딘가가 반짝이고 있어요."
-        : "오늘의 마음이 내 정원에 저장됐어요."
-    );
-  }
+  showToast(
+    canDiscoverFoundItem()
+      ? "오늘의 마음이 내 정원에 저장됐어요. 풀숲 어딘가가 반짝이고 있어요."
+      : "오늘의 마음이 내 정원에 저장됐어요."
+  );
 }
 
 function getInviteTokenFromUrl() {
@@ -3825,9 +4248,16 @@ function setAuthError(message = "") {
 
 function renderAuthUI() {
   const isSignedIn = Boolean(currentUser);
-  const isWelcomeOnboarding = welcomeFlowMode === "onboarding";
-  els.authScreen.classList.toggle("hidden", isSignedIn || isWelcomeOnboarding);
-  els.gardenApp.classList.toggle("hidden", !isSignedIn || isWelcomeOnboarding);
+  const onboardingVisible = welcomeFlowMode === "onboarding";
+  const welcomeSurfaceVisible = onboardingVisible || welcomeFlowMode === "transitioning";
+
+  els.authScreen.classList.toggle("hidden", isSignedIn);
+  // 신규 사용자는 손님맞이 장면을 마칠 때까지 실제 정원 UI를 뒤에만 준비합니다.
+  els.gardenApp.classList.toggle("hidden", !isSignedIn || onboardingVisible);
+  if (!welcomeSurfaceVisible && !isWelcomePreviewMode()) {
+    els.welcomePreview?.classList.add("hidden");
+  }
+
   if (isSignedIn) {
     const accountName = state.profileName || displayName(currentUser);
     const gardenName = state.treeName || accountName;
@@ -3836,8 +4266,20 @@ function renderAuthUI() {
   }
 }
 
+function tutorialPreviewPhase() {
+  const preview = new URL(window.location.href).searchParams.get("tutorialPreview") || "";
+  return ["intro", "record", "discovery"].includes(preview) ? preview : "";
+}
+
+function isTutorialSandboxPreview() {
+  // intro 주소는 첫 인사 → 기록 → 발견까지 전부 검수하는 안전한 샌드박스입니다.
+  return tutorialPreviewPhase() === "intro";
+}
 
 function firstWalkGuideIsAvailable() {
+  const preview = tutorialPreviewPhase();
+  if (isTutorialSandboxPreview()) return !tutorialSandbox.recorded && !tutorialSandbox.found;
+  if (preview === "record") return true;
   return Boolean(currentUser)
     && !isTreeNameSetupRequired()
     && Array.isArray(state.records)
@@ -3845,6 +4287,9 @@ function firstWalkGuideIsAvailable() {
 }
 
 function firstDiscoveryGuideIsAvailable() {
+  const preview = tutorialPreviewPhase();
+  if (isTutorialSandboxPreview()) return tutorialSandbox.recorded && !tutorialSandbox.found;
+  if (preview === "discovery") return true;
   return Boolean(currentUser)
     && !isTreeNameSetupRequired()
     && Array.isArray(state.records)
@@ -3863,6 +4308,7 @@ function anotherSheetIsOpen() {
     els.lettersSheet,
     els.feedbackSheet,
     els.supportSheet,
+    els.accountMenuSheet,
     els.letterComposerSheet,
     els.treeNameSheet,
   ];
@@ -3930,6 +4376,7 @@ function setFirstWalkCardPosition(target, phase) {
     return;
   }
   const rect = target.getBoundingClientRect();
+  // 카드와 버튼 사이에 숨 쉴 틈을 남겨, 시선이 카드 → 숲빛 → 버튼으로 이어지게 합니다.
   const desiredBottom = Math.max(22, window.innerHeight - rect.top + 34);
   const maxBottom = Math.max(22, window.innerHeight - 170);
   els.firstWalkTutorial.style.setProperty(
@@ -3976,6 +4423,7 @@ function positionFirstWalkGuide(phase, { animate = true } = {}) {
   if (phase === "intro" || phase === "complete") {
     y = rect.top + (rect.height * 0.38);
   } else if (phase === "record") {
+    // 숲빛이 버튼 위에 '도착'한 것처럼, 버튼 가운데보다 조금 위에 멈춥니다.
     y = rect.top - 22;
   }
 
@@ -4018,6 +4466,7 @@ function setFirstWalkTargetFocus(phase) {
 
 function hideGardenTutorial({ keepPhase = false } = {}) {
   clearGardenTutorialTimer();
+  // 완료 직전의 발견물 강조는 ID를 비우기 전에 먼저 걷어냅니다.
   setFirstWalkTargetFocus("");
   if (!keepPhase) gardenTutorialPhase = "";
   if (!keepPhase) firstWalkGuidePosition = null;
@@ -4062,6 +4511,7 @@ function showFirstWalkCompletion({ foundItemId = "" } = {}) {
   clearGardenTutorialTimer();
   firstWalkCompletionFoundItemId = String(foundItemId || "");
   showFirstWalkTutorialScene("complete", { animateGuide: false });
+  // 마지막 문장이 지나갈 만큼만 머물고, 사용자의 정원으로 조용히 돌아갑니다.
   gardenTutorialTimer = window.setTimeout(() => hideGardenTutorial(), 3400);
 }
 
@@ -4070,6 +4520,7 @@ function renderFirstWalkTutorial() {
 
   const shouldGuideFirstWalk = firstWalkGuideIsAvailable();
   const shouldGuideDiscovery = firstDiscoveryGuideIsAvailable();
+  const preview = tutorialPreviewPhase();
 
   if (!shouldGuideFirstWalk && !shouldGuideDiscovery) {
     hideGardenTutorial();
@@ -4086,17 +4537,19 @@ function renderFirstWalkTutorial() {
     gardenTutorialPhase = "record-form";
     hideGardenTutorial({ keepPhase: true });
     els.recordTutorialNote?.classList.remove("hidden");
+    els.recordTutorialPreview?.classList.toggle("hidden", !isTutorialSandboxPreview());
     return;
   }
 
   els.recordTutorialNote?.classList.add("hidden");
+  els.recordTutorialPreview?.classList.add("hidden");
 
   if (shouldGuideDiscovery) {
     showFirstWalkTutorialScene("discovery", { animateGuide: gardenTutorialPhase !== "discovery" });
     return;
   }
 
-  const shouldResumeRecord = gardenTutorialPhase === "record" || gardenTutorialPhase === "record-form";
+  const shouldResumeRecord = preview === "record" || gardenTutorialPhase === "record" || gardenTutorialPhase === "record-form";
   showFirstWalkTutorialScene(shouldResumeRecord ? "record" : "intro", { animateGuide: false });
 }
 
@@ -4155,6 +4608,11 @@ async function syncSession() {
   currentUser = nextUser;
 
   if (currentUser && changedUser) {
+    clearAnimalVisitArrivalTimer();
+    activeAnimalVisit = null;
+    activeAnimalV2Visits = [];
+    selectedAnimalV2VisitId = "";
+    closeAnimalEncounterCard();
     state = cloneDefault();
     selectedMood = "good";
     selectedLetterRecipientId = "";
@@ -4187,11 +4645,16 @@ async function signOut() {
     showToast("로그아웃을 마치지 못했어요. 다시 시도해 주세요.");
     return;
   }
-  resetWelcomeOnboardingSurface();
   currentUser = null;
+  clearAnimalVisitArrivalTimer();
+  activeAnimalVisit = null;
+  activeAnimalV2Visits = [];
+  selectedAnimalV2VisitId = "";
+  closeAnimalEncounterCard();
   treeNamePromptedForUserId = "";
   configureRetentionWindPolling();
   state = cloneDefault();
+  resetWelcomeOnboardingSurface();
   selectedLetterRecipientId = "";
   closeAllSheets();
   closeLetterModal();
@@ -4251,7 +4714,7 @@ async function saveTreeName(event) {
     closeAllSheets({ force: true });
     showToast("내 나무 이름을 정했어요.");
   } catch (error) {
-    console.error("TodayForest tree-name save error:", error);
+    console.error("TodayForest DEV tree-name save error:", error);
     const detail = String(error?.message || "");
     if (detail.includes("TREE_NAME_ALREADY_SET") || detail.includes("TREE_NAME_LOCKED")) {
       await loadGardenState();
@@ -4271,53 +4734,42 @@ async function saveTreeName(event) {
 
 function bindEvents() {
   els.signInKakao.addEventListener("click", beginKakaoLogin);
-  els.welcomePlantButton?.addEventListener("click", () => {
-    if (welcomeFlowMode !== "onboarding" || els.welcomePreview?.classList.contains("is-seeded")) return;
-    els.welcomePreview?.classList.add("is-seeded");
-    if (els.welcomePreview) els.welcomePreview.dataset.phase = "seed";
-    welcomeSeedTimer = window.setTimeout(() => {
-      els.welcomePreview?.classList.add("is-seed-ready");
-      if (els.welcomePreview) els.welcomePreview.dataset.phase = "seed-ready";
-      welcomeSeedTimer = null;
-    }, 1450);
-  });
-  els.welcomeKakaoButton?.addEventListener("click", openWelcomeNameSheet);
-  els.welcomeNameForm?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const treeName = els.welcomeNameInput?.value.trim() || "";
-    if (!treeName) {
-      if (els.welcomeNameError) els.welcomeNameError.textContent = "나무 이름을 한 글자 이상 적어주세요.";
-      els.welcomeNameInput?.focus();
-      return;
-    }
-    if (els.welcomeNameError) els.welcomeNameError.textContent = "";
-    void saveWelcomeOnboardingTreeName(treeName);
-  });
-  $$(".welcome-mood-choice").forEach((button) => {
-    button.addEventListener("click", () => {
-      welcomeSelectedMood = button.dataset.welcomeMood || "";
-      $$(".welcome-mood-choice").forEach((choice) => choice.classList.toggle("is-selected", choice === button));
-      if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "";
-    });
-  });
-  els.welcomeRecordSave?.addEventListener("click", () => { void saveWelcomeOnboardingFirstRecord(); });
   els.installAppButton.addEventListener("click", () => { void requestAppInstall(); });
   els.dismissInstallCard.addEventListener("click", dismissInstallCardForAWhile);
   els.foundItemSparkle.addEventListener("click", () => { void claimFoundItem(); });
   els.openGardenDecorate.addEventListener("click", startGardenDecorateMode);
   els.cancelGardenDecorate.addEventListener("click", cancelGardenDecorateMode);
   els.saveGardenDecorate.addEventListener("click", () => { void saveGardenDecorateMode(); });
-  els.foundItemsLayer.addEventListener("pointerdown", beginFoundItemDrag);
-  els.foundItemsLayer.addEventListener("pointermove", moveFoundItemDrag);
-  els.foundItemsLayer.addEventListener("pointerup", endFoundItemDrag);
-  els.foundItemsLayer.addEventListener("pointercancel", endFoundItemDrag);
+  els.foundItemsLayer.addEventListener("pointerdown", beginFoundItemDrag, { passive: false });
+  // 드래그 시작 뒤에는 장식 밖으로 손가락·마우스가 벗어나도 끊기지 않도록
+  // window 캡처 단계에서 이동과 종료를 받습니다.
+  window.addEventListener("pointermove", moveFoundItemDrag, { capture: true, passive: false });
+  window.addEventListener("pointerup", endFoundItemDrag, { capture: true });
+  window.addEventListener("pointercancel", endFoundItemDrag, { capture: true });
+  window.addEventListener("blur", () => endFoundItemDrag());
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      endFoundItemDrag();
+      clearAnimalVisitArrivalTimer();
+      return;
+    }
+    if (currentUser) {
+      void syncMyGardenAnimalVisit({ beginWhenReady: true, silent: true, rerender: true });
+    }
+  });
   els.signOutButton.addEventListener("click", signOut);
+  els.accountButton?.addEventListener("click", openAccountMenu);
+  els.openInstallFromAccount?.addEventListener("click", () => { void requestAppInstallFromAccountMenu(); });
   els.treeNameForm.addEventListener("submit", saveTreeName);
   els.firstWalkTutorialTap?.addEventListener("click", () => {
     if (gardenTutorialPhase === "intro") beginFirstWalkRecordScene();
   });
   $("#openRecord").addEventListener("click", () => {
-    if (hasSavedToday()) {
+    if (isTutorialSandboxPreview() && tutorialSandbox.recorded) {
+      showToast("미리보기에서는 첫 마음을 남겼어요. 풀숲의 빛을 따라가요.");
+      return;
+    }
+    if (!isTutorialSandboxPreview() && hasSavedToday()) {
       showToast("오늘의 마음은 이미 나무에 남겼어요. 내일 다시 와요.");
       return;
     }
@@ -4339,12 +4791,28 @@ function bindEvents() {
     showToast("정원에 찾아온 숲친구를 눌러 편지를 맡겨요.");
   });
   els.letterForm.addEventListener("submit", sendGardenLetter);
-  els.visitorButton.addEventListener("click", openAnimalLetterComposer);
-  els.activeAnimal.addEventListener("click", openAnimalLetterComposer);
-  els.animalTrace.addEventListener("click", () => {
+  els.visitorButton.addEventListener("click", () => {
+    const visit = currentAnimalV2Visit();
+    if (visit) {
+      openAnimalEncounterForVisit(visit.id);
+      return;
+    }
     const trace = lastAnimalTrace();
-    if (trace) showToast(trace.traceStory);
+    if (trace) {
+      showToast(trace.traceStory);
+      return;
+    }
+    if (isAnimalApproaching()) {
+      showToast("풀잎과 가지 사이의 기척이 조금 더 가까워지고 있어요.");
+      return;
+    }
+    showToast("정원을 보고 있으면 숲친구가 자유롭게 찾아올 수 있어요.");
   });
+  els.animalV2Layer?.addEventListener("click", handleAnimalV2LayerClick);
+  els.animalV2TraceLayer?.addEventListener("click", handleAnimalV2TraceClick);
+  els.animalEncounterClose?.addEventListener("click", closeAnimalEncounterCard);
+  els.animalEncounterQuiet?.addEventListener("click", closeAnimalEncounterCard);
+  els.animalEncounterSend?.addEventListener("click", openAnimalLetterComposer);
   els.recordForm.addEventListener("submit", saveRecord);
   els.toggleDetail.addEventListener("click", () => {
     const isHidden = els.detailWrap.classList.toggle("hidden");
@@ -4362,9 +4830,10 @@ function bindEvents() {
   els.letterModal.addEventListener("click", (event) => { if (event.target === els.letterModal) closeLetterModal(); });
   els.returnToMyGarden.addEventListener("click", returnToMyGarden);
   els.returnToMyGardenTop.addEventListener("click", returnToMyGarden);
+  els.friendFoundItemsLayer?.addEventListener("click", handleFriendFoundItemClick);
   els.createInviteButton.addEventListener("click", createFriendInvite);
   els.copyInviteLink.addEventListener("click", copyFriendInviteLink);
-  if (!TODAYFOREST_OPERATION_BUILD && els.enableDevFriendButton) els.enableDevFriendButton.addEventListener("click", enableDevTestFriend);
+  els.enableDevFriendButton.addEventListener("click", enableDevTestFriend);
   $("#closeFriendInviteModal").addEventListener("click", () => closeFriendInviteModal());
   els.declineFriendInviteButton.addEventListener("click", () => closeFriendInviteModal());
   els.acceptFriendInviteButton.addEventListener("click", acceptFriendInvite);
@@ -4379,6 +4848,7 @@ function bindEvents() {
     if (!currentUser) return;
     try {
       await loadGardenState();
+      await syncMyGardenAnimalVisit({ beginWhenReady: true, silent: true });
       renderAll();
     } catch (error) {
       console.warn("TodayForest refresh skipped:", error);
@@ -4401,7 +4871,480 @@ function bindEvents() {
   });
 }
 
+let welcomeSeedTimer = null;
+let welcomeWalkTimer = null;
+let welcomeGardenTransitionTimer = null;
+let welcomeGardenArrivalTimer = null;
+let welcomeSelectedMood = "";
+let welcomeTreeName = "내 나무";
+// preview는 URL 검수 전용, onboarding은 카카오 로그인 뒤 신규 계정의 실제 첫 나무 흐름입니다.
+let welcomeFlowMode = "idle";
+let welcomeHandlersBound = false;
+
+function clearWelcomePreviewTimers() {
+  [welcomeSeedTimer, welcomeWalkTimer, welcomeGardenTransitionTimer, welcomeGardenArrivalTimer].forEach((timer) => {
+    if (timer) window.clearTimeout(timer);
+  });
+  welcomeSeedTimer = null;
+  welcomeWalkTimer = null;
+  welcomeGardenTransitionTimer = null;
+  welcomeGardenArrivalTimer = null;
+}
+
+function isLiveWelcomeOnboarding() {
+  return welcomeFlowMode === "onboarding" && Boolean(currentUser);
+}
+
+function resetWelcomeOnboardingSurface() {
+  clearWelcomePreviewTimers();
+  if (welcomeFlowMode === "onboarding" || welcomeFlowMode === "transitioning") {
+    const preview = els.welcomePreview;
+    preview?.classList.add("hidden");
+    preview?.classList.remove(
+      "is-seeded", "is-seed-ready", "is-handoff", "is-naming", "is-walk",
+      "is-record-previewed", "is-tree-birth", "is-entering-garden", "is-leaving"
+    );
+    els.welcomeNameSheet?.classList.add("hidden");
+    els.welcomeWalkLayer?.classList.add("hidden");
+    document.body.classList.remove("is-welcome-preview", "is-welcome-live-entry");
+  }
+  welcomeFlowMode = "idle";
+}
+
+function resetWelcomeSandboxGarden() {
+  const app = els.gardenApp;
+  if (!app) return;
+
+  app.classList.remove("welcome-sandbox-garden", "is-welcome-garden-visible");
+  app.classList.add("hidden");
+  if (els.foundItemsLayer) els.foundItemsLayer.replaceChildren();
+  if (els.gardenDecorateControls) els.gardenDecorateControls.hidden = true;
+  if (els.visitorButton) els.visitorButton.hidden = false;
+  if (els.firstWalkTutorial) els.firstWalkTutorial.classList.add("hidden");
+}
+
+function resetWelcomePreview() {
+  const preview = els.welcomePreview;
+  if (!preview) return;
+
+  clearWelcomePreviewTimers();
+  welcomeSelectedMood = "";
+  welcomeTreeName = "내 나무";
+  resetWelcomeSandboxGarden();
+
+  preview.classList.remove(
+    "is-seeded", "is-seed-ready", "is-handoff", "is-naming", "is-walk",
+    "is-record-previewed", "is-tree-birth", "is-entering-garden", "is-leaving"
+  );
+  preview.dataset.phase = "intro";
+  els.welcomeNameSheet?.classList.add("hidden");
+  els.welcomeWalkLayer?.classList.add("hidden");
+  els.welcomeWalkIntro?.classList.remove("is-hidden");
+  els.welcomeRecordCard?.classList.remove("is-visible");
+  els.welcomeNameForm?.reset();
+  if (els.welcomeNameError) els.welcomeNameError.textContent = "";
+  if (els.welcomeRecordLine) els.welcomeRecordLine.value = "";
+  if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "";
+  $$(".welcome-mood-choice").forEach((button) => button.classList.remove("is-selected"));
+  if (els.welcomeKakaoButton) els.welcomeKakaoButton.disabled = false;
+
+  // CSS 장면 애니메이션을 처음부터 다시 재생합니다.
+  preview.classList.add("is-resetting");
+  void preview.offsetWidth;
+  preview.classList.remove("is-resetting");
+}
+
+function openWelcomeNameSheet() {
+  const preview = els.welcomePreview;
+  if (!preview) return;
+  preview.classList.add("is-naming");
+  preview.dataset.phase = "name";
+  els.welcomeNameSheet?.classList.remove("hidden");
+  window.setTimeout(() => els.welcomeNameInput?.focus(), 180);
+}
+
+function startWelcomeFirstWalk(treeName) {
+  const preview = els.welcomePreview;
+  if (!preview) return;
+  const safeName = String(treeName || "내 나무").trim() || "내 나무";
+  welcomeTreeName = safeName;
+  preview.classList.remove("is-naming");
+  preview.classList.add("is-walk");
+  preview.dataset.phase = "first-walk";
+  els.welcomeNameSheet?.classList.add("hidden");
+  els.welcomeWalkLayer?.classList.remove("hidden");
+  if (els.welcomeWalkTreeName) els.welcomeWalkTreeName.textContent = safeName;
+  els.welcomeWalkIntro?.classList.remove("is-hidden");
+  els.welcomeRecordCard?.classList.remove("is-visible");
+
+  welcomeWalkTimer = window.setTimeout(() => {
+    els.welcomeWalkIntro?.classList.add("is-hidden");
+    els.welcomeRecordCard?.classList.add("is-visible");
+    preview.dataset.phase = "record";
+    welcomeWalkTimer = null;
+  }, 1150);
+}
+
+function prepareWelcomeSandboxGarden() {
+  const app = els.gardenApp;
+  if (!app) return;
+
+  const treeName = welcomeTreeName || "내 나무";
+  app.classList.remove("hidden");
+  app.classList.add("welcome-sandbox-garden");
+
+  // 실제 정원과 같은 DOM·CSS를 그대로 쓰되, 이 URL 안에서는 저장하지 않는 표시값만 넣습니다.
+  if (els.accountName) els.accountName.textContent = `${treeName}의 정원`;
+  els.accountButton?.setAttribute("aria-label", `${treeName}의 정원`);
+  if (els.treeNameLabel) els.treeNameLabel.textContent = treeName;
+  if (els.dayCount) els.dayCount.textContent = "마음 1일째";
+  if (els.treeStageLabel) els.treeStageLabel.textContent = "처음 깨어난 새싹";
+  if (els.treeImage) {
+    els.treeImage.src = "assets/garden/tree_growth/tree_stage1_morning.png";
+    els.treeImage.alt = "처음 깨어난 새싹";
+  }
+  if (els.weatherIcon) els.weatherIcon.textContent = "☀️";
+  if (els.weatherText) els.weatherText.textContent = "햇살이 포근하게 내려와요";
+  if (els.friendCount) els.friendCount.textContent = "친구 0명";
+  if (els.visitorEmoji) els.visitorEmoji.textContent = "🌿";
+  if (els.visitorName) els.visitorName.textContent = "숲이 조용히 숨을 고르고 있어요";
+  if (els.visitorHint) els.visitorHint.textContent = "첫 마음이 나무 가까이에 내려앉았어요.";
+  if (els.stageMessage) els.stageMessage.textContent = "첫 마음이 작은 나무가 되었어요.";
+  if (els.nextVisitorText) els.nextVisitorText.textContent = "내일도 마음을 남기면 나무가 조금 더 자라요.";
+  if (els.installCard) els.installCard.classList.add("hidden");
+  if (els.firstWalkTutorial) els.firstWalkTutorial.classList.add("hidden");
+  if (els.gardenDecorateControls) els.gardenDecorateControls.hidden = false;
+
+  // 실제 정원에서 쓰는 발견물 레이어를 그대로 사용합니다.
+  if (els.foundItemsLayer) {
+    els.foundItemsLayer.innerHTML = `
+      <div class="found-item found-item-tree_base_right welcome-sandbox-found-item" aria-hidden="true">
+        <img src="assets/decorations/pink-wildflower.png" alt="" />
+      </div>`;
+  }
+
+  // welcomePreview 모드에서는 일반 init()을 건너뛰므로, 실제 정원과 같은 좌표 비율만 직접 맞춥니다.
+  window.requestAnimationFrame(() => {
+    syncGardenWorldScale();
+    app.classList.add("is-welcome-garden-visible");
+  });
+}
+
+function finishWelcomeOnboarding() {
+  const preview = els.welcomePreview;
+  if (!preview || !currentUser) return;
+
+  // 실제 저장이 끝난 뒤에만 화면을 넘깁니다. 정원은 아래에서 먼저 렌더링하고,
+  // 손님맞이 장면은 기존 CSS 전환 시간만큼 부드럽게 사라집니다.
+  welcomeFlowMode = "transitioning";
+  preview.classList.add("is-leaving");
+  preview.dataset.phase = "my-garden";
+  renderAuthUI();
+  renderAll();
+  window.requestAnimationFrame(() => syncGardenWorldScale());
+
+  window.setTimeout(async () => {
+    if (welcomeFlowMode !== "transitioning") return;
+    preview.classList.add("hidden");
+    preview.classList.remove(
+      "is-seeded", "is-seed-ready", "is-handoff", "is-naming", "is-walk",
+      "is-record-previewed", "is-tree-birth", "is-entering-garden", "is-leaving"
+    );
+    els.welcomeNameSheet?.classList.add("hidden");
+    els.welcomeWalkLayer?.classList.add("hidden");
+    document.body.classList.remove("is-welcome-preview", "is-welcome-live-entry");
+    welcomeFlowMode = "idle";
+    renderAuthUI();
+    renderAll();
+    await previewFriendInviteFromUrl();
+  }, 620);
+}
+
+function startWelcomeGardenTransition({ onboarding = isLiveWelcomeOnboarding() } = {}) {
+  const preview = els.welcomePreview;
+  if (!preview) return;
+
+  // 기록 카드는 먼저 조용히 사라지고, 같은 자리에서 씨앗이 작은 나무로 자랍니다.
+  els.welcomeRecordCard?.classList.remove("is-visible");
+  preview.classList.remove("is-walk");
+  preview.classList.add("is-tree-birth");
+  preview.dataset.phase = "tree-birth";
+
+  // 나무와 들꽃을 바라볼 틈을 준 뒤, 빛을 타고 실제 내 정원 UI가 드러납니다.
+  welcomeGardenTransitionTimer = window.setTimeout(() => {
+    preview.classList.add("is-entering-garden");
+    preview.dataset.phase = "entering-garden";
+    welcomeGardenTransitionTimer = null;
+  }, 2450);
+
+  welcomeGardenArrivalTimer = window.setTimeout(() => {
+    if (onboarding) {
+      finishWelcomeOnboarding();
+    } else {
+      prepareWelcomeSandboxGarden();
+      preview.classList.add("is-leaving");
+      preview.dataset.phase = "my-garden";
+    }
+    welcomeGardenArrivalTimer = null;
+  }, 3050);
+}
+
+async function beginWelcomeKakaoLogin() {
+  if (authBusy) return;
+
+  const button = els.welcomeKakaoButton;
+  const preview = els.welcomePreview;
+  if (!button) return;
+
+  // 로그인 전 친구 초대 링크가 있어도 기존 로그인 흐름처럼 세션에 보관합니다.
+  const inviteToken = getInviteTokenFromUrl();
+  if (inviteToken) {
+    window.sessionStorage.setItem("todayforest_pending_friend_invite", inviteToken);
+  }
+
+  authBusy = true;
+  const originalLabel = button.textContent;
+  button.disabled = true;
+  button.textContent = "카카오 로그인으로 이동 중이에요";
+
+  // 손님맞이 검수 주소는 로그인 뒤에 남기지 않습니다.
+  // OAuth가 끝나면 일반 DEV 초기화가 실행되어, 실제 계정 상태를 읽습니다.
+  const redirectTo = `${window.location.origin}${window.location.pathname}`;
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "kakao",
+    options: { redirectTo },
+  });
+
+  if (!error) return;
+
+  authBusy = false;
+  button.disabled = false;
+  button.textContent = originalLabel || "카카오로 내 숲 시작하기";
+  if (els.welcomePreviewHandoff) {
+    els.welcomePreviewHandoff.textContent = "카카오 로그인 준비 중 문제가 있었어요. 잠시 뒤 다시 눌러주세요.";
+  }
+  preview?.classList.add("is-handoff");
+  console.error("TodayForest welcome Kakao login error:", error);
+}
+
+function startWelcomeOnboarding() {
+  if (!isFirstGardenOnboardingRequired()) return false;
+  initWelcomePreview({ onboarding: true });
+  return true;
+}
+
+async function saveWelcomeOnboardingTreeName(treeName) {
+  if (!isLiveWelcomeOnboarding() || !currentUser) return;
+
+  const submitButton = els.welcomeNameForm?.querySelector('button[type="submit"]');
+  const originalLabel = submitButton?.textContent || "이름 정하기";
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = "나무 이름을 정하는 중이에요";
+  }
+
+  try {
+    const { data, error } = await supabase.rpc("set_my_garden_tree_name", { p_tree_name: treeName });
+    if (error) throw error;
+
+    const row = normalizeRpcRow(data);
+    state.treeName = row?.saved_tree_name || row?.tree_name || treeName;
+    if (els.welcomeNameError) els.welcomeNameError.textContent = "";
+    startWelcomeFirstWalk(state.treeName);
+  } catch (error) {
+    console.error("TodayForest welcome tree-name save error:", error);
+    const detail = String(error?.message || "");
+    if (detail.includes("TREE_NAME_ALREADY_SET") || detail.includes("TREE_NAME_LOCKED")) {
+      try {
+        await loadGardenState();
+      } catch (loadError) {
+        console.warn("TodayForest welcome tree-name refresh skipped:", loadError);
+      }
+      if (String(state.treeName || "").trim()) {
+        startWelcomeFirstWalk(state.treeName);
+        return;
+      }
+    }
+    if (els.welcomeNameError) {
+      els.welcomeNameError.textContent = detail.includes("set_my_garden_tree_name") || detail.includes("tree_name")
+        ? "나무 이름 저장소를 준비하지 못했어요. 잠시 뒤 다시 시도해 주세요."
+        : "이름을 정하지 못했어요. 잠시 뒤 다시 시도해 주세요.";
+    }
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = originalLabel;
+    }
+  }
+}
+
+function welcomeMoodToRecordMood(value) {
+  return {
+    "포근해요": "good",
+    "평범해요": "calm",
+    "조금 지쳐요": "tired",
+  }[value] || "good";
+}
+
+async function saveWelcomeOnboardingFirstRecord() {
+  if (!isLiveWelcomeOnboarding() || !currentUser) return;
+
+  const oneLine = els.welcomeRecordLine?.value.trim() || "";
+  if (!welcomeSelectedMood) {
+    if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "오늘의 마음을 하나 골라주세요.";
+    return;
+  }
+  if (!oneLine) {
+    if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "오늘을 한 줄로 남겨주세요.";
+    els.welcomeRecordLine?.focus();
+    return;
+  }
+
+  const button = els.welcomeRecordSave;
+  const originalLabel = button?.textContent || "내 마음 심기";
+  if (button) {
+    button.disabled = true;
+    button.textContent = "첫 마음을 심는 중이에요";
+  }
+
+  try {
+    const { error } = await supabase.rpc("save_garden_record", {
+      p_mood: welcomeMoodToRecordMood(welcomeSelectedMood),
+      p_one_line: oneLine,
+      p_detail: null,
+    });
+    if (error) throw error;
+
+    await loadGardenState();
+    trackTodayForestOperationalEvent("garden_mood_saved", {
+      mood: welcomeMoodToRecordMood(welcomeSelectedMood),
+      detail_added: "no",
+    });
+    if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "";
+    els.welcomePreview?.classList.add("is-record-previewed");
+    els.welcomePreview.dataset.phase = "recorded";
+    window.setTimeout(() => startWelcomeGardenTransition({ onboarding: true }), 300);
+  } catch (error) {
+    console.error("TodayForest welcome first-record save error:", error);
+    const detail = String(error?.message || "");
+    if (detail.includes("TODAY_RECORD_ALREADY_SAVED")) {
+      try {
+        await loadGardenState();
+      } catch (loadError) {
+        console.warn("TodayForest welcome first-record refresh skipped:", loadError);
+      }
+      startWelcomeGardenTransition({ onboarding: true });
+      return;
+    }
+    if (els.welcomeRecordPreviewNote) {
+      els.welcomeRecordPreviewNote.textContent = databaseErrorMessage(error);
+    }
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalLabel;
+    }
+  }
+}
+
+function initWelcomePreview({ liveEntry = false, onboarding = false } = {}) {
+  const preview = els.welcomePreview;
+  if (!preview) return;
+
+  // welcomePreview=1은 검수 전용, onboarding은 로그인 뒤 신규 계정의 실제 첫 나무 흐름입니다.
+  welcomeFlowMode = onboarding ? "onboarding" : "preview";
+  document.body.classList.add("is-welcome-preview");
+  document.body.classList.toggle("is-welcome-live-entry", liveEntry);
+  preview.classList.remove("hidden");
+  els.authScreen?.classList.add("hidden");
+  els.gardenApp?.classList.add("hidden");
+
+  const nameCopy = preview.querySelector(".welcome-sheet-copy");
+  if (onboarding) {
+    if (els.welcomeKakaoButton) els.welcomeKakaoButton.textContent = "이름 정하기";
+    if (els.welcomePreviewHandoff) els.welcomePreviewHandoff.classList.add("hidden");
+    if (nameCopy) nameCopy.textContent = "한 번 정한 나무 이름은 바꿀 수 없어요.";
+  } else {
+    if (els.welcomeKakaoButton) els.welcomeKakaoButton.textContent = "카카오로 내 숲 시작하기";
+    els.welcomePreviewHandoff?.classList.toggle("hidden", liveEntry);
+    if (nameCopy) nameCopy.textContent = "이름은 나중에 언제든 바꿀 수 있어요.";
+  }
+  if (preview.dataset.previewMode === "still") return;
+
+  resetWelcomePreview();
+  if (welcomeHandlersBound) return;
+  welcomeHandlersBound = true;
+
+  els.welcomePlantButton?.addEventListener("click", () => {
+    if (preview.classList.contains("is-seeded")) return;
+    preview.classList.add("is-seeded");
+    preview.dataset.phase = "seed";
+    welcomeSeedTimer = window.setTimeout(() => {
+      preview.classList.add("is-seed-ready");
+      preview.dataset.phase = "seed-ready";
+      welcomeSeedTimer = null;
+    }, 1450);
+  });
+
+  els.welcomeKakaoButton?.addEventListener("click", () => {
+    if (isLiveWelcomeOnboarding()) {
+      openWelcomeNameSheet();
+      return;
+    }
+    // 검수·비로그인 손님맞이에서만 카카오 로그인으로 연결합니다.
+    void beginWelcomeKakaoLogin();
+  });
+
+  els.welcomeNameForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const treeName = els.welcomeNameInput?.value.trim() || "";
+    if (!treeName) {
+      if (els.welcomeNameError) els.welcomeNameError.textContent = "나무 이름을 한 글자 이상 적어주세요.";
+      els.welcomeNameInput?.focus();
+      return;
+    }
+    if (els.welcomeNameError) els.welcomeNameError.textContent = "";
+    if (isLiveWelcomeOnboarding()) {
+      void saveWelcomeOnboardingTreeName(treeName);
+      return;
+    }
+    startWelcomeFirstWalk(treeName);
+  });
+
+  $$(".welcome-mood-choice").forEach((button) => {
+    button.addEventListener("click", () => {
+      welcomeSelectedMood = button.dataset.welcomeMood || "";
+      $$(".welcome-mood-choice").forEach((choice) => choice.classList.toggle("is-selected", choice === button));
+      if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "";
+    });
+  });
+
+  els.welcomeRecordSave?.addEventListener("click", () => {
+    if (isLiveWelcomeOnboarding()) {
+      void saveWelcomeOnboardingFirstRecord();
+      return;
+    }
+    if (!welcomeSelectedMood) {
+      if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "오늘의 마음을 하나 골라주세요.";
+      return;
+    }
+    // 검수 화면에서는 실제 기록 저장 없이 장면만 이어집니다.
+    preview.classList.add("is-record-previewed");
+    preview.dataset.phase = "recorded";
+    if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "";
+    window.setTimeout(() => startWelcomeGardenTransition({ onboarding: false }), 300);
+  });
+
+  els.welcomeReplay?.addEventListener("click", resetWelcomePreview);
+}
+
 async function init() {
+  // 명시적인 ?welcomePreview=1은 언제나 DB와 분리된 검수 전용 화면입니다.
+  if (isWelcomePreviewMode()) {
+    initWelcomePreview({ liveEntry: false });
+    return;
+  }
+
   registerPwaServiceWorker();
   window.addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
@@ -4414,14 +5357,24 @@ async function init() {
     updateInstallCard();
   });
   bindEvents();
+  setupGardenWorldSizing();
+  setupFriendGardenWorldSizing();
   renderFeedbackCategorySelection();
   await handleOAuthCallback();
   await syncSession();
+
+  // 로그인 전에는 공통 로그인 화면을 먼저 보여줍니다.
+  // 손님맞이 장면은 로그인 후, 내 나무가 없는 신규 계정 전용으로 연결할 예정입니다.
+  if (!currentUser) {
+    renderAuthUI();
+    return;
+  }
 
   window.setInterval(async () => {
     if (!currentUser) return;
     try {
       await loadGardenState();
+      await syncMyGardenAnimalVisit({ beginWhenReady: true, silent: true });
       renderAll();
     } catch (error) {
       console.warn("TodayForest letter refresh skipped:", error);
@@ -4434,6 +5387,11 @@ async function init() {
     currentUser = nextUser;
 
     if (currentUser && changedUser) {
+      clearAnimalVisitArrivalTimer();
+      activeAnimalVisit = null;
+      activeAnimalV2Visits = [];
+      selectedAnimalV2VisitId = "";
+      closeAnimalEncounterCard();
       state = cloneDefault();
       selectedMood = "good";
       selectedLetterRecipientId = "";
@@ -4447,6 +5405,7 @@ async function init() {
     if (!currentUser) {
       configureRetentionWindPolling();
       state = cloneDefault();
+      resetWelcomeOnboardingSurface();
     }
     renderAuthUI();
     if (currentUser) {
