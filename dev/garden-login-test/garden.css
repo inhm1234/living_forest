@@ -983,64 +983,205 @@ textarea::placeholder { color: #a7b4bd; }
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
 }
 
-/* Kakao login test v0.2 */
+/* Welcome forest v1 — 로그인 전 손님맞이 화면 */
 .hidden { display: none !important; }
 
 .auth-screen {
   position: relative;
   display: grid;
-  min-height: 100vh;
-  place-items: center;
+  min-height: 100svh;
   overflow: hidden;
-  padding: 28px 18px calc(34px + env(safe-area-inset-bottom));
+  isolation: isolate;
+  padding: max(18px, env(safe-area-inset-top)) 18px calc(22px + env(safe-area-inset-bottom));
   background:
-    radial-gradient(circle at 12% 7%, rgba(255,255,255,.96) 0 6%, transparent 28%),
-    linear-gradient(145deg, #e7eaff 0%, #f7f5ff 56%, #e7f5ed 100%);
+    radial-gradient(ellipse at 50% 0%, rgba(255,252,230,.95) 0%, rgba(255,244,225,.42) 27%, transparent 52%),
+    linear-gradient(180deg, #dfeaf1 0%, #edf2e8 48%, #d1e0c8 100%);
 }
 
-.auth-sky-glow {
+.welcome-sky-glow {
   position: absolute;
-  width: min(75vw, 500px);
+  z-index: -2;
+  width: min(82vw, 640px);
   aspect-ratio: 1;
   border-radius: 50%;
-  filter: blur(10px);
-  opacity: .72;
+  filter: blur(20px);
+  opacity: .62;
   pointer-events: none;
 }
-.auth-glow-one { top: -24%; left: -26%; background: rgba(255,226,217,.85); }
-.auth-glow-two { right: -30%; bottom: -28%; background: rgba(190,231,219,.85); }
+.welcome-glow-one { top: -35%; left: -24%; background: rgba(255,221,191,.9); }
+.welcome-glow-two { right: -35%; bottom: -25%; background: rgba(170,218,187,.74); }
 
-.auth-card {
-  position: relative;
+.welcome-brand {
+  position: absolute;
+  z-index: 7;
+  top: max(22px, calc(env(safe-area-inset-top) + 8px));
+  left: 50%;
+  margin: 0;
+  color: rgba(61, 92, 72, .86);
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: -.07em;
+  transform: translateX(-50%);
+}
+
+.welcome-forest {
+  position: absolute;
   z-index: 1;
-  width: min(100%, 440px);
-  padding: 34px 24px 28px;
+  inset: 0;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,.78);
-  border-radius: 34px;
-  background: rgba(255,255,255,.48);
-  box-shadow: 0 24px 60px rgba(90, 106, 138, .17);
+  transform-origin: 50% 60%;
+  animation: welcomeForestCamera 7s cubic-bezier(.24,.72,.27,1) both;
+}
+.welcome-forest::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.14), transparent 22%, transparent 72%, rgba(78,113,78,.14)),
+    radial-gradient(ellipse at 50% 72%, rgba(255,238,190,.26), transparent 37%);
+  content: "";
+  pointer-events: none;
+}
+.welcome-haze {
+  position: absolute;
+  z-index: 1;
+  width: 68vw;
+  height: 18vw;
+  min-height: 92px;
+  border-radius: 50%;
+  background: rgba(255,255,247,.32);
+  filter: blur(25px);
+  opacity: .8;
+  pointer-events: none;
+}
+.welcome-haze-one { top: 27%; left: -18%; transform: rotate(-9deg); }
+.welcome-haze-two { top: 38%; right: -18%; transform: rotate(9deg); opacity: .56; }
+.welcome-cloud { position: absolute; z-index: 1; width: 102px; height: 28px; border-radius: 999px; background: rgba(255,255,255,.42); filter: blur(1px); opacity: .75; }
+.welcome-cloud::before, .welcome-cloud::after { position: absolute; border-radius: 50%; background: inherit; content: ""; }
+.welcome-cloud::before { width: 42px; height: 42px; left: 18px; bottom: 4px; }
+.welcome-cloud::after { width: 32px; height: 32px; right: 14px; bottom: 3px; }
+.welcome-cloud-one { top: 17%; left: 14%; animation: welcomeCloudDrift 14s ease-in-out infinite alternate; }
+.welcome-cloud-two { top: 24%; right: 10%; transform: scale(.72); opacity: .58; animation: welcomeCloudDrift 17s ease-in-out -7s infinite alternate; }
+
+.welcome-tree {
+  position: absolute;
+  z-index: 2;
+  width: clamp(150px, 38vw, 320px);
+  height: auto;
+  max-width: none;
+  pointer-events: none;
+  filter: drop-shadow(0 15px 13px rgba(58, 88, 54, .12));
+  transform-origin: 50% 100%;
+  animation: welcomeTreeSway 5.8s ease-in-out infinite alternate;
+}
+.welcome-tree-one { left: -15%; bottom: 5%; width: clamp(216px, 58vw, 430px); z-index: 4; animation-delay: -.8s; }
+.welcome-tree-two { left: 10%; bottom: 20%; width: clamp(130px, 31vw, 238px); z-index: 2; opacity: .96; animation-delay: -2.1s; }
+.welcome-tree-three { left: 28%; bottom: 23%; width: clamp(132px, 32vw, 240px); z-index: 2; animation-delay: -1.2s; }
+.welcome-tree-four { right: 27%; bottom: 23%; width: clamp(139px, 34vw, 254px); z-index: 2; animation-delay: -3.8s; }
+.welcome-tree-five { right: 8%; bottom: 19%; width: clamp(128px, 31vw, 235px); z-index: 2; animation-delay: -2.6s; }
+.welcome-tree-six { right: -17%; bottom: 2%; width: clamp(216px, 58vw, 430px); z-index: 4; animation-delay: -4.5s; }
+.welcome-tree-seven { left: 42%; bottom: 35%; width: clamp(92px, 22vw, 170px); z-index: 1; opacity: .78; animation-delay: -3.1s; }
+
+.welcome-garden-flower, .welcome-garden-stone { position: absolute; z-index: 5; pointer-events: none; }
+.welcome-garden-flower { width: 20px; height: 20px; border-radius: 50%; background: radial-gradient(circle at 50% 50%, #f9d866 0 21%, transparent 23%), radial-gradient(ellipse at 50% 8%, #fff8fb 0 24%, transparent 26%), radial-gradient(ellipse at 92% 50%, #fff8fb 0 24%, transparent 26%), radial-gradient(ellipse at 50% 92%, #fff8fb 0 24%, transparent 26%), radial-gradient(ellipse at 8% 50%, #fff8fb 0 24%, transparent 26%); opacity: .92; }
+.flower-one { left: 21%; bottom: 23%; transform: scale(.78); }
+.flower-two { right: 22%; bottom: 24%; transform: scale(.7); }
+.flower-three { left: 35%; bottom: 19%; transform: scale(.52); }
+.welcome-garden-stone { width: 28px; height: 15px; border-radius: 50% 54% 48% 45%; background: linear-gradient(145deg, #d8d5c7, #9dafa1); box-shadow: inset 2px 3px 3px rgba(255,255,255,.32); opacity: .85; }
+.stone-one { left: 25%; bottom: 14%; transform: rotate(-12deg) scale(.86); }
+.stone-two { right: 27%; bottom: 14%; transform: rotate(13deg) scale(.7); }
+
+.welcome-soil {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  bottom: 13.5%;
+  width: min(36vw, 178px);
+  min-width: 116px;
+  aspect-ratio: 1.52;
+  overflow: visible;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 52% 38%, rgba(250,225,164,.64), transparent 24%),
+    radial-gradient(ellipse at 47% 62%, #866344 0%, #5f472f 58%, #465e43 61%, #6d9962 74%, transparent 76%);
+  box-shadow: 0 10px 18px rgba(61, 84, 54, .18), inset 0 5px 7px rgba(255,224,165,.25);
+  transform: translateX(-50%) scale(.94);
+  transition: transform .8s ease, filter .8s ease;
+}
+.welcome-soil::before { position: absolute; inset: 15% 12%; border: 1px dashed rgba(255,245,210,.34); border-radius: inherit; content: ""; }
+.welcome-soil::after { position: absolute; inset: -20%; border: 1px solid rgba(255,245,192,.02); border-radius: 50%; box-shadow: 0 0 0 0 rgba(255,245,192,.16); content: ""; }
+.welcome-soil-ring { position: absolute; inset: -20%; border-radius: 50%; border: 1px solid rgba(255,243,192,.24); opacity: 0; transform: scale(.5); }
+.welcome-seed { position: absolute; z-index: 2; left: 50%; bottom: 19%; width: 86%; max-width: 132px; opacity: 0; transform: translate(-50%, -36%) scale(.22); filter: drop-shadow(0 8px 9px rgba(61,75,41,.18)); }
+
+.welcome-light {
+  position: absolute;
+  z-index: 8;
+  top: 37%;
+  left: 4%;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: default;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: welcomeLightJourney 6.6s cubic-bezier(.23,.76,.24,1) .55s both;
+}
+.welcome-light::before, .welcome-light::after { position: absolute; top: 50%; left: 50%; border-radius: inherit; content: ""; transform: translate(-50%, -50%); }
+.welcome-light::before { width: 48px; height: 48px; background: radial-gradient(circle, rgba(255,254,207,.88) 0 10%, rgba(255,229,134,.55) 24%, rgba(224,255,201,.17) 48%, transparent 71%); filter: blur(1px); animation: welcomeLightPulse 1.8s ease-in-out infinite alternate; }
+.welcome-light::after { width: 3px; height: 3px; box-shadow: -23px 5px 0 1px rgba(255,250,194,.65), -44px 15px 0 0 rgba(255,250,194,.42), -64px 29px 0 -1px rgba(255,250,194,.3); opacity: .8; }
+.welcome-light-core { position: absolute; top: 50%; left: 50%; width: 12px; height: 12px; border-radius: 50%; background: #fffbd4; box-shadow: 0 0 13px 5px rgba(255,233,139,.7); transform: translate(-50%, -50%); }
+
+.welcome-actions {
+  position: absolute;
+  z-index: 10;
+  right: 18px;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  left: 18px;
+  display: flex;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  animation: welcomeStartReveal .7s ease 6.55s forwards;
+}
+.welcome-start-button {
+  width: min(100%, 334px);
+  min-height: 56px;
+  border: 1px solid rgba(255,255,255,.7);
+  border-radius: 19px;
+  background: linear-gradient(135deg, rgba(90,137,93,.96), rgba(69,115,83,.96));
+  box-shadow: 0 16px 30px rgba(42,84,55,.25), inset 0 1px 0 rgba(255,255,255,.32);
+  color: #f8fff1;
+  font-size: 16px;
+  font-weight: 950;
+  letter-spacing: -.04em;
+  cursor: pointer;
+}
+.welcome-start-button:hover { transform: translateY(-1px); }
+.welcome-start-button:active { transform: translateY(1px) scale(.99); }
+
+.auth-start-panel {
+  position: absolute;
+  z-index: 12;
+  right: 18px;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  left: 18px;
+  width: min(calc(100% - 36px), 334px);
+  margin: 0 auto;
   text-align: center;
 }
-.auth-card h1 {
-  margin: 2px 0 12px;
-  color: #385363;
-  font-size: clamp(32px, 7vw, 44px);
-  letter-spacing: -0.08em;
-  line-height: 1.08;
-}
-.auth-copy { margin: 0; color: #718699; font-size: 14px; font-weight: 700; line-height: 1.6; }
-.auth-tree { display: block; width: min(74%, 300px); height: 260px; margin: 10px auto 3px; object-fit: contain; filter: drop-shadow(0 14px 20px rgba(89,126,105,.16)); }
 .kakao-login-button {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 58px;
+  min-height: 56px;
   gap: 10px;
-  margin-top: 10px;
   border: 0;
-  border-radius: 18px;
+  border-radius: 19px;
   background: #fee500;
   color: #3a3120;
   font-size: 15px;
@@ -1051,8 +1192,40 @@ textarea::placeholder { color: #a7b4bd; }
 .kakao-login-button:hover { transform: translateY(-1px); }
 .kakao-login-button:disabled { cursor: wait; opacity: .78; }
 .kakao-mark { display: grid; place-items: center; width: 18px; height: 18px; border-radius: 7px; background: #3c3421; color: #fee500; font-size: 7px; }
-.auth-note { margin: 12px 0 0; color: #94a2ad; font-size: 11px; line-height: 1.5; }
-.auth-error { margin: 14px 0 0; padding: 10px 12px; border-radius: 13px; background: #fff2f4; color: #c26e7f; font-size: 12px; font-weight: 800; line-height: 1.5; }
+.auth-note { margin: 10px 0 0; color: rgba(65,89,74,.72); font-size: 11px; font-weight: 800; line-height: 1.5; }
+.auth-error { position: absolute; z-index: 13; right: 18px; bottom: calc(106px + env(safe-area-inset-bottom)); left: 18px; width: min(calc(100% - 36px), 334px); margin: 0 auto; padding: 10px 12px; border-radius: 13px; background: rgba(255,242,244,.94); color: #c26e7f; font-size: 12px; font-weight: 800; line-height: 1.5; text-align: center; }
+
+.auth-screen.is-planting .welcome-actions { animation: none; opacity: 0; transform: translateY(16px); transition: opacity .35s ease, transform .35s ease; }
+.auth-screen.is-planting .welcome-light { animation: welcomeLightSettle .72s ease both; }
+.auth-screen.is-planting .welcome-soil { filter: brightness(1.14) saturate(1.08); transform: translateX(-50%) scale(1.04); }
+.auth-screen.is-planting .welcome-soil::after { animation: welcomeSoilBloom 1.25s ease-out both; }
+.auth-screen.is-planting .welcome-soil-ring { animation: welcomeSoilRing 1s ease-out .14s both; }
+.auth-screen.is-planting .welcome-seed { animation: welcomeSeedAppear .8s cubic-bezier(.15,.76,.28,1.24) .2s both; }
+.auth-screen.is-planting .welcome-forest { animation: welcomeForestArrive .95s ease both; }
+.auth-start-panel.is-ready { animation: welcomeLoginReveal .6s ease both; }
+
+@keyframes welcomeForestCamera { 0% { transform: scale(.93) translateY(-1.2%); } 68% { transform: scale(1.025) translateY(1.1%); } 100% { transform: scale(1.045) translateY(1.7%); } }
+@keyframes welcomeForestArrive { from { transform: scale(1.045) translateY(1.7%); } to { transform: scale(1.075) translateY(2.4%); } }
+@keyframes welcomeTreeSway { from { transform: rotate(-.75deg); } to { transform: rotate(.75deg); } }
+@keyframes welcomeCloudDrift { from { translate: -10px 0; } to { translate: 24px 2px; } }
+@keyframes welcomeLightJourney { 0% { top: 37%; left: 4%; opacity: 0; transform: translate(-50%, -50%) scale(.55); } 10% { opacity: 1; } 52% { top: 45%; left: 40%; transform: translate(-50%, -50%) scale(.82); } 86% { top: 65%; left: 51%; transform: translate(-50%, -50%) scale(1); } 100% { top: 68.5%; left: 50%; opacity: 1; transform: translate(-50%, -50%) scale(.58); } }
+@keyframes welcomeLightPulse { from { transform: translate(-50%, -50%) scale(.84); opacity: .72; } to { transform: translate(-50%, -50%) scale(1.1); opacity: 1; } }
+@keyframes welcomeStartReveal { to { opacity: 1; transform: translateY(0); pointer-events: auto; } }
+@keyframes welcomeLightSettle { from { top: 68.5%; left: 50%; opacity: 1; transform: translate(-50%, -50%) scale(.58); } to { top: 70.3%; left: 50%; opacity: 0; transform: translate(-50%, -50%) scale(.12); } }
+@keyframes welcomeSoilBloom { 0% { box-shadow: 0 0 0 0 rgba(255,242,170,.05); opacity: .4; } 45% { box-shadow: 0 0 0 28px rgba(255,242,170,.2); opacity: 1; } 100% { box-shadow: 0 0 0 70px rgba(255,242,170,0); opacity: 0; } }
+@keyframes welcomeSoilRing { 0% { opacity: .75; transform: scale(.45); } 100% { opacity: 0; transform: scale(1.7); } }
+@keyframes welcomeSeedAppear { 0% { opacity: 0; transform: translate(-50%, -52%) scale(.12) rotate(-13deg); } 70% { opacity: 1; transform: translate(-50%, -47%) scale(1.06) rotate(3deg); } 100% { opacity: 1; transform: translate(-50%, -46%) scale(.94) rotate(0); } }
+@keyframes welcomeLoginReveal { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 470px) {
+  .welcome-tree-one, .welcome-tree-six { width: 56vw; }
+  .welcome-tree-two, .welcome-tree-three, .welcome-tree-four, .welcome-tree-five { width: 31vw; }
+  .welcome-soil { bottom: 16%; }
+  .welcome-light { animation-name: welcomeLightJourneyMobile; }
+  .auth-screen.is-planting .welcome-light { animation-name: welcomeLightSettleMobile; }
+}
+@keyframes welcomeLightJourneyMobile { 0% { top: 37%; left: 4%; opacity: 0; transform: translate(-50%, -50%) scale(.55); } 10% { opacity: 1; } 52% { top: 45%; left: 40%; transform: translate(-50%, -50%) scale(.82); } 86% { top: 67%; left: 51%; transform: translate(-50%, -50%) scale(1); } 100% { top: 71%; left: 50%; opacity: 1; transform: translate(-50%, -50%) scale(.58); } }
+@keyframes welcomeLightSettleMobile { from { top: 71%; left: 50%; opacity: 1; transform: translate(-50%, -50%) scale(.58); } to { top: 72.8%; left: 50%; opacity: 0; transform: translate(-50%, -50%) scale(.12); } }
 
 .header-actions { display: grid; justify-items: end; gap: 7px; }
 .account-pill { display: inline-flex; align-items: center; gap: 6px; max-width: 210px; padding: 6px 10px; border: 1px solid rgba(91,113,136,.11); border-radius: 999px; background: rgba(255,255,255,.46); color: #75889a; font-size: 11px; font-weight: 900; cursor: pointer; }

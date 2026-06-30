@@ -316,6 +316,7 @@ let pendingFriendInvite = null;
 let invitePreviewHandled = false;
 let toastTimer = null;
 let authBusy = false;
+let welcomePlantTimer = null;
 let activeFriendGardenId = "";
 let activeSharedTreeId = "";
 let pendingSharedTreeInvite = null;
@@ -521,6 +522,11 @@ const els = {
   gardenApp: $("#gardenApp"),
   authError: $("#authError"),
   signInKakao: $("#signInKakao"),
+  startMyTree: $("#startMyTree"),
+  authStartPanel: $("#authStartPanel"),
+  welcomeForest: $("#welcomeForest"),
+  welcomeSoil: $("#welcomeSoil"),
+  welcomeLight: $("#welcomeLight"),
   signOutButton: $("#signOutButton"),
   accountButton: $("#accountButton"),
   accountName: $("#accountName"),
@@ -4202,10 +4208,36 @@ function setAuthError(message = "") {
   els.authError.classList.toggle("hidden", !message);
 }
 
+function resetWelcomeForest() {
+  if (!els.authScreen) return;
+  if (welcomePlantTimer) window.clearTimeout(welcomePlantTimer);
+  welcomePlantTimer = null;
+  els.authScreen.classList.remove("is-planting");
+  els.authStartPanel?.classList.add("hidden");
+  els.authStartPanel?.classList.remove("is-ready");
+  els.startMyTree?.removeAttribute("disabled");
+}
+
+function beginWelcomePlanting() {
+  if (!els.authScreen || !els.startMyTree || els.authScreen.classList.contains("is-planting")) return;
+
+  els.startMyTree.setAttribute("disabled", "disabled");
+  els.authScreen.classList.add("is-planting");
+  els.authStartPanel?.classList.add("hidden");
+  els.authStartPanel?.classList.remove("is-ready");
+
+  if (welcomePlantTimer) window.clearTimeout(welcomePlantTimer);
+  welcomePlantTimer = window.setTimeout(() => {
+    els.authStartPanel?.classList.remove("hidden");
+    els.authStartPanel?.classList.add("is-ready");
+  }, 980);
+}
+
 function renderAuthUI() {
   const isSignedIn = Boolean(currentUser);
   els.authScreen.classList.toggle("hidden", isSignedIn);
   els.gardenApp.classList.toggle("hidden", !isSignedIn);
+  if (!isSignedIn) resetWelcomeForest();
   if (isSignedIn) {
     const accountName = state.profileName || displayName(currentUser);
     const gardenName = state.treeName || accountName;
@@ -4516,7 +4548,7 @@ async function beginKakaoLogin() {
   setAuthError("");
   els.signInKakao.disabled = true;
   els.signInKakao.classList.add("is-loading");
-  els.signInKakao.lastChild.textContent = "카카오 로그인으로 이동 중이에요";
+  els.signInKakao.querySelector(".kakao-button-label").textContent = "카카오 로그인으로 이동 중이에요";
 
   const inviteToken = getInviteTokenFromUrl();
   if (inviteToken) {
@@ -4529,7 +4561,7 @@ async function beginKakaoLogin() {
     authBusy = false;
     els.signInKakao.disabled = false;
     els.signInKakao.classList.remove("is-loading");
-    els.signInKakao.lastChild.textContent = "카카오로 내 정원 시작하기";
+    els.signInKakao.querySelector(".kakao-button-label").textContent = "카카오로 내 숲 시작하기";
     setAuthError(`카카오 로그인 준비 중 문제가 생겼어요. ${error.message}`);
   }
 }
@@ -4679,6 +4711,7 @@ async function saveTreeName(event) {
 }
 
 function bindEvents() {
+  els.startMyTree?.addEventListener("click", beginWelcomePlanting);
   els.signInKakao.addEventListener("click", beginKakaoLogin);
   els.installAppButton.addEventListener("click", () => { void requestAppInstall(); });
   els.dismissInstallCard.addEventListener("click", dismissInstallCardForAWhile);

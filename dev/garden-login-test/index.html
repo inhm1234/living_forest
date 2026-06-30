@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="../../assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="../../assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="garden.css?v=first-walk-tutorial-v2-3" />
+  <link rel="stylesheet" href="garden.css?v=welcome-forest-v1" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
     // 운영 루트(/)에 같은 파일을 반영하면 G-YC872G7MH1로 자동 전송됩니다.
@@ -54,21 +54,52 @@
   </script>
 </head>
 <body>
-  <section class="auth-screen" id="authScreen" aria-label="오늘의숲 시작">
-    <div class="auth-sky-glow auth-glow-one" aria-hidden="true"></div>
-    <div class="auth-sky-glow auth-glow-two" aria-hidden="true"></div>
-    <div class="auth-card">
-      <p class="eyebrow">TODAYFOREST · MY GARDEN</p>
-      <h1>마음을 심는<br />내 정원</h1>
-      <p class="auth-copy">오늘의 마음을 나무에 남기고,<br />내 기록과 편지를 차분히 이어가요.</p>
-      <img class="auth-tree" src="../../assets/garden/tree_growth/tree_stage4_morning.png" alt="꽃과 잎이 피어난 마음 나무" />
+  <section class="auth-screen welcome-forest-screen" id="authScreen" aria-label="오늘의숲 시작">
+    <div class="welcome-sky-glow welcome-glow-one" aria-hidden="true"></div>
+    <div class="welcome-sky-glow welcome-glow-two" aria-hidden="true"></div>
+    <p class="welcome-brand" aria-label="오늘의숲">오늘의숲</p>
+
+    <div class="welcome-forest" id="welcomeForest" aria-label="여러 사람의 나무가 모여 있는 숲">
+      <div class="welcome-haze welcome-haze-one" aria-hidden="true"></div>
+      <div class="welcome-haze welcome-haze-two" aria-hidden="true"></div>
+      <span class="welcome-cloud welcome-cloud-one" aria-hidden="true"></span>
+      <span class="welcome-cloud welcome-cloud-two" aria-hidden="true"></span>
+
+      <img class="welcome-tree welcome-tree-one" src="../../assets/garden/tree_growth/tree_stage3_morning.png" alt="" aria-hidden="true" />
+      <img class="welcome-tree welcome-tree-two" src="../../assets/garden/tree_growth/tree_stage2_morning.png" alt="" aria-hidden="true" />
+      <img class="welcome-tree welcome-tree-three" src="../../assets/garden/tree_growth/tree_stage4_morning.png" alt="" aria-hidden="true" />
+      <img class="welcome-tree welcome-tree-four" src="../../assets/garden/tree_growth/tree_stage3_morning.png" alt="" aria-hidden="true" />
+      <img class="welcome-tree welcome-tree-five" src="../../assets/garden/tree_growth/tree_stage2_morning.png" alt="" aria-hidden="true" />
+      <img class="welcome-tree welcome-tree-six" src="../../assets/garden/tree_growth/tree_stage4_morning.png" alt="" aria-hidden="true" />
+      <img class="welcome-tree welcome-tree-seven" src="../../assets/garden/tree_growth/tree_stage1_morning.png" alt="" aria-hidden="true" />
+
+      <span class="welcome-garden-flower flower-one" aria-hidden="true"></span>
+      <span class="welcome-garden-flower flower-two" aria-hidden="true"></span>
+      <span class="welcome-garden-flower flower-three" aria-hidden="true"></span>
+      <span class="welcome-garden-stone stone-one" aria-hidden="true"></span>
+      <span class="welcome-garden-stone stone-two" aria-hidden="true"></span>
+
+      <div class="welcome-soil" id="welcomeSoil" aria-hidden="true">
+        <span class="welcome-soil-ring"></span>
+        <img class="welcome-seed" id="welcomeSeed" src="../../assets/garden/tree-seed.svg" alt="" aria-hidden="true" />
+      </div>
+      <button type="button" class="welcome-light" id="welcomeLight" aria-label="숲빛이 내 자리로 향하고 있어요" tabindex="-1">
+        <span class="welcome-light-core" aria-hidden="true"></span>
+      </button>
+    </div>
+
+    <div class="welcome-actions" id="welcomeActions">
+      <button type="button" class="welcome-start-button" id="startMyTree">내 나무 심기</button>
+    </div>
+
+    <div class="auth-start-panel hidden" id="authStartPanel" aria-live="polite">
       <button type="button" class="kakao-login-button" id="signInKakao">
         <span class="kakao-mark" aria-hidden="true">●</span>
-        카카오로 내 정원 시작하기
+        <span class="kakao-button-label">카카오로 내 숲 시작하기</span>
       </button>
-      <p class="auth-note">카카오 계정으로 내 정원을 이어서 볼 수 있어요.</p>
-      <p class="auth-error hidden" id="authError" role="alert"></p>
+      <p class="auth-note">카카오 계정으로 내 숲을 이어서 볼 수 있어요.</p>
     </div>
+    <p class="auth-error hidden" id="authError" role="alert"></p>
   </section>
 
   <main class="garden-app hidden" id="gardenApp" aria-label="오늘의숲 내 정원">
@@ -726,6 +757,6 @@
 
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="garden.js?v=first-walk-tutorial-v2-3"></script>
+  <script type="module" src="garden.js?v=welcome-forest-v1"></script>
 </body>
 </html>
