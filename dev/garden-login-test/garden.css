@@ -1000,7 +1000,7 @@ textarea::placeholder { color: #a7b4bd; }
   content: "";
   position: absolute;
   inset: 0;
-  background: url("../../assets/login-bg-soft.jpg") center center / cover no-repeat;
+  background: url("../../assets/login-bg-clear.jpg") center center / cover no-repeat;
   transform: scale(1.0);
   filter: saturate(1.01);
 }
