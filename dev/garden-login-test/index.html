@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="../../assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="../../assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="garden.css?v=welcome-camera-v4" />
+  <link rel="stylesheet" href="garden.css?v=welcome-light-v5" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
     // 운영 루트(/)에 같은 파일을 반영하면 G-YC872G7MH1로 자동 전송됩니다.
@@ -54,10 +54,14 @@
   </script>
 </head>
 <body>
-  <!-- WELCOME PREVIEW v4: ?welcomePreview=1 에서만 보이는 카메라 움직임 검수 화면 -->
-  <section class="welcome-preview hidden" id="welcomePreview" aria-label="오늘의숲 첫 방문 카메라 움직임 시안" data-preview-mode="camera">
+  <!-- WELCOME PREVIEW v5: ?welcomePreview=1 에서만 보이는 카메라 + 작은 빛 검수 화면 -->
+  <section class="welcome-preview hidden" id="welcomePreview" aria-label="오늘의숲 첫 방문 카메라와 작은 빛 시안" data-preview-mode="camera-light">
     <div class="welcome-scene" aria-hidden="true">
       <div class="welcome-still-art"></div>
+      <div class="welcome-traveler-light" aria-hidden="true">
+        <span class="welcome-light-core"></span>
+        <span class="welcome-light-trail"></span>
+      </div>
     </div>
     <p class="welcome-brand">오늘의숲</p>
     <div class="welcome-actions">
@@ -737,6 +741,6 @@
 
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="garden.js?v=welcome-static-v3"></script>
+  <script type="module" src="garden.js?v=welcome-light-v5"></script>
 </body>
 </html>

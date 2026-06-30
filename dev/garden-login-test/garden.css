@@ -2378,11 +2378,12 @@ textarea::placeholder { color: #a7b4bd; }
 }
 
 
-/* WELCOME PREVIEW v4 ------------------------------------------------------
-   ?welcomePreview=1 전용 카메라 움직임 시안입니다.
+/* WELCOME PREVIEW v5 ------------------------------------------------------
+   ?welcomePreview=1 전용 카메라 + 작은 빛 검수 화면입니다.
    기본 DEV, 실제 카카오 계정, 정원 데이터에는 연결되지 않습니다.
-   이번 단계는 숲 전체에서 공터로 천천히 가까워지는 카메라만 검수합니다.
-   빛·씨앗·카카오 연결은 아직 넣지 않습니다. */
+   이번 단계는 숲 전체에서 공터로 천천히 가까워지는 카메라 위에,
+   숲 한쪽에서 공터를 향해 오는 작은 빛 하나만 더합니다.
+   씨앗·카카오 연결·버튼 타이밍은 아직 넣지 않습니다. */
 .welcome-preview {
   position: fixed;
   z-index: 120;
@@ -2420,6 +2421,75 @@ textarea::placeholder { color: #a7b4bd; }
   background:
     linear-gradient(180deg, rgba(73,47,42,.08), transparent 19%, transparent 69%, rgba(39,49,30,.18) 100%),
     radial-gradient(ellipse at 50% 59%, transparent 0 43%, rgba(32,54,37,.08) 100%);
+}
+
+/* 첫 장면의 행동을 한 번만 만드는 작은 숲빛입니다.
+   배경과 카메라와 별도 레이어라서 기존 정원/로그인에는 영향을 주지 않습니다. */
+.welcome-traveler-light {
+  position: absolute;
+  z-index: 2;
+  left: 15.6%;
+  top: 43.5%;
+  width: 18px;
+  height: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0) scale(.54);
+  filter: drop-shadow(0 0 6px rgba(255,232,121,.92)) drop-shadow(0 0 18px rgba(255,193,95,.72));
+  animation: welcome-light-arrival 12s cubic-bezier(.20,.68,.25,1) forwards;
+  will-change: transform, opacity;
+}
+.welcome-light-core {
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #fffdf4 0 15%, #fff4aa 34%, #f8bc66 70%, rgba(244,159,82,.12) 100%);
+  box-shadow: 0 0 12px rgba(255,238,150,.95), 0 0 28px rgba(255,191,102,.58);
+}
+.welcome-light-trail {
+  position: absolute;
+  right: 11px;
+  top: 7px;
+  width: 45px;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255,230,153,0), rgba(255,232,156,.24) 46%, rgba(255,250,218,.9) 100%);
+  transform: rotate(-21deg);
+  transform-origin: right center;
+  filter: blur(.35px);
+}
+@keyframes welcome-light-arrival {
+  0%, 35% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(.48);
+  }
+  40% {
+    opacity: .8;
+    transform: translate3d(18vw, 2vh, 0) scale(.65);
+  }
+  62% {
+    opacity: 1;
+    transform: translate3d(31vw, 15vh, 0) scale(.88);
+  }
+  76% {
+    opacity: 1;
+    transform: translate3d(37vw, 22vh, 0) scale(1.08);
+  }
+  82% {
+    opacity: 1;
+    transform: translate3d(38vw, 23.5vh, 0) scale(.84);
+  }
+  90%, 100% {
+    opacity: .92;
+    transform: translate3d(38vw, 23.5vh, 0) scale(1);
+  }
+}
+@keyframes welcome-light-rest {
+  from { transform: scale(.94); }
+  to { transform: scale(1.08); }
+}
+.welcome-traveler-light .welcome-light-core {
+  animation: welcome-light-rest 1.9s ease-in-out 10.2s infinite alternate;
 }
 .welcome-brand {
   position: absolute;
@@ -2469,6 +2539,18 @@ textarea::placeholder { color: #a7b4bd; }
   cursor: default;
 }
 @media (max-width: 560px) {
+  .welcome-traveler-light {
+    left: 13.6%;
+    top: 45.5%;
+  }
+  @keyframes welcome-light-arrival {
+    0%, 35% { opacity: 0; transform: translate3d(0, 0, 0) scale(.48); }
+    40% { opacity: .8; transform: translate3d(20vw, 2vh, 0) scale(.65); }
+    62% { opacity: 1; transform: translate3d(35vw, 14vh, 0) scale(.88); }
+    76% { opacity: 1; transform: translate3d(41vw, 21vh, 0) scale(1.08); }
+    82% { opacity: 1; transform: translate3d(42vw, 22.5vh, 0) scale(.84); }
+    90%, 100% { opacity: .92; transform: translate3d(42vw, 22.5vh, 0) scale(1); }
+  }
   .welcome-still-art {
     background-position: 51% 50%;
     transform-origin: 50% 66%;
@@ -2483,6 +2565,12 @@ textarea::placeholder { color: #a7b4bd; }
   .welcome-start-button { min-height: 54px; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .welcome-traveler-light {
+    animation: none;
+    opacity: .95;
+    transform: translate3d(38vw, 23.5vh, 0) scale(1);
+  }
+  .welcome-traveler-light .welcome-light-core { animation: none; }
   .welcome-still-art {
     animation: none;
     transform: scale(1.015);

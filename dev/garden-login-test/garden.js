@@ -351,7 +351,7 @@ let firstWalkCompletionFoundItemId = "";
 // 이미 오늘 기록한 계정에서도 처음부터 끝까지 확인할 수 있도록 메모리에서만 진행 상태를 가집니다.
 const tutorialSandbox = { recorded: false, found: false };
 
-// WELCOME PREVIEW v2
+// WELCOME PREVIEW v5
 // ?welcomePreview=1 은 실제 카카오 계정·기록·친구·편지 DB를 읽거나 바꾸지 않는 손님맞이 전용 검수 모드입니다.
 function isWelcomePreviewMode() {
   return new URL(window.location.href).searchParams.get("welcomePreview") === "1";
@@ -4851,8 +4851,8 @@ function initWelcomePreview() {
   preview.classList.remove("hidden");
   els.authScreen?.classList.add("hidden");
   els.gardenApp?.classList.add("hidden");
-  // v4는 숲 전체에서 공터로 천천히 가까워지는 카메라만 보는 단계입니다.
-  // 작은 빛·씨앗·카카오 연결은 이 시안이 통과한 뒤에만 다시 붙입니다.
+  // v5는 카메라 위에 공터를 향해 오는 작은 빛 하나만 더한 단계입니다.
+  // 씨앗·카카오 연결·버튼 타이밍은 아직 넣지 않습니다.
   if (preview.dataset.previewMode === "still") return;
 
   resetWelcomePreview();
