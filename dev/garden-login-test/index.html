@@ -54,10 +54,11 @@
   </script>
 </head>
 <body>
-  <!-- WELCOME PREVIEW v5: ?welcomePreview=1 에서만 보이는 카메라 + 작은 빛 검수 화면 -->
-  <section class="welcome-preview hidden" id="welcomePreview" aria-label="오늘의숲 첫 방문 카메라와 작은 빛 시안" data-preview-mode="camera-light">
+  <!-- WELCOME PREVIEW v6: ?welcomePreview=1 에서만 보이는 카메라 + 작은 빛 + 공터 반응 + 버튼 등장 검수 화면 -->
+  <section class="welcome-preview hidden" id="welcomePreview" aria-label="오늘의숲 첫 방문 카메라와 빛 도착 순서 시안" data-preview-mode="camera-light-sequence">
     <div class="welcome-scene" aria-hidden="true">
       <div class="welcome-still-art"></div>
+      <div class="welcome-clearing-glow" aria-hidden="true"></div>
       <div class="welcome-traveler-light" aria-hidden="true">
         <span class="welcome-light-core"></span>
         <span class="welcome-light-trail"></span>
@@ -65,7 +66,7 @@
     </div>
     <p class="welcome-brand">오늘의숲</p>
     <div class="welcome-actions">
-      <button type="button" class="welcome-start-button" aria-label="내 나무 심기 버튼 위치 확인용">내 나무 심기</button>
+      <button type="button" class="welcome-start-button" id="welcomePlantButton" aria-label="빛이 공터에 닿은 뒤 나타나는 내 나무 심기 버튼">내 나무 심기</button>
     </div>
   </section>
 

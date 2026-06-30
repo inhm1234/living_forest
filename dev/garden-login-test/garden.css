@@ -2378,12 +2378,12 @@ textarea::placeholder { color: #a7b4bd; }
 }
 
 
-/* WELCOME PREVIEW v5 ------------------------------------------------------
-   ?welcomePreview=1 전용 카메라 + 작은 빛 검수 화면입니다.
+/* WELCOME PREVIEW v6 ------------------------------------------------------
+   ?welcomePreview=1 전용 카메라 + 작은 빛 + 공터 반응 + 버튼 등장 검수 화면입니다.
    기본 DEV, 실제 카카오 계정, 정원 데이터에는 연결되지 않습니다.
-   이번 단계는 숲 전체에서 공터로 천천히 가까워지는 카메라 위에,
-   숲 한쪽에서 공터를 향해 오는 작은 빛 하나만 더합니다.
-   씨앗·카카오 연결·버튼 타이밍은 아직 넣지 않습니다. */
+   이번 단계는 작은 빛이 공터에 도착한 뒤, 공터가 아주 살짝 밝아지고
+   그 다음에만 ‘내 나무 심기’가 나타나는 순서를 검수합니다.
+   씨앗·카카오 연결은 아직 넣지 않습니다. */
 .welcome-preview {
   position: fixed;
   z-index: 120;
@@ -2421,6 +2421,31 @@ textarea::placeholder { color: #a7b4bd; }
   background:
     linear-gradient(180deg, rgba(73,47,42,.08), transparent 19%, transparent 69%, rgba(39,49,30,.18) 100%),
     radial-gradient(ellipse at 50% 59%, transparent 0 43%, rgba(32,54,37,.08) 100%);
+}
+
+/* 빛이 닿은 뒤 공터에만 잠깐 남는, 아주 얕은 반응입니다. */
+.welcome-clearing-glow {
+  position: absolute;
+  z-index: 1;
+  left: 51%;
+  top: 72%;
+  width: min(42vw, 620px);
+  height: min(18vw, 265px);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.72);
+  background: radial-gradient(ellipse, rgba(255,239,164,.62) 0%, rgba(255,218,134,.26) 33%, rgba(255,209,144,.07) 58%, rgba(255,206,154,0) 76%);
+  filter: blur(3px);
+  mix-blend-mode: screen;
+  animation: welcome-clearing-awaken 12s cubic-bezier(.22,.70,.25,1) forwards;
+  will-change: transform, opacity;
+}
+@keyframes welcome-clearing-awaken {
+  0%, 80% { opacity: 0; transform: translate(-50%, -50%) scale(.72); }
+  85% { opacity: .78; transform: translate(-50%, -50%) scale(1.02); }
+  91% { opacity: .52; transform: translate(-50%, -50%) scale(1.08); }
+  100% { opacity: .35; transform: translate(-50%, -50%) scale(1); }
 }
 
 /* 첫 장면의 행동을 한 번만 만드는 작은 숲빛입니다.
@@ -2523,7 +2548,16 @@ textarea::placeholder { color: #a7b4bd; }
   left: 50%;
   bottom: max(28px, calc(22px + env(safe-area-inset-bottom)));
   width: min(calc(100% - 40px), 340px);
-  transform: translateX(-50%);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(15px);
+  animation: welcome-start-reveal 12s cubic-bezier(.20,.72,.25,1) forwards;
+  will-change: transform, opacity;
+}
+@keyframes welcome-start-reveal {
+  0%, 87% { opacity: 0; transform: translateX(-50%) translateY(15px); }
+  92% { opacity: 0; transform: translateX(-50%) translateY(11px); }
+  98%, 100% { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 }
 .welcome-start-button {
   width: 100%;
@@ -2536,9 +2570,15 @@ textarea::placeholder { color: #a7b4bd; }
   font-size: 15px;
   font-weight: 950;
   letter-spacing: -.04em;
-  cursor: default;
+  cursor: pointer;
 }
 @media (max-width: 560px) {
+  .welcome-clearing-glow {
+    left: 51%;
+    top: 71.5%;
+    width: 70vw;
+    height: 28vw;
+  }
   .welcome-traveler-light {
     left: 13.6%;
     top: 45.5%;
@@ -2571,6 +2611,17 @@ textarea::placeholder { color: #a7b4bd; }
     transform: translate3d(38vw, 23.5vh, 0) scale(1);
   }
   .welcome-traveler-light .welcome-light-core { animation: none; }
+  .welcome-clearing-glow {
+    animation: none;
+    opacity: .36;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  .welcome-actions {
+    animation: none;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
   .welcome-still-art {
     animation: none;
     transform: scale(1.015);

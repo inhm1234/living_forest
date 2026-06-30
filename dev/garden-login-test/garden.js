@@ -4851,8 +4851,9 @@ function initWelcomePreview() {
   preview.classList.remove("hidden");
   els.authScreen?.classList.add("hidden");
   els.gardenApp?.classList.add("hidden");
-  // v5는 카메라 위에 공터를 향해 오는 작은 빛 하나만 더한 단계입니다.
-  // 씨앗·카카오 연결·버튼 타이밍은 아직 넣지 않습니다.
+  // v6는 빛이 공터에 닿은 뒤 공터가 아주 살짝 밝아지고,
+  // 그 다음에만 ‘내 나무 심기’ 버튼이 나타나는 CSS 장면입니다.
+  // 씨앗·카카오 연결은 아직 넣지 않습니다.
   if (preview.dataset.previewMode === "still") return;
 
   resetWelcomePreview();
