@@ -5010,6 +5010,12 @@ async function beginWelcomeKakaoLogin() {
   const preview = els.welcomePreview;
   if (!button) return;
 
+  // 로그인 전 친구 초대 링크가 있어도 기존 로그인 흐름처럼 세션에 보관합니다.
+  const inviteToken = getInviteTokenFromUrl();
+  if (inviteToken) {
+    window.sessionStorage.setItem("todayforest_pending_friend_invite", inviteToken);
+  }
+
   authBusy = true;
   const originalLabel = button.textContent;
   button.disabled = true;
@@ -5035,16 +5041,20 @@ async function beginWelcomeKakaoLogin() {
   console.error("TodayForest welcome Kakao login error:", error);
 }
 
-function initWelcomePreview() {
+function initWelcomePreview({ liveEntry = false } = {}) {
   const preview = els.welcomePreview;
   if (!preview) return;
 
-  // 이 모드에서는 아래의 로그인/DB 초기화를 하지 않습니다.
-  // 따라서 현재 카카오 로그인 여부나 실제 정원 데이터와 전혀 연결되지 않습니다.
+  // welcomePreview=1은 검수 전용, liveEntry는 로그인하지 않은 실제 첫 방문자의 DEV 입구입니다.
+  // 두 경우 모두 로그인 전에는 실제 정원·기록 데이터를 읽거나 바꾸지 않습니다.
   document.body.classList.add("is-welcome-preview");
+  document.body.classList.toggle("is-welcome-live-entry", liveEntry);
   preview.classList.remove("hidden");
   els.authScreen?.classList.add("hidden");
   els.gardenApp?.classList.add("hidden");
+  if (liveEntry && els.welcomePreviewHandoff) {
+    els.welcomePreviewHandoff.classList.add("hidden");
+  }
   if (preview.dataset.previewMode === "still") return;
 
   resetWelcomePreview();
@@ -5103,8 +5113,9 @@ function initWelcomePreview() {
 }
 
 async function init() {
+  // 명시적인 ?welcomePreview=1은 언제나 DB와 분리된 검수 전용 화면입니다.
   if (isWelcomePreviewMode()) {
-    initWelcomePreview();
+    initWelcomePreview({ liveEntry: false });
     return;
   }
 
@@ -5125,6 +5136,14 @@ async function init() {
   renderFeedbackCategorySelection();
   await handleOAuthCallback();
   await syncSession();
+
+  // 로그인하지 않은 방문자만 손님맞이 숲에서 시작합니다.
+  // OAuth가 끝난 뒤에는 currentUser가 생기므로 이 분기로 오지 않고,
+  // 기존 계정은 곧바로 기존 정원 UI·기존 상태 판단으로 이어집니다.
+  if (!currentUser) {
+    initWelcomePreview({ liveEntry: true });
+    return;
+  }
 
   window.setInterval(async () => {
     if (!currentUser) return;
