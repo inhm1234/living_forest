@@ -4828,11 +4828,18 @@ function bindEvents() {
   });
 }
 
+let welcomeSeedTimer = null;
+
 function resetWelcomePreview() {
   const preview = els.welcomePreview;
   if (!preview) return;
 
-  preview.classList.remove("is-seeded", "is-handoff");
+  if (welcomeSeedTimer) {
+    window.clearTimeout(welcomeSeedTimer);
+    welcomeSeedTimer = null;
+  }
+
+  preview.classList.remove("is-seeded", "is-seed-ready", "is-handoff");
   preview.dataset.phase = "intro";
   if (els.welcomeKakaoButton) els.welcomeKakaoButton.disabled = false;
   // CSS 장면 애니메이션을 처음부터 다시 재생합니다.
@@ -4851,22 +4858,30 @@ function initWelcomePreview() {
   preview.classList.remove("hidden");
   els.authScreen?.classList.add("hidden");
   els.gardenApp?.classList.add("hidden");
-  // v7은 빛이 공터에 닿은 순간 공터가 짧고 눈부시게 환해졌다가
-  // 따뜻한 잔광으로 가라앉은 뒤에만 ‘내 나무 심기’ 버튼이 나타나는 CSS 장면입니다.
-  // 씨앗·카카오 연결은 아직 넣지 않습니다.
   if (preview.dataset.previewMode === "still") return;
 
   resetWelcomePreview();
 
   els.welcomePlantButton?.addEventListener("click", () => {
     if (preview.classList.contains("is-seeded")) return;
+
+    // ‘내 나무 심기’는 실제 로그인으로 바로 보내지 않고,
+    // 먼저 씨앗이 공터에 자리를 찾는 장면을 보여줍니다.
     preview.classList.add("is-seeded");
-    preview.dataset.phase = "seeded";
+    preview.dataset.phase = "seed";
+
+    welcomeSeedTimer = window.setTimeout(() => {
+      preview.classList.add("is-seed-ready");
+      preview.dataset.phase = "seed-ready";
+      welcomeSeedTimer = null;
+    }, 1450);
   });
 
   els.welcomeKakaoButton?.addEventListener("click", () => {
-    // 미리보기는 실제 OAuth를 시작하지 않습니다. 손님맞이 장면의 끝까지만 안전하게 검수합니다.
+    // 이 전용 미리보기에서는 실제 OAuth를 시작하지 않습니다.
+    // 카카오 시작 화면으로 이어지는 위치까지만 안전하게 검수합니다.
     preview.classList.add("is-handoff");
+    preview.dataset.phase = "handoff";
     els.welcomeKakaoButton.disabled = true;
   });
 

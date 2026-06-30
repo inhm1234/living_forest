@@ -2378,12 +2378,11 @@ textarea::placeholder { color: #a7b4bd; }
 }
 
 
-/* WELCOME PREVIEW v7 ------------------------------------------------------
-   ?welcomePreview=1 전용 카메라 + 작은 빛 + 공터의 눈부신 반응 + 버튼 등장 검수 화면입니다.
-   기본 DEV, 실제 카카오 계정, 정원 데이터에는 연결되지 않습니다.
-   이번 단계는 작은 빛이 공터에 닿는 순간, 공터가 짧지만 분명하게 환해졌다가
-   따뜻한 잔광으로 가라앉고, 그 뒤에만 ‘내 나무 심기’가 나타나는 순서를 검수합니다.
-   씨앗·카카오 연결은 아직 넣지 않습니다. */
+/* WELCOME PREVIEW v8 ------------------------------------------------------
+   ?welcomePreview=1 전용 손님맞이 시안입니다.
+   기본 DEV와 실제 카카오 계정·정원 데이터에는 연결되지 않습니다.
+   이번 단계는 ‘내 나무 심기’ → 씨앗이 공터에 나타남 → 카카오 시작 버튼까지의
+   장면 연결만 검수합니다. */
 .welcome-preview {
   position: fixed;
   z-index: 120;
@@ -2618,7 +2617,149 @@ textarea::placeholder { color: #a7b4bd; }
   letter-spacing: -.04em;
   cursor: pointer;
 }
+
+/* 버튼을 누른 뒤 공터 한가운데에 씨앗이 조용히 자리 잡습니다.
+   씨앗은 실제 이미지가 아니라 작은 빛과 흙빛을 겹친 CSS 연출이라,
+   기존 개인 정원 자산이나 저장 데이터와 연결되지 않습니다. */
+.welcome-seed {
+  position: absolute;
+  z-index: 3;
+  left: 51%;
+  top: 72.2%;
+  width: 86px;
+  height: 76px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(.42);
+  will-change: transform, opacity;
+}
+.welcome-seed-aura {
+  position: absolute;
+  inset: 1px 2px 7px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255,255,231,.86) 0%, rgba(255,222,137,.46) 29%, rgba(255,203,129,.12) 57%, rgba(255,203,129,0) 75%);
+  filter: blur(4px);
+}
+.welcome-seed-core {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  width: 22px;
+  height: 31px;
+  border-radius: 56% 44% 60% 40% / 62% 46% 54% 38%;
+  background: linear-gradient(145deg, #ffe8a5 0%, #dba365 36%, #9b6044 76%, #704633 100%);
+  box-shadow: -2px 3px 0 rgba(83,52,35,.22), 0 0 10px rgba(255,242,185,.98), 0 0 28px rgba(255,205,118,.68);
+  transform: translateX(-50%) rotate(12deg) scale(.48);
+}
+.welcome-seed-spark {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fffbe8;
+  box-shadow: 0 0 12px rgba(255,235,153,.95);
+  opacity: 0;
+}
+.welcome-seed-spark-one { left: 22px; bottom: 37px; }
+.welcome-seed-spark-two { right: 18px; bottom: 30px; }
+.welcome-preview.is-seeded .welcome-plant-actions {
+  animation: none;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(15px);
+  transition: opacity .32s ease, transform .32s ease;
+}
+.welcome-preview.is-seeded .welcome-seed {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  transition: opacity .26s ease, transform .78s cubic-bezier(.16,.84,.23,1);
+}
+.welcome-preview.is-seeded .welcome-seed-core {
+  animation: welcome-seed-settle .9s cubic-bezier(.17,.85,.25,1) both;
+}
+.welcome-preview.is-seeded .welcome-seed-spark-one {
+  animation: welcome-seed-spark-one 1.15s ease .18s both;
+}
+.welcome-preview.is-seeded .welcome-seed-spark-two {
+  animation: welcome-seed-spark-two 1.05s ease .32s both;
+}
+.welcome-preview.is-seeded .welcome-clearing-glow {
+  animation: none;
+  opacity: .64;
+  transform: translate(-50%, -50%) scale(1.05);
+  filter: blur(3px) saturate(1.18);
+}
+.welcome-preview.is-seeded .welcome-clearing-glow::before,
+.welcome-preview.is-seeded .welcome-clearing-glow::after { animation: none; opacity: 0; }
+@keyframes welcome-seed-settle {
+  0% { transform: translateX(-50%) translateY(-38px) rotate(-8deg) scale(.36); opacity: .08; }
+  55% { transform: translateX(-50%) translateY(4px) rotate(15deg) scale(1.12); opacity: 1; }
+  76% { transform: translateX(-50%) translateY(-2px) rotate(10deg) scale(.94); }
+  100% { transform: translateX(-50%) translateY(0) rotate(12deg) scale(1); opacity: 1; }
+}
+@keyframes welcome-seed-spark-one {
+  0% { opacity: 0; transform: translate(0, 8px) scale(.35); }
+  36% { opacity: 1; transform: translate(-9px, -16px) scale(1); }
+  100% { opacity: 0; transform: translate(-15px, -29px) scale(.45); }
+}
+@keyframes welcome-seed-spark-two {
+  0% { opacity: 0; transform: translate(0, 7px) scale(.35); }
+  38% { opacity: 1; transform: translate(10px, -14px) scale(1); }
+  100% { opacity: 0; transform: translate(16px, -25px) scale(.45); }
+}
+.welcome-seed-actions {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: max(28px, calc(22px + env(safe-area-inset-bottom)));
+  width: min(calc(100% - 40px), 340px);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(15px);
+  transition: opacity .48s ease, transform .48s cubic-bezier(.18,.80,.25,1);
+}
+.welcome-preview.is-seed-ready .welcome-seed-actions {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+.welcome-kakao-button {
+  width: 100%;
+  min-height: 55px;
+  border: 1px solid rgba(255,235,154,.88);
+  border-radius: 999px;
+  color: #4b3f22;
+  background: linear-gradient(180deg, #ffe993 0%, #ffdc6d 100%);
+  box-shadow: 0 14px 30px rgba(99,74,29,.28), inset 0 1px 0 rgba(255,255,238,.82);
+  font-size: 15px;
+  font-weight: 950;
+  letter-spacing: -.04em;
+  cursor: pointer;
+}
+.welcome-kakao-button:disabled { cursor: default; opacity: .82; }
+.welcome-preview-handoff {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  bottom: max(96px, calc(88px + env(safe-area-inset-bottom)));
+  margin: 0;
+  opacity: 0;
+  color: rgba(255,255,245,.96);
+  font-size: 13px;
+  font-weight: 850;
+  letter-spacing: -.04em;
+  text-shadow: 0 2px 10px rgba(58,45,32,.48);
+  pointer-events: none;
+  transform: translate(-50%, 7px);
+  transition: opacity .28s ease, transform .28s ease;
+}
+.welcome-preview.is-handoff .welcome-preview-handoff {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
 @media (max-width: 560px) {
+  .welcome-seed { left: 51%; top: 71.8%; transform: translate(-50%, -50%) scale(.84); }
+  .welcome-seed-actions { width: min(calc(100% - 34px), 340px); }
   .welcome-clearing-glow {
     left: 51%;
     top: 71.5%;
@@ -2666,6 +2807,17 @@ textarea::placeholder { color: #a7b4bd; }
   .welcome-clearing-glow::after { animation: none; }
   .welcome-clearing-glow::before { opacity: .38; transform: translate(-50%, -50%) scale(1.25); }
   .welcome-clearing-glow::after { opacity: 0; }
+  .welcome-seed {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  .welcome-seed-core,
+  .welcome-seed-spark { animation: none; }
+  .welcome-seed-actions {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
   .welcome-actions {
     animation: none;
     opacity: 1;

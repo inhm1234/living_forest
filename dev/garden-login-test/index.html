@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="../../assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="../../assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="garden.css?v=welcome-glow-v7" />
+  <link rel="stylesheet" href="garden.css?v=welcome-seed-v8" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
     // 운영 루트(/)에 같은 파일을 반영하면 G-YC872G7MH1로 자동 전송됩니다.
@@ -54,8 +54,9 @@
   </script>
 </head>
 <body>
-  <!-- WELCOME PREVIEW v7: ?welcomePreview=1 에서만 보이는 카메라 + 작은 빛 + 눈부신 공터 반응 + 버튼 등장 검수 화면 -->
-  <section class="welcome-preview hidden" id="welcomePreview" aria-label="오늘의숲 첫 방문 카메라와 빛 도착·공터 환함 순서 시안" data-preview-mode="camera-light-sequence">
+  <!-- WELCOME PREVIEW v8: ?welcomePreview=1 에서만 보이는 손님맞이 장면입니다.
+       실제 카카오 계정·기록·친구·편지 DB는 읽거나 바꾸지 않습니다. -->
+  <section class="welcome-preview hidden" id="welcomePreview" aria-label="오늘의숲 첫 방문 빛과 씨앗 장면 시안" data-preview-mode="camera-light-seed">
     <div class="welcome-scene" aria-hidden="true">
       <div class="welcome-still-art"></div>
       <div class="welcome-clearing-glow" aria-hidden="true"></div>
@@ -63,11 +64,21 @@
         <span class="welcome-light-core"></span>
         <span class="welcome-light-trail"></span>
       </div>
+      <div class="welcome-seed" aria-hidden="true">
+        <span class="welcome-seed-aura"></span>
+        <span class="welcome-seed-spark welcome-seed-spark-one"></span>
+        <span class="welcome-seed-spark welcome-seed-spark-two"></span>
+        <span class="welcome-seed-core"></span>
+      </div>
     </div>
     <p class="welcome-brand">오늘의숲</p>
-    <div class="welcome-actions">
+    <div class="welcome-actions welcome-plant-actions">
       <button type="button" class="welcome-start-button" id="welcomePlantButton" aria-label="빛이 공터에 닿은 뒤 나타나는 내 나무 심기 버튼">내 나무 심기</button>
     </div>
+    <div class="welcome-seed-actions" aria-live="polite">
+      <button type="button" class="welcome-kakao-button" id="welcomeKakaoButton">카카오로 내 숲 시작하기</button>
+    </div>
+    <p class="welcome-preview-handoff" id="welcomePreviewHandoff" aria-live="polite">미리보기에서는 여기까지예요.</p>
   </section>
 
   <section class="auth-screen" id="authScreen" aria-label="오늘의숲 시작">
