@@ -540,8 +540,11 @@ const els = {
   welcomeRecordLine: $("#welcomeRecordLine"),
   welcomeRecordSave: $("#welcomeRecordSave"),
   welcomeRecordPreviewNote: $("#welcomeRecordPreviewNote"),
-  welcomeFirstDiscovery: $("#welcomeFirstDiscovery"),
-  welcomeCompleteCard: $("#welcomeCompleteCard"),
+  welcomeFirstTree: $("#welcomeFirstTree"),
+  welcomeFirstFlower: $("#welcomeFirstFlower"),
+  welcomeTreeBirthCopy: $("#welcomeTreeBirthCopy"),
+  welcomePersonalGarden: $("#welcomePersonalGarden"),
+  welcomeGardenTreeName: $("#welcomeGardenTreeName"),
   gardenApp: $("#gardenApp"),
   authError: $("#authError"),
   signInKakao: $("#signInKakao"),
@@ -4843,18 +4846,19 @@ function bindEvents() {
 
 let welcomeSeedTimer = null;
 let welcomeWalkTimer = null;
-let welcomeDiscoveryTimer = null;
-let welcomeCompleteTimer = null;
+let welcomeGardenTransitionTimer = null;
+let welcomeGardenArrivalTimer = null;
 let welcomeSelectedMood = "";
+let welcomeTreeName = "내 나무";
 
 function clearWelcomePreviewTimers() {
-  [welcomeSeedTimer, welcomeWalkTimer, welcomeDiscoveryTimer, welcomeCompleteTimer].forEach((timer) => {
+  [welcomeSeedTimer, welcomeWalkTimer, welcomeGardenTransitionTimer, welcomeGardenArrivalTimer].forEach((timer) => {
     if (timer) window.clearTimeout(timer);
   });
   welcomeSeedTimer = null;
   welcomeWalkTimer = null;
-  welcomeDiscoveryTimer = null;
-  welcomeCompleteTimer = null;
+  welcomeGardenTransitionTimer = null;
+  welcomeGardenArrivalTimer = null;
 }
 
 function resetWelcomePreview() {
@@ -4863,25 +4867,23 @@ function resetWelcomePreview() {
 
   clearWelcomePreviewTimers();
   welcomeSelectedMood = "";
+  welcomeTreeName = "내 나무";
 
   preview.classList.remove(
     "is-seeded", "is-seed-ready", "is-handoff", "is-naming", "is-walk",
-    "is-record-previewed", "is-discovery", "is-complete"
+    "is-record-previewed", "is-tree-birth", "is-entering-garden", "is-in-my-garden"
   );
   preview.dataset.phase = "intro";
   els.welcomeNameSheet?.classList.add("hidden");
   els.welcomeWalkLayer?.classList.add("hidden");
   els.welcomeWalkIntro?.classList.remove("is-hidden");
   els.welcomeRecordCard?.classList.remove("is-visible");
-  els.welcomeCompleteCard?.classList.add("hidden");
-  if (els.welcomeFirstDiscovery) {
-    els.welcomeFirstDiscovery.disabled = false;
-    els.welcomeFirstDiscovery.setAttribute("aria-hidden", "true");
-  }
+  els.welcomePersonalGarden?.classList.remove("is-visible");
   els.welcomeNameForm?.reset();
   if (els.welcomeNameError) els.welcomeNameError.textContent = "";
   if (els.welcomeRecordLine) els.welcomeRecordLine.value = "";
   if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "";
+  if (els.welcomeGardenTreeName) els.welcomeGardenTreeName.textContent = welcomeTreeName;
   $$(".welcome-mood-choice").forEach((button) => button.classList.remove("is-selected"));
   if (els.welcomeKakaoButton) els.welcomeKakaoButton.disabled = false;
 
@@ -4904,12 +4906,14 @@ function startWelcomeFirstWalk(treeName) {
   const preview = els.welcomePreview;
   if (!preview) return;
   const safeName = String(treeName || "내 나무").trim() || "내 나무";
+  welcomeTreeName = safeName;
   preview.classList.remove("is-naming");
   preview.classList.add("is-walk");
   preview.dataset.phase = "first-walk";
   els.welcomeNameSheet?.classList.add("hidden");
   els.welcomeWalkLayer?.classList.remove("hidden");
   if (els.welcomeWalkTreeName) els.welcomeWalkTreeName.textContent = safeName;
+  if (els.welcomeGardenTreeName) els.welcomeGardenTreeName.textContent = safeName;
   els.welcomeWalkIntro?.classList.remove("is-hidden");
   els.welcomeRecordCard?.classList.remove("is-visible");
 
@@ -4921,38 +4925,29 @@ function startWelcomeFirstWalk(treeName) {
   }, 1150);
 }
 
-function revealWelcomeFirstDiscovery() {
+function startWelcomeGardenTransition() {
   const preview = els.welcomePreview;
   if (!preview) return;
 
-  // 첫 기록이 저장된 것처럼 보이는 순간, 기록 카드는 닫히고 숲 안의 작은 발견이 나타납니다.
+  // 기록 카드는 먼저 조용히 사라지고, 같은 자리에서 씨앗이 작은 나무로 자랍니다.
   els.welcomeRecordCard?.classList.remove("is-visible");
   preview.classList.remove("is-walk");
-  preview.classList.add("is-discovery");
-  preview.dataset.phase = "discovery";
-  if (els.welcomeFirstDiscovery) els.welcomeFirstDiscovery.setAttribute("aria-hidden", "false");
-}
+  preview.classList.add("is-tree-birth");
+  preview.dataset.phase = "tree-birth";
 
-function finishWelcomeFirstDiscovery() {
-  const preview = els.welcomePreview;
-  if (!preview || !preview.classList.contains("is-discovery")) return;
+  // 나무와 들꽃을 바라볼 틈을 준 뒤, 빛을 타고 내 정원으로 자동 전환합니다.
+  welcomeGardenTransitionTimer = window.setTimeout(() => {
+    preview.classList.add("is-entering-garden");
+    preview.dataset.phase = "entering-garden";
+    welcomeGardenTransitionTimer = null;
+  }, 2450);
 
-  preview.classList.remove("is-discovery");
-  preview.classList.add("is-complete");
-  preview.dataset.phase = "complete";
-  if (els.welcomeFirstDiscovery) {
-    els.welcomeFirstDiscovery.disabled = true;
-    els.welcomeFirstDiscovery.setAttribute("aria-hidden", "true");
-  }
-  els.welcomeCompleteCard?.classList.remove("hidden");
-
-  // 실제 첫날 튜토리얼처럼 완료 카드는 잠깐만 머물고 조용히 사라집니다.
-  welcomeCompleteTimer = window.setTimeout(() => {
-    els.welcomeCompleteCard?.classList.add("hidden");
-    preview.classList.remove("is-complete");
-    preview.dataset.phase = "finished";
-    welcomeCompleteTimer = null;
-  }, 3400);
+  welcomeGardenArrivalTimer = window.setTimeout(() => {
+    preview.classList.add("is-in-my-garden");
+    preview.dataset.phase = "my-garden";
+    els.welcomePersonalGarden?.classList.add("is-visible");
+    welcomeGardenArrivalTimer = null;
+  }, 3050);
 }
 
 function initWelcomePreview() {
@@ -5012,17 +5007,13 @@ function initWelcomePreview() {
       if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "오늘의 마음을 하나 골라주세요.";
       return;
     }
-    // 실제 기록 저장 없이, 첫 기록 뒤 발견이 이어지는 흐름만 검수합니다.
+    // 실제 기록 저장 없이, 첫 마음이 첫 나무가 되고 내 정원으로 이어지는 장면만 검수합니다.
     preview.classList.add("is-record-previewed");
     preview.dataset.phase = "recorded";
     if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "";
-    welcomeDiscoveryTimer = window.setTimeout(() => {
-      revealWelcomeFirstDiscovery();
-      welcomeDiscoveryTimer = null;
-    }, 360);
+    window.setTimeout(startWelcomeGardenTransition, 300);
   });
 
-  els.welcomeFirstDiscovery?.addEventListener("click", finishWelcomeFirstDiscovery);
   els.welcomeReplay?.addEventListener("click", resetWelcomePreview);
 }
 

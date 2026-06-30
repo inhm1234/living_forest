@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="../../assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="../../assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="garden.css?v=welcome-discovery-v10" />
+  <link rel="stylesheet" href="garden.css?v=welcome-garden-transition-v11" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
     // 운영 루트(/)에 같은 파일을 반영하면 G-YC872G7MH1로 자동 전송됩니다.
@@ -34,7 +34,7 @@
         enabled: !isDevPath,
         debug: query.get("sheetsDebug") === "1",
         environment: isDevPath ? "dev" : "production",
-        build: isDevPath ? "dev-v10" : "operation-v10",
+        build: isDevPath ? "dev-v11" : "operation-v11",
       };
 
       if (!window.TODAYFOREST_ANALYTICS.enabled) return;
@@ -54,9 +54,9 @@
   </script>
 </head>
 <body>
-  <!-- WELCOME PREVIEW v8: ?welcomePreview=1 에서만 보이는 손님맞이 장면입니다.
+  <!-- WELCOME PREVIEW v11: ?welcomePreview=1 에서만 보이는 손님맞이 장면입니다.
        실제 카카오 계정·기록·친구·편지 DB는 읽거나 바꾸지 않습니다. -->
-  <section class="welcome-preview hidden" id="welcomePreview" aria-label="오늘의숲 첫 방문 빛과 씨앗 장면 시안" data-preview-mode="camera-light-seed">
+  <section class="welcome-preview hidden" id="welcomePreview" aria-label="오늘의숲 첫 방문 빛과 씨앗 장면 시안" data-preview-mode="garden-transition">
     <div class="welcome-scene" aria-hidden="true">
       <div class="welcome-still-art"></div>
       <div class="welcome-clearing-glow" aria-hidden="true"></div>
@@ -70,14 +70,19 @@
         <span class="welcome-seed-spark welcome-seed-spark-two"></span>
         <span class="welcome-seed-core"></span>
       </div>
-      <!-- 첫 기록 뒤에만 나타나는, 실제 저장과 무관한 미리보기용 발견물입니다. -->
-      <button type="button" class="welcome-first-discovery" id="welcomeFirstDiscovery" aria-label="반짝이는 작은 들꽃을 발견했어요">
-        <span class="welcome-discovery-aura" aria-hidden="true"></span>
-        <span class="welcome-discovery-ring" aria-hidden="true"></span>
+      <!-- 첫 기록 뒤, 사용자의 첫 나무와 작은 들꽃이 함께 태어나는 장면입니다.
+           이 장면도 손님맞이 미리보기 전용이며 실제 정원 데이터는 전혀 변경하지 않습니다. -->
+      <div class="welcome-first-tree" id="welcomeFirstTree" aria-hidden="true">
+        <span class="welcome-first-tree-aura"></span>
+        <span class="welcome-first-tree-ring welcome-first-tree-ring-one"></span>
+        <span class="welcome-first-tree-ring welcome-first-tree-ring-two"></span>
+        <img src="../../assets/garden/tree_growth/tree_stage1_morning.png" alt="" />
+      </div>
+      <div class="welcome-first-flower" id="welcomeFirstFlower" aria-hidden="true">
+        <span class="welcome-first-flower-aura"></span>
         <img src="../../assets/decorations/pink-wildflower.png" alt="" />
-        <span class="welcome-discovery-spark welcome-discovery-spark-one" aria-hidden="true"></span>
-        <span class="welcome-discovery-spark welcome-discovery-spark-two" aria-hidden="true"></span>
-      </button>
+      </div>
+      <p class="welcome-tree-birth-copy" id="welcomeTreeBirthCopy" aria-live="polite">첫 마음이 작은 나무가 되었어요.</p>
     </div>
     <p class="welcome-brand">오늘의숲</p>
     <div class="welcome-actions welcome-plant-actions">
@@ -132,12 +137,20 @@
       </section>
     </section>
 
-    <!-- 첫 발견을 누른 뒤 잠깐만 보이는 완료 카드입니다. -->
-    <section class="welcome-complete-card hidden" id="welcomeCompleteCard" aria-live="polite" aria-atomic="true">
-      <span class="welcome-complete-star" aria-hidden="true">✦</span>
-      <p class="welcome-complete-kicker">첫날의 작은 산책</p>
-      <h2>오늘의 작은 산책을<br />마쳤어요.</h2>
-      <p class="welcome-complete-copy">첫 마음이 작은 들꽃으로 피어났어요.</p>
+    <!-- 첫 마음이 나무가 된 뒤, 별도 버튼 없이 내 정원으로 자연스럽게 이어지는 미리보기 장면입니다. -->
+    <section class="welcome-personal-garden" id="welcomePersonalGarden" aria-label="첫 마음이 자리 잡은 내 정원 미리보기">
+      <div class="welcome-garden-glow welcome-garden-glow-one" aria-hidden="true"></div>
+      <div class="welcome-garden-glow welcome-garden-glow-two" aria-hidden="true"></div>
+      <div class="welcome-garden-cloud welcome-garden-cloud-one" aria-hidden="true"></div>
+      <div class="welcome-garden-cloud welcome-garden-cloud-two" aria-hidden="true"></div>
+      <p class="welcome-garden-title">내 정원</p>
+      <p class="welcome-garden-status"><span id="welcomeGardenTreeName">내 나무</span> <i>·</i> 마음 1일째 <i>·</i> 처음 깨어난 새싹</p>
+      <div class="welcome-garden-tree-wrap" aria-hidden="true">
+        <span class="welcome-garden-tree-aura"></span>
+        <img class="welcome-garden-tree" src="../../assets/garden/tree_growth/tree_stage1_morning.png" alt="" />
+        <img class="welcome-garden-flower" src="../../assets/decorations/pink-wildflower.png" alt="" />
+      </div>
+      <p class="welcome-garden-arrival-note" aria-live="polite">첫날의 작은 산책을 마쳤어요.</p>
     </section>
   </section>
 

@@ -3148,3 +3148,310 @@ textarea::placeholder { color: #a7b4bd; }
   .welcome-discovery-spark,
   .welcome-complete-card { animation: none !important; transition: none !important; }
 }
+
+
+/* WELCOME PREVIEW v11 -----------------------------------------------------
+   첫 기록 후에는 별도의 완료 버튼을 더 만들지 않습니다.
+   ‘내 마음 심기’의 결과가 곧 작은 나무가 되고, 빛을 따라 내 정원으로 이어지는
+   하나의 장면으로 검수합니다. 실제 계정·기록·정원 데이터와는 전혀 연결되지 않습니다. */
+.welcome-first-tree,
+.welcome-first-flower,
+.welcome-tree-birth-copy,
+.welcome-personal-garden { pointer-events: none; }
+
+.welcome-first-tree {
+  position: absolute;
+  z-index: 8;
+  left: 51%;
+  top: 70.3%;
+  width: clamp(150px, 20vw, 250px);
+  aspect-ratio: 1;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.22);
+  filter: drop-shadow(0 17px 16px rgba(64,87,67,.16));
+  transition: opacity .42s ease, transform 1.05s cubic-bezier(.16,.88,.18,1);
+}
+.welcome-first-tree > img {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: 3%;
+  width: 100%;
+  height: auto;
+  transform: translateX(-50%);
+}
+.welcome-first-tree-aura {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 52%;
+  width: 86%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,238,.98) 0%, rgba(255,237,163,.68) 26%, rgba(255,221,139,.25) 52%, transparent 71%);
+  filter: blur(2px);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.45);
+}
+.welcome-first-tree-ring {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 58%;
+  width: 54%;
+  aspect-ratio: 1;
+  border: 1.5px solid rgba(255,242,175,.88);
+  border-radius: 50%;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.4);
+}
+.welcome-first-tree-ring-two { width: 72%; border-color: rgba(255,226,155,.62); }
+
+.welcome-first-flower {
+  position: absolute;
+  z-index: 9;
+  left: 61.5%;
+  top: 73.2%;
+  width: clamp(52px, 7vw, 88px);
+  aspect-ratio: 1;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.35) rotate(-8deg);
+  transition: opacity .45s .42s ease, transform .75s .42s cubic-bezier(.16,.88,.18,1);
+}
+.welcome-first-flower > img {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 5%;
+  width: 72%;
+  height: auto;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 6px 7px rgba(61,77,44,.22)) drop-shadow(0 0 10px rgba(255,227,152,.72));
+}
+.welcome-first-flower-aura {
+  position: absolute;
+  inset: 7%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,253,230,.96), rgba(255,217,140,.36) 44%, transparent 74%);
+  filter: blur(2px);
+}
+.welcome-tree-birth-copy {
+  position: absolute;
+  z-index: 15;
+  left: 50%;
+  bottom: max(40px, calc(28px + env(safe-area-inset-bottom)));
+  width: min(calc(100% - 44px), 360px);
+  margin: 0;
+  color: #fffdf2;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: -.035em;
+  text-align: center;
+  text-shadow: 0 2px 12px rgba(39,57,42,.42);
+  opacity: 0;
+  transform: translateX(-50%) translateY(12px);
+  transition: opacity .42s .42s ease, transform .48s .42s cubic-bezier(.18,.86,.25,1);
+}
+
+.welcome-preview.is-tree-birth .welcome-first-tree {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  animation: welcome-first-tree-settle 1.7s .82s ease-in-out infinite alternate;
+}
+.welcome-preview.is-tree-birth .welcome-first-tree-aura {
+  animation: welcome-first-tree-aura 1.35s cubic-bezier(.16,.88,.18,1) both;
+}
+.welcome-preview.is-tree-birth .welcome-first-tree-ring-one { animation: welcome-first-tree-ring 1.5s .08s ease-out both; }
+.welcome-preview.is-tree-birth .welcome-first-tree-ring-two { animation: welcome-first-tree-ring 1.72s .22s ease-out both; }
+.welcome-preview.is-tree-birth .welcome-first-flower { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+.welcome-preview.is-tree-birth .welcome-tree-birth-copy { opacity: 1; transform: translateX(-50%) translateY(0); }
+.welcome-preview.is-tree-birth .welcome-seed { opacity: 0; transform: translate(-50%, -50%) scale(.58); transition: opacity .32s ease, transform .42s ease; }
+.welcome-preview.is-tree-birth .welcome-clearing-glow { opacity: .86; filter: saturate(1.12) brightness(1.1); }
+
+@keyframes welcome-first-tree-aura {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(.24); }
+  55% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+  100% { opacity: .66; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes welcome-first-tree-ring {
+  0% { opacity: .9; transform: translate(-50%, -50%) scale(.3); }
+  78% { opacity: .08; transform: translate(-50%, -50%) scale(1.75); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.9); }
+}
+@keyframes welcome-first-tree-settle {
+  from { filter: drop-shadow(0 17px 16px rgba(64,87,67,.16)); }
+  to { filter: drop-shadow(0 21px 19px rgba(64,87,67,.25)) brightness(1.045); }
+}
+
+/* 나무가 태어난 후, 공터의 빛이 화면 전체를 감싸며 내 정원 장면으로 넘어갑니다. */
+.welcome-preview::after {
+  content: "";
+  position: absolute;
+  z-index: 22;
+  inset: 0;
+  background: radial-gradient(ellipse at 51% 71%, rgba(255,255,241,0) 0 8%, rgba(255,247,215,0) 28%, rgba(255,250,232,0) 54%, rgba(255,255,249,0) 100%);
+  pointer-events: none;
+  opacity: 0;
+}
+.welcome-preview.is-entering-garden::after {
+  animation: welcome-garden-light-pass .86s cubic-bezier(.18,.86,.25,1) both;
+}
+@keyframes welcome-garden-light-pass {
+  0% { opacity: 0; background: radial-gradient(ellipse at 51% 71%, rgba(255,255,241,0) 0 7%, rgba(255,247,215,0) 32%, rgba(255,250,232,0) 62%, rgba(255,255,249,0) 100%); }
+  42% { opacity: 1; background: radial-gradient(ellipse at 51% 71%, rgba(255,255,247,.96) 0 14%, rgba(255,247,215,.86) 35%, rgba(255,250,232,.66) 65%, rgba(255,255,249,.34) 100%); }
+  100% { opacity: 1; background: rgba(255,255,249,.98); }
+}
+.welcome-preview.is-entering-garden .welcome-scene,
+.welcome-preview.is-entering-garden .welcome-brand,
+.welcome-preview.is-entering-garden .welcome-first-tree,
+.welcome-preview.is-entering-garden .welcome-first-flower,
+.welcome-preview.is-entering-garden .welcome-tree-birth-copy {
+  transition: opacity .76s ease, filter .76s ease, transform .76s cubic-bezier(.18,.86,.25,1);
+}
+.welcome-preview.is-entering-garden .welcome-scene { opacity: 0; filter: blur(10px) brightness(1.22); transform: scale(1.055); }
+.welcome-preview.is-entering-garden .welcome-brand,
+.welcome-preview.is-entering-garden .welcome-tree-birth-copy { opacity: 0; }
+.welcome-preview.is-entering-garden .welcome-first-tree,
+.welcome-preview.is-entering-garden .welcome-first-flower { opacity: 0; transform: translate(-50%, -54%) scale(1.22); }
+
+/* 실제 내 정원의 하늘·새싹 비율을 참고한, 전용 미리보기용 도착 장면입니다. */
+.welcome-personal-garden {
+  position: absolute;
+  z-index: 24;
+  inset: 0;
+  overflow: hidden;
+  color: #6d8295;
+  opacity: 0;
+  background:
+    radial-gradient(ellipse at 50% 80%, rgba(255,255,255,.97) 0 8%, rgba(230,252,229,.72) 36%, transparent 62%),
+    linear-gradient(180deg, #cfd5f5 0%, #e8ebff 47%, #e9f7ee 100%);
+  transform: scale(1.045);
+  transition: opacity .65s ease, transform .9s cubic-bezier(.18,.86,.25,1);
+}
+.welcome-personal-garden::before {
+  content: "";
+  position: absolute;
+  inset: auto -6% -18% -6%;
+  height: 47%;
+  border-radius: 50% 50% 0 0 / 30% 30% 0 0;
+  background:
+    radial-gradient(ellipse at 50% 22%, rgba(255,255,255,.88), transparent 38%),
+    linear-gradient(180deg, rgba(231,250,221,.88), rgba(194,234,200,.90));
+}
+.welcome-personal-garden.is-visible,
+.welcome-preview.is-in-my-garden .welcome-personal-garden { opacity: 1; transform: scale(1); }
+.welcome-garden-glow,
+.welcome-garden-cloud { position: absolute; pointer-events: none; }
+.welcome-garden-glow { border-radius: 50%; filter: blur(3px); opacity: .78; }
+.welcome-garden-glow-one { width: 230px; height: 230px; top: -84px; left: -78px; background: rgba(255,225,191,.62); }
+.welcome-garden-glow-two { width: 220px; height: 220px; top: 68px; right: -90px; background: rgba(208,238,255,.68); }
+.welcome-garden-cloud { width: 106px; height: 31px; border-radius: 999px; background: rgba(255,255,255,.48); filter: blur(1px); }
+.welcome-garden-cloud::before,
+.welcome-garden-cloud::after { content: ""; position: absolute; bottom: 0; border-radius: 50%; background: inherit; }
+.welcome-garden-cloud::before { width: 43px; height: 43px; left: 16px; }
+.welcome-garden-cloud::after { width: 56px; height: 56px; right: 9px; }
+.welcome-garden-cloud-one { top: 104px; left: 9%; animation: welcome-garden-cloud-float 15s ease-in-out infinite; }
+.welcome-garden-cloud-two { top: 164px; right: 8%; transform: scale(.72); opacity: .66; animation: welcome-garden-cloud-float 18s ease-in-out infinite reverse; }
+@keyframes welcome-garden-cloud-float { 0%,100% { translate: 0 0; } 50% { translate: 16px 0; } }
+.welcome-garden-title {
+  position: absolute;
+  z-index: 3;
+  top: max(22px, env(safe-area-inset-top));
+  left: 50%;
+  margin: 0;
+  color: #5e7388;
+  font-size: 17px;
+  font-weight: 950;
+  letter-spacing: -.06em;
+  transform: translateX(-50%);
+}
+.welcome-garden-status {
+  position: absolute;
+  z-index: 3;
+  top: max(57px, calc(47px + env(safe-area-inset-top)));
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  margin: 0;
+  padding: 8px 13px;
+  border: 1px solid rgba(255,255,255,.74);
+  border-radius: 999px;
+  background: rgba(255,255,255,.58);
+  color: #75889a;
+  font-size: 12px;
+  font-weight: 800;
+  transform: translateX(-50%);
+  backdrop-filter: blur(8px);
+}
+.welcome-garden-status i { color: #b7c3d0; font-style: normal; }
+.welcome-garden-tree-wrap {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: 11%;
+  width: min(77vw, 390px);
+  aspect-ratio: 1 / 1;
+  transform: translateX(-50%) translateY(24px) scale(.9);
+  opacity: 0;
+  animation: welcome-my-garden-tree-in 1.05s .28s cubic-bezier(.18,.86,.25,1) forwards;
+}
+.welcome-garden-tree-aura {
+  position: absolute;
+  inset: 19% 18% 17%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,213,.76) 0%, rgba(255,255,225,.24) 37%, transparent 69%);
+  filter: blur(6px);
+  opacity: .83;
+}
+.welcome-garden-tree { position: absolute; z-index: 2; left: 50%; bottom: 3%; width: 100%; height: auto; transform: translateX(-50%); filter: drop-shadow(0 25px 18px rgba(73,112,83,.18)); }
+.welcome-garden-flower { position: absolute; z-index: 4; left: 65%; bottom: 15%; width: 18%; height: auto; filter: drop-shadow(0 6px 7px rgba(72,112,79,.14)); }
+@keyframes welcome-my-garden-tree-in { to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } }
+.welcome-garden-arrival-note {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: max(30px, calc(20px + env(safe-area-inset-bottom)));
+  margin: 0;
+  color: #71876c;
+  font-size: 13px;
+  font-weight: 850;
+  opacity: 0;
+  transform: translateX(-50%) translateY(9px);
+  animation: welcome-garden-note-in 1.15s .85s ease forwards, welcome-garden-note-out .75s 4.25s ease forwards;
+}
+@keyframes welcome-garden-note-in { to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@keyframes welcome-garden-note-out { to { opacity: 0; transform: translateX(-50%) translateY(-5px); } }
+
+/* 이전 v10의 클릭형 꽃/완료 카드는 v11 흐름에서 사용하지 않습니다. */
+.welcome-first-discovery,
+.welcome-complete-card { display: none !important; }
+.welcome-preview.is-tree-birth .welcome-walk-layer,
+.welcome-preview.is-entering-garden .welcome-walk-layer,
+.welcome-preview.is-in-my-garden .welcome-walk-layer,
+.welcome-preview.is-tree-birth .welcome-seed-actions,
+.welcome-preview.is-tree-birth .welcome-preview-handoff,
+.welcome-preview.is-tree-birth .welcome-plant-actions { opacity: 0; pointer-events: none; }
+
+@media (max-width: 560px) {
+  .welcome-first-tree { left: 51%; top: 71.2%; width: 44vw; min-width: 154px; }
+  .welcome-first-flower { left: 62.5%; top: 73.7%; width: 18vw; min-width: 58px; }
+  .welcome-garden-tree-wrap { bottom: 12%; width: min(87vw, 390px); }
+  .welcome-garden-status { font-size: 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .welcome-first-tree,
+  .welcome-first-flower,
+  .welcome-tree-birth-copy,
+  .welcome-personal-garden,
+  .welcome-garden-tree-wrap,
+  .welcome-garden-arrival-note { animation: none !important; transition: none !important; }
+  .welcome-preview.is-tree-birth .welcome-first-tree,
+  .welcome-preview.is-tree-birth .welcome-first-flower,
+  .welcome-preview.is-tree-birth .welcome-tree-birth-copy { opacity: 1; }
+  .welcome-preview.is-in-my-garden .welcome-personal-garden { opacity: 1; transform: none; }
+  .welcome-garden-tree-wrap { opacity: 1; transform: translateX(-50%); }
+}
