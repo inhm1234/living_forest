@@ -988,71 +988,159 @@ textarea::placeholder { color: #a7b4bd; }
 
 .auth-screen {
   position: relative;
-  display: grid;
+  display: flex;
   min-height: 100vh;
-  place-items: center;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
-  padding: 28px 18px calc(34px + env(safe-area-inset-bottom));
-  background:
-    radial-gradient(circle at 12% 7%, rgba(255,255,255,.96) 0 6%, transparent 28%),
-    linear-gradient(145deg, #e7eaff 0%, #f7f5ff 56%, #e7f5ed 100%);
+  padding: 24px 18px calc(36px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, #ece7fb 0%, #f5f0fb 40%, #efe9f8 100%);
 }
-
-.auth-sky-glow {
+.auth-screen::before {
+  content: "";
   position: absolute;
-  width: min(75vw, 500px);
-  aspect-ratio: 1;
+  inset: 0;
+  background: url("assets/login-bg-soft.jpg") center center / cover no-repeat;
+  transform: scale(1.04);
+  filter: saturate(1.02);
+}
+.auth-screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(251,248,255,0.25) 0%, rgba(255,255,255,0.08) 24%, rgba(250,244,255,0.28) 100%),
+    radial-gradient(circle at 50% 32%, rgba(255,255,255,0.75) 0 15%, rgba(255,255,255,0.15) 34%, transparent 60%),
+    linear-gradient(180deg, rgba(116, 89, 165, 0.10) 0%, rgba(255,255,255,0) 20%, rgba(109, 189, 146, 0.06) 100%);
+}
+.auth-screen-glow {
+  position: absolute;
+  z-index: 0;
   border-radius: 50%;
-  filter: blur(10px);
-  opacity: .72;
+  filter: blur(14px);
+  opacity: 0.7;
   pointer-events: none;
 }
-.auth-glow-one { top: -24%; left: -26%; background: rgba(255,226,217,.85); }
-.auth-glow-two { right: -30%; bottom: -28%; background: rgba(190,231,219,.85); }
-
+.auth-screen-glow-one {
+  width: 220px;
+  height: 220px;
+  top: -54px;
+  left: -48px;
+  background: rgba(255, 216, 232, 0.62);
+}
+.auth-screen-glow-two {
+  width: 250px;
+  height: 250px;
+  right: -80px;
+  bottom: -90px;
+  background: rgba(214, 234, 255, 0.56);
+}
 .auth-card {
   position: relative;
   z-index: 1;
-  width: min(100%, 440px);
-  padding: 34px 24px 28px;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,.78);
-  border-radius: 34px;
-  background: rgba(255,255,255,.48);
-  box-shadow: 0 24px 60px rgba(90, 106, 138, .17);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: min(100%, 430px);
+  min-height: min(88vh, 780px);
+  padding: 58px 18px 30px;
   text-align: center;
 }
-.auth-card h1 {
-  margin: 2px 0 12px;
-  color: #385363;
-  font-size: clamp(32px, 7vw, 44px);
-  letter-spacing: -0.08em;
-  line-height: 1.08;
+.auth-copy-stack {
+  width: min(100%, 340px);
+  margin: 0 auto;
 }
-.auth-copy { margin: 0; color: #718699; font-size: 14px; font-weight: 700; line-height: 1.6; }
-.auth-tree { display: block; width: min(74%, 300px); height: 260px; margin: 10px auto 3px; object-fit: contain; filter: drop-shadow(0 14px 20px rgba(89,126,105,.16)); }
+.auth-eyebrow {
+  margin-bottom: 12px;
+  color: rgba(123, 110, 158, 0.88);
+  letter-spacing: 0.14em;
+}
+.auth-card h1 {
+  margin: 0;
+  color: #7f66a9;
+  font-size: clamp(44px, 10vw, 62px);
+  letter-spacing: -0.08em;
+  line-height: 1.02;
+  text-shadow: 0 4px 18px rgba(255,255,255,0.42);
+}
+.auth-copy {
+  margin: 18px 0 0;
+  color: #8a78a1;
+  font-size: clamp(20px, 4vw, 28px);
+  font-weight: 700;
+  line-height: 1.5;
+}
+.auth-pastel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+.auth-pastel-dots span {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(136, 119, 170, 0.15);
+}
+.auth-pastel-dots span:nth-child(1) { background: #cfc5ff; }
+.auth-pastel-dots span:nth-child(2) { background: #f4c7db; }
+.auth-pastel-dots span:nth-child(3) { background: #cde4bf; }
+.auth-bottom {
+  width: min(100%, 360px);
+  margin: auto auto 0;
+}
 .kakao-login-button {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 58px;
-  gap: 10px;
-  margin-top: 10px;
-  border: 0;
-  border-radius: 18px;
-  background: #fee500;
-  color: #3a3120;
-  font-size: 15px;
+  min-height: 64px;
+  gap: 12px;
+  margin-top: 18px;
+  border: 2px solid rgba(255, 244, 176, 0.72);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffe978 0%, #ffe15b 100%);
+  color: #3d2e22;
+  font-size: 17px;
   font-weight: 950;
-  box-shadow: 0 14px 24px rgba(199,166,24,.22);
+  box-shadow: 0 18px 26px rgba(209, 173, 55, 0.24), inset 0 2px 0 rgba(255,255,255,0.45);
   cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
 }
-.kakao-login-button:hover { transform: translateY(-1px); }
+.kakao-login-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 22px 30px rgba(209, 173, 55, 0.26), inset 0 2px 0 rgba(255,255,255,0.45);
+}
 .kakao-login-button:disabled { cursor: wait; opacity: .78; }
-.kakao-mark { display: grid; place-items: center; width: 18px; height: 18px; border-radius: 7px; background: #3c3421; color: #fee500; font-size: 7px; }
-.auth-note { margin: 12px 0 0; color: #94a2ad; font-size: 11px; line-height: 1.5; }
-.auth-error { margin: 14px 0 0; padding: 10px 12px; border-radius: 13px; background: #fff2f4; color: #c26e7f; font-size: 12px; font-weight: 800; line-height: 1.5; }
+.kakao-mark {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #3a2c22;
+  color: #ffe15b;
+  font-size: 8px;
+  flex: 0 0 auto;
+}
+.auth-note {
+  margin: 14px 0 0;
+  color: rgba(122, 109, 146, 0.82);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+.auth-error {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(255, 243, 246, 0.92);
+  color: #bc6e82;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.5;
+  box-shadow: 0 10px 22px rgba(195, 130, 147, 0.12);
+}
 
 .header-actions { display: grid; justify-items: end; gap: 7px; }
 .account-pill { display: inline-flex; align-items: center; gap: 6px; max-width: 210px; padding: 6px 10px; border: 1px solid rgba(91,113,136,.11); border-radius: 999px; background: rgba(255,255,255,.46); color: #75889a; font-size: 11px; font-weight: 900; cursor: pointer; }
@@ -1066,8 +1154,10 @@ textarea::placeholder { color: #a7b4bd; }
   .nav-action { min-height: 62px; padding-inline: 2px; border-radius: 18px; }
   .nav-action span:last-child { font-size: 10px; letter-spacing: -0.03em; white-space: nowrap; }
 
-  .auth-card { border-radius: 29px; padding: 30px 19px 24px; }
-  .auth-tree { height: 240px; }
+  .auth-card { min-height: min(86vh, 720px); padding: 48px 14px 24px; }
+  .auth-card h1 { font-size: clamp(40px, 13vw, 54px); }
+  .auth-copy { font-size: 19px; }
+  .kakao-login-button { min-height: 60px; font-size: 16px; }
   .garden-header { align-items: flex-start; }
   .header-actions { gap: 5px; }
   .account-pill { max-width: 150px; font-size: 10px; }

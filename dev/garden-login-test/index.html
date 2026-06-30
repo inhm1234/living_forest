@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="../../assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="../../assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="garden.css?v=welcome-real-garden-v12" />
+  <link rel="stylesheet" href="garden.css?v=login-pastel-v15" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
     // 운영 루트(/)에 같은 파일을 반영하면 G-YC872G7MH1로 자동 전송됩니다.
@@ -139,20 +139,26 @@
 
   </section>
 
-  <section class="auth-screen" id="authScreen" aria-label="오늘의숲 시작">
-    <div class="auth-sky-glow auth-glow-one" aria-hidden="true"></div>
-    <div class="auth-sky-glow auth-glow-two" aria-hidden="true"></div>
+  <section class="auth-screen" id="authScreen" aria-label="오늘의숲 로그인 화면">
+    <div class="auth-screen-glow auth-screen-glow-one" aria-hidden="true"></div>
+    <div class="auth-screen-glow auth-screen-glow-two" aria-hidden="true"></div>
     <div class="auth-card">
-      <p class="eyebrow">TODAYFOREST · MY GARDEN</p>
-      <h1>마음을 심는<br />내 정원</h1>
-      <p class="auth-copy">오늘의 마음을 나무에 남기고,<br />내 기록과 편지를 차분히 이어가요.</p>
-      <img class="auth-tree" src="../../assets/garden/tree_growth/tree_stage4_morning.png" alt="꽃과 잎이 피어난 마음 나무" />
-      <button type="button" class="kakao-login-button" id="signInKakao">
-        <span class="kakao-mark" aria-hidden="true">●</span>
-        카카오로 내 정원 시작하기
-      </button>
-      <p class="auth-note">카카오 계정으로 내 정원을 이어서 볼 수 있어요.</p>
-      <p class="auth-error hidden" id="authError" role="alert"></p>
+      <div class="auth-copy-stack">
+        <p class="eyebrow auth-eyebrow">WELCOME TO TODAYFOREST</p>
+        <h1>오늘의숲</h1>
+        <p class="auth-copy">하루의 마음이<br />작은 숲이 되는 곳</p>
+        <div class="auth-pastel-dots" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="auth-bottom">
+        <button type="button" class="kakao-login-button" id="signInKakao">
+          <span class="kakao-mark" aria-hidden="true">●</span>
+          카카오로 시작하기
+        </button>
+        <p class="auth-note">카카오 로그인 후, 이미 내 나무가 있다면 바로 내 정원으로 이어져요.</p>
+        <p class="auth-error hidden" id="authError" role="alert"></p>
+      </div>
     </div>
   </section>
 
