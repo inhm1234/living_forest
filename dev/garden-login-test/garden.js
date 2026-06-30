@@ -540,6 +540,8 @@ const els = {
   welcomeRecordLine: $("#welcomeRecordLine"),
   welcomeRecordSave: $("#welcomeRecordSave"),
   welcomeRecordPreviewNote: $("#welcomeRecordPreviewNote"),
+  welcomeFirstDiscovery: $("#welcomeFirstDiscovery"),
+  welcomeCompleteCard: $("#welcomeCompleteCard"),
   gardenApp: $("#gardenApp"),
   authError: $("#authError"),
   signInKakao: $("#signInKakao"),
@@ -4841,25 +4843,41 @@ function bindEvents() {
 
 let welcomeSeedTimer = null;
 let welcomeWalkTimer = null;
+let welcomeDiscoveryTimer = null;
+let welcomeCompleteTimer = null;
 let welcomeSelectedMood = "";
+
+function clearWelcomePreviewTimers() {
+  [welcomeSeedTimer, welcomeWalkTimer, welcomeDiscoveryTimer, welcomeCompleteTimer].forEach((timer) => {
+    if (timer) window.clearTimeout(timer);
+  });
+  welcomeSeedTimer = null;
+  welcomeWalkTimer = null;
+  welcomeDiscoveryTimer = null;
+  welcomeCompleteTimer = null;
+}
 
 function resetWelcomePreview() {
   const preview = els.welcomePreview;
   if (!preview) return;
 
-  [welcomeSeedTimer, welcomeWalkTimer].forEach((timer) => {
-    if (timer) window.clearTimeout(timer);
-  });
-  welcomeSeedTimer = null;
-  welcomeWalkTimer = null;
+  clearWelcomePreviewTimers();
   welcomeSelectedMood = "";
 
-  preview.classList.remove("is-seeded", "is-seed-ready", "is-handoff", "is-naming", "is-walk", "is-record-previewed");
+  preview.classList.remove(
+    "is-seeded", "is-seed-ready", "is-handoff", "is-naming", "is-walk",
+    "is-record-previewed", "is-discovery", "is-complete"
+  );
   preview.dataset.phase = "intro";
   els.welcomeNameSheet?.classList.add("hidden");
   els.welcomeWalkLayer?.classList.add("hidden");
   els.welcomeWalkIntro?.classList.remove("is-hidden");
   els.welcomeRecordCard?.classList.remove("is-visible");
+  els.welcomeCompleteCard?.classList.add("hidden");
+  if (els.welcomeFirstDiscovery) {
+    els.welcomeFirstDiscovery.disabled = false;
+    els.welcomeFirstDiscovery.setAttribute("aria-hidden", "true");
+  }
   els.welcomeNameForm?.reset();
   if (els.welcomeNameError) els.welcomeNameError.textContent = "";
   if (els.welcomeRecordLine) els.welcomeRecordLine.value = "";
@@ -4901,6 +4919,40 @@ function startWelcomeFirstWalk(treeName) {
     preview.dataset.phase = "record";
     welcomeWalkTimer = null;
   }, 1150);
+}
+
+function revealWelcomeFirstDiscovery() {
+  const preview = els.welcomePreview;
+  if (!preview) return;
+
+  // 첫 기록이 저장된 것처럼 보이는 순간, 기록 카드는 닫히고 숲 안의 작은 발견이 나타납니다.
+  els.welcomeRecordCard?.classList.remove("is-visible");
+  preview.classList.remove("is-walk");
+  preview.classList.add("is-discovery");
+  preview.dataset.phase = "discovery";
+  if (els.welcomeFirstDiscovery) els.welcomeFirstDiscovery.setAttribute("aria-hidden", "false");
+}
+
+function finishWelcomeFirstDiscovery() {
+  const preview = els.welcomePreview;
+  if (!preview || !preview.classList.contains("is-discovery")) return;
+
+  preview.classList.remove("is-discovery");
+  preview.classList.add("is-complete");
+  preview.dataset.phase = "complete";
+  if (els.welcomeFirstDiscovery) {
+    els.welcomeFirstDiscovery.disabled = true;
+    els.welcomeFirstDiscovery.setAttribute("aria-hidden", "true");
+  }
+  els.welcomeCompleteCard?.classList.remove("hidden");
+
+  // 실제 첫날 튜토리얼처럼 완료 카드는 잠깐만 머물고 조용히 사라집니다.
+  welcomeCompleteTimer = window.setTimeout(() => {
+    els.welcomeCompleteCard?.classList.add("hidden");
+    preview.classList.remove("is-complete");
+    preview.dataset.phase = "finished";
+    welcomeCompleteTimer = null;
+  }, 3400);
 }
 
 function initWelcomePreview() {
@@ -4960,13 +5012,17 @@ function initWelcomePreview() {
       if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "오늘의 마음을 하나 골라주세요.";
       return;
     }
-    // 이 v9는 첫 기록 화면까지의 안전한 동선 검수입니다. 실제 기록 저장은 절대 하지 않습니다.
+    // 실제 기록 저장 없이, 첫 기록 뒤 발견이 이어지는 흐름만 검수합니다.
     preview.classList.add("is-record-previewed");
-    if (els.welcomeRecordPreviewNote) {
-      els.welcomeRecordPreviewNote.textContent = "첫 마음이 씨앗 곁에 조용히 내려앉았어요.";
-    }
+    preview.dataset.phase = "recorded";
+    if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "";
+    welcomeDiscoveryTimer = window.setTimeout(() => {
+      revealWelcomeFirstDiscovery();
+      welcomeDiscoveryTimer = null;
+    }, 360);
   });
 
+  els.welcomeFirstDiscovery?.addEventListener("click", finishWelcomeFirstDiscovery);
   els.welcomeReplay?.addEventListener("click", resetWelcomePreview);
 }
 

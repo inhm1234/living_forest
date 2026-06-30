@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="../../assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="../../assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="garden.css?v=welcome-name-v9" />
+  <link rel="stylesheet" href="garden.css?v=welcome-discovery-v10" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
     // 운영 루트(/)에 같은 파일을 반영하면 G-YC872G7MH1로 자동 전송됩니다.
@@ -34,7 +34,7 @@
         enabled: !isDevPath,
         debug: query.get("sheetsDebug") === "1",
         environment: isDevPath ? "dev" : "production",
-        build: isDevPath ? "dev-v9" : "operation-v9",
+        build: isDevPath ? "dev-v10" : "operation-v10",
       };
 
       if (!window.TODAYFOREST_ANALYTICS.enabled) return;
@@ -70,6 +70,14 @@
         <span class="welcome-seed-spark welcome-seed-spark-two"></span>
         <span class="welcome-seed-core"></span>
       </div>
+      <!-- 첫 기록 뒤에만 나타나는, 실제 저장과 무관한 미리보기용 발견물입니다. -->
+      <button type="button" class="welcome-first-discovery" id="welcomeFirstDiscovery" aria-label="반짝이는 작은 들꽃을 발견했어요">
+        <span class="welcome-discovery-aura" aria-hidden="true"></span>
+        <span class="welcome-discovery-ring" aria-hidden="true"></span>
+        <img src="../../assets/decorations/pink-wildflower.png" alt="" />
+        <span class="welcome-discovery-spark welcome-discovery-spark-one" aria-hidden="true"></span>
+        <span class="welcome-discovery-spark welcome-discovery-spark-two" aria-hidden="true"></span>
+      </button>
     </div>
     <p class="welcome-brand">오늘의숲</p>
     <div class="welcome-actions welcome-plant-actions">
@@ -122,6 +130,14 @@
         <button type="button" class="welcome-record-save" id="welcomeRecordSave">내 마음 심기</button>
         <p class="welcome-record-preview-note" id="welcomeRecordPreviewNote" aria-live="polite"></p>
       </section>
+    </section>
+
+    <!-- 첫 발견을 누른 뒤 잠깐만 보이는 완료 카드입니다. -->
+    <section class="welcome-complete-card hidden" id="welcomeCompleteCard" aria-live="polite" aria-atomic="true">
+      <span class="welcome-complete-star" aria-hidden="true">✦</span>
+      <p class="welcome-complete-kicker">첫날의 작은 산책</p>
+      <h2>오늘의 작은 산책을<br />마쳤어요.</h2>
+      <p class="welcome-complete-copy">첫 마음이 작은 들꽃으로 피어났어요.</p>
     </section>
   </section>
 
