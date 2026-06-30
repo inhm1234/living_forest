@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=first-walk-operation-v2-3" />
+  <link rel="stylesheet" href="style.css?v=welcome-onboarding-v1" />
   <script>
     // 운영 통계에는 닉네임·나무 이름·계정 ID·편지 내용처럼 개인을 식별할 수 있는 값을 보내지 않습니다.
     (function () {
@@ -48,6 +48,84 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2394251223536817" crossorigin="anonymous"></script>
 </head>
 <body>
+  <!-- 신규 카카오 계정만 로그인 후 실제로 만나는 첫 방문 손님맞이입니다. -->
+  <section class="welcome-preview hidden" id="welcomePreview" aria-label="오늘의숲 첫 방문 손님맞이">
+    <div class="welcome-scene" aria-hidden="true">
+      <div class="welcome-still-art"></div>
+      <div class="welcome-clearing-glow" aria-hidden="true"></div>
+      <div class="welcome-traveler-light" aria-hidden="true">
+        <span class="welcome-light-core"></span>
+        <span class="welcome-light-trail"></span>
+      </div>
+      <div class="welcome-seed" aria-hidden="true">
+        <span class="welcome-seed-aura"></span>
+        <span class="welcome-seed-spark welcome-seed-spark-one"></span>
+        <span class="welcome-seed-spark welcome-seed-spark-two"></span>
+        <span class="welcome-seed-core"></span>
+      </div>
+      <div class="welcome-first-tree" id="welcomeFirstTree" aria-hidden="true">
+        <span class="welcome-first-tree-aura"></span>
+        <span class="welcome-first-tree-ring welcome-first-tree-ring-one"></span>
+        <span class="welcome-first-tree-ring welcome-first-tree-ring-two"></span>
+        <img src="assets/garden/tree_growth/tree_stage1_morning.png" alt="" />
+      </div>
+      <div class="welcome-first-flower" id="welcomeFirstFlower" aria-hidden="true">
+        <span class="welcome-first-flower-aura"></span>
+        <img src="assets/decorations/pink-wildflower.png" alt="" />
+      </div>
+      <p class="welcome-tree-birth-copy" id="welcomeTreeBirthCopy" aria-live="polite">첫 마음이 작은 나무가 되었어요.</p>
+    </div>
+    <p class="welcome-brand">오늘의숲</p>
+    <div class="welcome-actions welcome-plant-actions">
+      <button type="button" class="welcome-start-button" id="welcomePlantButton">내 나무 심기</button>
+    </div>
+    <div class="welcome-seed-actions" aria-live="polite">
+      <button type="button" class="welcome-kakao-button" id="welcomeKakaoButton">이름 정하기</button>
+    </div>
+
+    <section class="welcome-name-sheet hidden" id="welcomeNameSheet" aria-label="나무 이름 정하기">
+      <div class="welcome-sheet-dim" aria-hidden="true"></div>
+      <div class="welcome-sheet-card">
+        <span class="welcome-sheet-sprout" aria-hidden="true">🌱</span>
+        <p class="welcome-sheet-kicker">작은 씨앗에게</p>
+        <h2>어떤 이름으로<br />불러줄까요?</h2>
+        <p class="welcome-sheet-copy">한 번 정한 나무 이름은 바꿀 수 없어요.</p>
+        <form id="welcomeNameForm" novalidate>
+          <label class="sr-only" for="welcomeNameInput">나무 이름</label>
+          <input id="welcomeNameInput" maxlength="18" autocomplete="off" placeholder="예: 별빛나무" />
+          <p class="welcome-name-error" id="welcomeNameError" aria-live="polite"></p>
+          <button type="submit" class="welcome-sheet-primary">이름 정하기</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="welcome-walk-layer hidden" id="welcomeWalkLayer" aria-label="첫 마음 남기기">
+      <div class="welcome-walk-intro" id="welcomeWalkIntro" aria-live="polite">
+        <span class="welcome-walk-orb" aria-hidden="true">✦</span>
+        <p class="welcome-walk-kicker">첫날의 작은 산책</p>
+        <h2><span id="welcomeWalkTreeName">내 나무</span>와<br />첫 마음을 남겨볼까요?</h2>
+      </div>
+      <section class="welcome-record-card" id="welcomeRecordCard" aria-label="오늘 마음 남기기">
+        <div class="welcome-record-head">
+          <span class="welcome-record-leaf" aria-hidden="true">🍃</span>
+          <div>
+            <p>오늘의 마음</p>
+            <h2>지금 기분은 어때요?</h2>
+          </div>
+        </div>
+        <div class="welcome-mood-row" role="group" aria-label="오늘 기분 고르기">
+          <button type="button" class="welcome-mood-choice" data-welcome-mood="포근해요"><span>😊</span>포근해요</button>
+          <button type="button" class="welcome-mood-choice" data-welcome-mood="평범해요"><span>🌿</span>평범해요</button>
+          <button type="button" class="welcome-mood-choice" data-welcome-mood="조금 지쳐요"><span>☁️</span>조금 지쳐요</button>
+        </div>
+        <label class="welcome-record-label" for="welcomeRecordLine">오늘을 한 줄로 남겨볼까요?</label>
+        <textarea id="welcomeRecordLine" maxlength="80" placeholder="짧게 남겨도 괜찮아요."></textarea>
+        <button type="button" class="welcome-record-save" id="welcomeRecordSave">내 마음 심기</button>
+        <p class="welcome-record-preview-note" id="welcomeRecordPreviewNote" aria-live="polite"></p>
+      </section>
+    </section>
+  </section>
+
   <section class="auth-screen" id="authScreen" aria-label="오늘의숲 시작">
     <div class="auth-sky-glow auth-glow-one" aria-hidden="true"></div>
     <div class="auth-sky-glow auth-glow-two" aria-hidden="true"></div>
@@ -641,6 +719,6 @@
 
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="app.js?v=first-walk-operation-v2-3"></script>
+  <script type="module" src="app.js?v=welcome-onboarding-v1"></script>
 </body>
 </html>
