@@ -543,8 +543,6 @@ const els = {
   welcomeFirstTree: $("#welcomeFirstTree"),
   welcomeFirstFlower: $("#welcomeFirstFlower"),
   welcomeTreeBirthCopy: $("#welcomeTreeBirthCopy"),
-  welcomePersonalGarden: $("#welcomePersonalGarden"),
-  welcomeGardenTreeName: $("#welcomeGardenTreeName"),
   gardenApp: $("#gardenApp"),
   authError: $("#authError"),
   signInKakao: $("#signInKakao"),
@@ -4861,6 +4859,18 @@ function clearWelcomePreviewTimers() {
   welcomeGardenArrivalTimer = null;
 }
 
+function resetWelcomeSandboxGarden() {
+  const app = els.gardenApp;
+  if (!app) return;
+
+  app.classList.remove("welcome-sandbox-garden", "is-welcome-garden-visible");
+  app.classList.add("hidden");
+  if (els.foundItemsLayer) els.foundItemsLayer.replaceChildren();
+  if (els.gardenDecorateControls) els.gardenDecorateControls.hidden = true;
+  if (els.visitorButton) els.visitorButton.hidden = false;
+  if (els.firstWalkTutorial) els.firstWalkTutorial.classList.add("hidden");
+}
+
 function resetWelcomePreview() {
   const preview = els.welcomePreview;
   if (!preview) return;
@@ -4868,22 +4878,21 @@ function resetWelcomePreview() {
   clearWelcomePreviewTimers();
   welcomeSelectedMood = "";
   welcomeTreeName = "내 나무";
+  resetWelcomeSandboxGarden();
 
   preview.classList.remove(
     "is-seeded", "is-seed-ready", "is-handoff", "is-naming", "is-walk",
-    "is-record-previewed", "is-tree-birth", "is-entering-garden", "is-in-my-garden"
+    "is-record-previewed", "is-tree-birth", "is-entering-garden", "is-leaving"
   );
   preview.dataset.phase = "intro";
   els.welcomeNameSheet?.classList.add("hidden");
   els.welcomeWalkLayer?.classList.add("hidden");
   els.welcomeWalkIntro?.classList.remove("is-hidden");
   els.welcomeRecordCard?.classList.remove("is-visible");
-  els.welcomePersonalGarden?.classList.remove("is-visible");
   els.welcomeNameForm?.reset();
   if (els.welcomeNameError) els.welcomeNameError.textContent = "";
   if (els.welcomeRecordLine) els.welcomeRecordLine.value = "";
   if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "";
-  if (els.welcomeGardenTreeName) els.welcomeGardenTreeName.textContent = welcomeTreeName;
   $$(".welcome-mood-choice").forEach((button) => button.classList.remove("is-selected"));
   if (els.welcomeKakaoButton) els.welcomeKakaoButton.disabled = false;
 
@@ -4913,7 +4922,6 @@ function startWelcomeFirstWalk(treeName) {
   els.welcomeNameSheet?.classList.add("hidden");
   els.welcomeWalkLayer?.classList.remove("hidden");
   if (els.welcomeWalkTreeName) els.welcomeWalkTreeName.textContent = safeName;
-  if (els.welcomeGardenTreeName) els.welcomeGardenTreeName.textContent = safeName;
   els.welcomeWalkIntro?.classList.remove("is-hidden");
   els.welcomeRecordCard?.classList.remove("is-visible");
 
@@ -4923,6 +4931,51 @@ function startWelcomeFirstWalk(treeName) {
     preview.dataset.phase = "record";
     welcomeWalkTimer = null;
   }, 1150);
+}
+
+function prepareWelcomeSandboxGarden() {
+  const app = els.gardenApp;
+  if (!app) return;
+
+  const treeName = welcomeTreeName || "내 나무";
+  app.classList.remove("hidden");
+  app.classList.add("welcome-sandbox-garden");
+
+  // 실제 정원과 같은 DOM·CSS를 그대로 쓰되, 이 URL 안에서는 저장하지 않는 표시값만 넣습니다.
+  if (els.accountName) els.accountName.textContent = `${treeName}의 정원`;
+  els.accountButton?.setAttribute("aria-label", `${treeName}의 정원`);
+  if (els.treeNameLabel) els.treeNameLabel.textContent = treeName;
+  if (els.dayCount) els.dayCount.textContent = "마음 1일째";
+  if (els.treeStageLabel) els.treeStageLabel.textContent = "처음 깨어난 새싹";
+  if (els.treeImage) {
+    els.treeImage.src = "../../assets/garden/tree_growth/tree_stage1_morning.png";
+    els.treeImage.alt = "처음 깨어난 새싹";
+  }
+  if (els.weatherIcon) els.weatherIcon.textContent = "☀️";
+  if (els.weatherText) els.weatherText.textContent = "햇살이 포근하게 내려와요";
+  if (els.friendCount) els.friendCount.textContent = "친구 0명";
+  if (els.visitorEmoji) els.visitorEmoji.textContent = "🌿";
+  if (els.visitorName) els.visitorName.textContent = "숲이 조용히 숨을 고르고 있어요";
+  if (els.visitorHint) els.visitorHint.textContent = "첫 마음이 나무 가까이에 내려앉았어요.";
+  if (els.stageMessage) els.stageMessage.textContent = "첫 마음이 작은 나무가 되었어요.";
+  if (els.nextVisitorText) els.nextVisitorText.textContent = "내일도 마음을 남기면 나무가 조금 더 자라요.";
+  if (els.installCard) els.installCard.classList.add("hidden");
+  if (els.firstWalkTutorial) els.firstWalkTutorial.classList.add("hidden");
+  if (els.gardenDecorateControls) els.gardenDecorateControls.hidden = false;
+
+  // 실제 정원에서 쓰는 발견물 레이어를 그대로 사용합니다.
+  if (els.foundItemsLayer) {
+    els.foundItemsLayer.innerHTML = `
+      <div class="found-item found-item-tree_base_right welcome-sandbox-found-item" aria-hidden="true">
+        <img src="../../assets/decorations/pink-wildflower.png" alt="" />
+      </div>`;
+  }
+
+  // welcomePreview 모드에서는 일반 init()을 건너뛰므로, 실제 정원과 같은 좌표 비율만 직접 맞춥니다.
+  window.requestAnimationFrame(() => {
+    syncGardenWorldScale();
+    app.classList.add("is-welcome-garden-visible");
+  });
 }
 
 function startWelcomeGardenTransition() {
@@ -4935,7 +4988,7 @@ function startWelcomeGardenTransition() {
   preview.classList.add("is-tree-birth");
   preview.dataset.phase = "tree-birth";
 
-  // 나무와 들꽃을 바라볼 틈을 준 뒤, 빛을 타고 내 정원으로 자동 전환합니다.
+  // 나무와 들꽃을 바라볼 틈을 준 뒤, 빛을 타고 실제 내 정원 UI가 드러납니다.
   welcomeGardenTransitionTimer = window.setTimeout(() => {
     preview.classList.add("is-entering-garden");
     preview.dataset.phase = "entering-garden";
@@ -4943,9 +4996,9 @@ function startWelcomeGardenTransition() {
   }, 2450);
 
   welcomeGardenArrivalTimer = window.setTimeout(() => {
-    preview.classList.add("is-in-my-garden");
+    prepareWelcomeSandboxGarden();
+    preview.classList.add("is-leaving");
     preview.dataset.phase = "my-garden";
-    els.welcomePersonalGarden?.classList.add("is-visible");
     welcomeGardenArrivalTimer = null;
   }, 3050);
 }

@@ -3455,3 +3455,67 @@ textarea::placeholder { color: #a7b4bd; }
   .welcome-preview.is-in-my-garden .welcome-personal-garden { opacity: 1; transform: none; }
   .welcome-garden-tree-wrap { opacity: 1; transform: translateX(-50%); }
 }
+
+
+/* WELCOME PREVIEW v12 ----------------------------------------------------
+   v11의 별도 가짜 정원 화면을 없앴습니다.
+   손님맞이 숲이 끝나면, 이 파일에 원래부터 있던 실제 내 정원 UI(gardenApp)가
+   미리보기용 1일차 상태로 드러납니다. 구조·카드·하단 메뉴는 기존 DEV와 같습니다. */
+.welcome-personal-garden { display: none !important; }
+
+.welcome-preview {
+  transition: opacity .58s ease, visibility .58s step-end;
+}
+.welcome-preview.is-leaving {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* 실제 내 정원 UI를 그대로 사용하되, 손님맞이 미리보기에서만 부드럽게 도착합니다. */
+.garden-app.welcome-sandbox-garden {
+  opacity: 0;
+  transform: translateY(10px) scale(.988);
+  transform-origin: 50% 34%;
+  transition: opacity .62s .08s ease, transform .78s cubic-bezier(.18,.86,.25,1);
+}
+.garden-app.welcome-sandbox-garden.is-welcome-garden-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+/* 이 장면은 도착 모습만 확인하는 안전한 미리보기입니다. 실제 저장·메뉴 이동은 하지 않습니다. */
+.garden-app.welcome-sandbox-garden button {
+  pointer-events: none;
+}
+.garden-app.welcome-sandbox-garden .found-item {
+  animation: welcome-sandbox-found-settle .9s .42s cubic-bezier(.18,.86,.25,1) both;
+}
+@keyframes welcome-sandbox-found-settle {
+  from { opacity: 0; transform: translate(-50%, 8px) scale(.58); }
+  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+.garden-app.welcome-sandbox-garden .tree-wrap {
+  animation: welcome-sandbox-tree-arrive 1.25s .18s cubic-bezier(.18,.86,.25,1) both;
+}
+@keyframes welcome-sandbox-tree-arrive {
+  from { opacity: 0; transform: translate(-50%, 12px) scale(.76); }
+  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+.garden-app.welcome-sandbox-garden .garden-decorate-controls {
+  animation: welcome-sandbox-control-in .55s .75s ease both;
+}
+@keyframes welcome-sandbox-control-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .welcome-preview,
+  .garden-app.welcome-sandbox-garden,
+  .garden-app.welcome-sandbox-garden .tree-wrap,
+  .garden-app.welcome-sandbox-garden .found-item,
+  .garden-app.welcome-sandbox-garden .garden-decorate-controls {
+    animation: none !important;
+    transition: none !important;
+  }
+  .garden-app.welcome-sandbox-garden { opacity: 1; transform: none; }
+}
