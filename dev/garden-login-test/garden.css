@@ -3841,3 +3841,28 @@ textarea::placeholder { color: #a7b4bd; }
   .garden-decorate-item-action { max-width: 172px; }
   .garden-decorate-item-name { max-width: 72px; }
 }
+
+/* INVENTORY V3.3: 꾸미는 동안 보관함을 항상 보여 줍니다.
+   사용자가 작은 버튼을 찾아 열지 않아도, 정원을 보면서 바로 꺼내고 넣을 수 있습니다. */
+.garden-decorate-inventory-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 32px;
+  padding: 6px 8px;
+  border: 1px solid rgba(210, 220, 196, .9);
+  border-radius: 10px;
+  color: #6f7b5d;
+  background: rgba(250,250,239,.88);
+  font-size: 10px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.garden-decorate-inventory-status em { font-style: normal; }
+.garden-stage.is-garden-decorating .garden-inventory-dock {
+  display: block;
+  max-height: 132px;
+}
+@media (max-width: 420px) {
+  .garden-decorate-inventory-status { padding: 6px 7px; font-size: 9px; }
+}

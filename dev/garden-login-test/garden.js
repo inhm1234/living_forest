@@ -2390,9 +2390,9 @@ function renderGardenDecorateItemAction() {
 
 function renderGardenDecorateDock(storedItems = []) {
   if (!els.gardenDecorateDock) return;
-  const drawerShouldShow = gardenDecorateMode && gardenInventoryDrawerOpen;
-  // hidden 속성뿐 아니라 초기 HTML에 붙어 있는 .hidden 클래스도 함께 바꿉니다.
-  // 둘 중 하나만 남으면 서랍 버튼을 눌러도 화면에 계속 가려지는 문제가 생깁니다.
+  const drawerShouldShow = gardenDecorateMode;
+  // 꾸미는 중에는 보관함을 항상 보여 줍니다.
+  // 숨김 상태는 꾸미기를 끝냈을 때만 적용됩니다.
   els.gardenDecorateDock.hidden = !drawerShouldShow;
   els.gardenDecorateDock.classList.toggle("hidden", !drawerShouldShow);
   els.gardenDecorateDock.classList.toggle("is-open", drawerShouldShow);
@@ -2404,8 +2404,8 @@ function renderGardenDecorateDock(storedItems = []) {
     els.gardenInventoryDrawerCount.textContent = String(storedItems.length);
   }
   if (els.toggleGardenInventoryDrawer) {
-    els.toggleGardenInventoryDrawer.setAttribute("aria-expanded", drawerShouldShow ? "true" : "false");
-    els.toggleGardenInventoryDrawer.setAttribute("aria-label", `작은 것 보관함 ${drawerShouldShow ? "닫기" : "열기"}, 보관 중 ${storedItems.length}개`);
+    els.toggleGardenInventoryDrawer.setAttribute("aria-expanded", "true");
+    els.toggleGardenInventoryDrawer.setAttribute("aria-label", `작은 것 보관함, 보관 중 ${storedItems.length}개`);
   }
 
   if (els.gardenDecorateDockList) {
@@ -2430,7 +2430,7 @@ function renderGardenDecorateDock(storedItems = []) {
 
   if (els.gardenDecorateGuide) {
     els.gardenDecorateGuide.textContent = storedItems.length
-      ? "작은 것을 누르면, 마지막으로 두었던 자리에 다시 나타나요. 그다음 원하는 자리로 끌어보세요."
+      ? "장식을 누르면 정원에 다시 나타나요. 원하는 자리로 바로 끌어보세요."
       : "정원의 장식을 누르면, 그 장식만 보관함으로 다시 넣을 수 있어요.";
   }
 }
@@ -2569,7 +2569,7 @@ function startGardenDecorateMode({ openDrawer = false } = {}) {
   if ((!foundItems.length && !storedItems.length) || gardenDecorateSaving) return;
 
   selectedFoundItemId = null;
-  gardenInventoryDrawerOpen = openDrawer;
+  gardenInventoryDrawerOpen = true;
   // 꾸미기를 시작하는 순간, 눈에 보이는 현재 위치를 공통 정원 세계의 초안 좌표로 잡습니다.
   // 예전에 화면 전체 기준으로 저장된 위치도 이 단계에서는 화면에 보이는 자리 그대로
   // 새 좌표 세계로 옮길 수 있고, 취소하면 DB에는 아무것도 저장하지 않습니다.
@@ -2585,9 +2585,7 @@ function startGardenDecorateMode({ openDrawer = false } = {}) {
     applyFoundItemDraftPosition(element, visiblePosition);
   });
 
-  showToast(openDrawer
-    ? "보관함에서 작은 것을 꺼내고, 정원을 보며 자리를 골라보세요."
-    : "장식을 끌어 옮기거나, 한 번 눌러 보관함에 넣어보세요.");
+  showToast("아래 보관함에서 장식을 꺼내거나, 정원 장식을 눌러 다시 넣어보세요.");
 }
 
 function releaseFoundItemPointer(pointerId) {
@@ -2863,14 +2861,16 @@ function handleGardenDecorateDockClick(event) {
 }
 
 function toggleGardenInventoryDrawer() {
+  // v3.3: 꾸미는 동안 보관함은 항상 열려 있습니다.
   if (!gardenDecorateMode) return;
-  gardenInventoryDrawerOpen = !gardenInventoryDrawerOpen;
+  gardenInventoryDrawerOpen = true;
   renderGardenDecorateControls(placedFoundItems(), inventoryFoundItems());
 }
 
 function closeGardenInventoryDrawer() {
+  // v3.3: 보관함을 따로 닫지 않아, 꺼내기 동선이 사라지지 않게 합니다.
   if (!gardenDecorateMode) return;
-  gardenInventoryDrawerOpen = false;
+  gardenInventoryDrawerOpen = true;
   renderGardenDecorateControls(placedFoundItems(), inventoryFoundItems());
 }
 
