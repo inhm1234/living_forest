@@ -2391,8 +2391,8 @@ function renderGardenDecorateItemAction() {
 function renderGardenDecorateDock(storedItems = []) {
   if (!els.gardenDecorateDock) return;
   const drawerShouldShow = gardenDecorateMode;
-  // 꾸미는 중에는 보관함을 항상 보여 줍니다.
-  // 숨김 상태는 꾸미기를 끝냈을 때만 적용됩니다.
+  // 꾸미는 중에는 정원 바깥의 보관함 선반을 항상 보여 줍니다.
+  // 정원 자체를 가리지 않아 아래쪽 풀밭까지 그대로 배치할 수 있습니다.
   els.gardenDecorateDock.hidden = !drawerShouldShow;
   els.gardenDecorateDock.classList.toggle("hidden", !drawerShouldShow);
   els.gardenDecorateDock.classList.toggle("is-open", drawerShouldShow);
@@ -2585,7 +2585,7 @@ function startGardenDecorateMode({ openDrawer = false } = {}) {
     applyFoundItemDraftPosition(element, visiblePosition);
   });
 
-  showToast("아래 보관함에서 장식을 꺼내거나, 정원 장식을 눌러 다시 넣어보세요.");
+  showToast("정원 아래 보관함에서 장식을 꺼내거나, 정원 장식을 눌러 다시 넣어보세요.");
 }
 
 function releaseFoundItemPointer(pointerId) {
@@ -2843,7 +2843,7 @@ async function changeFoundItemStorage(itemId, nextStorageState, button = null) {
 
   renderFoundItems();
   showToast(item.storageState === FOUND_ITEM_STORAGE.INVENTORY
-    ? "보관함에 넣었어요. 아래 보관함에서 다시 꺼낼 수 있어요."
+    ? "보관함에 넣었어요. 정원 아래 보관함에서 다시 꺼낼 수 있어요."
     : "정원에 꺼냈어요. 지금 보이는 장식을 원하는 자리로 끌어보세요.");
 }
 
@@ -2861,14 +2861,14 @@ function handleGardenDecorateDockClick(event) {
 }
 
 function toggleGardenInventoryDrawer() {
-  // v3.3: 꾸미는 동안 보관함은 항상 열려 있습니다.
+  // v3.4: 꾸미는 동안 정원 바깥 보관함 선반은 항상 보입니다.
   if (!gardenDecorateMode) return;
   gardenInventoryDrawerOpen = true;
   renderGardenDecorateControls(placedFoundItems(), inventoryFoundItems());
 }
 
 function closeGardenInventoryDrawer() {
-  // v3.3: 보관함을 따로 닫지 않아, 꺼내기 동선이 사라지지 않게 합니다.
+  // v3.4: 보관함 선반은 정원 바깥에 항상 보이므로 별도 열기·닫기가 필요 없습니다.
   if (!gardenDecorateMode) return;
   gardenInventoryDrawerOpen = true;
   renderGardenDecorateControls(placedFoundItems(), inventoryFoundItems());
