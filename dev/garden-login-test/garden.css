@@ -173,7 +173,9 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .garden-world .active-animal,
 .garden-world .animal-trace,
 .garden-world .found-item-sparkle,
-.garden-world .found-items-layer.is-decorating {
+.garden-world .found-items-layer.is-decorating,
+/* 인벤토리 v3.1: 정원 내부의 "보관함에 넣기" 버튼도 실제로 눌려야 합니다. */
+.garden-world .garden-decorate-item-action {
   pointer-events: auto;
 }
 
@@ -3736,6 +3738,12 @@ textarea::placeholder { color: #a7b4bd; }
   cursor: pointer;
 }
 .garden-decorate-mini-button em { font-style: normal; }
+.garden-decorate-mini-button .garden-inventory-button-label {
+  display: inline;
+  margin-left: 1px;
+  font-size: 10px;
+  font-style: normal;
+}
 .garden-stage.is-garden-decorating .garden-decorate-save { flex: 0 0 auto; min-height: 32px; padding: 6px 11px; }
 
 .garden-stage .garden-inventory-dock {
@@ -3828,6 +3836,7 @@ textarea::placeholder { color: #a7b4bd; }
 
 @media (max-width: 420px) {
   .garden-decorate-activecopy small { max-width: 110px; }
+  .garden-decorate-mini-button .garden-inventory-button-label { display: none; }
   .garden-stage .garden-inventory-dock { bottom: 61px; }
   .garden-decorate-item-action { max-width: 172px; }
   .garden-decorate-item-name { max-width: 72px; }

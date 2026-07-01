@@ -2427,7 +2427,7 @@ function renderGardenDecorateDock(storedItems = []) {
 
   if (els.gardenDecorateGuide) {
     els.gardenDecorateGuide.textContent = storedItems.length
-      ? "작은 것을 누르면 정원 한가운데에 나타나요. 그다음 원하는 자리로 끌어보세요."
+      ? "작은 것을 누르면, 마지막으로 두었던 자리에 다시 나타나요. 그다음 원하는 자리로 끌어보세요."
       : "정원의 장식을 누르면, 그 장식만 보관함으로 다시 넣을 수 있어요.";
   }
 }
@@ -2584,7 +2584,7 @@ function startGardenDecorateMode({ openDrawer = false } = {}) {
 
   showToast(openDrawer
     ? "보관함에서 작은 것을 꺼내고, 정원을 보며 자리를 골라보세요."
-    : "장식을 끌어 자리를 바꾸거나, 눌러 보관함에 넣어보세요.");
+    : "장식을 끌어 옮기거나, 한 번 눌러 보관함에 넣어보세요.");
 }
 
 function releaseFoundItemPointer(pointerId) {
@@ -2832,6 +2832,8 @@ async function changeFoundItemStorage(itemId, nextStorageState, button = null) {
 
   if (item.storageState === FOUND_ITEM_STORAGE.INVENTORY) {
     selectedFoundItemId = null;
+    // 넣은 직후에는 작은 서랍을 한 번 열어, 방금 넣은 장식과 꺼내는 위치를 바로 알 수 있게 합니다.
+    if (gardenDecorateMode) gardenInventoryDrawerOpen = true;
   } else if (gardenDecorateMode) {
     selectedFoundItemId = item.id;
     // 한 번 꺼내면 정원 전체가 다시 보이도록 서랍을 접습니다.
@@ -2840,7 +2842,7 @@ async function changeFoundItemStorage(itemId, nextStorageState, button = null) {
 
   renderFoundItems();
   showToast(item.storageState === FOUND_ITEM_STORAGE.INVENTORY
-    ? "작은 것을 보관함에 넣어두었어요."
+    ? "보관함에 넣었어요. 아래 보관함에서 다시 꺼낼 수 있어요."
     : "정원에 꺼냈어요. 지금 보이는 장식을 원하는 자리로 끌어보세요.");
 }
 
