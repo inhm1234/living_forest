@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="../../assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="../../assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="garden.css?v=inventory-v2-inline" />
+  <link rel="stylesheet" href="garden.css?v=inventory-v3-garden-dock" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
     // 운영 루트(/)에 같은 파일을 반영하면 G-YC872G7MH1로 자동 전송됩니다.
@@ -224,6 +224,7 @@
           </div>
 
           <div class="found-items-layer" id="foundItemsLayer" aria-label="숲에서 찾은 작은 것"></div>
+          <div class="garden-decorate-item-action" id="gardenDecorateItemAction" hidden aria-live="polite"></div>
           <button class="found-item-sparkle" id="foundItemSparkle" type="button" hidden>
             <span aria-hidden="true">✦</span>
           </button>
@@ -267,35 +268,39 @@
 
       <div class="garden-decorate-controls" id="gardenDecorateControls" hidden aria-live="polite">
         <div class="garden-decorate-primary-actions">
-          <button class="garden-decorate-button garden-inventory-button" id="openFoundItemsInventory" type="button" aria-label="작은 것 보관함과 꾸미기 열기">
+          <button class="garden-decorate-button garden-inventory-button" id="openFoundItemsInventory" type="button" aria-label="작은 것 보관함 열기">
             <span aria-hidden="true">🧺</span>
             <span>보관함</span>
             <em id="foundItemsInventoryCount" class="garden-inventory-count" hidden>0</em>
           </button>
-          <button class="garden-decorate-button" id="openGardenDecorate" type="button" aria-label="정원을 보며 작은 것 꾸미기">
+          <button class="garden-decorate-button" id="openGardenDecorate" type="button" aria-label="내 정원 꾸미기 시작">
             <span aria-hidden="true">🍃</span>
             <span>꾸미기</span>
           </button>
+
+          <div class="garden-decorate-activebar" id="gardenDecorateActiveBar" hidden>
+            <span class="garden-decorate-activecopy"><b>꾸미는 중</b><small>장식을 끌어 자리를 바꿔보세요</small></span>
+            <span class="garden-decorate-activeactions">
+              <button class="garden-decorate-mini-button" id="toggleGardenInventoryDrawer" type="button" aria-label="작은 것 보관함 열기">🧺 <em id="gardenInventoryDrawerCount">0</em></button>
+              <button class="garden-decorate-save" id="saveGardenDecorate" type="button">완료</button>
+            </span>
+          </div>
         </div>
       </div>
+
+      <section class="garden-inventory-dock hidden" id="gardenDecorateDock" aria-live="polite" aria-label="정원을 보며 쓰는 작은 것 보관함">
+        <div class="garden-inventory-dock-head">
+          <div>
+            <p class="sheet-kicker">MY LITTLE THINGS</p>
+            <h2>작은 것 보관함 <span id="gardenDecorateDockCount">0개</span></h2>
+          </div>
+          <button class="garden-inventory-dock-close" id="closeGardenInventoryDrawer" type="button" aria-label="작은 것 보관함 닫기">×</button>
+        </div>
+        <p class="garden-decorate-guide" id="gardenDecorateGuide">작은 것을 누르면 정원 한가운데에 나타나요. 그다음 원하는 자리로 끌어보세요.</p>
+        <div class="garden-inventory-dock-list" id="gardenDecorateDockList" aria-label="보관 중인 작은 것 목록"></div>
+      </section>
 
       <p class="stage-message" id="stageMessage">오늘의 마음은 나무 가까이에 조용히 남아요.</p>
-    </section>
-
-    <section class="garden-inventory-dock hidden" id="gardenDecorateDock" aria-live="polite" aria-label="정원을 보며 쓰는 작은 것 보관함">
-      <div class="garden-inventory-dock-head">
-        <div>
-          <p class="sheet-kicker">DECORATE MY GARDEN</p>
-          <h2>작은 것 보관함 <span id="gardenDecorateDockCount">0개</span></h2>
-        </div>
-        <div class="garden-inventory-dock-actions">
-          <button class="garden-decorate-cancel" id="cancelGardenDecorate" type="button">그만 꾸미기</button>
-          <button class="garden-decorate-save" id="saveGardenDecorate" type="button">배치 저장</button>
-        </div>
-      </div>
-      <p class="garden-decorate-guide" id="gardenDecorateGuide">보관함의 작은 것을 누르면 정원에 나타나요. 정원에 놓인 작은 것을 톡 누르면 다시 보관할 수 있어요.</p>
-      <div class="garden-inventory-dock-list" id="gardenDecorateDockList" aria-label="보관 중인 작은 것 목록"></div>
-      <div class="garden-inventory-selection" id="gardenDecorateSelection" aria-live="polite"></div>
     </section>
 
     <section class="growth-note" aria-label="나무 성장 안내">
@@ -846,6 +851,6 @@
 
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="garden.js?v=inventory-v2-inline"></script>
+  <script type="module" src="garden.js?v=inventory-v3-garden-dock"></script>
 </body>
 </html>
