@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="../../assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="../../assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="garden.css?v=login-pastel-v16" />
+  <link rel="stylesheet" href="garden.css?v=inventory-v1" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
     // 운영 루트(/)에 같은 파일을 반영하면 G-YC872G7MH1로 자동 전송됩니다.
@@ -266,12 +266,19 @@
       </button>
 
       <div class="garden-decorate-controls" id="gardenDecorateControls" hidden aria-live="polite">
-        <button class="garden-decorate-button" id="openGardenDecorate" type="button" aria-label="발견한 작은 것 꾸미기">
-          <span aria-hidden="true">🍃</span>
-          <span>꾸미기</span>
-        </button>
+        <div class="garden-decorate-primary-actions">
+          <button class="garden-decorate-button garden-inventory-button" id="openFoundItemsInventory" type="button" aria-label="작은 것 보관함 열기">
+            <span aria-hidden="true">🧺</span>
+            <span>보관함</span>
+            <em id="foundItemsInventoryCount" class="garden-inventory-count" hidden>0</em>
+          </button>
+          <button class="garden-decorate-button" id="openGardenDecorate" type="button" aria-label="정원에 놓인 작은 것 꾸미기">
+            <span aria-hidden="true">🍃</span>
+            <span>꾸미기</span>
+          </button>
+        </div>
         <div class="garden-decorate-edit-actions hidden" id="gardenDecorateEditActions">
-          <p class="garden-decorate-guide" id="gardenDecorateGuide">발견한 작은 것만 원하는 곳으로 옮겨보세요.</p>
+          <p class="garden-decorate-guide" id="gardenDecorateGuide">정원에 꺼낸 작은 것만 원하는 곳으로 옮겨보세요.</p>
           <div class="garden-decorate-action-row">
             <button class="garden-decorate-cancel" id="cancelGardenDecorate" type="button">취소</button>
             <button class="garden-decorate-save" id="saveGardenDecorate" type="button">배치 저장</button>
@@ -700,6 +707,20 @@
     <div class="friends-list" id="friendsList" aria-live="polite"></div>
   </section>
 
+  <section class="bottom-sheet tall-sheet hidden" id="foundItemsSheet" role="dialog" aria-modal="true" aria-labelledby="foundItemsSheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="sheet-kicker">FOREST KEEPS</p>
+        <h2 id="foundItemsSheetTitle">작은 것 보관함</h2>
+      </div>
+      <button class="close-button" data-close="foundItemsSheet" type="button" aria-label="작은 것 보관함 닫기">×</button>
+    </div>
+    <p class="found-storage-intro">숲에서 찾은 작은 것들을 모아두었다가, 정원을 만지고 싶은 날 꺼내보세요.</p>
+    <p class="found-storage-summary" id="foundItemsInventorySummary" aria-live="polite"></p>
+    <div id="foundItemsInventoryList" class="found-storage-root" aria-live="polite"></div>
+  </section>
+
   <section class="bottom-sheet tall-sheet hidden" id="lettersSheet" role="dialog" aria-modal="true" aria-labelledby="lettersSheetTitle">
     <div class="sheet-handle"></div>
     <div class="sheet-head">
@@ -817,6 +838,6 @@
 
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="garden.js?v=login-first-v16"></script>
+  <script type="module" src="garden.js?v=inventory-v1"></script>
 </body>
 </html>

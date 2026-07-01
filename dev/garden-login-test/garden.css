@@ -373,9 +373,13 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .garden-stage.is-garden-decorating .found-item.is-moving::after { border-color: rgba(250, 175, 135, .92); background: rgba(255, 244, 232, .36); }
 
 .garden-decorate-controls { position: absolute; z-index: 12; right: 16px; bottom: 16px; }
+.garden-decorate-primary-actions { display: flex; justify-content: flex-end; gap: 6px; }
 .garden-decorate-button, .garden-decorate-cancel, .garden-decorate-save { border: 1px solid rgba(255,255,255,.82); font-family: inherit; font-weight: 900; cursor: pointer; backdrop-filter: blur(8px); }
-.garden-decorate-button { display: inline-flex; align-items: center; gap: 5px; min-height: 35px; padding: 8px 11px; border-radius: 999px; background: rgba(255,255,255,.76); color: #647b68; font-size: 11px; box-shadow: 0 9px 18px rgba(76, 104, 85, .13); }
+.garden-decorate-button { position: relative; display: inline-flex; align-items: center; gap: 5px; min-height: 35px; padding: 8px 11px; border-radius: 999px; background: rgba(255,255,255,.76); color: #647b68; font-size: 11px; box-shadow: 0 9px 18px rgba(76, 104, 85, .13); }
+.garden-inventory-button { background: rgba(250, 249, 239, .84); color: #788066; }
 .garden-decorate-button span:first-child { font-size: 14px; }
+.garden-inventory-count { position: absolute; top: -6px; right: -5px; display: grid; place-items: center; min-width: 16px; height: 16px; padding: 0 4px; border: 1px solid rgba(255,255,255,.9); border-radius: 99px; background: #f2a675; color: #fff; font-size: 9px; font-style: normal; font-weight: 950; box-shadow: 0 4px 8px rgba(157, 104, 74, .18); }
+.garden-inventory-count[hidden] { display: none; }
 .garden-decorate-edit-actions { width: min(250px, calc(100vw - 44px)); padding: 10px; border: 1px solid rgba(255,255,255,.84); border-radius: 17px; background: rgba(255,255,255,.87); box-shadow: 0 14px 28px rgba(76, 104, 85, .15); }
 .garden-decorate-guide { margin: 0 0 8px; color: #6f8274; font-size: 10px; font-weight: 800; line-height: 1.45; }
 .garden-decorate-action-row { display: flex; gap: 6px; }
@@ -604,6 +608,34 @@ textarea::placeholder { color: #a7b4bd; }
 .waiting-letter-tag { display: inline-flex; align-items: center; margin-left: 6px; padding: 3px 5px; border-radius: 999px; background: #f6eee6; color: #a48a75; font-size: 9px; font-style: normal; font-weight: 900; vertical-align: 1px; }
 .letter-item.is-waiting { border-color: rgba(204, 171, 139, .52); background: linear-gradient(135deg, #fffaf5, #fffdf8); }
 
+/* INVENTORY V1 — 정원에 놓기와 보관을 한 화면에서 가볍게 오갑니다. */
+.found-storage-intro { margin: 15px 0 8px; color: #6f8290; font-size: 13px; font-weight: 750; line-height: 1.55; }
+.found-storage-summary { margin: 0 0 16px; padding: 10px 12px; border: 1px solid rgba(174, 201, 173, .38); border-radius: 15px; background: linear-gradient(135deg, #f3f9ef, #fbf8ee); color: #68806c; font-size: 12px; font-weight: 900; line-height: 1.45; }
+.found-storage-root { display: grid; gap: 18px; padding-bottom: 7px; }
+.found-storage-section { padding: 15px; border: 1px solid #e4ece7; border-radius: 20px; background: rgba(255,255,255,.72); box-shadow: 0 8px 18px rgba(93, 125, 103, .05); }
+.placed-found-storage-section { background: linear-gradient(140deg, rgba(249, 252, 248, .92), rgba(247, 249, 255, .82)); }
+.found-storage-section-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.found-storage-section-head .sheet-kicker { margin: 0 0 3px; }
+.found-storage-section-head h3 { margin: 0; color: #506a5b; font-size: 16px; letter-spacing: -0.04em; }
+.found-storage-section-head > span { display: inline-grid; place-items: center; min-width: 33px; height: 25px; padding: 0 8px; border-radius: 99px; background: #edf4e7; color: #73906f; font-size: 11px; font-weight: 950; }
+.found-storage-guide { margin: 9px 0 12px; color: #87968d; font-size: 11px; font-weight: 750; line-height: 1.5; }
+.found-storage-list { display: grid; gap: 8px; }
+.found-storage-card { display: grid; grid-template-columns: 54px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 9px; border: 1px solid rgba(217, 229, 220, .9); border-radius: 16px; background: rgba(255,255,255,.9); }
+.found-storage-image { width: 54px; height: 49px; object-fit: contain; filter: drop-shadow(0 4px 5px rgba(74, 111, 81, .10)); }
+.found-storage-copy { min-width: 0; }
+.found-storage-copy b { display: block; color: #587064; font-size: 12px; font-weight: 950; line-height: 1.35; }
+.found-storage-copy p { display: -webkit-box; overflow: hidden; margin: 3px 0 0; color: #8a9a92; font-size: 10px; font-weight: 700; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.found-storage-action { flex: 0 0 auto; min-height: 31px; padding: 7px 9px; border: 1px solid rgba(153, 190, 154, .45); border-radius: 11px; background: #f1f8ee; color: #668666; font-family: inherit; font-size: 10px; font-weight: 950; cursor: pointer; }
+.found-storage-action:hover { background: #e6f3e1; }
+.found-storage-action:disabled { opacity: .6; cursor: wait; }
+.placed-found-storage-section .found-storage-action { border-color: rgba(191, 174, 148, .38); background: #fbf4e9; color: #957c5d; }
+.placed-found-storage-section .found-storage-action:hover { background: #f8ead9; }
+.found-storage-empty { display: grid; place-items: center; min-height: 112px; padding: 13px; border: 1px dashed #d8e4d9; border-radius: 16px; background: rgba(247, 251, 246, .7); color: #8d9e94; text-align: center; }
+.found-storage-empty span { font-size: 24px; }
+.found-storage-empty p { margin: 6px 0 0; font-size: 11px; font-weight: 750; line-height: 1.55; }
+.found-storage-empty.compact { min-height: 76px; grid-template-columns: auto minmax(0, 1fr); gap: 9px; text-align: left; }
+.found-storage-empty.compact p { margin: 0; }
+
 .letter-modal { position: fixed; z-index: 45; inset: 0; display: grid; place-items: center; padding: 22px; background: rgba(69,81,99,0.35); backdrop-filter: blur(8px); }
 .letter-modal.hidden { display: none; }
 .letter-card { position: relative; width: min(100%, 420px); padding: 29px 25px 24px; border: 1px solid rgba(255,255,255,0.9); border-radius: 28px; background: linear-gradient(145deg, #fffef8, #fff5f2); color: #5b6574; box-shadow: 0 28px 70px rgba(54,66,83,0.25); }
@@ -673,6 +705,9 @@ textarea::placeholder { color: #a7b4bd; }
   .stage-message { font-size: 11px; }
   .garden-decorate-controls { right: 12px; bottom: 13px; }
   .garden-decorate-edit-actions { width: min(232px, calc(100vw - 38px)); }
+  .found-storage-card { grid-template-columns: 48px minmax(0, 1fr) auto; gap: 8px; }
+  .found-storage-image { width: 48px; height: 44px; }
+  .found-storage-action { padding: 7px 8px; }
   .mood-choice { font-size: 10px; }
 }
 
