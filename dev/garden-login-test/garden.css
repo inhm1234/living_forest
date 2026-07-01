@@ -371,6 +371,8 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .garden-stage.is-garden-decorating .found-item::after { content: ""; position: absolute; inset: -7px; border: 1.5px dashed rgba(119, 167, 116, .72); border-radius: 15px; background: rgba(255,255,255,.14); box-shadow: 0 0 0 3px rgba(255,255,255,.22); pointer-events: none; }
 .garden-stage.is-garden-decorating .found-item.is-moving { cursor: grabbing; z-index: 2; filter: drop-shadow(0 12px 13px rgba(72, 112, 79, .23)); }
 .garden-stage.is-garden-decorating .found-item.is-moving::after { border-color: rgba(250, 175, 135, .92); background: rgba(255, 244, 232, .36); }
+.garden-stage.is-garden-decorating .found-item.is-selected { z-index: 4; filter: drop-shadow(0 9px 12px rgba(226, 151, 106, .28)); }
+.garden-stage.is-garden-decorating .found-item.is-selected::after { border-color: rgba(235, 158, 109, .92); border-style: solid; background: rgba(255, 244, 232, .33); box-shadow: 0 0 0 4px rgba(255,255,255,.34); }
 
 .garden-decorate-controls { position: absolute; z-index: 12; right: 16px; bottom: 16px; }
 .garden-decorate-primary-actions { display: flex; justify-content: flex-end; gap: 6px; }
@@ -387,6 +389,35 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .garden-decorate-cancel { flex: 0 0 auto; background: rgba(248,250,247,.92); color: #839188; }
 .garden-decorate-save { flex: 1 1 auto; background: linear-gradient(135deg, #dcefd6, #f2f5d9); color: #587160; box-shadow: 0 5px 10px rgba(106,143,99,.12); }
 .garden-decorate-save:disabled { opacity: .62; cursor: wait; }
+
+/* INVENTORY V2: 꾸미는 동안 정원을 가리지 않는 아래 보관함 */
+.garden-inventory-dock { margin: 10px 0 12px; padding: 13px; border: 1px solid rgba(220, 234, 218, .95); border-radius: 21px; background: linear-gradient(140deg, rgba(255,255,255,.96), rgba(247,252,244,.94)); box-shadow: 0 13px 26px rgba(79, 116, 87, .12); }
+.garden-inventory-dock.hidden { display: none; }
+.garden-inventory-dock-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.garden-inventory-dock-head .sheet-kicker { margin-bottom: 2px; }
+.garden-inventory-dock-head h2 { margin: 0; color: #587361; font-size: 15px; letter-spacing: -.35px; }
+.garden-inventory-dock-head h2 span { display: inline-flex; margin-left: 4px; color: #9ba993; font-size: 11px; font-weight: 850; }
+.garden-inventory-dock-actions { display: flex; gap: 6px; flex: 0 0 auto; }
+.garden-inventory-dock .garden-decorate-cancel, .garden-inventory-dock .garden-decorate-save { min-height: 32px; padding: 7px 9px; border-radius: 10px; font-size: 10px; }
+.garden-inventory-dock .garden-decorate-guide { margin: 9px 0 10px; color: #728673; font-size: 10px; line-height: 1.5; }
+.garden-inventory-dock-list { display: flex; gap: 8px; min-height: 82px; overflow-x: auto; padding: 1px 1px 6px; scrollbar-width: thin; }
+.garden-inventory-dock-item { flex: 0 0 92px; display: grid; grid-template-rows: 39px auto auto; place-items: center; gap: 2px; min-height: 76px; padding: 6px 5px; border: 1px solid rgba(213, 230, 210, .95); border-radius: 15px; background: rgba(255,255,255,.94); color: #69806c; font: inherit; cursor: pointer; box-shadow: 0 5px 11px rgba(97, 132, 105, .08); }
+.garden-inventory-dock-item:hover, .garden-inventory-dock-item:focus-visible { transform: translateY(-1px); border-color: rgba(145, 181, 132, .82); background: #fbfff9; outline: none; }
+.garden-inventory-dock-item img { display: block; width: 47px; height: 39px; object-fit: contain; }
+.garden-inventory-dock-item span { max-width: 100%; overflow: hidden; color: #647867; font-size: 10px; font-weight: 900; text-overflow: ellipsis; white-space: nowrap; }
+.garden-inventory-dock-item b { color: #a37958; font-size: 9px; font-weight: 900; }
+.garden-inventory-dock-empty { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 75px; padding: 9px; border: 1px dashed #d8e5d7; border-radius: 14px; color: #8b9c8c; background: rgba(249,252,248,.82); text-align: left; }
+.garden-inventory-dock-empty span { font-size: 20px; }
+.garden-inventory-dock-empty p { margin: 0; font-size: 10px; font-weight: 800; line-height: 1.45; }
+.garden-inventory-selection { display: flex; align-items: center; justify-content: space-between; gap: 9px; min-height: 42px; margin-top: 3px; padding-top: 9px; border-top: 1px solid rgba(222, 234, 221, .9); }
+.garden-inventory-selection > p { margin: 0; color: #899789; font-size: 10px; font-weight: 800; line-height: 1.4; }
+.garden-inventory-selection-copy { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.garden-inventory-selection-copy img { width: 34px; height: 30px; object-fit: contain; }
+.garden-inventory-selection-copy span { display: grid; min-width: 0; }
+.garden-inventory-selection-copy b { overflow: hidden; color: #637967; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.garden-inventory-selection-copy small { color: #97a494; font-size: 9px; font-weight: 800; }
+.garden-inventory-selection-store { flex: 0 0 auto; min-height: 32px; padding: 7px 9px; border: 1px solid rgba(201, 180, 150, .54); border-radius: 10px; background: #fbf3e8; color: #96775b; font: inherit; font-size: 10px; font-weight: 900; cursor: pointer; }
+.garden-inventory-selection-store:hover, .garden-inventory-selection-store:focus-visible { background: #f8e9d8; outline: none; }
 
 .found-item-sparkle {
   position: absolute;
@@ -708,6 +739,12 @@ textarea::placeholder { color: #a7b4bd; }
   .found-storage-card { grid-template-columns: 48px minmax(0, 1fr) auto; gap: 8px; }
   .found-storage-image { width: 48px; height: 44px; }
   .found-storage-action { padding: 7px 8px; }
+  .garden-inventory-dock { margin: 9px 0 12px; padding: 11px; border-radius: 18px; }
+  .garden-inventory-dock-head { align-items: flex-start; }
+  .garden-inventory-dock-head h2 { font-size: 14px; }
+  .garden-inventory-dock-actions { gap: 5px; }
+  .garden-inventory-dock .garden-decorate-cancel, .garden-inventory-dock .garden-decorate-save { min-height: 31px; padding: 7px 8px; font-size: 9px; }
+  .garden-inventory-dock-item { flex-basis: 86px; }
   .mood-choice { font-size: 10px; }
 }
 

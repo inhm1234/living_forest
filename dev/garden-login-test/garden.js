@@ -394,6 +394,7 @@ let gardenDecorateMode = false;
 let gardenDecorateSaving = false;
 let gardenDecorateDraftPositions = new Map();
 let activeFoundItemDrag = null;
+let selectedFoundItemId = null;
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -440,7 +441,10 @@ const els = {
   openFoundItemsInventory: $("#openFoundItemsInventory"),
   foundItemsInventoryCount: $("#foundItemsInventoryCount"),
   openGardenDecorate: $("#openGardenDecorate"),
-  gardenDecorateEditActions: $("#gardenDecorateEditActions"),
+  gardenDecorateDock: $("#gardenDecorateDock"),
+  gardenDecorateDockCount: $("#gardenDecorateDockCount"),
+  gardenDecorateDockList: $("#gardenDecorateDockList"),
+  gardenDecorateSelection: $("#gardenDecorateSelection"),
   gardenDecorateGuide: $("#gardenDecorateGuide"),
   cancelGardenDecorate: $("#cancelGardenDecorate"),
   saveGardenDecorate: $("#saveGardenDecorate"),
@@ -2345,6 +2349,58 @@ function foundItemPositionStyle(item) {
   return ` style="--found-item-x:${position.x}%; --found-item-y:${position.y}%;"`;
 }
 
+function selectedPlacedFoundItem() {
+  if (!selectedFoundItemId) return null;
+  return placedFoundItems().find((item) => String(item.id) === String(selectedFoundItemId)) || null;
+}
+
+function renderGardenDecorateDock(storedItems = []) {
+  if (!els.gardenDecorateDock) return;
+  els.gardenDecorateDock.hidden = !gardenDecorateMode;
+  if (!gardenDecorateMode) return;
+
+  if (els.gardenDecorateDockCount) {
+    els.gardenDecorateDockCount.textContent = `${storedItems.length}개`;
+  }
+
+  if (els.gardenDecorateDockList) {
+    els.gardenDecorateDockList.innerHTML = storedItems.length
+      ? storedItems.map((item) => {
+          const catalogItem = foundItemCatalog[item.itemKey];
+          if (!catalogItem) return "";
+          return `
+            <button class="garden-inventory-dock-item" type="button" data-decorate-place-item-id="${escapeAttr(item.id)}" aria-label="${escapeAttr(catalogItem.name)} 정원에 놓기">
+              <img src="${escapeAttr(catalogItem.asset)}" alt="" />
+              <span>${escapeHTML(catalogItem.name)}</span>
+              <b>정원에 놓기</b>
+            </button>
+          `;
+        }).join("")
+      : `
+          <div class="garden-inventory-dock-empty">
+            <span aria-hidden="true">🍃</span>
+            <p>지금 보관함은 비어 있어요.<br />정원에 놓인 작은 것을 톡 눌러 다시 넣을 수 있어요.</p>
+          </div>
+        `;
+  }
+
+  if (els.gardenDecorateSelection) {
+    const selected = selectedPlacedFoundItem();
+    if (!selected) {
+      els.gardenDecorateSelection.innerHTML = `<p>정원에 놓인 작은 것을 톡 누르면, 여기에서 다시 보관할 수 있어요.</p>`;
+    } else {
+      const catalogItem = foundItemCatalog[selected.itemKey];
+      els.gardenDecorateSelection.innerHTML = catalogItem ? `
+        <div class="garden-inventory-selection-copy">
+          <img src="${escapeAttr(catalogItem.asset)}" alt="" />
+          <span><b>${escapeHTML(catalogItem.name)}</b><small>지금 정원에서 선택했어요.</small></span>
+        </div>
+        <button class="garden-inventory-selection-store" type="button" data-decorate-store-selected="${escapeAttr(selected.id)}">보관함에 넣기</button>
+      ` : "";
+    }
+  }
+}
+
 function renderGardenDecorateControls(placedItems, storedItems = []) {
   const hasPlacedItems = placedItems.length > 0;
   const hasStoredItems = storedItems.length > 0;
@@ -2353,29 +2409,28 @@ function renderGardenDecorateControls(placedItems, storedItems = []) {
   if (!els.gardenDecorateControls) return;
 
   els.gardenDecorateControls.hidden = !hasAnyItems;
-  els.gardenStage?.classList.toggle("is-garden-decorating", gardenDecorateMode && hasPlacedItems);
+  els.gardenStage?.classList.toggle("is-garden-decorating", gardenDecorateMode);
   els.foundItemsLayer?.classList.toggle("is-decorating", gardenDecorateMode && hasPlacedItems);
 
   if (els.openFoundItemsInventory) {
     els.openFoundItemsInventory.hidden = gardenDecorateMode || !canOpenInventory;
-    els.openFoundItemsInventory.setAttribute("aria-label", `작은 것 보관함 열기, 보관 중 ${storedItems.length}개`);
+    els.openFoundItemsInventory.setAttribute("aria-label", `작은 것 보관함과 꾸미기 열기, 보관 중 ${storedItems.length}개`);
   }
   if (els.foundItemsInventoryCount) {
     els.foundItemsInventoryCount.textContent = String(storedItems.length);
     els.foundItemsInventoryCount.hidden = storedItems.length === 0;
   }
   if (els.openGardenDecorate) {
-    els.openGardenDecorate.hidden = gardenDecorateMode || !hasPlacedItems;
+    els.openGardenDecorate.hidden = gardenDecorateMode || !hasAnyItems;
     els.openGardenDecorate.setAttribute("aria-pressed", gardenDecorateMode ? "true" : "false");
-  }
-  if (els.gardenDecorateEditActions) {
-    els.gardenDecorateEditActions.classList.toggle("hidden", !gardenDecorateMode || !hasPlacedItems);
   }
   if (els.gardenDecorateGuide) {
     els.gardenDecorateGuide.textContent = gardenDecorateSaving
-      ? "정원에 놓은 작은 것들을 고정하는 중이에요."
-      : "정원에 꺼낸 작은 것만 원하는 곳으로 옮겨보세요.";
+      ? "작은 것들의 자리를 저장하는 중이에요."
+      : "보관함의 작은 것을 누르면 정원에 나타나요. 정원에 놓인 작은 것을 톡 누르면 다시 보관할 수 있어요.";
   }
+
+  renderGardenDecorateDock(storedItems);
 }
 
 function tutorialSandboxFoundItems() {
@@ -2458,7 +2513,7 @@ function renderFoundItems() {
     const position = foundItemDisplayPosition(item);
     const positionClass = position ? " has-custom-position" : "";
     return `
-      <div class="found-item found-item-${escapeAttr(item.placementSlot)}${positionClass}" data-found-item-id="${escapeAttr(item.id)}" data-found-item="${escapeAttr(item.itemKey)}" aria-label="${escapeAttr(catalogItem.name)}"${foundItemPositionStyle(item)}>
+      <div class="found-item found-item-${escapeAttr(item.placementSlot)}${positionClass}${String(item.id) === String(selectedFoundItemId) ? " is-selected" : ""}" data-found-item-id="${escapeAttr(item.id)}" data-found-item="${escapeAttr(item.itemKey)}" aria-label="${escapeAttr(catalogItem.name)}"${foundItemPositionStyle(item)}>
         <img src="${escapeAttr(catalogItem.asset)}" alt="" draggable="false" />
       </div>
     `;
@@ -2477,8 +2532,10 @@ function renderFoundItems() {
 
 function startGardenDecorateMode() {
   const foundItems = placedFoundItems();
-  if (!foundItems.length || gardenDecorateSaving) return;
+  const storedItems = inventoryFoundItems();
+  if ((!foundItems.length && !storedItems.length) || gardenDecorateSaving) return;
 
+  selectedFoundItemId = null;
   // 꾸미기를 시작하는 순간, 눈에 보이는 현재 위치를 공통 정원 세계의 초안 좌표로 잡습니다.
   // 예전에 화면 전체 기준으로 저장된 위치도 이 단계에서는 화면에 보이는 자리 그대로
   // 새 좌표 세계로 옮길 수 있고, 취소하면 DB에는 아무것도 저장하지 않습니다.
@@ -2494,7 +2551,7 @@ function startGardenDecorateMode() {
     applyFoundItemDraftPosition(element, visiblePosition);
   });
 
-  showToast("작은 것을 잡아 원하는 자리에 옮겨보세요.");
+  showToast("정원을 보면서 작은 것을 꺼내고, 원하는 자리에 옮겨보세요.");
 }
 
 function releaseFoundItemPointer(pointerId) {
@@ -2515,10 +2572,11 @@ function cancelGardenDecorateMode() {
     releaseFoundItemPointer(activeFoundItemDrag.pointerId);
   }
   activeFoundItemDrag = null;
+  selectedFoundItemId = null;
   gardenDecorateMode = false;
   gardenDecorateDraftPositions = new Map();
   renderFoundItems();
-  showToast("바꾸기 전 배치로 돌아왔어요.");
+  showToast("저장하지 않은 자리 바꾸기는 원래대로 돌아갔어요.");
 }
 
 function applyFoundItemDraftPosition(element, position) {
@@ -2564,6 +2622,9 @@ function beginFoundItemDrag(event) {
     itemHeight: itemRect.height,
     pointerOffsetX: event.clientX - (itemRect.left + (itemRect.width / 2)),
     pointerOffsetY: event.clientY - itemRect.top,
+    startClientX: event.clientX,
+    startClientY: event.clientY,
+    moved: false,
   };
 
   element.classList.add("is-moving");
@@ -2580,6 +2641,10 @@ function moveFoundItemDrag(event) {
   const drag = activeFoundItemDrag;
   if (!drag || drag.pointerId !== event.pointerId) return;
   event.preventDefault();
+
+  if (Math.hypot(event.clientX - drag.startClientX, event.clientY - drag.startClientY) > 5) {
+    drag.moved = true;
+  }
 
   // 화면 회전·브라우저 UI 변화가 있어도 현재 내부 정원 실제 크기를 기준으로 계산합니다.
   const worldRect = els.gardenWorld?.getBoundingClientRect();
@@ -2605,12 +2670,20 @@ function moveFoundItemDrag(event) {
   applyFoundItemDraftPosition(drag.element, position);
 }
 
+function selectFoundItemForStorage(itemId) {
+  const item = placedFoundItems().find((entry) => String(entry.id) === String(itemId));
+  selectedFoundItemId = item ? item.id : null;
+  renderFoundItems();
+}
+
 function endFoundItemDrag(event) {
   const drag = activeFoundItemDrag;
   if (!drag || (event && drag.pointerId !== event.pointerId)) return;
+  const selectedByTap = !drag.moved ? drag.itemId : null;
   drag.element.classList.remove("is-moving");
   releaseFoundItemPointer(drag.pointerId);
   activeFoundItemDrag = null;
+  if (selectedByTap) selectFoundItemForStorage(selectedByTap);
 }
 
 async function saveGardenDecorateMode() {
@@ -2663,6 +2736,7 @@ async function saveGardenDecorateMode() {
   });
 
   activeFoundItemDrag = null;
+  selectedFoundItemId = null;
   gardenDecorateMode = false;
   gardenDecorateDraftPositions = new Map();
   renderFoundItems();
@@ -2672,8 +2746,7 @@ async function saveGardenDecorateMode() {
 
 function openFoundItemsInventory() {
   if (!currentUser) return;
-  renderFoundItemsInventory();
-  openSheet(els.foundItemsSheet);
+  startGardenDecorateMode();
 }
 
 async function changeFoundItemStorage(itemId, nextStorageState, button = null) {
@@ -2708,14 +2781,33 @@ async function changeFoundItemStorage(itemId, nextStorageState, button = null) {
   const saved = Array.isArray(data) ? data[0] : data;
   item.storageState = normalizedFoundItemStorageState(saved?.storage_state || nextState);
   // 보관함으로 넣어도 사용자가 정한 자리까지 지우지 않습니다.
-  // 다시 정원에 꺼냈을 때 마지막으로 두었던 자리로 돌아오게 합니다.
+  // 다시 정원에 꺼냈을 때 마지막으로 두었던 자리에서 이어서 꾸밀 수 있어요.
   item.positionX = saved?.position_x ?? item.positionX;
   item.positionY = saved?.position_y ?? item.positionY;
+
+  if (item.storageState === FOUND_ITEM_STORAGE.INVENTORY) {
+    selectedFoundItemId = null;
+  } else if (gardenDecorateMode) {
+    selectedFoundItemId = item.id;
+  }
 
   renderFoundItems();
   showToast(item.storageState === FOUND_ITEM_STORAGE.INVENTORY
     ? "작은 것을 보관함에 넣어두었어요."
-    : "작은 것을 정원에 꺼내놓았어요. 꾸미기에서 자리를 옮길 수 있어요.");
+    : "작은 것을 정원에 꺼냈어요. 눈앞의 정원에서 자리를 옮겨보세요.");
+}
+
+function handleGardenDecorateDockClick(event) {
+  const placeButton = event.target.closest("[data-decorate-place-item-id]");
+  if (placeButton) {
+    void changeFoundItemStorage(placeButton.dataset.decoratePlaceItemId, FOUND_ITEM_STORAGE.PLACED, placeButton);
+    return;
+  }
+
+  const storeButton = event.target.closest("[data-decorate-store-selected]");
+  if (storeButton) {
+    void changeFoundItemStorage(storeButton.dataset.decorateStoreSelected, FOUND_ITEM_STORAGE.INVENTORY, storeButton);
+  }
 }
 
 function handleFoundItemsInventoryClick(event) {
@@ -4942,9 +5034,11 @@ function bindEvents() {
   els.foundItemSparkle.addEventListener("click", () => { void claimFoundItem(); });
   els.openFoundItemsInventory?.addEventListener("click", openFoundItemsInventory);
   els.foundItemsInventoryList?.addEventListener("click", handleFoundItemsInventoryClick);
-  els.openGardenDecorate.addEventListener("click", startGardenDecorateMode);
-  els.cancelGardenDecorate.addEventListener("click", cancelGardenDecorateMode);
-  els.saveGardenDecorate.addEventListener("click", () => { void saveGardenDecorateMode(); });
+  els.gardenDecorateDockList?.addEventListener("click", handleGardenDecorateDockClick);
+  els.gardenDecorateSelection?.addEventListener("click", handleGardenDecorateDockClick);
+  els.openGardenDecorate?.addEventListener("click", startGardenDecorateMode);
+  els.cancelGardenDecorate?.addEventListener("click", cancelGardenDecorateMode);
+  els.saveGardenDecorate?.addEventListener("click", () => { void saveGardenDecorateMode(); });
   els.foundItemsLayer.addEventListener("pointerdown", beginFoundItemDrag, { passive: false });
   // 드래그 시작 뒤에는 장식 밖으로 손가락·마우스가 벗어나도 끊기지 않도록
   // window 캡처 단계에서 이동과 종료를 받습니다.
