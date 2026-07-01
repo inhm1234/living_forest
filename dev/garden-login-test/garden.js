@@ -2391,7 +2391,10 @@ function renderGardenDecorateItemAction() {
 function renderGardenDecorateDock(storedItems = []) {
   if (!els.gardenDecorateDock) return;
   const drawerShouldShow = gardenDecorateMode && gardenInventoryDrawerOpen;
+  // hidden 속성뿐 아니라 초기 HTML에 붙어 있는 .hidden 클래스도 함께 바꿉니다.
+  // 둘 중 하나만 남으면 서랍 버튼을 눌러도 화면에 계속 가려지는 문제가 생깁니다.
   els.gardenDecorateDock.hidden = !drawerShouldShow;
+  els.gardenDecorateDock.classList.toggle("hidden", !drawerShouldShow);
   els.gardenDecorateDock.classList.toggle("is-open", drawerShouldShow);
 
   if (els.gardenDecorateDockCount) {
