@@ -266,6 +266,11 @@
         </span>
       </button>
 
+      <button class="garden-trade-button" id="openTradeStall" type="button" aria-label="교환 가판대 열기">
+        <span aria-hidden="true">🧺</span>
+        <span><b>교환 가판대</b><small>오늘의 작은 풍경</small></span>
+      </button>
+
       <div class="garden-decorate-controls" id="gardenDecorateControls" hidden aria-live="polite">
         <div class="garden-decorate-primary-actions">
           <button class="garden-decorate-button garden-inventory-button" id="openFoundItemsInventory" type="button" aria-label="작은 것 보관함 열기">
@@ -735,6 +740,19 @@
     <div id="foundItemsInventoryList" class="found-storage-root" aria-live="polite"></div>
   </section>
 
+  <section class="bottom-sheet tall-sheet hidden trade-stall-sheet" id="tradeStallSheet" role="dialog" aria-modal="true" aria-labelledby="tradeStallSheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="sheet-kicker">FOREST STALL</p>
+        <h2 id="tradeStallSheetTitle">숲길의 교환 가판대</h2>
+      </div>
+      <button class="close-button" data-close="tradeStallSheet" type="button" aria-label="교환 가판대 닫기">×</button>
+    </div>
+    <p class="trade-stall-intro">보관함에 남은 작은 것들을 모아, 오늘 가판대에 올라온 새로운 풍경으로 바꿔보세요.</p>
+    <div id="tradeStallContent" class="trade-stall-content" aria-live="polite"></div>
+  </section>
+
   <section class="bottom-sheet tall-sheet hidden" id="lettersSheet" role="dialog" aria-modal="true" aria-labelledby="lettersSheetTitle">
     <div class="sheet-handle"></div>
     <div class="sheet-head">
@@ -852,6 +870,6 @@
 
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="garden.js?v=inventory-v3-4-external-shelf"></script>
+  <script type="module" src="garden.js?v=trade-stall-v1"></script>
 </body>
 </html>

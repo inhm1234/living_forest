@@ -211,6 +211,44 @@ const foundItemCatalog = {
   },
 };
 
+// 교환 가판대 v1: 기본 장식은 재료, 아래 12개는 가판대에서 얻는 특별 장식입니다.
+// 새로운 PNG를 늘리지 않고도 기존 숲 장식들을 작은 풍경처럼 조합해 보여 줍니다.
+const specialItemCatalog = {
+  flower_meadow: { name: "작은 꽃밭", detail: "들꽃과 데이지가 모여 작은 꽃밭이 되었어요.", pieces: ["pink_wildflower", "white_daisies", "pink_wildflower"], accent: "✿" },
+  mushroom_grove: { name: "버섯 그늘", detail: "나무 아래에 포근한 버섯 그늘이 생겼어요.", pieces: ["mushroom_pair", "amber_mushroom", "leafy_pile"], accent: "✦" },
+  mossy_path: { name: "이끼 돌길", detail: "이끼 낀 돌들이 숲길을 조용히 이어줘요.", pieces: ["mossy_round_rock", "mossy_round_rock", "leafy_pile"], accent: "·" },
+  leaf_rest: { name: "낙엽 쉼터", detail: "바람이 모은 낙엽 곁에 잠시 쉴 자리가 생겼어요.", pieces: ["leafy_pile", "leafy_pile", "mossy_round_rock"], accent: "☁" },
+  firefly_path: { name: "반딧불 오솔길", detail: "작은 빛들이 숲길 곁을 따라 반짝여요.", pieces: ["firefly_jar", "white_daisies", "mossy_round_rock"], accent: "✦" },
+  moonlit_mushroom_lamp: { name: "달빛 버섯등", detail: "버섯 곁의 작은 빛이 밤을 은은하게 밝혀요.", pieces: ["amber_mushroom", "mushroom_pair", "firefly_jar"], accent: "☾" },
+  letter_branch: { name: "편지 걸린 가지", detail: "리본을 단 가지에 마음 하나가 살며시 걸렸어요.", pieces: ["branch_letter", "forest_ribbon", "mossy_round_rock"], accent: "✉" },
+  forest_mailbox: { name: "숲속 우체통", detail: "숲길을 지나는 마음들이 잠시 머무는 곳이에요.", pieces: ["branch_letter", "little_sign", "forest_ribbon"], accent: "✉" },
+  wind_signpost: { name: "바람의 이정표", detail: "바람이 부는 쪽을 조용히 알려주는 표지판이에요.", pieces: ["little_sign", "forest_ribbon", "white_daisies"], accent: "➜" },
+  ribbon_arch: { name: "꽃 리본 아치", detail: "꽃과 리본이 모여 작은 숲의 입구가 되었어요.", pieces: ["pink_wildflower", "white_daisies", "forest_ribbon"], accent: "⌒" },
+  secret_garden_gate: { name: "비밀 정원 입구", detail: "작은 표지판 너머로 비밀스러운 길이 이어져요.", pieces: ["little_sign", "mossy_round_rock", "pink_wildflower"], accent: "⌂" },
+  forest_rest_spot: { name: "숲속 휴식터", detail: "돌과 낙엽, 리본이 모여 아늑한 자리가 되었어요.", pieces: ["mossy_round_rock", "leafy_pile", "forest_ribbon"], accent: "♡" },
+};
+const specialItemKeys = Object.freeze(Object.keys(specialItemCatalog));
+const decorationCatalog = Object.freeze({ ...foundItemCatalog, ...specialItemCatalog });
+
+function decorationCatalogItem(itemKey) {
+  return decorationCatalog[itemKey] || null;
+}
+
+function isSpecialDecoration(item) {
+  return Boolean(item && specialItemCatalog[item.itemKey]);
+}
+
+function decorationVisualMarkup(itemKey, className = "") {
+  const item = decorationCatalogItem(itemKey);
+  if (!item) return "";
+  if (item.asset) return `<img class="${escapeAttr(className)}" src="${escapeAttr(item.asset)}" alt="" draggable="false" />`;
+  const pieces = (item.pieces || []).map((pieceKey, index) => {
+    const piece = foundItemCatalog[pieceKey];
+    return piece ? `<img class="special-decoration-piece special-decoration-piece-${index + 1}" src="${escapeAttr(piece.asset)}" alt="" draggable="false" />` : "";
+  }).join("");
+  return `<span class="special-decoration special-decoration-${escapeAttr(itemKey)} ${escapeAttr(className)}" aria-hidden="true"><i></i>${pieces}<b>${escapeHTML(item.accent || "✦")}</b></span>`;
+}
+
 // INVENTORY V1
 // 장식은 정원에 놓인 상태(placed)와 보관함에 모아둔 상태(inventory)를 가집니다.
 // 기존 장식은 storage_state가 없더라도 안전하게 placed로 읽어, 이미 꾸민 정원이 사라지지 않게 합니다.
@@ -227,16 +265,20 @@ function normalizedFoundItemStorageState(value) {
 
 function placedFoundItems() {
   return (state.foundItems || []).filter((item) => (
-    foundItemCatalog[item.itemKey]
+    decorationCatalogItem(item.itemKey)
     && normalizedFoundItemStorageState(item.storageState) === FOUND_ITEM_STORAGE.PLACED
   ));
 }
 
 function inventoryFoundItems() {
   return (state.foundItems || []).filter((item) => (
-    foundItemCatalog[item.itemKey]
+    decorationCatalogItem(item.itemKey)
     && normalizedFoundItemStorageState(item.storageState) === FOUND_ITEM_STORAGE.INVENTORY
   ));
+}
+
+function inventoryBasicFoundItems() {
+  return inventoryFoundItems().filter((item) => Boolean(foundItemCatalog[item.itemKey]));
 }
 
 const animalVisitors = {
@@ -397,6 +439,13 @@ let activeFoundItemDrag = null;
 let selectedFoundItemId = null;
 let gardenInventoryDrawerOpen = false;
 
+// 교환 가판대 v1 상태. 오늘의 물건은 서버가 한국 날짜로 고정합니다.
+let tradeOffer = null;
+let tradeSystemReady = false;
+let tradeSystemError = null;
+let tradeExchangeQuantity = 1;
+let tradeExchangeBusy = false;
+
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 const els = {
@@ -474,6 +523,9 @@ const els = {
   foundItemsSheet: $("#foundItemsSheet"),
   foundItemsInventorySummary: $("#foundItemsInventorySummary"),
   foundItemsInventoryList: $("#foundItemsInventoryList"),
+  openTradeStall: $("#openTradeStall"),
+  tradeStallSheet: $("#tradeStallSheet"),
+  tradeStallContent: $("#tradeStallContent"),
   feedbackSheet: $("#feedbackSheet"),
   supportSheet: $("#supportSheet"),
   treeNameSheet: $("#treeNameSheet"),
@@ -1104,6 +1156,24 @@ async function loadFoundGardenItems() {
   return latestResult;
 }
 
+
+async function loadTradeGardenItems() {
+  const [itemsResult, offerResult] = await Promise.all([
+    supabase
+      .from("garden_dev_trade_items")
+      .select("id, item_key, placement_slot, position_x, position_y, storage_state, obtained_at, created_at")
+      .order("created_at", { ascending: true }),
+    supabase.rpc("get_my_garden_dev_trade_offer"),
+  ]);
+  return { itemsResult, offerResult };
+}
+
+function normalizeTradeOffer(data) {
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row || !specialItemCatalog[row.item_key]) return null;
+  return { date: row.offer_date, itemKey: row.item_key };
+}
+
 function devSharedTreeStorageKey() {
   return currentUser ? `${DEV_SHARED_TREE_STORAGE_PREFIX}:${currentUser.id}` : "";
 }
@@ -1279,6 +1349,10 @@ async function loadMyGardenProfile() {
 async function loadGardenState() {
   if (!currentUser) {
     state = cloneDefault();
+    tradeOffer = null;
+    tradeSystemReady = false;
+    tradeSystemError = null;
+    tradeExchangeQuantity = 1;
     return;
   }
 
@@ -1288,10 +1362,11 @@ async function loadGardenState() {
 
   const nowIso = new Date().toISOString();
   const retentionTestActive = Boolean(retentionTestModeFromUrl());
-  const [profileResult, recordsResult, foundItemsResult, lettersResult, sentLettersResult, friendsResult, sharedTreesResult, sharedTreeInvitesResult, devFriendResult, devSentLettersResult, retentionDevLetters] = await Promise.all([
+  const [profileResult, recordsResult, foundItemsResult, tradeResult, lettersResult, sentLettersResult, friendsResult, sharedTreesResult, sharedTreeInvitesResult, devFriendResult, devSentLettersResult, retentionDevLetters] = await Promise.all([
     loadMyGardenProfile(),
     supabase.from("garden_records").select("id, mood, one_line, detail, created_at").order("created_at", { ascending: false }),
     loadFoundGardenItems(),
+    loadTradeGardenItems(),
     // 보관 정책 검수 주소에서는 실제 받은 편지를 아예 읽지 않습니다.
     // 그래서 DEV 봉투가 실제 친구 편지와 같은 목록이나 나뭇가지에 섞이지 않습니다.
     retentionTestActive
@@ -1312,6 +1387,12 @@ async function loadGardenState() {
 
   // 작은 것 불러오기는 정원 기록과 분리합니다. 일시 오류가 있어도 기존 정원은 그대로 보여줍니다.
   if (foundItemsResult.error) console.warn("TodayForest found-item load skipped:", foundItemsResult.error);
+  const tradeItemsResult = tradeResult?.itemsResult || { data: [], error: null };
+  const tradeOfferResult = tradeResult?.offerResult || { data: null, error: null };
+  tradeSystemReady = !tradeItemsResult.error && !tradeOfferResult.error;
+  tradeSystemError = tradeSystemReady ? null : (tradeItemsResult.error || tradeOfferResult.error);
+  tradeOffer = tradeSystemReady ? normalizeTradeOffer(tradeOfferResult.data) : null;
+  if (!tradeSystemReady) console.warn("TodayForest trade stall load skipped:", tradeSystemError);
 
   // 편지/친구는 각각 독립적으로 읽습니다.
   // 한 종류의 RPC가 잠시 실패해도 다른 저장 데이터를 0으로 초기화하지 않습니다.
@@ -1411,18 +1492,34 @@ async function loadGardenState() {
       otherUserId: invite.other_user_id,
       createdAt: invite.created_at,
     })),
-    foundItems: (foundItemsResult.data || [])
-      .filter((item) => foundItemCatalog[item.item_key])
-      .map((item) => ({
-        id: item.id,
-        recordId: item.record_id,
-        itemKey: item.item_key,
-        placementSlot: item.placement_slot,
-        positionX: item.position_x,
-        positionY: item.position_y,
-        storageState: normalizedFoundItemStorageState(item.storage_state),
-        foundAt: item.found_at || item.created_at,
-      })),
+    foundItems: [
+      ...(foundItemsResult.data || [])
+        .filter((item) => foundItemCatalog[item.item_key])
+        .map((item) => ({
+          id: item.id,
+          recordId: item.record_id,
+          itemKey: item.item_key,
+          placementSlot: item.placement_slot,
+          positionX: item.position_x,
+          positionY: item.position_y,
+          storageState: normalizedFoundItemStorageState(item.storage_state),
+          foundAt: item.found_at || item.created_at,
+          source: "found",
+        })),
+      ...(tradeItemsResult.data || [])
+        .filter((item) => specialItemCatalog[item.item_key])
+        .map((item) => ({
+          id: item.id,
+          recordId: null,
+          itemKey: item.item_key,
+          placementSlot: item.placement_slot || "front_bed_right",
+          positionX: item.position_x,
+          positionY: item.position_y,
+          storageState: normalizedFoundItemStorageState(item.storage_state),
+          foundAt: item.obtained_at || item.created_at,
+          source: "trade",
+        })),
+    ],
   };
 
   // 테스트 친구와의 공유나무는 실제 DB를 건드리지 않는 브라우저 전용 DEV 검수 상태입니다.
@@ -1503,7 +1600,7 @@ function closeAllSheets({ force = false } = {}) {
   const treeNameSheetIsOpen = els.treeNameSheet && !els.treeNameSheet.classList.contains("hidden");
   if (!force && treeNameSheetIsOpen && isTreeNameSetupRequired()) return;
   const wasViewingLetters = !els.lettersSheet.classList.contains("hidden");
-  [els.recordSheet, els.recordsSheet, els.friendsSheet, els.lettersSheet, els.foundItemsSheet, els.feedbackSheet, els.supportSheet, els.accountMenuSheet, els.letterComposerSheet, els.treeNameSheet].filter(Boolean).forEach((sheet) => sheet.classList.add("hidden"));
+  [els.recordSheet, els.recordsSheet, els.friendsSheet, els.lettersSheet, els.foundItemsSheet, els.tradeStallSheet, els.feedbackSheet, els.supportSheet, els.accountMenuSheet, els.letterComposerSheet, els.treeNameSheet].filter(Boolean).forEach((sheet) => sheet.classList.add("hidden"));
   els.sheetOverlay.classList.add("hidden");
   window.setTimeout(() => renderFirstWalkTutorial(), 0);
   // 봉투 화면을 닫을 때만 배송 도착 알림을 다음 진입 시점으로 넘깁니다.
@@ -2369,7 +2466,7 @@ function renderGardenDecorateItemAction() {
     return;
   }
 
-  const catalogItem = foundItemCatalog[selected.itemKey];
+  const catalogItem = decorationCatalogItem(selected.itemKey);
   const element = els.foundItemsLayer?.querySelector(`[data-found-item-id="${CSS.escape(String(selected.id))}"]`);
   const position = gardenWorldPositionForFoundItemElement(element) || foundItemDisplayPosition(selected);
   if (!catalogItem || !position) {
@@ -2383,7 +2480,7 @@ function renderGardenDecorateItemAction() {
   action.style.setProperty("--garden-decorate-action-x", `${position.x}%`);
   action.style.setProperty("--garden-decorate-action-y", `${bubbleY}%`);
   action.innerHTML = `
-    <span class="garden-decorate-item-name"><img src="${escapeAttr(catalogItem.asset)}" alt="" />${escapeHTML(catalogItem.name)}</span>
+    <span class="garden-decorate-item-name">${decorationVisualMarkup(selected.itemKey, "inline-decoration-visual")}<span>${escapeHTML(catalogItem.name)}</span></span>
     <button type="button" data-decorate-store-selected="${escapeAttr(selected.id)}">보관함에 넣기</button>
   `;
 }
@@ -2411,11 +2508,11 @@ function renderGardenDecorateDock(storedItems = []) {
   if (els.gardenDecorateDockList) {
     els.gardenDecorateDockList.innerHTML = storedItems.length
       ? storedItems.map((item) => {
-          const catalogItem = foundItemCatalog[item.itemKey];
+          const catalogItem = decorationCatalogItem(item.itemKey);
           if (!catalogItem) return "";
           return `
             <button class="garden-inventory-dock-item" type="button" data-decorate-place-item-id="${escapeAttr(item.id)}" aria-label="${escapeAttr(catalogItem.name)} 정원에 꺼내기">
-              <img src="${escapeAttr(catalogItem.asset)}" alt="" />
+              ${decorationVisualMarkup(item.itemKey, "dock-decoration-visual")}
               <span>${escapeHTML(catalogItem.name)}</span>
             </button>
           `;
@@ -2489,11 +2586,11 @@ function renderFoundItemsInventory() {
     : `지금은 정원에 놓인 작은 것 ${placedItems.length}개예요.`;
 
   const card = (item, action, label) => {
-    const catalogItem = foundItemCatalog[item.itemKey];
+    const catalogItem = decorationCatalogItem(item.itemKey);
     if (!catalogItem) return "";
     return `
       <article class="found-storage-card">
-        <img class="found-storage-image" src="${escapeAttr(catalogItem.asset)}" alt="" />
+        <span class="found-storage-image">${decorationVisualMarkup(item.itemKey, "storage-decoration-visual")}</span>
         <div class="found-storage-copy">
           <b>${escapeHTML(catalogItem.name)}</b>
           <p>${escapeHTML(catalogItem.detail)}</p>
@@ -2542,12 +2639,12 @@ function renderFoundItems() {
   const placedItems = [...placedFoundItems(), ...tutorialSandboxFoundItems()];
   const storedItems = inventoryFoundItems();
   els.foundItemsLayer.innerHTML = placedItems.map((item) => {
-    const catalogItem = foundItemCatalog[item.itemKey];
+    const catalogItem = decorationCatalogItem(item.itemKey);
     const position = foundItemDisplayPosition(item);
     const positionClass = position ? " has-custom-position" : "";
     return `
       <div class="found-item found-item-${escapeAttr(item.placementSlot)}${positionClass}${String(item.id) === String(selectedFoundItemId) ? " is-selected" : ""}" data-found-item-id="${escapeAttr(item.id)}" data-found-item="${escapeAttr(item.itemKey)}" aria-label="${escapeAttr(catalogItem.name)}"${foundItemPositionStyle(item)}>
-        <img src="${escapeAttr(catalogItem.asset)}" alt="" draggable="false" />
+        ${decorationVisualMarkup(item.itemKey, "garden-decoration-visual")}
       </div>
     `;
   }).join("");
@@ -2727,19 +2824,18 @@ function endFoundItemDrag(event) {
 
 async function saveGardenDecorateMode() {
   if (!currentUser || !gardenDecorateMode || gardenDecorateSaving) return;
-  const positions = placedFoundItems()
-    .filter((item) => foundItemCatalog[item.itemKey])
-    .map((item) => {
-      const position = gardenDecorateDraftPositions.get(item.id) || savedFoundItemPosition(item);
-      return position ? {
-        id: item.id,
-        position_x: position.x,
-        position_y: position.y,
-      } : null;
-    })
-    .filter(Boolean);
+  const items = placedFoundItems().filter((item) => decorationCatalogItem(item.itemKey));
+  const foundPositions = [];
+  const tradePositions = [];
+  items.forEach((item) => {
+    const position = gardenDecorateDraftPositions.get(item.id) || savedFoundItemPosition(item);
+    if (!position) return;
+    const entry = { id: item.id, position_x: position.x, position_y: position.y };
+    if (item.source === "trade") tradePositions.push(entry);
+    else foundPositions.push(entry);
+  });
 
-  if (!positions.length) {
+  if (!foundPositions.length && !tradePositions.length) {
     activeFoundItemDrag = null;
     selectedFoundItemId = null;
     gardenInventoryDrawerOpen = false;
@@ -2751,35 +2847,29 @@ async function saveGardenDecorateMode() {
   }
 
   gardenDecorateSaving = true;
-  if (els.saveGardenDecorate) {
-    els.saveGardenDecorate.disabled = true;
-    els.saveGardenDecorate.textContent = "저장 중";
-  }
+  if (els.saveGardenDecorate) { els.saveGardenDecorate.disabled = true; els.saveGardenDecorate.textContent = "저장 중"; }
   renderGardenDecorateControls(placedFoundItems(), inventoryFoundItems());
 
-  const { error } = await supabase.rpc("save_my_garden_dev_found_item_positions", { p_positions: positions });
+  const requests = [];
+  if (foundPositions.length) requests.push(supabase.rpc("save_my_garden_dev_found_item_positions", { p_positions: foundPositions }));
+  if (tradePositions.length) requests.push(supabase.rpc("save_my_garden_dev_trade_item_positions", { p_positions: tradePositions }));
+  const results = await Promise.all(requests);
+  const error = results.find((result) => result.error)?.error || null;
 
   gardenDecorateSaving = false;
-  if (els.saveGardenDecorate) {
-    els.saveGardenDecorate.disabled = false;
-    els.saveGardenDecorate.textContent = "완료";
-  }
-
+  if (els.saveGardenDecorate) { els.saveGardenDecorate.disabled = false; els.saveGardenDecorate.textContent = "완료"; }
   if (error) {
     renderGardenDecorateControls(placedFoundItems(), inventoryFoundItems());
-    showToast("배치를 저장하지 못했어요. 잠시 뒤 다시 해주세요.");
-    console.warn("TodayForest DEV found-item layout save failed:", error);
+    showToast("배치를 저장하지 못했어요. 교환 가판대 SQL이 적용됐는지 확인해 주세요.");
+    console.warn("TodayForest decoration layout save failed:", error);
     return;
   }
 
-  const savedById = new Map(positions.map((position) => [position.id, position]));
+  const savedById = new Map([...foundPositions, ...tradePositions].map((position) => [position.id, position]));
   state.foundItems = (state.foundItems || []).map((item) => {
     const position = savedById.get(item.id);
-    return position
-      ? { ...item, positionX: position.position_x, positionY: position.position_y }
-      : item;
+    return position ? { ...item, positionX: position.position_x, positionY: position.position_y } : item;
   });
-
   activeFoundItemDrag = null;
   selectedFoundItemId = null;
   gardenInventoryDrawerOpen = false;
@@ -2788,7 +2878,6 @@ async function saveGardenDecorateMode() {
   renderFoundItems();
   showToast("내 정원을 원하는 모습으로 정리했어요.");
 }
-
 
 function openFoundItemsInventory() {
   if (!currentUser) return;
@@ -2799,52 +2888,27 @@ async function changeFoundItemStorage(itemId, nextStorageState, button = null) {
   if (!currentUser || gardenDecorateSaving) return;
   const item = (state.foundItems || []).find((entry) => String(entry.id) === String(itemId));
   const nextState = normalizedFoundItemStorageState(nextStorageState);
-  if (!item || !foundItemCatalog[item.itemKey]) return;
+  if (!item || !decorationCatalogItem(item.itemKey)) return;
   if (normalizedFoundItemStorageState(item.storageState) === nextState) return;
 
   const originalLabel = button?.textContent || "";
-  if (button) {
-    button.disabled = true;
-    button.textContent = nextState === FOUND_ITEM_STORAGE.INVENTORY ? "넣는 중" : "꺼내는 중";
-  }
-
-  const { data, error } = await supabase.rpc("set_my_garden_dev_found_item_storage", {
-    p_item_id: item.id,
-    p_storage_state: nextState,
-  });
-
-  if (button) {
-    button.disabled = false;
-    button.textContent = originalLabel;
-  }
-
+  if (button) { button.disabled = true; button.textContent = nextState === FOUND_ITEM_STORAGE.INVENTORY ? "넣는 중" : "꺼내는 중"; }
+  const rpcName = item.source === "trade" ? "set_my_garden_dev_trade_item_storage" : "set_my_garden_dev_found_item_storage";
+  const { data, error } = await supabase.rpc(rpcName, { p_item_id: item.id, p_storage_state: nextState });
+  if (button) { button.disabled = false; button.textContent = originalLabel; }
   if (error) {
-    console.warn("TodayForest inventory item state save failed:", error);
-    showToast("보관함 저장소를 아직 준비하지 못했어요. SQL을 먼저 적용해 주세요.");
+    console.warn("TodayForest decoration storage save failed:", error);
+    showToast(item.source === "trade" ? "특별 장식 보관함을 아직 준비하지 못했어요. SQL을 먼저 적용해 주세요." : "보관함 저장소를 아직 준비하지 못했어요. SQL을 먼저 적용해 주세요.");
     return;
   }
-
   const saved = Array.isArray(data) ? data[0] : data;
   item.storageState = normalizedFoundItemStorageState(saved?.storage_state || nextState);
-  // 보관함으로 넣어도 사용자가 정한 자리까지 지우지 않습니다.
-  // 다시 정원에 꺼냈을 때 마지막으로 두었던 자리에서 이어서 꾸밀 수 있어요.
   item.positionX = saved?.position_x ?? item.positionX;
   item.positionY = saved?.position_y ?? item.positionY;
-
-  if (item.storageState === FOUND_ITEM_STORAGE.INVENTORY) {
-    selectedFoundItemId = null;
-    // 넣은 직후에는 작은 서랍을 한 번 열어, 방금 넣은 장식과 꺼내는 위치를 바로 알 수 있게 합니다.
-    if (gardenDecorateMode) gardenInventoryDrawerOpen = true;
-  } else if (gardenDecorateMode) {
-    selectedFoundItemId = item.id;
-    // 한 번 꺼내면 정원 전체가 다시 보이도록 서랍을 접습니다.
-    gardenInventoryDrawerOpen = false;
-  }
-
+  if (item.storageState === FOUND_ITEM_STORAGE.INVENTORY) { selectedFoundItemId = null; if (gardenDecorateMode) gardenInventoryDrawerOpen = true; }
+  else if (gardenDecorateMode) { selectedFoundItemId = item.id; gardenInventoryDrawerOpen = false; }
   renderFoundItems();
-  showToast(item.storageState === FOUND_ITEM_STORAGE.INVENTORY
-    ? "보관함에 넣었어요. 정원 아래 보관함에서 다시 꺼낼 수 있어요."
-    : "정원에 꺼냈어요. 지금 보이는 장식을 원하는 자리로 끌어보세요.");
+  showToast(item.storageState === FOUND_ITEM_STORAGE.INVENTORY ? "보관함에 넣었어요. 정원 아래 보관함에서 다시 꺼낼 수 있어요." : "정원에 꺼냈어요. 지금 보이는 장식을 원하는 자리로 끌어보세요.");
 }
 
 function handleGardenDecorateDockClick(event) {
@@ -2926,6 +2990,7 @@ async function claimFoundItem() {
     positionY: claimed.position_y,
     storageState: normalizedFoundItemStorageState(claimed.storage_state),
     foundAt: claimed.found_at,
+    source: "found",
   };
   const existingIndex = (state.foundItems || []).findIndex((item) => item.recordId === nextItem.recordId);
   if (existingIndex >= 0) state.foundItems.splice(existingIndex, 1, nextItem);
@@ -2954,6 +3019,98 @@ async function claimFoundItem() {
   showToast(inventoryResult.error
     ? `숲에서 작은 것을 찾았어요. ${catalogItem.detail}`
     : `숲에서 작은 것을 찾았어요. 보관함에 ${catalogItem.name}을 넣어두었어요.`);
+}
+
+
+function formatKoreanOfferDate(value) {
+  const date = value ? new Date(`${value}T00:00:00+09:00`) : new Date();
+  return `${date.getMonth() + 1}월 ${date.getDate()}일`;
+}
+
+function tradeMaxQuantity() {
+  return Math.floor(inventoryBasicFoundItems().length / 3);
+}
+
+function renderTradeStall() {
+  if (!els.tradeStallContent) return;
+  const resourceCount = inventoryBasicFoundItems().length;
+  const max = tradeMaxQuantity();
+  tradeExchangeQuantity = Math.min(Math.max(1, tradeExchangeQuantity), Math.max(1, max));
+  if (!tradeSystemReady || !tradeOffer || !specialItemCatalog[tradeOffer.itemKey]) {
+    els.tradeStallContent.innerHTML = `
+      <div class="trade-stall-not-ready"><span aria-hidden="true">🧺</span><h3>가판대를 준비하고 있어요</h3><p>처음 한 번은 교환 가판대 SQL을 적용해야 해요. 적용 뒤 새로고침하면 오늘의 물건이 올라와요.</p></div>`;
+    return;
+  }
+  const offer = specialItemCatalog[tradeOffer.itemKey];
+  const disabled = max < 1 || tradeExchangeBusy;
+  els.tradeStallContent.innerHTML = `
+    <section class="trade-stall-day-card">
+      <p class="sheet-kicker">TODAY'S STALL</p>
+      <div class="trade-stall-date-row"><b>${escapeHTML(formatKoreanOfferDate(tradeOffer.date))}의 물건</b><span>오늘만</span></div>
+      <div class="trade-stall-offer">
+        <div class="trade-stall-offer-visual">${decorationVisualMarkup(tradeOffer.itemKey, "trade-offer-decoration")}</div>
+        <div><h3>${escapeHTML(offer.name)}</h3><p>${escapeHTML(offer.detail)}</p></div>
+      </div>
+    </section>
+    <section class="trade-stall-resource-card">
+      <div><p class="sheet-kicker">MY LITTLE THINGS</p><h3>교환에 쓸 작은 것</h3><p>보관함의 기본 장식만 재료가 돼요. 정원에 놓은 것과 특별 장식은 그대로 남아요.</p></div>
+      <b class="trade-resource-count">${resourceCount}<small>개</small></b>
+    </section>
+    <section class="trade-stall-action-card">
+      <p>기본 장식 <b>3개</b>로 <b>${escapeHTML(offer.name)} 1개</b>를 바꿀 수 있어요.</p>
+      <div class="trade-quantity-row">
+        <button type="button" data-trade-quantity="minus" ${tradeExchangeQuantity <= 1 || disabled ? "disabled" : ""} aria-label="교환할 개수 줄이기">−</button>
+        <strong>${max ? tradeExchangeQuantity : 0}<small>개</small></strong>
+        <button type="button" data-trade-quantity="plus" ${tradeExchangeQuantity >= max || disabled ? "disabled" : ""} aria-label="교환할 개수 늘리기">＋</button>
+      </div>
+      <button class="trade-exchange-button" type="button" data-trade-exchange ${disabled ? "disabled" : ""}>${tradeExchangeBusy ? "바꾸는 중이에요" : max ? `${tradeExchangeQuantity}개 교환하기 · 재료 ${tradeExchangeQuantity * 3}개` : "작은 것 3개를 모아보세요"}</button>
+      <small class="trade-stall-footnote">오늘은 ${escapeHTML(offer.name)}만 여러 개까지 교환할 수 있어요. 내일은 다른 물건이 올라와요.</small>
+    </section>
+  `;
+}
+
+async function openTradeStall() {
+  if (!currentUser) return;
+  renderTradeStall();
+  openSheet(els.tradeStallSheet);
+  trackTodayForestOperationalEvent("garden_trade_stall_opened");
+}
+
+async function exchangeTradeItems() {
+  const max = tradeMaxQuantity();
+  const quantity = Math.min(Math.max(1, tradeExchangeQuantity), max);
+  if (!quantity || tradeExchangeBusy) return;
+  tradeExchangeBusy = true;
+  renderTradeStall();
+  const { data, error } = await supabase.rpc("exchange_my_garden_dev_trade_items", { p_quantity: quantity });
+  tradeExchangeBusy = false;
+  if (error) {
+    console.warn("TodayForest trade exchange failed:", error);
+    showToast(String(error.message || "").includes("NOT_ENOUGH") ? "교환에 쓸 작은 것이 부족해요." : "교환하지 못했어요. 잠시 뒤 다시 해주세요.");
+    await loadGardenState();
+    renderAll();
+    renderTradeStall();
+    return;
+  }
+  const received = Array.isArray(data) ? data : [];
+  await loadGardenState();
+  renderAll();
+  renderTradeStall();
+  const offerName = tradeOffer && specialItemCatalog[tradeOffer.itemKey]?.name;
+  showToast(received.length ? `${offerName || "오늘의 특별 장식"} ${received.length}개를 보관함에 넣어두었어요.` : "오늘의 특별 장식을 보관함에 넣어두었어요.");
+  trackTodayForestOperationalEvent("garden_trade_completed", { quantity });
+}
+
+function handleTradeStallClick(event) {
+  const quantityButton = event.target.closest("[data-trade-quantity]");
+  if (quantityButton) {
+    const max = tradeMaxQuantity();
+    if (quantityButton.dataset.tradeQuantity === "minus") tradeExchangeQuantity = Math.max(1, tradeExchangeQuantity - 1);
+    if (quantityButton.dataset.tradeQuantity === "plus") tradeExchangeQuantity = Math.min(max, tradeExchangeQuantity + 1);
+    renderTradeStall();
+    return;
+  }
+  if (event.target.closest("[data-trade-exchange]")) void exchangeTradeItems();
 }
 
 function updateTodayRecordAction() {
@@ -3936,13 +4093,13 @@ function renderFriendFoundItems(friendName, rows) {
     .filter((item) => item.id && foundItemCatalog[item.itemKey] && item.storageState === FOUND_ITEM_STORAGE.PLACED);
 
   els.friendFoundItemsLayer.innerHTML = foundItems.map((item) => {
-    const catalogItem = foundItemCatalog[item.itemKey];
+    const catalogItem = decorationCatalogItem(item.itemKey);
     const position = savedFoundItemPosition(item);
     const positionClass = position ? " has-custom-position" : "";
     const itemName = `${friendName}가 찾은 ${catalogItem.name}`;
     return `
       <button class="friend-found-item found-item found-item-${escapeAttr(item.placementSlot)}${positionClass}" type="button" data-friend-found-item-key="${escapeAttr(item.itemKey)}" data-friend-found-item-name="${escapeAttr(friendName)}" aria-label="${escapeAttr(itemName)}" title="${escapeAttr(itemName)}"${friendFoundItemPositionStyle(item)}>
-        <img src="${escapeAttr(catalogItem.asset)}" alt="" draggable="false" />
+        ${decorationVisualMarkup(item.itemKey, "garden-decoration-visual")}
       </button>
     `;
   }).join("");
@@ -4919,6 +5076,7 @@ function renderAll() {
   renderLetters();
   renderFriends();
   renderFirstWalkTutorial();
+  if (els.tradeStallSheet && !els.tradeStallSheet.classList.contains("hidden")) renderTradeStall();
 }
 
 async function beginKakaoLogin() {
@@ -5097,6 +5255,8 @@ function bindEvents() {
   els.dismissInstallCard.addEventListener("click", dismissInstallCardForAWhile);
   els.foundItemSparkle.addEventListener("click", () => { void claimFoundItem(); });
   els.openFoundItemsInventory?.addEventListener("click", openFoundItemsInventory);
+  els.openTradeStall?.addEventListener("click", () => { void openTradeStall(); });
+  els.tradeStallContent?.addEventListener("click", handleTradeStallClick);
   els.foundItemsInventoryList?.addEventListener("click", handleFoundItemsInventoryClick);
   els.gardenDecorateDockList?.addEventListener("click", handleGardenDecorateDockClick);
   els.gardenDecorateItemAction?.addEventListener("click", handleGardenDecorateDockClick);

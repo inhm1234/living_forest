@@ -3853,3 +3853,69 @@ textarea::placeholder { color: #a7b4bd; }
   .garden-decorate-item-action { max-width: 172px; }
   .garden-decorate-item-name { max-width: 72px; }
 }
+
+
+/* --------------------------------------------------------------------------
+   교환 가판대 v1 + 특별 장식 12종
+   기본 장식을 재료로만 쓰고, 특별 장식은 별도 보관·배치 가능한 풍경입니다.
+   -------------------------------------------------------------------------- */
+.garden-trade-button { position: absolute; z-index: 12; left: 15px; bottom: 15px; display: inline-flex; align-items: center; gap: 7px; min-height: 41px; padding: 7px 11px 7px 8px; border: 1px solid rgba(255,255,255,.88); border-radius: 999px; background: rgba(255,252,244,.84); color: #6a7865; font-family: inherit; cursor: pointer; box-shadow: 0 9px 18px rgba(81,107,84,.13); backdrop-filter: blur(8px); }
+.garden-trade-button:hover, .garden-trade-button:focus-visible { transform: translateY(-1px); background: rgba(255,255,255,.96); outline: none; }
+.garden-trade-button > span:first-child { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 10px; background: #f2e6cb; font-size: 15px; }
+.garden-trade-button > span:last-child { display: grid; gap: 1px; text-align: left; }
+.garden-trade-button b { font-size: 10px; font-weight: 950; }
+.garden-trade-button small { color: #9a9e85; font-size: 8px; font-weight: 800; }
+
+.special-decoration { position: relative; display: block; width: 100%; height: 100%; min-height: 42px; isolation: isolate; }
+.special-decoration > i { position: absolute; z-index: 0; left: 50%; top: 54%; width: 72%; height: 36%; border-radius: 50%; background: radial-gradient(ellipse, rgba(255,247,194,.68), rgba(224,242,204,.18) 53%, transparent 74%); transform: translate(-50%,-50%); filter: blur(2px); }
+.special-decoration-piece { position: absolute; z-index: 1; display: block; width: 56%; height: auto; object-fit: contain; filter: drop-shadow(0 3px 4px rgba(63,95,69,.13)); }
+.special-decoration-piece-1 { left: 3%; bottom: 2%; transform: rotate(-3deg); }
+.special-decoration-piece-2 { left: 42%; bottom: 6%; transform: rotate(3deg) scale(.9); }
+.special-decoration-piece-3 { left: 21%; bottom: 16%; transform: rotate(-1deg) scale(.88); }
+.special-decoration > b { position: absolute; z-index: 2; right: 4%; top: 1%; color: #e9a576; font-size: 15px; line-height: 1; text-shadow: 0 1px rgba(255,255,255,.9); }
+.special-decoration.firefly_path > b, .special-decoration.moonlit_mushroom_lamp > b { color: #f2c95f; }
+.special-decoration.letter_branch > b, .special-decoration.forest_mailbox > b { color: #dd8fa2; }
+.found-item .special-decoration { min-height: 55px; height: 68px; }
+.found-item .garden-decoration-visual { display: block; width: 100%; height: 100%; }
+.found-item:has(.special-decoration) { width: 92px; }
+.dock-decoration-visual { display: block; width: 52px; height: 40px; }
+.inline-decoration-visual { display: block; width: 34px; height: 28px; }
+.storage-decoration-visual { display: block; width: 54px; height: 49px; }
+.garden-decorate-item-name { display: inline-flex; align-items: center; gap: 5px; }
+.garden-decorate-item-name > span:last-child { max-width: 116px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.garden-inventory-dock-item .special-decoration, .found-storage-image .special-decoration { height: 100%; min-height: 0; }
+
+.trade-stall-sheet { max-height: min(87vh, 780px); }
+.trade-stall-intro { margin: 14px 0 13px; color: #738478; font-size: 12px; font-weight: 760; line-height: 1.55; }
+.trade-stall-content { display: grid; gap: 11px; padding-bottom: 7px; }
+.trade-stall-day-card, .trade-stall-resource-card, .trade-stall-action-card { border: 1px solid rgba(220,229,213,.95); border-radius: 21px; background: linear-gradient(145deg, rgba(255,255,255,.94), rgba(248,252,244,.92)); box-shadow: 0 8px 19px rgba(79,108,80,.07); }
+.trade-stall-day-card { padding: 15px; }
+.trade-stall-date-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 3px; }
+.trade-stall-date-row b { color: #526c5a; font-size: 15px; }
+.trade-stall-date-row span { padding: 4px 8px; border-radius: 999px; background: #fbead8; color: #b77f5a; font-size: 9px; font-weight: 950; }
+.trade-stall-offer { display: grid; grid-template-columns: 92px minmax(0,1fr); align-items: center; gap: 12px; margin-top: 11px; padding: 10px; border-radius: 17px; background: linear-gradient(140deg, #f7f2df, #eff7e9); }
+.trade-stall-offer-visual { display: grid; place-items: center; width: 92px; height: 72px; }
+.trade-offer-decoration { width: 86px; height: 70px; }
+.trade-stall-offer h3, .trade-stall-resource-card h3 { margin: 0; color: #54705c; font-size: 15px; letter-spacing: -.04em; }
+.trade-stall-offer p, .trade-stall-resource-card p { margin: 5px 0 0; color: #879789; font-size: 10px; font-weight: 720; line-height: 1.48; }
+.trade-stall-resource-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 15px; }
+.trade-stall-resource-card .sheet-kicker { margin: 0 0 3px; }
+.trade-resource-count { flex: 0 0 auto; display: grid; place-items: center; width: 54px; height: 54px; border: 1px solid rgba(190,211,174,.7); border-radius: 50%; background: #f0f7ea; color: #6c916b; font-size: 21px; line-height: 1; }
+.trade-resource-count small { margin-top: 2px; color: #90a48e; font-size: 9px; }
+.trade-stall-action-card { padding: 15px; text-align: center; }
+.trade-stall-action-card > p { margin: 0; color: #748477; font-size: 11px; font-weight: 760; line-height: 1.5; }
+.trade-stall-action-card > p b { color: #607b65; }
+.trade-quantity-row { display: inline-flex; align-items: center; gap: 14px; margin: 12px auto; padding: 5px; border: 1px solid rgba(216,228,211,.94); border-radius: 999px; background: #fff; }
+.trade-quantity-row button { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 50%; background: #edf5e9; color: #678469; font: inherit; font-size: 17px; font-weight: 900; cursor: pointer; }
+.trade-quantity-row button:disabled { opacity: .42; cursor: default; }
+.trade-quantity-row strong { min-width: 42px; color: #5d7862; font-size: 17px; }
+.trade-quantity-row strong small { margin-left: 2px; color: #96a694; font-size: 9px; }
+.trade-exchange-button { width: 100%; min-height: 43px; border: 1px solid rgba(183,211,171,.82); border-radius: 14px; background: linear-gradient(135deg, #dbeed4, #f4edd1); color: #57715c; font-family: inherit; font-size: 12px; font-weight: 950; cursor: pointer; box-shadow: 0 6px 12px rgba(90,130,89,.11); }
+.trade-exchange-button:hover { transform: translateY(-1px); }
+.trade-exchange-button:disabled { background: #f0f2eb; border-color: #e2e6df; color: #a6afa5; box-shadow: none; cursor: default; transform: none; }
+.trade-stall-footnote { display: block; margin-top: 9px; color: #98a498; font-size: 9px; font-weight: 700; line-height: 1.45; }
+.trade-stall-not-ready { display: grid; place-items: center; min-height: 210px; padding: 25px; border: 1px dashed #d7e2d3; border-radius: 20px; background: #f9fbf7; color: #839489; text-align: center; }
+.trade-stall-not-ready > span { font-size: 29px; }
+.trade-stall-not-ready h3 { margin: 7px 0 4px; color: #607566; font-size: 15px; }
+.trade-stall-not-ready p { margin: 0; font-size: 11px; font-weight: 720; line-height: 1.55; }
+@media (max-width: 520px) { .garden-trade-button { left: 10px; bottom: 12px; } .garden-trade-button small { display: none; } .trade-stall-offer { grid-template-columns: 82px minmax(0,1fr); } .trade-stall-offer-visual { width: 82px; } }
