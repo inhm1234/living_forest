@@ -211,21 +211,21 @@ const foundItemCatalog = {
   },
 };
 
-// 교환 가판대 v1: 기본 장식은 재료, 아래 12개는 가판대에서 얻는 특별 장식입니다.
-// 새로운 PNG를 늘리지 않고도 기존 숲 장식들을 작은 풍경처럼 조합해 보여 줍니다.
+// 교환 가판대 v1.1: 가판대에서 받는 특별 장식 12종은 실제 PNG 에셋입니다.
+// item_key는 이미 적용한 SQL과 연결되어 있으므로 그대로 유지합니다.
 const specialItemCatalog = {
-  flower_meadow: { name: "작은 꽃밭", detail: "들꽃과 데이지가 모여 작은 꽃밭이 되었어요.", pieces: ["pink_wildflower", "white_daisies", "pink_wildflower"], accent: "✿" },
-  mushroom_grove: { name: "버섯 그늘", detail: "나무 아래에 포근한 버섯 그늘이 생겼어요.", pieces: ["mushroom_pair", "amber_mushroom", "leafy_pile"], accent: "✦" },
-  mossy_path: { name: "이끼 돌길", detail: "이끼 낀 돌들이 숲길을 조용히 이어줘요.", pieces: ["mossy_round_rock", "mossy_round_rock", "leafy_pile"], accent: "·" },
-  leaf_rest: { name: "낙엽 쉼터", detail: "바람이 모은 낙엽 곁에 잠시 쉴 자리가 생겼어요.", pieces: ["leafy_pile", "leafy_pile", "mossy_round_rock"], accent: "☁" },
-  firefly_path: { name: "반딧불 오솔길", detail: "작은 빛들이 숲길 곁을 따라 반짝여요.", pieces: ["firefly_jar", "white_daisies", "mossy_round_rock"], accent: "✦" },
-  moonlit_mushroom_lamp: { name: "달빛 버섯등", detail: "버섯 곁의 작은 빛이 밤을 은은하게 밝혀요.", pieces: ["amber_mushroom", "mushroom_pair", "firefly_jar"], accent: "☾" },
-  letter_branch: { name: "편지 걸린 가지", detail: "리본을 단 가지에 마음 하나가 살며시 걸렸어요.", pieces: ["branch_letter", "forest_ribbon", "mossy_round_rock"], accent: "✉" },
-  forest_mailbox: { name: "숲속 우체통", detail: "숲길을 지나는 마음들이 잠시 머무는 곳이에요.", pieces: ["branch_letter", "little_sign", "forest_ribbon"], accent: "✉" },
-  wind_signpost: { name: "바람의 이정표", detail: "바람이 부는 쪽을 조용히 알려주는 표지판이에요.", pieces: ["little_sign", "forest_ribbon", "white_daisies"], accent: "➜" },
-  ribbon_arch: { name: "꽃 리본 아치", detail: "꽃과 리본이 모여 작은 숲의 입구가 되었어요.", pieces: ["pink_wildflower", "white_daisies", "forest_ribbon"], accent: "⌒" },
-  secret_garden_gate: { name: "비밀 정원 입구", detail: "작은 표지판 너머로 비밀스러운 길이 이어져요.", pieces: ["little_sign", "mossy_round_rock", "pink_wildflower"], accent: "⌂" },
-  forest_rest_spot: { name: "숲속 휴식터", detail: "돌과 낙엽, 리본이 모여 아늑한 자리가 되었어요.", pieces: ["mossy_round_rock", "leafy_pile", "forest_ribbon"], accent: "♡" },
+  flower_meadow: { name: "작은 꽃밭", detail: "들꽃이 모여, 나무 곁에 작은 꽃밭이 피었어요.", asset: "../../assets/decorations/trade-flower-meadow.png" },
+  mushroom_grove: { name: "버섯 쉼터", detail: "빨간 버섯 아래에 포근한 숲속 쉼터가 생겼어요.", asset: "../../assets/decorations/trade-mushroom-grove.png" },
+  mossy_path: { name: "이끼 돌길", detail: "이끼 낀 돌들이 조용한 숲길을 이어줘요.", asset: "../../assets/decorations/trade-mossy-path.png" },
+  leaf_rest: { name: "꽃나무 뜰", detail: "분홍 꽃이 핀 작은 나무가 정원 한쪽에 자랐어요.", asset: "../../assets/decorations/trade-blossom-tree.png" },
+  firefly_path: { name: "반딧불 오솔길", detail: "작은 빛들이 숲길 곁을 따라 반짝여요.", asset: "../../assets/decorations/trade-firefly-path.png" },
+  moonlit_mushroom_lamp: { name: "작은 물가 길", detail: "물소리가 들리는 작은 돌길이 생겼어요.", asset: "../../assets/decorations/trade-streamside-path.png" },
+  letter_branch: { name: "꽃 리본 아치", detail: "꽃과 리본이 모여 작은 숲의 입구가 되었어요.", asset: "../../assets/decorations/trade-ribbon-arch.png" },
+  forest_mailbox: { name: "편지 걸린 가지", detail: "바람에 흔들리는 가지마다 작은 마음이 걸렸어요.", asset: "../../assets/decorations/trade-letter-branch.png" },
+  wind_signpost: { name: "푸른 버섯 숲", detail: "밤이 오면 푸른 버섯들이 조용히 빛나요.", asset: "../../assets/decorations/trade-blue-mushroom-grove.png" },
+  ribbon_arch: { name: "바람의 이정표", detail: "숲길을 걷는 마음을 조용히 안내해 줘요.", asset: "../../assets/decorations/trade-wind-signpost.png" },
+  secret_garden_gate: { name: "달빛 버섯등", detail: "달빛 아래 버섯등이 작은 길을 밝혀줘요.", asset: "../../assets/decorations/trade-moonlit-mushrooms.png" },
+  forest_rest_spot: { name: "비밀 정원 입구", detail: "덩굴 사이의 작은 문 너머로 비밀스러운 길이 이어져요.", asset: "../../assets/decorations/trade-secret-garden-gate.png" },
 };
 const specialItemKeys = Object.freeze(Object.keys(specialItemCatalog));
 const decorationCatalog = Object.freeze({ ...foundItemCatalog, ...specialItemCatalog });

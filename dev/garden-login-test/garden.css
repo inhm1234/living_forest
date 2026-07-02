@@ -3919,3 +3919,9 @@ textarea::placeholder { color: #a7b4bd; }
 .trade-stall-not-ready h3 { margin: 7px 0 4px; color: #607566; font-size: 15px; }
 .trade-stall-not-ready p { margin: 0; font-size: 11px; font-weight: 720; line-height: 1.55; }
 @media (max-width: 520px) { .garden-trade-button { left: 10px; bottom: 12px; } .garden-trade-button small { display: none; } .trade-stall-offer { grid-template-columns: 82px minmax(0,1fr); } .trade-stall-offer-visual { width: 82px; } }
+
+
+/* 교환 가판대 v1.1 — 실제 특별 장식 PNG 12종 */
+.trade-offer-decoration, .garden-decoration-visual, .dock-decoration-visual, .inline-decoration-visual, .storage-decoration-visual { object-fit: contain; }
+.trade-offer-decoration { filter: drop-shadow(0 5px 6px rgba(61,87,64,.16)); }
+.found-item .garden-decoration-visual { filter: drop-shadow(0 4px 5px rgba(61,87,64,.14)); }
