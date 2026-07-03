@@ -589,11 +589,11 @@ if (forestFriendPreviewEnabled) {
   }
 
   function bootPreview() { initWhenReady(); }
+  // 초기화 예약을 한 번만 둡니다. 이전에는 DOMContentLoaded·load·지연 타이머가
+  // 모두 남아 같은 검수 스크립트를 여러 번 깨우고 있었습니다.
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => window.setTimeout(bootPreview, 300), { once: true });
+    document.addEventListener("DOMContentLoaded", bootPreview, { once: true });
   } else {
-    window.setTimeout(bootPreview, 120);
+    bootPreview();
   }
-  window.addEventListener("load", () => window.setTimeout(bootPreview, 700), { once: true });
-  window.setTimeout(bootPreview, 1500);
 }

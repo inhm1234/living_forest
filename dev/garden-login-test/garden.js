@@ -384,6 +384,12 @@ let pendingExpiredLetterReturn = null;
 let pendingRetentionNextVisitNoticeCount = 0;
 let retentionWindTimer = null;
 let retentionWindRefreshBusy = false;
+// 편지함을 열어둔 동안에만 배송 상태를 갱신합니다.
+// 이전처럼 정원 전체를 30초마다 다시 읽지 않아, 배경 탭·일반 정원 화면의 부담을 줄입니다.
+let openLettersRefreshTimer = null;
+let openLettersRefreshBusy = false;
+let focusRefreshBusy = false;
+let lastFocusRefreshAt = 0;
 let retentionCleanupRanOnThisPage = false;
 let deferredInstallPrompt = null;
 let installHelpVisible = false;
@@ -1109,6 +1115,69 @@ function configureRetentionWindPolling() {
   }, 2000);
 }
 
+function isLettersSheetOpen() {
+  return Boolean(els.lettersSheet && !els.lettersSheet.classList.contains("hidden"));
+}
+
+function stopOpenLettersRefresh() {
+  if (openLettersRefreshTimer) {
+    window.clearInterval(openLettersRefreshTimer);
+    openLettersRefreshTimer = null;
+  }
+}
+
+async function refreshOpenLettersWhileVisible() {
+  if (
+    openLettersRefreshBusy
+    || !currentUser
+    || document.hidden
+    || !isLettersSheetOpen()
+  ) return;
+
+  openLettersRefreshBusy = true;
+  try {
+    await loadGardenState();
+    // 배송 상태만 갱신합니다. 정원·기록·친구 화면 전체를 다시 그리지 않습니다.
+    renderLetters();
+    renderBranchLetters(getUnreadLetters());
+    els.navLetterBadge.textContent = getUnreadLetters().length;
+    els.navLetterBadge.classList.toggle("hidden", getUnreadLetters().length === 0);
+  } catch (error) {
+    console.warn("TodayForest open-letter refresh skipped:", error);
+  } finally {
+    openLettersRefreshBusy = false;
+  }
+}
+
+function startOpenLettersRefresh() {
+  stopOpenLettersRefresh();
+  if (!currentUser || document.hidden || !isLettersSheetOpen()) return;
+  // 편지함을 열어둔 동안만 30초 단위로 현재 시각 기준 배송 상태를 갱신합니다.
+  openLettersRefreshTimer = window.setInterval(() => {
+    void refreshOpenLettersWhileVisible();
+  }, 30000);
+}
+
+async function refreshGardenAfterFocus() {
+  if (focusRefreshBusy || !currentUser || document.hidden) return;
+
+  // 탭을 잠깐 오갈 때마다 12개 조회를 반복하지 않도록 최소 간격을 둡니다.
+  const now = Date.now();
+  if (now - lastFocusRefreshAt < 15000) return;
+
+  focusRefreshBusy = true;
+  try {
+    await loadGardenState();
+    await syncMyGardenAnimalVisit({ beginWhenReady: true, silent: true });
+    renderAll();
+    lastFocusRefreshAt = Date.now();
+  } catch (error) {
+    console.warn("TodayForest focus refresh skipped:", error);
+  } finally {
+    focusRefreshBusy = false;
+  }
+}
+
 async function loadFoundGardenItems() {
   // INVENTORY V1: storage_state가 준비된 최신 경로를 먼저 읽습니다.
   // 아직 SQL을 적용하지 않은 순간에도 기존 장식이 사라지지 않게 이전 열만 읽는 대체 경로를 둡니다.
@@ -1642,8 +1711,11 @@ function closeAllSheets({ force = false } = {}) {
   els.sheetOverlay.classList.add("hidden");
   clearSpecialForestFriendPreviewComposer();
   window.setTimeout(() => renderFirstWalkTutorial(), 0);
-  // 봉투 화면을 닫을 때만 배송 도착 알림을 다음 진입 시점으로 넘깁니다.
-  if (wasViewingLetters) clearAnimalDeliveryArrivals();
+  // 봉투 화면을 닫으면 편지함 전용 배송 갱신도 멈춥니다.
+  if (wasViewingLetters) {
+    stopOpenLettersRefresh();
+    clearAnimalDeliveryArrivals();
+  }
 }
 
 function getStage() {
@@ -5435,6 +5507,7 @@ async function openLettersSheet() {
   try {
     await loadGardenState();
     renderAll();
+    startOpenLettersRefresh();
   } catch (error) {
     console.warn("TodayForest letter open refresh skipped:", error);
   }
@@ -5519,10 +5592,12 @@ function bindEvents() {
     if (document.hidden) {
       endFoundItemDrag();
       clearAnimalVisitArrivalTimer();
+      stopOpenLettersRefresh();
       return;
     }
     if (currentUser) {
       void syncMyGardenAnimalVisit({ beginWhenReady: true, silent: true, rerender: true });
+      if (isLettersSheetOpen()) startOpenLettersRefresh();
     }
   });
   els.signOutButton.addEventListener("click", signOut);
@@ -5621,15 +5696,8 @@ function bindEvents() {
   els.sharedTreeInviteModal.addEventListener("click", (event) => { if (event.target === els.sharedTreeInviteModal) closeSharedTreeInviteModal(); });
   els.returnToFriendsFromSharedTree.addEventListener("click", returnToFriendsFromSharedTree);
   els.sharedTreeRecordLightButton.addEventListener("click", () => { void leaveSharedTreeLight(); });
-  window.addEventListener("focus", async () => {
-    if (!currentUser) return;
-    try {
-      await loadGardenState();
-      await syncMyGardenAnimalVisit({ beginWhenReady: true, silent: true });
-      renderAll();
-    } catch (error) {
-      console.warn("TodayForest refresh skipped:", error);
-    }
+  window.addEventListener("focus", () => {
+    void refreshGardenAfterFocus();
   });
   window.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
@@ -6146,17 +6214,6 @@ async function init() {
     renderAuthUI();
     return;
   }
-
-  window.setInterval(async () => {
-    if (!currentUser) return;
-    try {
-      await loadGardenState();
-      await syncMyGardenAnimalVisit({ beginWhenReady: true, silent: true });
-      renderAll();
-    } catch (error) {
-      console.warn("TodayForest letter refresh skipped:", error);
-    }
-  }, 30000);
 
   supabase.auth.onAuthStateChange(async (_event, session) => {
     const nextUser = session?.user || null;
