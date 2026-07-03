@@ -10,7 +10,6 @@ const littleLightDragonPreviewEnabled = previewParams.get("forestFriendPreview")
 
 if (littleLightDragonPreviewEnabled) {
   const CONFIG = {
-    assetBase: "../../assets/friends/little-light-dragon",
     zones: [
       { id: "forest-path", x: 313, y: 420, depth: "back", label: "오른쪽 숲길" },
       // 작은 빛 용은 나무 왼쪽의 꽃밭 가까운 빈 풀밭을 주로 쉬는 자리로 씁니다.
@@ -21,6 +20,24 @@ if (littleLightDragonPreviewEnabled) {
     // 평소 루틴: 나무 곁 → 꽃 구경 → 앞쪽 산책길 → 나무 곁.
     // 오른쪽 숲길은 실제 편지 출발/귀환 때에만 사용합니다.
     roamRoute: [1, 2, 3, 1],
+    // 512×512 프레임을 한 장에 묶은 WebP 스프라이트 2장만 사용합니다.
+    // 생활 3프레임: base / tall / down, 이동 2프레임: send / return.
+    spriteSheets: {
+      life: { src: "../../assets/friends/little-light-dragon/little-light-dragon-life.webp", columns: 3 },
+      journey: { src: "../../assets/friends/little-light-dragon/little-light-dragon-journey.webp", columns: 2 },
+    },
+    frames: {
+      idle_base: { sheet: "life", index: 0 },
+      idle_tall: { sheet: "life", index: 1 },
+      idle_down: { sheet: "life", index: 2 },
+      look: { sheet: "life", index: 2 },
+      walk_1: { sheet: "life", index: 0 },
+      walk_2: { sheet: "life", index: 1 },
+      walk_3: { sheet: "life", index: 2 },
+      walk_4: { sheet: "life", index: 1 },
+      send: { sheet: "journey", index: 0 },
+      return: { sheet: "journey", index: 1 },
+    },
     idleFrames: ["idle_base", "idle_tall", "idle_base", "idle_down"],
     // walk_1은 고개를 숙인 포즈라 걷기 루프에서 제외합니다.
     walkFrames: ["walk_2", "walk_3", "walk_4", "walk_3"],
@@ -48,7 +65,14 @@ if (littleLightDragonPreviewEnabled) {
 
   function getWorld() { return document.getElementById("gardenWorld"); }
   function getStage() { return document.getElementById("gardenStage"); }
-  function asset(name) { return `${CONFIG.assetBase}/little-light-dragon-${name}.png`; }
+
+  function preloadSpriteSheets() {
+    Object.values(CONFIG.spriteSheets).forEach((sheet) => {
+      const image = new Image();
+      image.decoding = "async";
+      image.src = sheet.src;
+    });
+  }
 
   function createScene() {
     const world = getWorld();
@@ -65,12 +89,14 @@ if (littleLightDragonPreviewEnabled) {
     lightDragon.innerHTML = `
       <span class="little-light-dragon-shadow" aria-hidden="true"></span>
       <span class="little-light-dragon-visual" aria-hidden="true">
-        <span class="little-light-dragon-image-wrap"><img class="little-light-dragon-image" src="${asset("idle_base")}" alt="" /></span>
+        <span class="little-light-dragon-image-wrap"><span class="little-light-dragon-image"></span></span>
       </span>
       <span class="little-light-dragon-letter" aria-hidden="true">✉</span>
     `;
     world.appendChild(lightDragon);
     imgNode = lightDragon.querySelector(".little-light-dragon-image");
+    preloadSpriteSheets();
+    setSprite("idle_base");
 
     // 장식 레이어에 가려져 있어도 눌림이 사라지지 않도록,
     // 화면에는 보이지 않는 별도 클릭 영역을 작은 빛 용과 함께 이동시킵니다.
@@ -156,7 +182,18 @@ if (littleLightDragonPreviewEnabled) {
   }
 
   function getArrivalLayer() { return getStage()?.querySelector(".little-light-dragon-arrival"); }
-  function setSprite(name) { if (imgNode) imgNode.src = asset(name); }
+
+  function setSprite(name) {
+    if (!imgNode) return;
+    const frame = CONFIG.frames[name] || CONFIG.frames.idle_base;
+    const sheet = CONFIG.spriteSheets[frame.sheet];
+    if (!sheet) return;
+    const position = sheet.columns <= 1 ? 0 : (frame.index / (sheet.columns - 1)) * 100;
+    imgNode.style.setProperty("--little-light-dragon-image", `url("${sheet.src}")`);
+    imgNode.style.setProperty("--little-light-dragon-size", `${sheet.columns * 100}% 100%`);
+    imgNode.style.setProperty("--little-light-dragon-position", `${position}% 0%`);
+    imgNode.setAttribute("data-frame", name);
+  }
 
   function setFacing(direction) {
     currentFacing = direction === "right" ? "right" : "left";
