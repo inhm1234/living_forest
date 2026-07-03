@@ -332,6 +332,21 @@ const moodMap = {
   happy: { icon: "🌷", label: "기뻤어" },
 };
 
+// 특별 숲 친구 미리보기는 일반 방문 동물의 DB 배송 흐름과 분리합니다.
+// 정원에서 친구를 누르면 같은 편지 작성 화면을 쓰되, 이 단계에서는 실제 편지를 저장하지 않습니다.
+const specialForestFriendPreviewCatalog = {
+  forest_unicorn: {
+    key: "forest_unicorn",
+    icon: "🦄",
+    name: "숲 유니콘",
+  },
+};
+let activeSpecialForestFriendPreviewKey = "";
+
+function activeSpecialForestFriendPreview() {
+  return specialForestFriendPreviewCatalog[activeSpecialForestFriendPreviewKey] || null;
+}
+
 let currentUser = null;
 let state = cloneDefault();
 let selectedMood = "good";
@@ -1505,6 +1520,7 @@ function closeAllSheets({ force = false } = {}) {
   const wasViewingLetters = !els.lettersSheet.classList.contains("hidden");
   [els.recordSheet, els.recordsSheet, els.friendsSheet, els.lettersSheet, els.foundItemsSheet, els.feedbackSheet, els.supportSheet, els.accountMenuSheet, els.letterComposerSheet, els.treeNameSheet].filter(Boolean).forEach((sheet) => sheet.classList.add("hidden"));
   els.sheetOverlay.classList.add("hidden");
+  clearSpecialForestFriendPreviewComposer();
   window.setTimeout(() => renderFirstWalkTutorial(), 0);
   // 봉투 화면을 닫을 때만 배송 도착 알림을 다음 진입 시점으로 넘깁니다.
   if (wasViewingLetters) clearAnimalDeliveryArrivals();
@@ -3369,6 +3385,125 @@ function carrierForKind(kind) {
   return map[kind] || { icon: "🕊️", name: "숲의 새" };
 }
 
+function clearSpecialForestFriendPreviewComposer({ notify = true } = {}) {
+  const wasActive = Boolean(activeSpecialForestFriendPreviewKey);
+  const previousKey = activeSpecialForestFriendPreviewKey;
+  activeSpecialForestFriendPreviewKey = "";
+  if (els.letterForm) delete els.letterForm.dataset.specialForestFriendPreview;
+
+  // 일반 방문 동물의 편지 작성으로 돌아갈 때는 기존 submit 동작을 그대로 둡니다.
+  const submitButton = els.letterForm?.querySelector('button[type="submit"]');
+  if (submitButton) submitButton.disabled = false;
+
+  if (wasActive && notify) {
+    window.dispatchEvent(new CustomEvent("todayforest:special-friend-letter-preview-cancel", {
+      detail: { key: previousKey },
+    }));
+  }
+}
+
+function renderSpecialForestFriendPreviewComposer() {
+  const carrier = activeSpecialForestFriendPreview();
+  if (!carrier) return;
+
+  const friends = state.friends || [];
+  if (!friends.length) {
+    clearSpecialForestFriendPreviewComposer();
+    showToast("친구와 연결되면 숲 유니콘에게 편지를 맡길 수 있어요.");
+    return;
+  }
+
+  if (!friends.some((friend) => friend.id === selectedLetterRecipientId)) {
+    selectedLetterRecipientId = friends[0].id;
+  }
+
+  els.letterRecipientList.innerHTML = friends.map((friend) => {
+    const stage = stageForGrowth(friend.growth);
+    const avatar = friend.avatarUrl
+      ? `<img src="${escapeAttr(friend.avatarUrl)}" alt="${escapeAttr(friend.name)} 프로필 사진" />`
+      : escapeHTML(friend.name.slice(0, 1));
+    return `
+      <button class="letter-recipient-choice ${friend.id === selectedLetterRecipientId ? "selected" : ""}" type="button" data-special-letter-recipient="${escapeAttr(friend.id)}">
+        <span class="letter-recipient-avatar">${avatar}</span>
+        <span>
+          <span class="letter-recipient-name">${escapeHTML(friend.name)}${friend.isDevTest ? '<span class="dev-test-tag">DEV</span>' : ""}</span>
+          <span class="letter-recipient-stage">마음 ${friend.growth}일째 · ${escapeHTML(stage.label)}${friend.isDevTest ? " · 개발 확인용" : ""}</span>
+        </span>
+      </button>
+    `;
+  }).join("");
+
+  $$('[data-special-letter-recipient]').forEach((button) => {
+    button.addEventListener("click", () => {
+      selectedLetterRecipientId = button.dataset.specialLetterRecipient;
+      renderSpecialForestFriendPreviewComposer();
+    });
+  });
+
+  const submitButton = els.letterForm.querySelector('button[type="submit"]');
+  els.letterForm.dataset.specialForestFriendPreview = carrier.key;
+  els.letterComposerTitle.textContent = `${carrier.name}에게 편지를 맡기기`;
+  els.letterCarrierPreview.innerHTML = `<span class="carrier-icon" aria-hidden="true">${carrier.icon}</span><p>${carrier.name}이 이 숲에 머무는 동안, 기다리는 동물 없이 바로 편지를 맡아 숲길로 떠나요.</p>`;
+  submitButton.textContent = `${carrier.icon} 유니콘에게 편지 맡기기`;
+  submitButton.disabled = false;
+  els.letterComposerFootnote.textContent = "개발 체험이에요. 편지는 실제로 저장되지 않고, 유니콘의 출발·귀환만 확인해요.";
+}
+
+function openSpecialForestFriendPreviewComposer(key) {
+  const carrier = specialForestFriendPreviewCatalog[key];
+  if (!carrier) return;
+  if (!currentUser) {
+    showToast("내 정원을 먼저 로그인해 주세요.");
+    window.dispatchEvent(new CustomEvent("todayforest:special-friend-letter-preview-cancel", { detail: { key: carrier.key } }));
+    return;
+  }
+  if (!(state.friends || []).length) {
+    showToast("친구와 연결되면 숲 유니콘에게 편지를 맡길 수 있어요.");
+    window.dispatchEvent(new CustomEvent("todayforest:special-friend-letter-preview-cancel", { detail: { key: carrier.key } }));
+    return;
+  }
+
+  // openSheet가 기존 시트를 닫으며 이전 특별 친구 상태를 안전하게 정리합니다.
+  openSheet(els.letterComposerSheet);
+  activeSpecialForestFriendPreviewKey = carrier.key;
+  els.letterForm.reset();
+  renderSpecialForestFriendPreviewComposer();
+}
+
+function submitSpecialForestFriendPreviewLetter() {
+  const carrier = activeSpecialForestFriendPreview();
+  if (!carrier) return false;
+
+  if (!selectedLetterRecipientId) {
+    showToast("편지를 받을 친구를 골라 주세요.");
+    return true;
+  }
+
+  const title = els.letterTitle.value.trim();
+  const body = els.letterMessage.value.trim();
+  if (!title) {
+    showToast("편지 제목을 적어 주세요.");
+    els.letterTitle.focus();
+    return true;
+  }
+  if (!body) {
+    showToast("전하고 싶은 이야기를 적어 주세요.");
+    els.letterMessage.focus();
+    return true;
+  }
+
+  const recipient = (state.friends || []).find((friend) => friend.id === selectedLetterRecipientId);
+  const recipientName = recipient?.name || "친구";
+  const detail = { key: carrier.key, recipientName };
+
+  // 닫을 때 취소 이벤트가 나가지 않게 먼저 상태만 정리한 뒤, 유니콘 쪽에 출발을 알립니다.
+  clearSpecialForestFriendPreviewComposer({ notify: false });
+  els.letterForm.reset();
+  closeAllSheets();
+  window.dispatchEvent(new CustomEvent("todayforest:special-friend-letter-preview-submit", { detail }));
+  return true;
+}
+
 function renderLetterComposer() {
   const friends = state.friends || [];
   if (!friends.length) {
@@ -3435,6 +3570,10 @@ function renderLetterComposer() {
 
 async function sendGardenLetter(event) {
   event.preventDefault();
+  if (activeSpecialForestFriendPreview()) {
+    submitSpecialForestFriendPreviewLetter();
+    return;
+  }
   if (!currentUser) {
     showToast("내 정원을 먼저 로그인해 주세요.");
     return;
@@ -5155,6 +5294,9 @@ function bindEvents() {
     showToast("정원에 찾아온 숲친구를 눌러 편지를 맡겨요.");
   });
   els.letterForm.addEventListener("submit", sendGardenLetter);
+  window.addEventListener("todayforest:open-special-friend-letter", (event) => {
+    openSpecialForestFriendPreviewComposer(event?.detail?.key || "");
+  });
   els.visitorButton.addEventListener("click", () => {
     const visit = currentAnimalV2Visit();
     if (visit) {
