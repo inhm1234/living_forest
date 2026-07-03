@@ -375,6 +375,14 @@ if (forestFriendPreviewEnabled) {
       if (detail.key !== "forest_unicorn" || !isInteracting || isTravelling) return;
       resumeRoamingAfterInteraction();
     });
+
+    // 일반 동물의 "조용히 둘러보기"와 같은 닫기 동작입니다.
+    // 카드만 닫고 유니콘은 잠깐 쉰 뒤 원래 루틴으로 돌아갑니다.
+    window.addEventListener("todayforest:special-friend-encounter-close", (event) => {
+      const detail = event?.detail || {};
+      if (detail.key !== "forest_unicorn" || !isInteracting || isTravelling) return;
+      resumeRoamingAfterInteraction();
+    });
   }
 
   function playFirstArrival() {

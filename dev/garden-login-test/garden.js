@@ -342,9 +342,16 @@ const specialForestFriendPreviewCatalog = {
   },
 };
 let activeSpecialForestFriendPreviewKey = "";
+// 특별 친구를 눌렀을 때는 일반 동물과 같은 "만남 카드"를 먼저 보여줍니다.
+// 작성창을 바로 열지 않기 위한 화면 전용 상태이며 DB 데이터와는 무관합니다.
+let activeSpecialForestFriendEncounterKey = "";
 
 function activeSpecialForestFriendPreview() {
   return specialForestFriendPreviewCatalog[activeSpecialForestFriendPreviewKey] || null;
+}
+
+function activeSpecialForestFriendEncounter() {
+  return specialForestFriendPreviewCatalog[activeSpecialForestFriendEncounterKey] || null;
 }
 
 let currentUser = null;
@@ -1726,12 +1733,55 @@ function animalV2DeliveryLine(animal) {
   return `${mood} · 약 ${animal?.deliveryHours || 0}시간`;
 }
 
-function closeAnimalEncounterCard() {
+function closeAnimalEncounterCard({ notifySpecialFriend = true } = {}) {
+  const specialFriend = activeSpecialForestFriendEncounter();
   animalEncounterVisitId = "";
+  activeSpecialForestFriendEncounterKey = "";
   if (els.animalEncounterCard) {
     els.animalEncounterCard.hidden = true;
     delete els.animalEncounterCard.dataset.animalKind;
+    delete els.animalEncounterCard.dataset.specialFriend;
   }
+  // 특별 친구를 다시 조용한 루틴으로 돌려보내기 위한 UI 이벤트입니다.
+  // 일반 동물의 방문/DB 상태에는 전혀 영향을 주지 않습니다.
+  if (specialFriend && notifySpecialFriend) {
+    window.dispatchEvent(new CustomEvent("todayforest:special-friend-encounter-close", {
+      detail: { key: specialFriend.key },
+    }));
+  }
+}
+
+function openSpecialForestFriendEncounter(key) {
+  const carrier = specialForestFriendPreviewCatalog[key];
+  if (!carrier || !els.animalEncounterCard) return;
+
+  // 같은 자리에 떠 있던 일반 동물 카드는 닫되, 특별 친구의 정지 상태는 유지합니다.
+  closeAnimalEncounterCard({ notifySpecialFriend: false });
+  activeSpecialForestFriendEncounterKey = carrier.key;
+
+  if (els.animalEncounterIcon) els.animalEncounterIcon.textContent = carrier.icon;
+  if (els.animalEncounterKicker) els.animalEncounterKicker.textContent = "숲에서 만난 특별한 친구";
+  if (els.animalEncounterTitle) els.animalEncounterTitle.textContent = `${carrier.name}이 당신을 바라봐요.`;
+  if (els.animalEncounterText) els.animalEncounterText.textContent = "오늘, 누군가에게 마음을 전하고 싶나요?";
+  if (els.animalEncounterTime) els.animalEncounterTime.textContent = "이 숲에 머무는 동안 바로 편지를 맡길 수 있어요.";
+  if (els.animalEncounterSend) {
+    els.animalEncounterSend.textContent = `${carrier.name}에게 편지 맡기기`;
+    els.animalEncounterSend.disabled = false;
+  }
+
+  els.animalEncounterCard.dataset.specialFriend = carrier.key;
+  els.animalEncounterCard.hidden = false;
+}
+
+function openEncounterLetterComposer() {
+  const specialFriend = activeSpecialForestFriendEncounter();
+  if (specialFriend) {
+    // 작성창으로 넘어갈 때는 "조용히 둘러보기" 취소 이벤트를 보내지 않습니다.
+    closeAnimalEncounterCard({ notifySpecialFriend: false });
+    openSpecialForestFriendPreviewComposer(specialFriend.key);
+    return;
+  }
+  openAnimalLetterComposer();
 }
 
 function openAnimalEncounterForVisit(visitId) {
@@ -5295,7 +5345,7 @@ function bindEvents() {
   });
   els.letterForm.addEventListener("submit", sendGardenLetter);
   window.addEventListener("todayforest:open-special-friend-letter", (event) => {
-    openSpecialForestFriendPreviewComposer(event?.detail?.key || "");
+    openSpecialForestFriendEncounter(event?.detail?.key || "");
   });
   els.visitorButton.addEventListener("click", () => {
     const visit = currentAnimalV2Visit();
@@ -5318,7 +5368,7 @@ function bindEvents() {
   els.animalV2TraceLayer?.addEventListener("click", handleAnimalV2TraceClick);
   els.animalEncounterClose?.addEventListener("click", closeAnimalEncounterCard);
   els.animalEncounterQuiet?.addEventListener("click", closeAnimalEncounterCard);
-  els.animalEncounterSend?.addEventListener("click", openAnimalLetterComposer);
+  els.animalEncounterSend?.addEventListener("click", openEncounterLetterComposer);
   els.recordForm.addEventListener("submit", saveRecord);
   els.toggleDetail.addEventListener("click", () => {
     const isHidden = els.detailWrap.classList.toggle("hidden");
