@@ -12,11 +12,13 @@ body.forest-unicorn-preview-enabled .forest-unicorn-preview-panel { display: blo
 
 .forest-unicorn-preview {
   position: absolute;
-  z-index: 6;
-  width: 114px;
-  height: 114px;
-  margin-left: -57px;
-  margin-top: -104px;
+  /* tree(z-index:2)와 decoration(z-index:3)의 사이에서 시작합니다.
+     앞쪽 산책길에서는 data-depth=front로만 위에 올라옵니다. */
+  z-index: 2;
+  width: 104px;
+  height: 104px;
+  margin-left: -52px;
+  margin-top: -95px;
   opacity: 0;
   cursor: pointer;
   pointer-events: auto;
@@ -24,6 +26,9 @@ body.forest-unicorn-preview-enabled .forest-unicorn-preview-panel { display: blo
   -webkit-tap-highlight-color: transparent;
 }
 .forest-unicorn-preview.is-visible { opacity: 1; }
+.forest-unicorn-preview[data-depth="front"] { z-index: 4; }
+.forest-unicorn-preview[data-depth="middle"],
+.forest-unicorn-preview[data-depth="back"] { z-index: 2; }
 .forest-unicorn-preview.is-departed { opacity: 0; pointer-events: none; }
 .forest-unicorn-preview:focus-visible { outline: 3px solid rgba(255,255,255,.95); outline-offset: 5px; border-radius: 50%; }
 
@@ -31,8 +36,8 @@ body.forest-unicorn-preview-enabled .forest-unicorn-preview-panel { display: blo
   position: absolute;
   left: 50%;
   bottom: 3px;
-  width: 58px;
-  height: 12px;
+  width: 53px;
+  height: 10px;
   border-radius: 50%;
   background: radial-gradient(ellipse at center, rgba(77,95,84,.24), rgba(77,95,84,.06) 60%, transparent 72%);
   transform: translateX(-50%);
@@ -52,7 +57,7 @@ body.forest-unicorn-preview-enabled .forest-unicorn-preview-panel { display: blo
   inset: 0;
   transform-origin: 50% 84%;
   transition: transform .18s ease;
-  filter: drop-shadow(0 7px 6px rgba(79,100,87,.12));
+  filter: drop-shadow(0 5px 5px rgba(79,100,87,.10));
 }
 .forest-unicorn-preview[data-facing="right"] .forest-unicorn-image-wrap {
   transform: scaleX(-1);

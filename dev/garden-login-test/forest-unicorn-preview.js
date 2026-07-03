@@ -11,10 +11,13 @@ if (forestFriendPreviewEnabled) {
   const CONFIG = {
     assetBase: "../../assets/friends/forest-unicorn",
     zones: [
-      { id: "forest-path", x: 313, y: 420, label: "오른쪽 숲길" },
-      { id: "tree-rest", x: 246, y: 404, label: "나무 곁 쉼터" },
-      { id: "flower-watch", x: 124, y: 428, label: "왼쪽 꽃 구경" },
-      { id: "front-walk", x: 202, y: 458, label: "앞쪽 산책길" },
+      { id: "forest-path", x: 313, y: 420, depth: "back", label: "오른쪽 숲길" },
+      // 나무의 오른쪽 빈 풀밭. 나무/장식에 너무 붙지 않도록 아래쪽으로 내렸습니다.
+      { id: "tree-rest", x: 231, y: 430, depth: "middle", label: "나무 곁 쉼터" },
+      // 꽃밭의 앞쪽 가장자리. 꽃을 볼 때만 멈추고, 꽃 장식은 유니콘보다 앞에 남습니다.
+      { id: "flower-watch", x: 118, y: 446, depth: "middle", label: "왼쪽 꽃 구경" },
+      // 가장 앞 산책길. 이 위치에서는 유니콘이 앞쪽 레이어로 올라옵니다.
+      { id: "front-walk", x: 198, y: 466, depth: "front", label: "앞쪽 산책길" },
     ],
     // 평소 루틴: 나무 곁 → 꽃 구경 → 앞쪽 산책길 → 나무 곁.
     // 오른쪽 숲길은 실제 편지 출발/귀환 때에만 사용합니다.
@@ -105,7 +108,7 @@ if (forestFriendPreviewEnabled) {
         <button type="button" data-unicorn-replay>첫 만남 다시 보기</button>
         <button type="button" data-unicorn-depart>숲길로 떠나 보기</button>
       </div>
-      <p class="forest-unicorn-preview-status">걷기 프레임 · idle · 꽃 구경 · 출발/귀환을 정원에서 검수하는 화면이에요.</p>
+      <p class="forest-unicorn-preview-status">크기 · 자리 · 앞뒤 깊이를 먼저 검수하는 화면이에요.</p>
     `;
     stage.insertAdjacentElement("afterend", panel);
     statusNode = panel.querySelector(".forest-unicorn-preview-status");
@@ -125,10 +128,17 @@ if (forestFriendPreviewEnabled) {
     unicorn?.setAttribute("data-facing", currentFacing);
   }
 
+  function setZoneDepth(index) {
+    const zone = CONFIG.zones[index];
+    if (!unicorn || !zone) return;
+    unicorn.setAttribute("data-depth", zone.depth || "middle");
+  }
+
   function setAbsolutePosition(index, { visible = true } = {}) {
     currentZone = index;
     const zone = CONFIG.zones[index];
     if (!unicorn) return;
+    setZoneDepth(index);
     unicorn.style.left = `${zone.x}px`;
     unicorn.style.top = `${zone.y}px`;
     if (visible) unicorn.classList.add("is-visible");
@@ -184,6 +194,9 @@ if (forestFriendPreviewEnabled) {
     const from = CONFIG.zones[currentZone];
     const to = CONFIG.zones[index];
     setFacing(to.x > from.x ? "right" : "left");
+    // 이동 중에도 목적지의 깊이를 먼저 적용합니다.
+    // 꽃밭에서는 꽃 장식 뒤, 앞쪽 산책길에서는 장식 앞에 자연스럽게 보이게 합니다.
+    setZoneDepth(index);
     startWalkCycle();
     unicorn.style.transition = `left ${duration}ms cubic-bezier(.22,.72,.27,1), top ${duration}ms cubic-bezier(.22,.72,.27,1), opacity .45s ease`;
     unicorn.style.left = `${to.x}px`;
