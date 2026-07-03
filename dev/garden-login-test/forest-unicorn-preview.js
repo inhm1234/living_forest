@@ -30,6 +30,7 @@ if (forestFriendPreviewEnabled) {
   };
 
   let unicorn = null;
+  let interactionHit = null;
   let statusNode = null;
   let imgNode = null;
   let currentZone = 0;
@@ -71,14 +72,25 @@ if (forestFriendPreviewEnabled) {
     world.appendChild(unicorn);
     imgNode = unicorn.querySelector(".forest-unicorn-image");
 
-    unicorn.addEventListener("click", (event) => {
-      if (event.target.closest("button")) return;
+    // 장식 레이어에 가려져 있어도 눌림이 사라지지 않도록,
+    // 화면에는 보이지 않는 별도 클릭 영역을 유니콘과 함께 이동시킵니다.
+    interactionHit = document.createElement("button");
+    interactionHit.type = "button";
+    interactionHit.className = "forest-unicorn-hit";
+    interactionHit.setAttribute("aria-label", "숲 유니콘에게 말 걸기");
+    world.appendChild(interactionHit);
+
+    const requestInteraction = (event) => {
+      event?.preventDefault();
+      event?.stopPropagation();
       if (!isTravelling) openInteraction();
-    });
+    };
+    interactionHit.addEventListener("pointerdown", requestInteraction);
+    interactionHit.addEventListener("click", requestInteraction);
+    unicorn.addEventListener("click", requestInteraction);
     unicorn.addEventListener("keydown", (event) => {
       if ((event.key === "Enter" || event.key === " ") && !isTravelling) {
-        event.preventDefault();
-        openInteraction();
+        requestInteraction(event);
       }
     });
     const arrival = document.createElement("div");
@@ -137,6 +149,7 @@ if (forestFriendPreviewEnabled) {
     setZoneDepth(index);
     unicorn.style.left = `${zone.x}px`;
     unicorn.style.top = `${zone.y}px`;
+    syncInteractionHit(zone.x, zone.y);
     if (visible) unicorn.classList.add("is-visible");
   }
 
@@ -162,21 +175,35 @@ if (forestFriendPreviewEnabled) {
     return nearestIndex;
   }
 
-  // 걷는 중 눌러도 순간이동하지 않도록, 실제 화면 위치에서 잠깐 멈춥니다.
+  function syncInteractionHit(left, top) {
+    if (!interactionHit) return;
+    interactionHit.style.left = `${left}px`;
+    interactionHit.style.top = `${top}px`;
+  }
+
+  // 걷는 중 눌러도 순간이동하지 않도록, 실제 화면의 위치를
+  // 390×540 정원 좌표로 환산해 그 자리에서 확실히 정지합니다.
   function freezeAtCurrentPosition() {
     if (!unicorn) return;
     moveToken += 1;
-    const worldRect = getWorld()?.getBoundingClientRect();
+    const world = getWorld();
+    const worldRect = world?.getBoundingClientRect();
     const unicornRect = unicorn.getBoundingClientRect();
-    if (!worldRect) return;
-    const anchorLeft = unicornRect.left - worldRect.left + 52;
-    const anchorTop = unicornRect.top - worldRect.top + 95;
+    if (!worldRect || !worldRect.width || !worldRect.height) return;
+
+    const scaleX = worldRect.width / 390;
+    const scaleY = worldRect.height / 540;
+    const anchorLeft = (unicornRect.left - worldRect.left) / scaleX + 52;
+    const anchorTop = (unicornRect.top - worldRect.top) / scaleY + 95;
+
+    // 진행 중인 CSS 이동을 현재 프레임에서 즉시 끊습니다.
     unicorn.style.transition = "none";
     unicorn.style.left = `${anchorLeft}px`;
     unicorn.style.top = `${anchorTop}px`;
+    syncInteractionHit(anchorLeft, anchorTop);
     currentZone = getNearestZoneIndex(anchorLeft, anchorTop);
     setZoneDepth(currentZone);
-    // 브라우저가 위의 위치를 확정한 뒤, 다음 산책 때만 다시 부드러운 이동을 사용합니다.
+
     void unicorn.offsetWidth;
     unicorn.style.transition = "";
   }
@@ -229,6 +256,10 @@ if (forestFriendPreviewEnabled) {
     unicorn.style.transition = `left ${duration}ms cubic-bezier(.22,.72,.27,1), top ${duration}ms cubic-bezier(.22,.72,.27,1), opacity .45s ease`;
     unicorn.style.left = `${to.x}px`;
     unicorn.style.top = `${to.y}px`;
+    if (interactionHit) {
+      interactionHit.style.transition = `left ${duration}ms cubic-bezier(.22,.72,.27,1), top ${duration}ms cubic-bezier(.22,.72,.27,1)`;
+      syncInteractionHit(to.x, to.y);
+    }
     window.setTimeout(() => {
       if (!unicorn || token !== moveToken) return;
       currentZone = index;
@@ -254,11 +285,12 @@ if (forestFriendPreviewEnabled) {
     if (!unicorn || isTravelling) return;
     isInteracting = false;
     unicorn.removeAttribute("data-interacting");
+    interactionHit?.removeAttribute("data-interacting");
     closeBubble();
     playIdleLoop();
-    setStatus("유니콘이 다시 조용히 정원을 둘러봐요.");
+    setStatus("유니콘이 잠시 더 나무 곁에서 쉬어요.");
     // 눌렀다고 바로 걸어가 버리지 않도록 잠깐 더 머뭅니다.
-    roamTimer = window.setTimeout(continueRoaming, 5200);
+    roamTimer = window.setTimeout(continueRoaming, 6500);
   }
 
   function openInteraction() {
@@ -270,13 +302,15 @@ if (forestFriendPreviewEnabled) {
     freezeAtCurrentPosition();
     stopCharacterMotion();
     unicorn.setAttribute("data-interacting", "true");
+    interactionHit?.setAttribute("data-interacting", "true");
     setSprite("idle_tall");
     const bubble = unicorn.querySelector(".forest-unicorn-bubble");
     const copy = bubble?.querySelector("p");
     if (copy) copy.textContent = getInteractionCopy();
     bubble?.classList.add("is-open");
-    setStatus("유니콘이 잠깐 고개를 들고 당신을 바라봐요.");
-    interactionTimer = window.setTimeout(resumeRoamingAfterInteraction, 3800);
+    setStatus("유니콘이 멈춰 서서 당신을 바라봐요 · 5초 동안 쉬어요.");
+    // 클릭이 먹혔는지 분명히 알 수 있도록 5초간 완전히 정지합니다.
+    interactionTimer = window.setTimeout(resumeRoamingAfterInteraction, 5000);
   }
 
   function continueRoaming() {
@@ -319,6 +353,7 @@ if (forestFriendPreviewEnabled) {
     isTravelling = false;
     isInteracting = false;
     unicorn?.removeAttribute("data-interacting");
+    interactionHit?.removeAttribute("data-interacting");
     closeBubble();
     setFacing("left");
     unicorn.classList.remove("is-visible", "is-departed");
@@ -384,6 +419,7 @@ if (forestFriendPreviewEnabled) {
     if (!unicorn || isTravelling) return;
     isInteracting = false;
     unicorn.removeAttribute("data-interacting");
+    interactionHit?.removeAttribute("data-interacting");
     clearTimeout(roamTimer);
     clearTimeout(stateTimer);
     clearTimeout(interactionTimer);

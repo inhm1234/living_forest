@@ -167,3 +167,28 @@ body.forest-unicorn-preview-enabled .forest-unicorn-preview-panel { display: blo
   .forest-unicorn-preview, .forest-unicorn-arrival-lights i { animation: none !important; }
   .forest-unicorn-preview { transition-duration: .01ms !important; }
 }
+
+/* v2.4: 보이지 않는 클릭 영역은 장식보다 위에서 유니콘과 함께 이동합니다.
+   시각 요소는 기존 깊이를 유지하고, 클릭 영역만 앞에 둡니다. */
+.forest-unicorn-hit {
+  position: absolute;
+  z-index: 7;
+  width: 94px;
+  height: 94px;
+  margin-left: -47px;
+  margin-top: -90px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  transition: left 2.2s cubic-bezier(.22,.72,.27,1), top 2.2s cubic-bezier(.22,.72,.27,1);
+}
+.forest-unicorn-hit:focus-visible { outline: 3px solid rgba(255,255,255,.95); outline-offset: 4px; }
+
+/* 말풍선은 반응 중에만 장식보다 위로 올려, 클릭 피드백이 묻히지 않게 합니다. */
+.forest-unicorn-preview[data-interacting="true"] { z-index: 10; }
+.forest-unicorn-preview[data-interacting="true"] .forest-unicorn-shadow { width: 56px; opacity: .92; }
+.forest-unicorn-preview[data-interacting="true"] .forest-unicorn-bubble { z-index: 12; }
