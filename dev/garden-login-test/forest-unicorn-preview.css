@@ -266,3 +266,33 @@ body.forest-unicorn-preview-enabled .forest-unicorn-preview-panel { display: blo
 
 /* 평소 클릭은 대사 없이 멈춤/미세 반응만 남깁니다. */
 .forest-unicorn-preview .forest-unicorn-bubble { display: none !important; }
+
+
+/* v2.6: 개발 버튼이 아니라 실제 하단 편지 작성 흐름 안에서 전달 친구를 고릅니다. */
+.forest-unicorn-preview-actions { display:block; }
+.forest-unicorn-preview-actions button { width:100%; }
+.forest-unicorn-letter-choice {
+  position: relative;
+  border-color: rgba(183,220,186,.72);
+  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.forest-unicorn-letter-choice.is-selected {
+  border-color: rgba(130,196,145,.98);
+  background: linear-gradient(135deg, rgba(239,253,239,.98), rgba(247,244,255,.98));
+  box-shadow: 0 10px 20px rgba(86,151,107,.14);
+}
+.forest-unicorn-letter-choice.is-selected::after {
+  content: "선택됨";
+  position: absolute;
+  right: 11px;
+  top: 10px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: rgba(131,194,143,.18);
+  color: #63956d;
+  font-size: 8.5px;
+  font-weight: 950;
+}
+.forest-unicorn-letter-choice.is-selected .forest-unicorn-letter-choice-button {
+  background: linear-gradient(135deg, #73b987, #78b9b0);
+}
