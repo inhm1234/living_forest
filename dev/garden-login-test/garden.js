@@ -342,6 +342,13 @@ const specialForestFriendPreviewCatalog = {
     key: "forest_unicorn",
     icon: "🦄",
     name: "숲 유니콘",
+    encounterText: "오늘, 누군가에게 마음을 전하고 싶나요?",
+  },
+  little_light_dragon: {
+    key: "little_light_dragon",
+    icon: "🐲",
+    name: "작은 빛 용",
+    encounterText: "작은 빛을 안고, 당신의 숲에 왔어요.",
   },
 };
 let activeSpecialForestFriendPreviewKey = "";
@@ -824,13 +831,13 @@ function databaseErrorMessage(error) {
     return "오늘의 마음은 이미 나무에 남겼어요. 내일 다시 와요.";
   }
   if (message.includes("SPECIAL_FRIEND_AWAY")) {
-    return "숲 유니콘이 아직 숲길을 지나고 있어요. 돌아오면 다시 마음을 맡길 수 있어요.";
+    return "특별 숲 친구가 아직 숲길을 지나고 있어요. 돌아오면 다시 마음을 맡길 수 있어요.";
   }
   if (message.includes("SPECIAL_FRIEND_LETTER_WAITING")) {
     return "그 친구의 나뭇가지에 아직 읽지 않은 마음이 있어요. 먼저 마음이 닿기를 기다려 주세요.";
   }
   if (message.includes("SPECIAL_FRIEND_RECIPIENT_NOT_FOUND")) {
-    return "연결된 친구에게만 숲 유니콘이 마음을 전할 수 있어요.";
+    return "연결된 친구에게만 특별 숲 친구가 마음을 전할 수 있어요.";
   }
   if (message.includes("garden_special_friend") || message.includes("special_friend")) {
     return "특별 숲 친구 배송 준비를 하지 못했어요. 유니콘 배송 SQL 설정을 먼저 실행해 주세요.";
@@ -923,6 +930,7 @@ function deliveryText(kind) {
     sprout_bird: "새싹새가 전해줬어요",
     swift_bird: "빠른 새가 전해줬어요",
     forest_unicorn: "숲 유니콘이 전해줬어요",
+    little_light_dragon: "작은 빛 용이 전해줬어요",
   };
   return map[kind] || "숲친구가 전해줬어요";
 }
@@ -1947,7 +1955,7 @@ function openSpecialForestFriendEncounter(key) {
   if (els.animalEncounterIcon) els.animalEncounterIcon.textContent = carrier.icon;
   if (els.animalEncounterKicker) els.animalEncounterKicker.textContent = "숲에서 만난 특별한 친구";
   if (els.animalEncounterTitle) els.animalEncounterTitle.textContent = `${carrier.name}이 당신을 바라봐요.`;
-  if (els.animalEncounterText) els.animalEncounterText.textContent = "오늘, 누군가에게 마음을 전하고 싶나요?";
+  if (els.animalEncounterText) els.animalEncounterText.textContent = carrier.encounterText || "오늘, 누군가에게 마음을 전하고 싶나요?";
   if (els.animalEncounterTime) els.animalEncounterTime.textContent = "이 숲에 머무는 동안 바로 편지를 맡길 수 있어요.";
   if (els.animalEncounterSend) {
     els.animalEncounterSend.textContent = `${carrier.name}에게 편지 맡기기`;
@@ -2382,22 +2390,23 @@ function animalDeliveryTracking(letter) {
 function specialFriendDeliveryCardMarkup(letter) {
   const tracking = specialFriendDeliveryTracking(letter);
   if (!tracking.isActive) return "";
+  const carrier = specialForestFriendPreviewCatalog[letter.friendKey] || { icon: "🌿", name: "특별 숲 친구" };
   const isReturning = tracking.phase === "returning";
   const title = isReturning
     ? `${escapeHTML(letter.to)}에게 전한 마음`
     : `${escapeHTML(letter.to)}에게 · ${escapeHTML(letter.title)}`;
   const story = isReturning
-    ? "편지는 도착했어요 · 유니콘이 숲을 지나 돌아오고 있어요."
-    : `숲 유니콘이 ${letter.to}에게 마음을 전하러 가고 있어요.`;
+    ? `편지는 도착했어요 · ${carrier.name}이 숲을 지나 돌아오고 있어요.`
+    : `${carrier.name}이 ${letter.to}에게 마음을 전하러 가고 있어요.`;
   const countdownLabel = isReturning ? "귀환까지" : "도착까지";
   const badge = isReturning ? "돌아오는 중" : "전달 중";
   return `
     <article class="sent-letter-item has-animal-tracking special-friend-delivery">
-      <div class="sent-letter-icon" aria-hidden="true">🦄</div>
+      <div class="sent-letter-icon" aria-hidden="true">${carrier.icon}</div>
       <div class="sent-letter-main">
         <div class="sent-letter-title">${title}</div>
-        <div class="sent-letter-detail">숲 유니콘 · ${escapeHTML(formatDate(letter.sentAt))}</div>
-        <div class="animal-delivery-tracking" aria-label="숲 유니콘 배송 진행 상태">
+        <div class="sent-letter-detail">${escapeHTML(carrier.name)} · ${escapeHTML(formatDate(letter.sentAt))}</div>
+        <div class="animal-delivery-tracking" aria-label="${escapeAttr(carrier.name)} 배송 진행 상태">
           <p class="animal-delivery-story">${escapeHTML(story)}</p>
           <div class="animal-delivery-time-row">
             <span>${countdownLabel} ${escapeHTML(formatDeliveryCountdown(tracking.remainingMs))}</span>
@@ -3652,6 +3661,7 @@ function carrierForKind(kind) {
     sprout_bird: { icon: "🕊️", name: "새싹새" },
     swift_bird: { icon: "🕊️", name: "빠른 새" },
     forest_unicorn: { icon: "🦄", name: "숲 유니콘" },
+    little_light_dragon: { icon: "🐲", name: "작은 빛 용" },
   };
   return map[kind] || { icon: "🕊️", name: "숲의 새" };
 }
@@ -3681,7 +3691,7 @@ function renderSpecialForestFriendPreviewComposer() {
   const realFriends = (state.friends || []).filter((friend) => !friend.isDevTest);
   if (!realFriends.length) {
     clearSpecialForestFriendPreviewComposer();
-    showToast("실제로 연결된 친구가 있어야 숲 유니콘에게 편지를 맡길 수 있어요.");
+    showToast(`실제로 연결된 친구가 있어야 ${carrier.name}에게 편지를 맡길 수 있어요.`);
     return;
   }
 
@@ -3715,10 +3725,10 @@ function renderSpecialForestFriendPreviewComposer() {
   const submitButton = els.letterForm.querySelector('button[type="submit"]');
   els.letterForm.dataset.specialForestFriendPreview = carrier.key;
   els.letterComposerTitle.textContent = `${carrier.name}에게 편지를 맡기기`;
-  els.letterCarrierPreview.innerHTML = `<span class="carrier-icon" aria-hidden="true">${carrier.icon}</span><p>${carrier.name}은 기다리는 동물 없이 바로 마음을 맡아 숲길로 떠나요. 편지는 30분 뒤 도착하고, 유니콘은 다시 30분 동안 숲길을 지나 돌아와요.</p>`;
-  submitButton.textContent = `${carrier.icon} 유니콘에게 편지 맡기기 · 도착 30분`;
+  els.letterCarrierPreview.innerHTML = `<span class="carrier-icon" aria-hidden="true">${carrier.icon}</span><p>${carrier.name}은 기다리는 동물 없이 바로 마음을 맡아 숲길로 떠나요. 편지는 30분 뒤 도착하고, ${carrier.name}은 다시 30분 동안 숲길을 지나 돌아와요.</p>`;
+  submitButton.textContent = `${carrier.icon} ${carrier.name}에게 편지 맡기기 · 도착 30분`;
   submitButton.disabled = false;
-  els.letterComposerFootnote.textContent = "편지가 도착한 뒤에도 유니콘은 30분 동안 돌아오는 중이에요. 귀환 전에는 새 편지를 맡길 수 없어요.";
+  els.letterComposerFootnote.textContent = `편지가 도착한 뒤에도 ${carrier.name}은 30분 동안 돌아오는 중이에요. 귀환 전에는 새 편지를 맡길 수 없어요.`;
 }
 
 function openSpecialForestFriendPreviewComposer(key) {
@@ -3731,7 +3741,7 @@ function openSpecialForestFriendPreviewComposer(key) {
   }
   const realFriends = (state.friends || []).filter((friend) => !friend.isDevTest);
   if (!realFriends.length) {
-    showToast("실제로 연결된 친구가 있어야 숲 유니콘에게 편지를 맡길 수 있어요.");
+    showToast(`실제로 연결된 친구가 있어야 ${carrier.name}에게 편지를 맡길 수 있어요.`);
     window.dispatchEvent(new CustomEvent("todayforest:special-friend-letter-preview-cancel", { detail: { key: carrier.key } }));
     return;
   }
@@ -3739,8 +3749,8 @@ function openSpecialForestFriendPreviewComposer(key) {
   if (activeJourney) {
     const tracking = specialFriendDeliveryTracking(activeJourney);
     const message = tracking.phase === "returning"
-      ? `편지는 도착했어요. 유니콘이 ${formatDeliveryCountdown(tracking.remainingMs)} 뒤 돌아와요.`
-      : `유니콘이 지금 마음을 전하러 가고 있어요. 도착까지 ${formatDeliveryCountdown(tracking.remainingMs)} 남았어요.`;
+      ? `편지는 도착했어요. ${carrier.name}이 ${formatDeliveryCountdown(tracking.remainingMs)} 뒤 돌아와요.`
+      : `${carrier.name}이 지금 마음을 전하러 가고 있어요. 도착까지 ${formatDeliveryCountdown(tracking.remainingMs)} 남았어요.`;
     showToast(message);
     window.dispatchEvent(new CustomEvent("todayforest:special-friend-letter-preview-cancel", { detail: { key: carrier.key } }));
     return;
@@ -3777,14 +3787,14 @@ async function submitSpecialForestFriendPreviewLetter() {
 
   const recipient = (state.friends || []).find((friend) => friend.id === selectedLetterRecipientId);
   if (!recipient || recipient.isDevTest) {
-    showToast("숲 유니콘 편지는 실제로 연결된 친구에게만 보낼 수 있어요.");
+    showToast(`${carrier.name} 편지는 실제로 연결된 친구에게만 보낼 수 있어요.`);
     return true;
   }
   const recipientName = recipient.name;
   const submitButton = els.letterForm.querySelector('button[type="submit"]');
   const originalText = submitButton.textContent;
   submitButton.disabled = true;
-  submitButton.textContent = "유니콘이 편지를 품고 있어요…";
+  submitButton.textContent = `${carrier.name}이 편지를 품고 있어요…`;
 
   try {
     // 실제 저장은 특별 친구 전용 테이블/RPC에서만 처리합니다.
@@ -3820,7 +3830,7 @@ async function submitSpecialForestFriendPreviewLetter() {
     els.letterForm.reset();
     closeAllSheets();
     window.dispatchEvent(new CustomEvent("todayforest:special-friend-letter-started", { detail: journey }));
-    showToast(`숲 유니콘이 ${journey.recipientName}에게 보낼 마음을 품고 숲길로 떠나요.`);
+    showToast(`${carrier.name}이 ${journey.recipientName}에게 보낼 마음을 품고 숲길로 떠나요.`);
 
     try {
       await loadGardenState();
@@ -3834,7 +3844,7 @@ async function submitSpecialForestFriendPreviewLetter() {
   } finally {
     // 성공했다면 시트가 이미 닫혀 있어도, 다음 열림에서 정상 문구가 다시 그려집니다.
     submitButton.disabled = false;
-    submitButton.textContent = originalText || "유니콘에게 편지 맡기기";
+    submitButton.textContent = originalText || `${carrier.name}에게 편지 맡기기`;
   }
   return true;
 }
