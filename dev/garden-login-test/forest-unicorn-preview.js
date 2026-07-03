@@ -1,7 +1,7 @@
 /* -------------------------------------------------------------------------
    FOREST UNICORN PREVIEW v2
    ?forestFriendPreview=1 를 붙였을 때만 실행됩니다.
-   목적: 둥둥 떠다니는 느낌을 줄이고, 프레임 기반 걷기/idle/출발/귀환 검수.
+   목적: 프레임 기반 걷기/idle/꽃 구경 루틴 검수. 평소에는 오른쪽 숲길로 가지 않습니다.
    DB/편지 데이터에는 어떤 쓰기 작업도 하지 않습니다.
    ------------------------------------------------------------------------- */
 const previewParams = new URLSearchParams(window.location.search);
@@ -16,9 +16,12 @@ if (forestFriendPreviewEnabled) {
       { id: "flower-watch", x: 124, y: 428, label: "왼쪽 꽃 구경" },
       { id: "front-walk", x: 202, y: 458, label: "앞쪽 산책길" },
     ],
-    roamRoute: [1, 2, 3, 1, 0, 1],
+    // 평소 루틴: 나무 곁 → 꽃 구경 → 앞쪽 산책길 → 나무 곁.
+    // 오른쪽 숲길은 실제 편지 출발/귀환 때에만 사용합니다.
+    roamRoute: [1, 2, 3, 1],
     idleFrames: ["idle_base", "idle_tall", "idle_base", "idle_down"],
-    walkFrames: ["walk_1", "walk_2", "walk_3", "walk_4"],
+    // walk_1은 고개를 숙인 포즈라 걷기 루프에서 제외합니다.
+    walkFrames: ["walk_2", "walk_3", "walk_4", "walk_3"],
     testReturnMs: 8000,
     walkFrameMs: 170,
   };
@@ -221,20 +224,18 @@ if (forestFriendPreviewEnabled) {
         if (isTravelling) return;
         const zone = CONFIG.zones[nextZone];
         if (zone.id === "flower-watch") {
-          setStatus("유니콘이 꽃밭 앞에 멈춰서 조용히 구경하고 있어요.");
-          showLookPose(3800, scheduleRoaming);
-        } else if (zone.id === "forest-path") {
-          setStatus("유니콘이 오른쪽 숲길까지 산책했어요.");
-          playIdleLoop();
-          roamTimer = window.setTimeout(continueRoaming, 2600);
+          // 고개 숙이는 포즈는 꽃 앞에 도착한 뒤에만 사용합니다.
+          setStatus("유니콘이 꽃밭 앞에 멈춰서 조용히 꽃을 바라봐요.");
+          showLookPose(4800, scheduleRoaming);
         } else if (zone.id === "front-walk") {
           setStatus("유니콘이 앞쪽 산책길에서 잠깐 쉬고 있어요.");
           playIdleLoop();
-          roamTimer = window.setTimeout(continueRoaming, 3400);
+          roamTimer = window.setTimeout(continueRoaming, 8500 + Math.round(Math.random() * 3500));
         } else {
+          // 이 상태가 가장 길어야 정원에 사는 느낌이 납니다.
           setStatus("유니콘이 나무 곁에서 편안히 쉬고 있어요.");
           playIdleLoop();
-          roamTimer = window.setTimeout(continueRoaming, 4200);
+          roamTimer = window.setTimeout(continueRoaming, 12000 + Math.round(Math.random() * 6000));
         }
       }
     });
