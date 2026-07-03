@@ -332,23 +332,6 @@ const moodMap = {
   happy: { icon: "🌷", label: "기뻤어" },
 };
 
-// 특별 숲 친구는 정원에서 직접 눌렀을 때 기존 편지 작성 화면을 바로 엽니다.
-// 지금은 유니콘 미리보기 한 종만 연결하며, 실제 배송 DB 연동은 다음 단계에서 별도로 붙입니다.
-const specialForestFriends = {
-  forest_unicorn: {
-    key: "forest_unicorn",
-    icon: "🦄",
-    name: "숲 유니콘",
-    deliveryHours: 2,
-  },
-};
-
-let selectedSpecialForestFriendKey = "";
-
-function selectedSpecialForestFriend() {
-  return specialForestFriends[selectedSpecialForestFriendKey] || null;
-}
-
 let currentUser = null;
 let state = cloneDefault();
 let selectedMood = "good";
@@ -1763,8 +1746,6 @@ function openAnimalEncounterForVisit(visitId) {
 }
 
 function openAnimalLetterComposer() {
-  // 일반 방문 동물을 눌렀다면 특별 친구 선택은 해제합니다.
-  selectedSpecialForestFriendKey = "";
   const visit = currentAnimalV2Visit();
   const animal = currentAnimalVisitor();
   if (!visit || !animal) {
@@ -1780,27 +1761,6 @@ function openAnimalLetterComposer() {
   renderLetterComposer();
   openSheet(els.letterComposerSheet);
 }
-
-function openSpecialForestFriendLetterComposer(friendKey) {
-  const friend = specialForestFriends[friendKey];
-  if (!friend) return;
-
-  if (!(state.friends || []).length) {
-    showToast("친구와 연결되면 숲 유니콘에게 편지를 맡길 수 있어요.");
-    return;
-  }
-
-  selectedSpecialForestFriendKey = friend.key;
-  closeAnimalEncounterCard();
-  renderLetterComposer();
-  openSheet(els.letterComposerSheet);
-}
-
-// forest-unicorn-preview.js가 이 이벤트를 보내면, 모듈 내부 함수를 전역으로 노출하지 않고
-// 기존 편지 작성 화면을 특별 친구 전용 상태로 엽니다.
-window.addEventListener("todayforest:open-special-friend-letter", (event) => {
-  openSpecialForestFriendLetterComposer(event?.detail?.key || "");
-});
 
 function leaveAnimalWithLetter(animal, visitId) {
   if (!animal || !visitId) return Promise.resolve();
@@ -3443,8 +3403,7 @@ function renderLetterComposer() {
     });
   });
 
-  const specialFriend = selectedSpecialForestFriend();
-  const animal = specialFriend || currentAnimalVisitor();
+  const animal = currentAnimalVisitor();
   const chosenFriend = friends.find((friend) => friend.id === selectedLetterRecipientId);
   const destination = chosenFriend?.isDevTest
     ? "테스트 새싹의 나뭇가지에 도착한 뒤, 이 화면에서 읽음 상태까지 확인할 수 있어요."
@@ -3459,15 +3418,9 @@ function renderLetterComposer() {
 
   const submitButton = els.letterForm.querySelector('button[type="submit"]');
   const isDevTestFriend = Boolean(chosenFriend?.isDevTest);
-  const isSpecialForestFriend = Boolean(specialFriend);
-  els.letterForm.dataset.forestFriendCarrier = isSpecialForestFriend ? specialFriend.key : "";
   els.letterComposerTitle.textContent = `${animal.name}에게 편지를 맡기기`;
 
-  if (isSpecialForestFriend) {
-    els.letterCarrierPreview.innerHTML = `<span class="carrier-icon" aria-hidden="true">${animal.icon}</span><p>${animal.name}이 이 숲에 머무는 동안 바로 편지를 맡아 숲길로 떠나요.</p>`;
-    submitButton.textContent = `${animal.icon} 유니콘에게 편지 맡기기`;
-    els.letterComposerFootnote.textContent = "지금은 개발 체험이에요. 편지는 실제로 저장되지 않고, 유니콘의 출발·귀환만 확인해요.";
-  } else if (isDevTestFriend) {
+  if (isDevTestFriend) {
     els.letterCarrierPreview.innerHTML = `<span class="carrier-icon" aria-hidden="true">${animal.icon}</span><p>${animal.name}에게 맡기면 바로 숲길로 출발해요. 테스트 새싹에게 보내는 편지는 DEV 확인용으로 1분 뒤 도착해요.</p>`;
     submitButton.textContent = `${animal.icon} 테스트 배송 · 1분`;
     els.letterComposerFootnote.textContent = "테스트 새싹에게만 적용되는 개발 확인용 배송이에요. 실제 친구에게 보내는 편지는 동물별 운영 시간으로 전해져요.";
@@ -3501,12 +3454,6 @@ async function sendGardenLetter(event) {
   if (!body) {
     showToast("전하고 싶은 이야기를 적어 주세요.");
     els.letterMessage.focus();
-    return;
-  }
-
-  const specialForestFriend = selectedSpecialForestFriend();
-  if (specialForestFriend) {
-    showToast("유니콘 편지 전달은 지금 개발 체험으로만 확인하고 있어요.");
     return;
   }
 
