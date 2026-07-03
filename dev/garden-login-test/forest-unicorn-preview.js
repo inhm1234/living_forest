@@ -42,6 +42,7 @@ if (forestFriendPreviewEnabled) {
   let returnTimer = null;
   let moveToken = 0;
   let isTravelling = false;
+  let isInteracting = false;
   let currentFacing = "left";
 
   function getWorld() { return document.getElementById("gardenWorld"); }
@@ -65,7 +66,7 @@ if (forestFriendPreviewEnabled) {
       <span class="forest-unicorn-visual" aria-hidden="true">
         <span class="forest-unicorn-image-wrap"><img class="forest-unicorn-image" src="${asset("idle_base")}" alt="" /></span>
       </span>
-      <span class="forest-unicorn-bubble" aria-live="polite"><p></p><button type="button">숲길로 떠나 보기</button></span>
+      <span class="forest-unicorn-bubble" aria-live="polite"><p></p></span>
     `;
     world.appendChild(unicorn);
     imgNode = unicorn.querySelector(".forest-unicorn-image");
@@ -80,11 +81,6 @@ if (forestFriendPreviewEnabled) {
         openInteraction();
       }
     });
-    unicorn.querySelector(".forest-unicorn-bubble button").addEventListener("click", (event) => {
-      event.stopPropagation();
-      beginTestDeparture();
-    });
-
     const arrival = document.createElement("div");
     arrival.className = "forest-unicorn-arrival";
     arrival.setAttribute("aria-live", "polite");
@@ -153,6 +149,38 @@ if (forestFriendPreviewEnabled) {
     clearInterval(idleTimer);
   }
 
+  function getNearestZoneIndex(left, top) {
+    let nearestIndex = 0;
+    let shortestDistance = Number.POSITIVE_INFINITY;
+    CONFIG.zones.forEach((zone, index) => {
+      const distance = Math.hypot(zone.x - left, zone.y - top);
+      if (distance < shortestDistance) {
+        shortestDistance = distance;
+        nearestIndex = index;
+      }
+    });
+    return nearestIndex;
+  }
+
+  // 걷는 중 눌러도 순간이동하지 않도록, 실제 화면 위치에서 잠깐 멈춥니다.
+  function freezeAtCurrentPosition() {
+    if (!unicorn) return;
+    moveToken += 1;
+    const worldRect = getWorld()?.getBoundingClientRect();
+    const unicornRect = unicorn.getBoundingClientRect();
+    if (!worldRect) return;
+    const anchorLeft = unicornRect.left - worldRect.left + 52;
+    const anchorTop = unicornRect.top - worldRect.top + 95;
+    unicorn.style.transition = "none";
+    unicorn.style.left = `${anchorLeft}px`;
+    unicorn.style.top = `${anchorTop}px`;
+    currentZone = getNearestZoneIndex(anchorLeft, anchorTop);
+    setZoneDepth(currentZone);
+    // 브라우저가 위의 위치를 확정한 뒤, 다음 산책 때만 다시 부드러운 이동을 사용합니다.
+    void unicorn.offsetWidth;
+    unicorn.style.transition = "";
+  }
+
   function stopCharacterMotion() {
     clearInterval(walkTimer);
     clearInterval(idleTimer);
@@ -215,18 +243,44 @@ if (forestFriendPreviewEnabled) {
     unicorn?.querySelector(".forest-unicorn-bubble")?.classList.remove("is-open");
   }
 
+  function getInteractionCopy() {
+    const zoneId = CONFIG.zones[currentZone]?.id;
+    if (zoneId === "flower-watch") return "꽃향기가 좋아서, 잠깐 더 보고 있었어요.";
+    if (zoneId === "front-walk") return "천천히 걷고 있었어요. 같이 쉬어 갈래요?";
+    return "응, 여기 있어요. 나무 곁은 포근하네요.";
+  }
+
+  function resumeRoamingAfterInteraction() {
+    if (!unicorn || isTravelling) return;
+    isInteracting = false;
+    unicorn.removeAttribute("data-interacting");
+    closeBubble();
+    playIdleLoop();
+    setStatus("유니콘이 다시 조용히 정원을 둘러봐요.");
+    // 눌렀다고 바로 걸어가 버리지 않도록 잠깐 더 머뭅니다.
+    roamTimer = window.setTimeout(continueRoaming, 5200);
+  }
+
   function openInteraction() {
-    if (!unicorn) return;
+    if (!unicorn || isTravelling || isInteracting) return;
+    isInteracting = true;
+    clearTimeout(roamTimer);
+    clearTimeout(stateTimer);
     clearTimeout(interactionTimer);
+    freezeAtCurrentPosition();
+    stopCharacterMotion();
+    unicorn.setAttribute("data-interacting", "true");
+    setSprite("idle_tall");
     const bubble = unicorn.querySelector(".forest-unicorn-bubble");
     const copy = bubble?.querySelector("p");
-    if (copy) copy.textContent = "편지를 안고 숲길로 떠나 볼까요?";
+    if (copy) copy.textContent = getInteractionCopy();
     bubble?.classList.add("is-open");
-    interactionTimer = window.setTimeout(() => closeBubble(), 5200);
+    setStatus("유니콘이 잠깐 고개를 들고 당신을 바라봐요.");
+    interactionTimer = window.setTimeout(resumeRoamingAfterInteraction, 3800);
   }
 
   function continueRoaming() {
-    if (isTravelling) return;
+    if (isTravelling || isInteracting) return;
     clearTimeout(roamTimer);
     clearTimeout(stateTimer);
     currentRouteIndex = (currentRouteIndex + 1) % CONFIG.roamRoute.length;
@@ -255,7 +309,7 @@ if (forestFriendPreviewEnabled) {
   }
 
   function scheduleRoaming() {
-    if (isTravelling) return;
+    if (isTravelling || isInteracting) return;
     roamTimer = window.setTimeout(continueRoaming, 900);
   }
 
@@ -263,6 +317,8 @@ if (forestFriendPreviewEnabled) {
     if (!unicorn) return;
     clearAllTimers();
     isTravelling = false;
+    isInteracting = false;
+    unicorn?.removeAttribute("data-interacting");
     closeBubble();
     setFacing("left");
     unicorn.classList.remove("is-visible", "is-departed");
@@ -326,6 +382,8 @@ if (forestFriendPreviewEnabled) {
 
   function beginTestDeparture() {
     if (!unicorn || isTravelling) return;
+    isInteracting = false;
+    unicorn.removeAttribute("data-interacting");
     clearTimeout(roamTimer);
     clearTimeout(stateTimer);
     clearTimeout(interactionTimer);

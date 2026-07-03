@@ -92,8 +92,13 @@ body.forest-unicorn-preview-enabled .forest-unicorn-preview-panel { display: blo
 }
 .forest-unicorn-bubble.is-open { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 .forest-unicorn-bubble::after { content:""; position:absolute; left:50%; bottom:-5px; width:10px; height:10px; background:rgba(255,255,255,.92); transform:translateX(-50%) rotate(45deg); }
-.forest-unicorn-bubble p { margin: 0; font-size: 10px; font-weight: 850; line-height: 1.4; }
-.forest-unicorn-bubble button { position:relative; z-index:1; margin-top:7px; padding:6px 9px; border:0; border-radius:999px; background:#8fc89e; color:#fff; font-size:9px; font-weight:900; cursor:pointer; }
+.forest-unicorn-bubble p { margin: 0; font-size: 10px; font-weight: 850; line-height: 1.45; }
+
+/* 클릭했을 때만 짧게 고개를 든 듯한 반응. 떠오르거나 이동하지 않습니다. */
+.forest-unicorn-preview[data-interacting="true"] .forest-unicorn-visual {
+  transform-origin: 50% 86%;
+  animation: unicornGreeting .72s ease both;
+}
 
 .forest-unicorn-arrival {
   position: absolute;
@@ -152,6 +157,11 @@ body.forest-unicorn-preview-enabled .forest-unicorn-preview-panel { display: blo
 
 @keyframes unicornCopyRise { from{opacity:0;transform:translateX(-50%) translateY(12px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
 @keyframes unicornArrivalLight { 0%,100%{opacity:0;transform:translate(0,8px) scale(.4)} 35%{opacity:.95;transform:translate(-8px,-12px) scale(1)} 65%{opacity:.2;transform:translate(-14px,-28px) scale(.5)} }
+@keyframes unicornGreeting {
+  0%, 100% { transform: translateY(0) rotate(0deg) scaleY(1); }
+  36% { transform: translateY(1px) rotate(-.8deg) scaleY(.975); }
+  64% { transform: translateY(-1px) rotate(.45deg) scaleY(1.012); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .forest-unicorn-preview, .forest-unicorn-arrival-lights i { animation: none !important; }
