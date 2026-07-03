@@ -130,6 +130,9 @@ const DEFAULT_STATE = {
   records: [],
   letters: [],
   sentLetters: [],
+  // 특별 숲 친구 편지는 기존 일반 동물 편지와 별도 테이블·RPC로 관리합니다.
+  // 화면에서는 같은 편지함에 보이지만, 기존 배송 로직을 건드리지 않습니다.
+  specialFriendLetters: [],
   friends: [],
   sharedTrees: [],
   sharedTreeInvites: [],
@@ -814,6 +817,18 @@ function databaseErrorMessage(error) {
   if (message.includes("TODAY_RECORD_ALREADY_SAVED")) {
     return "오늘의 마음은 이미 나무에 남겼어요. 내일 다시 와요.";
   }
+  if (message.includes("SPECIAL_FRIEND_AWAY")) {
+    return "숲 유니콘이 아직 숲길을 지나고 있어요. 돌아오면 다시 마음을 맡길 수 있어요.";
+  }
+  if (message.includes("SPECIAL_FRIEND_LETTER_WAITING")) {
+    return "그 친구의 나뭇가지에 아직 읽지 않은 마음이 있어요. 먼저 마음이 닿기를 기다려 주세요.";
+  }
+  if (message.includes("SPECIAL_FRIEND_RECIPIENT_NOT_FOUND")) {
+    return "연결된 친구에게만 숲 유니콘이 마음을 전할 수 있어요.";
+  }
+  if (message.includes("garden_special_friend") || message.includes("special_friend")) {
+    return "특별 숲 친구 배송 준비를 하지 못했어요. 유니콘 배송 SQL 설정을 먼저 실행해 주세요.";
+  }
   if (message.includes("send_garden_letter") || message.includes("list_my_sent_garden_letters")) {
     return "편지 전달 준비를 하지 못했어요. 편지 기능 SQL 설정을 먼저 실행해 주세요.";
   }
@@ -901,6 +916,7 @@ function deliveryText(kind) {
     hedgehog: "고슴도치가 전해줬어요",
     sprout_bird: "새싹새가 전해줬어요",
     swift_bird: "빠른 새가 전해줬어요",
+    forest_unicorn: "숲 유니콘이 전해줬어요",
   };
   return map[kind] || "숲친구가 전해줬어요";
 }
@@ -1298,6 +1314,64 @@ async function loadMyGardenProfile() {
   return result;
 }
 
+async function loadSpecialForestFriendLetters() {
+  if (!currentUser) return { data: [], error: null };
+  // 특별 친구 SQL이 아직 적용되지 않았어도 기존 정원은 멈추지 않아야 합니다.
+  return supabase.rpc("list_my_garden_special_friend_letters_v1");
+}
+
+function specialFriendDeliveryTracking(letter) {
+  const now = Date.now();
+  const sentAtMs = new Date(letter?.sentAt || 0).getTime();
+  const availableAtMs = new Date(letter?.availableAt || 0).getTime();
+  const returnAtMs = new Date(letter?.returnAt || 0).getTime();
+
+  if (!Number.isFinite(returnAtMs) || returnAtMs <= now) {
+    return { phase: "available", isActive: false, remainingMs: 0, progress: 100 };
+  }
+
+  if (Number.isFinite(availableAtMs) && availableAtMs > now) {
+    const totalMs = Math.max(1, availableAtMs - sentAtMs);
+    return {
+      phase: "delivering",
+      isActive: true,
+      remainingMs: Math.max(0, availableAtMs - now),
+      progress: Math.max(4, Math.min(100, ((now - sentAtMs) / totalMs) * 100)),
+    };
+  }
+
+  const totalReturnMs = Math.max(1, returnAtMs - availableAtMs);
+  return {
+    phase: "returning",
+    isActive: true,
+    remainingMs: Math.max(0, returnAtMs - now),
+    progress: Math.max(4, Math.min(100, ((now - availableAtMs) / totalReturnMs) * 100)),
+  };
+}
+
+function activeSpecialFriendJourney(key) {
+  return (state.specialFriendLetters || []).find((letter) => {
+    const sameFriend = !key || letter.friendKey === key;
+    return sameFriend && specialFriendDeliveryTracking(letter).isActive;
+  }) || null;
+}
+
+function publishSpecialFriendJourneyState() {
+  const journeys = (state.specialFriendLetters || [])
+    .filter((letter) => specialFriendDeliveryTracking(letter).isActive)
+    .map((letter) => ({
+      key: letter.friendKey,
+      recipientName: letter.to,
+      sentAt: letter.sentAt,
+      availableAt: letter.availableAt,
+      returnAt: letter.returnAt,
+      letterId: letter.id,
+    }));
+
+  window.__todayForestSpecialFriendJourneys = journeys;
+  window.dispatchEvent(new CustomEvent("todayforest:special-friend-state-ready", { detail: { journeys } }));
+}
+
 async function loadGardenState() {
   if (!currentUser) {
     state = cloneDefault();
@@ -1310,7 +1384,7 @@ async function loadGardenState() {
 
   const nowIso = new Date().toISOString();
   const retentionTestActive = Boolean(retentionTestModeFromUrl());
-  const [profileResult, recordsResult, foundItemsResult, lettersResult, sentLettersResult, friendsResult, sharedTreesResult, sharedTreeInvitesResult, devFriendResult, devSentLettersResult, retentionDevLetters] = await Promise.all([
+  const [profileResult, recordsResult, foundItemsResult, lettersResult, sentLettersResult, friendsResult, sharedTreesResult, sharedTreeInvitesResult, devFriendResult, devSentLettersResult, retentionDevLetters, specialFriendLettersResult] = await Promise.all([
     loadMyGardenProfile(),
     supabase.from("garden_records").select("id, mood, one_line, detail, created_at").order("created_at", { ascending: false }),
     loadFoundGardenItems(),
@@ -1326,6 +1400,7 @@ async function loadGardenState() {
     supabase.rpc("get_my_dev_test_friend"),
     supabase.rpc("list_my_dev_test_sent_letters"),
     loadRetentionDevLetters(),
+    loadSpecialForestFriendLetters(),
   ]);
 
   // 내 정원의 기본 정보와 기록은 핵심 데이터라서 실패를 화면에 알려야 합니다.
@@ -1344,6 +1419,7 @@ async function loadGardenState() {
   if (sharedTreeInvitesResult.error) console.warn("TodayForest shared-tree invite load skipped:", sharedTreeInvitesResult.error);
   if (devFriendResult.error) console.warn("TodayForest DEV friend load skipped:", devFriendResult.error);
   if (devSentLettersResult.error) console.warn("TodayForest DEV sent-letter load skipped:", devSentLettersResult.error);
+  if (specialFriendLettersResult.error) console.warn("TodayForest special-friend letter load skipped:", specialFriendLettersResult.error);
 
   const profile = profileResult.data;
   const realFriends = (friendsResult.data || []).map((friend) => ({
@@ -1392,6 +1468,38 @@ async function loadGardenState() {
     if (letter?.id) sentById.set(letter.id, letter);
   });
 
+  // 특별 친구 편지는 기존 garden_letters를 직접 건드리지 않습니다.
+  // 새 테이블의 수신·발신 기록을 기존 편지함 형태로만 합쳐 보여줍니다.
+  const specialFriendRows = specialFriendLettersResult.error ? [] : (specialFriendLettersResult.data || []);
+  const specialReceivedLetters = specialFriendRows
+    .filter((letter) => letter.direction === "received")
+    .map((letter) => ({
+      id: `special-friend:${letter.id}`,
+      specialLetterId: letter.id,
+      isSpecialFriendLetter: true,
+      specialFriendKey: letter.friend_key,
+      from: letter.sender_name || "친구의 마음",
+      title: letter.title || "작은 마음",
+      body: null,
+      bodyLoaded: false,
+      delivery: deliveryText(letter.friend_key),
+      deliveryKind: letter.friend_key,
+      date: letter.available_at || letter.sent_at || letter.created_at,
+      read: false,
+    }));
+  const specialSentLetters = specialFriendRows
+    .filter((letter) => letter.direction === "sent")
+    .map((letter) => ({
+      id: letter.id,
+      friendKey: letter.friend_key,
+      to: letter.recipient_name || "친구",
+      title: letter.title || "마음을 전해요",
+      sentAt: letter.sent_at,
+      availableAt: letter.available_at,
+      returnAt: letter.return_at,
+      readAt: letter.read_at || null,
+    }));
+
   state = {
     growth: Number(profile?.growth_count || 0),
     profileName: profile?.nickname || profileNameFromUser(currentUser),
@@ -1403,7 +1511,8 @@ async function loadGardenState() {
       detail: record.detail || "",
       createdAt: record.created_at,
     })),
-    letters: (lettersResult.data || []).map((letter) => ({
+    letters: [
+      ...(lettersResult.data || []).map((letter) => ({
       id: letter.id,
       from: letter.sender_name || "친구의 마음",
       title: letter.title,
@@ -1415,7 +1524,10 @@ async function loadGardenState() {
       date: letter.available_at || letter.sent_at || letter.created_at,
       read: false,
     })),
+      ...specialReceivedLetters,
+    ],
     sentLetters: Array.from(sentById.values()).map(applyAnimalDeliveryMeta),
+    specialFriendLetters: specialSentLetters,
     friends: Array.from(friendsById.values()),
     sharedTrees: (sharedTreesResult.data || []).map((tree) => ({
       id: tree.tree_id,
@@ -1458,6 +1570,7 @@ async function loadGardenState() {
 
   // 개발 미리보기는 실제 수신 데이터와 분리된 로컬 봉투입니다.
   mergeReceivedPreviewLetters();
+  publishSpecialFriendJourneyState();
   await consumeRetentionNextVisitNoticeIfNeeded();
 }
 
@@ -2192,6 +2305,38 @@ function animalDeliveryTracking(letter) {
     remainingMs,
     progress,
   };
+}
+
+function specialFriendDeliveryCardMarkup(letter) {
+  const tracking = specialFriendDeliveryTracking(letter);
+  if (!tracking.isActive) return "";
+  const isReturning = tracking.phase === "returning";
+  const title = isReturning
+    ? `${escapeHTML(letter.to)}에게 전한 마음`
+    : `${escapeHTML(letter.to)}에게 · ${escapeHTML(letter.title)}`;
+  const story = isReturning
+    ? "편지는 도착했어요 · 유니콘이 숲을 지나 돌아오고 있어요."
+    : `숲 유니콘이 ${letter.to}에게 마음을 전하러 가고 있어요.`;
+  const countdownLabel = isReturning ? "귀환까지" : "도착까지";
+  const badge = isReturning ? "돌아오는 중" : "전달 중";
+  return `
+    <article class="sent-letter-item has-animal-tracking special-friend-delivery">
+      <div class="sent-letter-icon" aria-hidden="true">🦄</div>
+      <div class="sent-letter-main">
+        <div class="sent-letter-title">${title}</div>
+        <div class="sent-letter-detail">숲 유니콘 · ${escapeHTML(formatDate(letter.sentAt))}</div>
+        <div class="animal-delivery-tracking" aria-label="숲 유니콘 배송 진행 상태">
+          <p class="animal-delivery-story">${escapeHTML(story)}</p>
+          <div class="animal-delivery-time-row">
+            <span>${countdownLabel} ${escapeHTML(formatDeliveryCountdown(tracking.remainingMs))}</span>
+            <span>${Math.round(tracking.progress)}%</span>
+          </div>
+          <span class="animal-delivery-progress" aria-hidden="true"><span style="width:${tracking.progress.toFixed(2)}%"></span></span>
+        </div>
+      </div>
+      <span class="sent-letter-status is-moving">${badge}</span>
+    </article>
+  `;
 }
 
 function getUnreadLetters() {
@@ -3364,6 +3509,10 @@ function renderLetters() {
 
 function renderSentLetters() {
   // 보낸 편지함은 만들지 않습니다. 배송 중인 편지와, 지금 확인한 도착 장면만 보여줍니다.
+  const specialFriendCards = (state.specialFriendLetters || [])
+    .map(specialFriendDeliveryCardMarkup)
+    .filter(Boolean)
+    .join("");
   const queuedLetters = queuedAnimalDeliveryLetters();
   const persistedLetters = (state.sentLetters || [])
     .map(applyAnimalDeliveryMeta)
@@ -3376,7 +3525,7 @@ function renderSentLetters() {
     .sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
   const arrivalNotices = animalDeliveryArrivalNotices();
 
-  if (!inTransitLetters.length && !arrivalNotices.length) {
+  if (!specialFriendCards && !inTransitLetters.length && !arrivalNotices.length) {
     els.sentLetterList.innerHTML = '<div class="empty-state">지금 숲길을 걷는 편지가 없어요.<br />정원에 온 숲친구에게 작은 마음을 부탁해볼래요?</div>';
     return;
   }
@@ -3419,9 +3568,8 @@ function renderSentLetters() {
     `;
   }).join("");
 
-  els.sentLetterList.innerHTML = `${inTransitCards}${arrivalCards}`;
+  els.sentLetterList.innerHTML = `${specialFriendCards}${inTransitCards}${arrivalCards}`;
 }
-
 function carrierForKind(kind) {
   const map = {
     little_bird: { icon: "🐦", name: "작은 새" },
@@ -3431,6 +3579,7 @@ function carrierForKind(kind) {
     hedgehog: { icon: "🦔", name: "고슴도치" },
     sprout_bird: { icon: "🕊️", name: "새싹새" },
     swift_bird: { icon: "🕊️", name: "빠른 새" },
+    forest_unicorn: { icon: "🦄", name: "숲 유니콘" },
   };
   return map[kind] || { icon: "🕊️", name: "숲의 새" };
 }
@@ -3493,10 +3642,10 @@ function renderSpecialForestFriendPreviewComposer() {
   const submitButton = els.letterForm.querySelector('button[type="submit"]');
   els.letterForm.dataset.specialForestFriendPreview = carrier.key;
   els.letterComposerTitle.textContent = `${carrier.name}에게 편지를 맡기기`;
-  els.letterCarrierPreview.innerHTML = `<span class="carrier-icon" aria-hidden="true">${carrier.icon}</span><p>${carrier.name}이 이 숲에 머무는 동안, 기다리는 동물 없이 바로 편지를 맡아 숲길로 떠나요.</p>`;
-  submitButton.textContent = `${carrier.icon} 유니콘에게 편지 맡기기`;
+  els.letterCarrierPreview.innerHTML = `<span class="carrier-icon" aria-hidden="true">${carrier.icon}</span><p>${carrier.name}은 기다리는 동물 없이 바로 마음을 맡아 숲길로 떠나요. 편지는 30분 뒤 도착하고, 유니콘은 다시 30분 동안 숲길을 지나 돌아와요.</p>`;
+  submitButton.textContent = `${carrier.icon} 유니콘에게 편지 맡기기 · 도착 30분`;
   submitButton.disabled = false;
-  els.letterComposerFootnote.textContent = "개발 체험이에요. 편지는 실제로 저장되지 않고, 유니콘의 출발·귀환만 확인해요.";
+  els.letterComposerFootnote.textContent = "편지가 도착한 뒤에도 유니콘은 30분 동안 돌아오는 중이에요. 귀환 전에는 새 편지를 맡길 수 없어요.";
 }
 
 function openSpecialForestFriendPreviewComposer(key) {
@@ -3512,6 +3661,16 @@ function openSpecialForestFriendPreviewComposer(key) {
     window.dispatchEvent(new CustomEvent("todayforest:special-friend-letter-preview-cancel", { detail: { key: carrier.key } }));
     return;
   }
+  const activeJourney = activeSpecialFriendJourney(carrier.key);
+  if (activeJourney) {
+    const tracking = specialFriendDeliveryTracking(activeJourney);
+    const message = tracking.phase === "returning"
+      ? `편지는 도착했어요. 유니콘이 ${formatDeliveryCountdown(tracking.remainingMs)} 뒤 돌아와요.`
+      : `유니콘이 지금 마음을 전하러 가고 있어요. 도착까지 ${formatDeliveryCountdown(tracking.remainingMs)} 남았어요.`;
+    showToast(message);
+    window.dispatchEvent(new CustomEvent("todayforest:special-friend-letter-preview-cancel", { detail: { key: carrier.key } }));
+    return;
+  }
 
   // openSheet가 기존 시트를 닫으며 이전 특별 친구 상태를 안전하게 정리합니다.
   openSheet(els.letterComposerSheet);
@@ -3520,7 +3679,7 @@ function openSpecialForestFriendPreviewComposer(key) {
   renderSpecialForestFriendPreviewComposer();
 }
 
-function submitSpecialForestFriendPreviewLetter() {
+async function submitSpecialForestFriendPreviewLetter() {
   const carrier = activeSpecialForestFriendPreview();
   if (!carrier) return false;
 
@@ -3544,16 +3703,63 @@ function submitSpecialForestFriendPreviewLetter() {
 
   const recipient = (state.friends || []).find((friend) => friend.id === selectedLetterRecipientId);
   const recipientName = recipient?.name || "친구";
-  const detail = { key: carrier.key, recipientName };
+  const submitButton = els.letterForm.querySelector('button[type="submit"]');
+  const originalText = submitButton.textContent;
+  submitButton.disabled = true;
+  submitButton.textContent = "유니콘이 편지를 품고 있어요…";
 
-  // 닫을 때 취소 이벤트가 나가지 않게 먼저 상태만 정리한 뒤, 유니콘 쪽에 출발을 알립니다.
-  clearSpecialForestFriendPreviewComposer({ notify: false });
-  els.letterForm.reset();
-  closeAllSheets();
-  window.dispatchEvent(new CustomEvent("todayforest:special-friend-letter-preview-submit", { detail }));
+  try {
+    // 실제 저장은 특별 친구 전용 테이블/RPC에서만 처리합니다.
+    // 기존 garden_letters, 일반 동물 방문 상태, 기존 배송 RPC는 건드리지 않습니다.
+    const { data, error } = await supabase.rpc("send_my_garden_special_friend_letter_v1", {
+      p_friend_key: carrier.key,
+      p_recipient_id: selectedLetterRecipientId,
+      p_title: title,
+      p_body: body,
+    });
+    if (error) throw error;
+
+    const result = normalizeRpcRow(data) || {};
+    const journey = {
+      key: carrier.key,
+      recipientName: result.recipient_nickname || recipientName,
+      sentAt: result.sent_at || new Date().toISOString(),
+      availableAt: result.available_at,
+      returnAt: result.return_at,
+      letterId: result.letter_id || "",
+    };
+    if (!journey.availableAt || !journey.returnAt) {
+      throw new Error("SPECIAL_FRIEND_DELIVERY_SETUP_FAILED");
+    }
+
+    trackTodayForestOperationalEvent("garden_letter_sent", {
+      delivery_kind: carrier.key,
+      delivery_minutes: 30,
+    });
+
+    // 닫을 때 취소 이벤트가 나가지 않게 먼저 상태를 정리한 뒤 출발을 알립니다.
+    clearSpecialForestFriendPreviewComposer({ notify: false });
+    els.letterForm.reset();
+    closeAllSheets();
+    window.dispatchEvent(new CustomEvent("todayforest:special-friend-letter-started", { detail: journey }));
+    showToast(`숲 유니콘이 ${journey.recipientName}에게 보낼 마음을 품고 숲길로 떠나요.`);
+
+    try {
+      await loadGardenState();
+      renderAll();
+    } catch (refreshError) {
+      console.warn("TodayForest special-friend letter refresh skipped:", refreshError);
+    }
+  } catch (error) {
+    console.error("TodayForest special-friend letter send error:", error);
+    showToast(databaseErrorMessage(error));
+  } finally {
+    // 성공했다면 시트가 이미 닫혀 있어도, 다음 열림에서 정상 문구가 다시 그려집니다.
+    submitButton.disabled = false;
+    submitButton.textContent = originalText || "유니콘에게 편지 맡기기";
+  }
   return true;
 }
-
 function renderLetterComposer() {
   const friends = state.friends || [];
   if (!friends.length) {
@@ -3621,7 +3827,7 @@ function renderLetterComposer() {
 async function sendGardenLetter(event) {
   event.preventDefault();
   if (activeSpecialForestFriendPreview()) {
-    submitSpecialForestFriendPreviewLetter();
+    await submitSpecialForestFriendPreviewLetter();
     return;
   }
   if (!currentUser) {
@@ -4316,6 +4522,7 @@ function shortDelivery(text) {
   if (text.includes("빠른 새")) return "빠른 새가 전해줌";
   if (text.includes("새싹새")) return "새싹새가 전해줌";
   if (text.includes("작은 새")) return "작은 새가 전해줌";
+  if (text.includes("유니콘")) return "숲 유니콘이 전해줌";
   return "숲친구가 전해줌";
 }
 
@@ -4337,7 +4544,9 @@ async function openLetter(letterId) {
   }
 
   els.letterBody.textContent = "봉투를 조심히 펼치는 중이에요…";
-  const { data, error } = await supabase.rpc("get_my_garden_letter_body", { p_letter_id: letter.id });
+  const { data, error } = letter.isSpecialFriendLetter
+    ? await supabase.rpc("get_my_garden_special_friend_letter_body_v1", { p_letter_id: letter.specialLetterId })
+    : await supabase.rpc("get_my_garden_letter_body", { p_letter_id: letter.id });
   if (error) {
     console.warn("TodayForest letter body load skipped:", error);
     if (activeLetterId === letterId) {
@@ -4368,6 +4577,12 @@ async function markLetterRead() {
       const { data, error } = await supabase.rpc("dismiss_my_garden_retention_dev_test", { p_test_id: letter.retentionTestId });
       if (error || data !== true) {
         showToast("개발용 편지 상태를 정리하지 못했어요. 다시 시도해 주세요.");
+        return;
+      }
+    } else if (letter.isSpecialFriendLetter) {
+      const { data, error } = await supabase.rpc("receive_my_garden_special_friend_letter_v1", { p_letter_id: letter.specialLetterId });
+      if (error || data !== true) {
+        showToast("편지 상태를 저장하지 못했어요. 다시 시도해 주세요.");
         return;
       }
     } else {
@@ -5346,6 +5561,12 @@ function bindEvents() {
   els.letterForm.addEventListener("submit", sendGardenLetter);
   window.addEventListener("todayforest:open-special-friend-letter", (event) => {
     openSpecialForestFriendEncounter(event?.detail?.key || "");
+  });
+  window.addEventListener("todayforest:special-friend-journey-phase", () => {
+    renderSentLetters();
+  });
+  window.addEventListener("todayforest:special-friend-returned", () => {
+    renderSentLetters();
   });
   els.visitorButton.addEventListener("click", () => {
     const visit = currentAnimalV2Visit();

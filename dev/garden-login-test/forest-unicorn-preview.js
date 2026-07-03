@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------
    FOREST UNICORN PREVIEW v2
    ?forestFriendPreview=1 를 붙였을 때만 실행됩니다.
-   목적: 프레임 기반 걷기/idle/꽃 구경 루틴 검수 + 유니콘 클릭으로 기존 편지 작성 화면을 여는 흐름 검수.
-   ?forestFriendPreview=1 에서만 실행됩니다.
-   이 단계는 실제 DB/편지 데이터에 어떤 쓰기 작업도 하지 않습니다.
+   목적: 프레임 기반 생활 루틴 검수 + 유니콘 전용 실제 배송 상태 검수.
+   ?forestFriendPreview=1 에서만 유니콘 UI가 나타납니다.
+   실제 배송 기록은 일반 동물 편지와 분리된 특별 친구 전용 RPC에 저장됩니다.
    ------------------------------------------------------------------------- */
 const previewParams = new URLSearchParams(window.location.search);
 const forestFriendPreviewEnabled = previewParams.get("forestFriendPreview") === "1";
@@ -26,7 +26,6 @@ if (forestFriendPreviewEnabled) {
     idleFrames: ["idle_base", "idle_tall", "idle_base", "idle_down"],
     // walk_1은 고개를 숙인 포즈라 걷기 루프에서 제외합니다.
     walkFrames: ["walk_2", "walk_3", "walk_4", "walk_3"],
-    testReturnMs: 8000,
     walkFrameMs: 170,
   };
 
@@ -131,7 +130,7 @@ if (forestFriendPreviewEnabled) {
       <div class="forest-unicorn-preview-actions">
         <button type="button" data-unicorn-replay>첫 만남 다시 보기</button>
       </div>
-      <p class="forest-unicorn-preview-status">유니콘을 누르면 바로 편지 작성 화면이 열려요. 실제 저장 없이 출발·귀환만 확인해요.</p>
+      <p class="forest-unicorn-preview-status">유니콘을 눌러 마음을 맡기면 30분 뒤 도착하고, 유니콘은 30분 더 숲길을 지나 돌아와요.</p>
     `;
     stage.insertAdjacentElement("afterend", panel);
     statusNode = panel.querySelector(".forest-unicorn-preview-status");
@@ -139,7 +138,12 @@ if (forestFriendPreviewEnabled) {
 
     setAbsolutePosition(0, { visible: false });
     installSpecialFriendDeliveryBridge();
-    window.setTimeout(playFirstArrival, 700);
+    const activeJourney = findActiveJourney(window.__todayForestSpecialFriendJourneys);
+    if (activeJourney) {
+      restoreServerJourney(activeJourney);
+    } else {
+      window.setTimeout(playFirstArrival, 700);
+    }
   }
 
   function setStatus(text) { if (statusNode) statusNode.textContent = text; }
@@ -363,11 +367,164 @@ if (forestFriendPreviewEnabled) {
     roamTimer = window.setTimeout(continueRoaming, 900);
   }
 
+  function findActiveJourney(journeys) {
+    const items = Array.isArray(journeys) ? journeys : [];
+    return items.find((item) => item?.key === "forest_unicorn" && new Date(item.returnAt || 0).getTime() > Date.now()) || null;
+  }
+
+  function compactRemaining(milliseconds) {
+    const minutes = Math.max(1, Math.ceil(Math.max(0, milliseconds) / 60000));
+    return `${minutes}분`;
+  }
+
+  function deliveryPhase(journey) {
+    const now = Date.now();
+    const availableAt = new Date(journey?.availableAt || 0).getTime();
+    const returnAt = new Date(journey?.returnAt || 0).getTime();
+    if (!Number.isFinite(returnAt) || returnAt <= now) return "available";
+    return Number.isFinite(availableAt) && availableAt > now ? "delivering" : "returning";
+  }
+
+  function updateServerDeliveryCard(journey) {
+    const phase = deliveryPhase(journey);
+    if (phase === "delivering") {
+      setStatus("유니콘이 편지를 품고 숲길을 지나고 있어요.");
+      setDeliveryCard(
+        `유니콘이 ${journey.recipientName || "친구"}에게 마음을 전하러 가고 있어요.`,
+        `도착까지 ${compactRemaining(new Date(journey.availableAt).getTime() - Date.now())} · 도착한 뒤에도 유니콘은 숲길을 지나 돌아와요.`,
+        true
+      );
+      return;
+    }
+    if (phase === "returning") {
+      setStatus("편지는 도착했고, 유니콘은 숲길을 지나 돌아오고 있어요.");
+      setDeliveryCard(
+        "편지는 도착했어요.",
+        `유니콘이 숲을 지나 돌아오고 있어요 · 귀환까지 ${compactRemaining(new Date(journey.returnAt).getTime() - Date.now())}`,
+        true
+      );
+      return;
+    }
+    setDeliveryCard("", "", false);
+  }
+
+  function scheduleServerJourney(journey) {
+    clearTimeout(returnTimer);
+    const phase = deliveryPhase(journey);
+    if (phase === "delivering") {
+      const wait = Math.max(120, new Date(journey.availableAt).getTime() - Date.now() + 120);
+      returnTimer = window.setTimeout(() => {
+        updateServerDeliveryCard(journey);
+        window.dispatchEvent(new CustomEvent("todayforest:special-friend-journey-phase", { detail: { key: "forest_unicorn", phase: "returning" } }));
+        scheduleServerJourney(journey);
+      }, wait);
+      return;
+    }
+    if (phase === "returning") {
+      const wait = Math.max(120, new Date(journey.returnAt).getTime() - Date.now() + 120);
+      returnTimer = window.setTimeout(() => returnHomeAfterJourney(), wait);
+      return;
+    }
+    returnHomeAfterJourney();
+  }
+
+  function restoreServerJourney(journey) {
+    if (!unicorn || !journey) return;
+    clearAllTimers();
+    isTravelling = true;
+    isInteracting = false;
+    unicorn.removeAttribute("data-interacting");
+    interactionHit?.removeAttribute("data-interacting");
+    unicorn.classList.add("is-departed");
+    interactionHit?.classList.add("is-hidden");
+    setDeliveryCard("", "", false);
+    updateServerDeliveryCard(journey);
+    scheduleServerJourney(journey);
+  }
+
+  function returnHomeAfterJourney() {
+    if (!unicorn) return;
+    clearAllTimers();
+    setAbsolutePosition(0, { visible: false });
+    setFacing("left");
+    unicorn.removeAttribute("data-has-letter");
+    unicorn.classList.remove("is-departed");
+    interactionHit?.classList.remove("is-hidden");
+    setSprite("return");
+    unicorn.classList.add("is-visible");
+    setStatus("오른쪽 숲길에서 작은 빛과 함께 유니콘이 돌아왔어요.");
+    setDeliveryCard("유니콘이 정원으로 돌아왔어요.", "잠시 뒤 다시 나무 곁에서 쉬어요.", true);
+    stateTimer = window.setTimeout(() => {
+      moveTo(1, {
+        duration: 2200,
+        afterMove: () => {
+          isTravelling = false;
+          setDeliveryCard("", "", false);
+          setStatus("유니콘이 다시 정원을 천천히 둘러봐요.");
+          playIdleLoop();
+          currentRouteIndex = 0;
+          scheduleRoaming();
+          window.dispatchEvent(new CustomEvent("todayforest:special-friend-returned", { detail: { key: "forest_unicorn" } }));
+        }
+      });
+    }, 850);
+  }
+
+  function departFromPath(journey) {
+    if (!unicorn) return;
+    isTravelling = true;
+    closeBubble();
+    stopCharacterMotion();
+    setFacing("right");
+    unicorn.setAttribute("data-has-letter", "true");
+    setSprite("send");
+    setStatus("유니콘이 편지를 품고 오른쪽 숲길로 떠나요.");
+    updateServerDeliveryCard(journey);
+    stateTimer = window.setTimeout(() => {
+      unicorn.classList.add("is-departed");
+      interactionHit?.classList.add("is-hidden");
+      updateServerDeliveryCard(journey);
+      scheduleServerJourney(journey);
+    }, 850);
+  }
+
+  function beginServerDeparture(journey) {
+    if (!unicorn || !journey) return;
+    isTravelling = true;
+    isInteracting = false;
+    unicorn.removeAttribute("data-interacting");
+    interactionHit?.removeAttribute("data-interacting");
+    clearTimeout(roamTimer);
+    clearTimeout(stateTimer);
+    clearTimeout(interactionTimer);
+    stopCharacterMotion();
+    closeBubble();
+
+    if (currentZone !== 0) {
+      setStatus("유니콘이 편지를 품고 먼저 오른쪽 숲길로 걸어가고 있어요.");
+      unicorn.setAttribute("data-has-letter", "true");
+      moveTo(0, {
+        duration: 2400,
+        afterMove: () => departFromPath(journey),
+      });
+      return;
+    }
+    departFromPath(journey);
+  }
+
   function installSpecialFriendDeliveryBridge() {
-    window.addEventListener("todayforest:special-friend-letter-preview-submit", (event) => {
-      const detail = event?.detail || {};
-      if (detail.key !== "forest_unicorn") return;
-      beginTestDeparture({ recipient: detail.recipientName || "친구", fromLetter: true });
+    window.addEventListener("todayforest:special-friend-letter-started", (event) => {
+      const journey = event?.detail || null;
+      if (journey?.key !== "forest_unicorn") return;
+      beginServerDeparture(journey);
+    });
+
+    window.addEventListener("todayforest:special-friend-state-ready", (event) => {
+      const journey = findActiveJourney(event?.detail?.journeys);
+      // 방금 출발한 장면은 끝까지 보여주고, 새로고침/재접속일 때만 부재 상태를 복원합니다.
+      if (journey && !isTravelling) {
+        restoreServerJourney(journey);
+      }
     });
 
     window.addEventListener("todayforest:special-friend-letter-preview-cancel", (event) => {
@@ -376,8 +533,6 @@ if (forestFriendPreviewEnabled) {
       resumeRoamingAfterInteraction();
     });
 
-    // 일반 동물의 "조용히 둘러보기"와 같은 닫기 동작입니다.
-    // 카드만 닫고 유니콘은 잠깐 쉰 뒤 원래 루틴으로 돌아갑니다.
     window.addEventListener("todayforest:special-friend-encounter-close", (event) => {
       const detail = event?.detail || {};
       if (detail.key !== "forest_unicorn" || !isInteracting || isTravelling) return;
@@ -386,6 +541,11 @@ if (forestFriendPreviewEnabled) {
   }
 
   function playFirstArrival() {
+    const activeJourney = findActiveJourney(window.__todayForestSpecialFriendJourneys);
+    if (activeJourney) {
+      restoreServerJourney(activeJourney);
+      return;
+    }
     if (!unicorn) return;
     clearAllTimers();
     isTravelling = false;
@@ -420,82 +580,6 @@ if (forestFriendPreviewEnabled) {
       });
     }, 1800);
   }
-
-  function departFromPath({ recipient = "친구", fromLetter = false } = {}) {
-    if (!unicorn) return;
-    isTravelling = true;
-    closeBubble();
-    stopCharacterMotion();
-    setFacing("right");
-    unicorn.setAttribute("data-has-letter", "true");
-    setSprite("send");
-    setStatus("유니콘이 편지를 품고 오른쪽 숲길로 떠나요.");
-    setDeliveryCard(
-      `유니콘이 ${recipient}에게 보낼 편지를 품고 있어요.`,
-      fromLetter ? "미리보기 · 숲길로 떠난 뒤 8초 후 돌아와요." : "미리보기 · 유니콘의 배송 출발 장면이에요.",
-      true
-    );
-    stateTimer = window.setTimeout(() => {
-      unicorn.classList.add("is-departed");
-      interactionHit?.classList.add("is-hidden");
-      setDeliveryCard(
-        "숲 유니콘이 숲길을 지나고 있어요.",
-        "미리보기 · 실제 편지는 저장되지 않으며 8초 뒤 돌아와요.",
-        true
-      );
-    }, 850);
-
-    returnTimer = window.setTimeout(() => {
-      if (!unicorn) return;
-      setAbsolutePosition(0, { visible: false });
-      setFacing("left");
-      unicorn.removeAttribute("data-has-letter");
-      unicorn.classList.remove("is-departed");
-      interactionHit?.classList.remove("is-hidden");
-      setSprite("return");
-      unicorn.classList.add("is-visible");
-      setStatus("오른쪽 숲길에서 작은 빛과 함께 유니콘이 돌아왔어요.");
-      setDeliveryCard("유니콘이 정원으로 돌아왔어요.", "잠시 뒤 다시 나무 곁에서 쉬어요.", true);
-      stateTimer = window.setTimeout(() => {
-        moveTo(1, {
-          duration: 2200,
-          afterMove: () => {
-            isTravelling = false;
-            setDeliveryCard("", "", false);
-            setStatus("유니콘이 다시 정원을 천천히 둘러봐요.");
-            playIdleLoop();
-            currentRouteIndex = 0;
-            scheduleRoaming();
-          }
-        });
-      }, 850);
-    }, CONFIG.testReturnMs);
-  }
-
-  function beginTestDeparture({ recipient = "친구", fromLetter = false } = {}) {
-    if (!unicorn || isTravelling) return;
-    isTravelling = true;
-    isInteracting = false;
-    unicorn.removeAttribute("data-interacting");
-    interactionHit?.removeAttribute("data-interacting");
-    clearTimeout(roamTimer);
-    clearTimeout(stateTimer);
-    clearTimeout(interactionTimer);
-    stopCharacterMotion();
-    closeBubble();
-
-    if (currentZone !== 0) {
-      setStatus("유니콘이 편지를 품고 먼저 오른쪽 숲길로 걸어가고 있어요.");
-      unicorn.setAttribute("data-has-letter", "true");
-      moveTo(0, {
-        duration: 2400,
-        afterMove: () => departFromPath({ recipient, fromLetter }),
-      });
-      return;
-    }
-    departFromPath({ recipient, fromLetter });
-  }
-
   function initWhenReady() {
     if (getWorld() && getStage()) {
       createScene();
