@@ -1,8 +1,9 @@
 /* -------------------------------------------------------------------------
    FOREST UNICORN PREVIEW v2
    ?forestFriendPreview=1 를 붙였을 때만 실행됩니다.
-   목적: 프레임 기반 걷기/idle/꽃 구경 루틴 검수. 평소에는 오른쪽 숲길로 가지 않습니다.
-   DB/편지 데이터에는 어떤 쓰기 작업도 하지 않습니다.
+   목적: 프레임 기반 걷기/idle/꽃 구경 루틴 검수 + 개발용 유니콘 편지 전달 체험.
+   ?forestFriendPreview=1 에서만 실행됩니다.
+   개발 체험 버튼은 실제 DB/편지 데이터에 어떤 쓰기 작업도 하지 않습니다.
    ------------------------------------------------------------------------- */
 const previewParams = new URLSearchParams(window.location.search);
 const forestFriendPreviewEnabled = previewParams.get("forestFriendPreview") === "1";
@@ -33,6 +34,8 @@ if (forestFriendPreviewEnabled) {
   let interactionHit = null;
   let statusNode = null;
   let imgNode = null;
+  let deliveryCard = null;
+  let composerWatchTimer = null;
   let currentZone = 0;
   let currentRouteIndex = 0;
   let roamTimer = null;
@@ -67,7 +70,7 @@ if (forestFriendPreviewEnabled) {
       <span class="forest-unicorn-visual" aria-hidden="true">
         <span class="forest-unicorn-image-wrap"><img class="forest-unicorn-image" src="${asset("idle_base")}" alt="" /></span>
       </span>
-      <span class="forest-unicorn-bubble" aria-live="polite"><p></p></span>
+      <span class="forest-unicorn-letter" aria-hidden="true">✉</span>
     `;
     world.appendChild(unicorn);
     imgNode = unicorn.querySelector(".forest-unicorn-image");
@@ -105,6 +108,19 @@ if (forestFriendPreviewEnabled) {
     `;
     stage.appendChild(arrival);
 
+    deliveryCard = document.createElement("aside");
+    deliveryCard.className = "forest-unicorn-delivery-card";
+    deliveryCard.setAttribute("aria-live", "polite");
+    deliveryCard.innerHTML = `
+      <span class="forest-unicorn-delivery-icon" aria-hidden="true">✉</span>
+      <div>
+        <p class="forest-unicorn-delivery-kicker">FOREST FRIEND DELIVERY · DEV</p>
+        <strong></strong>
+        <p class="forest-unicorn-delivery-note"></p>
+      </div>
+    `;
+    stage.appendChild(deliveryCard);
+
     const panel = document.createElement("section");
     panel.className = "forest-unicorn-preview-panel";
     panel.setAttribute("aria-label", "숲 유니콘 생활 테스트 제어");
@@ -114,20 +130,31 @@ if (forestFriendPreviewEnabled) {
       </div>
       <div class="forest-unicorn-preview-actions">
         <button type="button" data-unicorn-replay>첫 만남 다시 보기</button>
-        <button type="button" data-unicorn-depart>숲길로 떠나 보기</button>
+        <button type="button" data-unicorn-open-letter>편지 맡기기 체험</button>
       </div>
-      <p class="forest-unicorn-preview-status">크기 · 자리 · 앞뒤 깊이를 먼저 검수하는 화면이에요.</p>
+      <p class="forest-unicorn-preview-status">개발 체험에서는 실제 편지가 저장되지 않아요.</p>
     `;
     stage.insertAdjacentElement("afterend", panel);
     statusNode = panel.querySelector(".forest-unicorn-preview-status");
     panel.querySelector("[data-unicorn-replay]").addEventListener("click", playFirstArrival);
-    panel.querySelector("[data-unicorn-depart]").addEventListener("click", beginTestDeparture);
+    panel.querySelector("[data-unicorn-open-letter]").addEventListener("click", openUnicornLetterExperience);
 
     setAbsolutePosition(0, { visible: false });
+    installLetterExperienceBridge();
     window.setTimeout(playFirstArrival, 700);
   }
 
   function setStatus(text) { if (statusNode) statusNode.textContent = text; }
+
+  function setDeliveryCard(title = "", note = "", open = false) {
+    if (!deliveryCard) return;
+    const titleNode = deliveryCard.querySelector("strong");
+    const noteNode = deliveryCard.querySelector(".forest-unicorn-delivery-note");
+    if (titleNode) titleNode.textContent = title;
+    if (noteNode) noteNode.textContent = note;
+    deliveryCard.classList.toggle("is-open", Boolean(open));
+  }
+
   function getArrivalLayer() { return getStage()?.querySelector(".forest-unicorn-arrival"); }
   function setSprite(name) { if (imgNode) imgNode.src = asset(name); }
 
@@ -274,21 +301,13 @@ if (forestFriendPreviewEnabled) {
     unicorn?.querySelector(".forest-unicorn-bubble")?.classList.remove("is-open");
   }
 
-  function getInteractionCopy() {
-    const zoneId = CONFIG.zones[currentZone]?.id;
-    if (zoneId === "flower-watch") return "꽃향기가 좋아서, 잠깐 더 보고 있었어요.";
-    if (zoneId === "front-walk") return "천천히 걷고 있었어요. 같이 쉬어 갈래요?";
-    return "응, 여기 있어요. 나무 곁은 포근하네요.";
-  }
-
   function resumeRoamingAfterInteraction() {
     if (!unicorn || isTravelling) return;
     isInteracting = false;
     unicorn.removeAttribute("data-interacting");
     interactionHit?.removeAttribute("data-interacting");
-    closeBubble();
     playIdleLoop();
-    setStatus("유니콘이 잠시 더 나무 곁에서 쉬어요.");
+    setStatus("유니콘이 잠시 더 정원에 머물러요.");
     // 눌렀다고 바로 걸어가 버리지 않도록 잠깐 더 머뭅니다.
     roamTimer = window.setTimeout(continueRoaming, 6500);
   }
@@ -304,12 +323,8 @@ if (forestFriendPreviewEnabled) {
     unicorn.setAttribute("data-interacting", "true");
     interactionHit?.setAttribute("data-interacting", "true");
     setSprite("idle_tall");
-    const bubble = unicorn.querySelector(".forest-unicorn-bubble");
-    const copy = bubble?.querySelector("p");
-    if (copy) copy.textContent = getInteractionCopy();
-    bubble?.classList.add("is-open");
-    setStatus("유니콘이 멈춰 서서 당신을 바라봐요 · 5초 동안 쉬어요.");
-    // 클릭이 먹혔는지 분명히 알 수 있도록 5초간 완전히 정지합니다.
+    setStatus("유니콘이 잠깐 멈춰 당신을 바라봐요.");
+    // 말풍선 없이 5초간 완전히 멈춰, 클릭 반응만 조용히 남깁니다.
     interactionTimer = window.setTimeout(resumeRoamingAfterInteraction, 5000);
   }
 
@@ -347,13 +362,134 @@ if (forestFriendPreviewEnabled) {
     roamTimer = window.setTimeout(continueRoaming, 900);
   }
 
+  function composerError(message = "") {
+    const node = document.querySelector(".forest-unicorn-letter-choice-error");
+    if (node) node.textContent = message;
+  }
+
+  function selectedRecipientName() {
+    const selected = document.querySelector("#letterRecipientList .letter-recipient-choice.selected");
+    const name = selected?.querySelector(".letter-recipient-name")?.childNodes?.[0]?.textContent
+      || selected?.querySelector(".letter-recipient-name")?.textContent
+      || "친구";
+    return String(name).replace(/DEV/g, "").trim() || "친구";
+  }
+
+  function ensureUnicornLetterChoice() {
+    const composer = document.getElementById("letterComposerSheet");
+    const form = document.getElementById("letterForm");
+    const carrier = document.getElementById("letterCarrierPreview");
+    if (!composer || !form || !carrier || composer.classList.contains("hidden")) return;
+
+    let choice = form.querySelector(".forest-unicorn-letter-choice");
+    if (!choice) {
+      choice = document.createElement("section");
+      choice.className = "forest-unicorn-letter-choice";
+      choice.innerHTML = `
+        <div class="forest-unicorn-letter-choice-copy">
+          <span class="forest-unicorn-letter-choice-icon" aria-hidden="true">🦄</span>
+          <div>
+            <p class="forest-unicorn-letter-choice-kicker">FOREST FRIEND · DEV EXPERIENCE</p>
+            <strong>숲 유니콘에게 맡기기</strong>
+            <p>유니콘이 정원에 있는 동안 바로 숲길로 떠나는 흐름을 확인해 보세요.</p>
+          </div>
+        </div>
+        <button type="button" class="forest-unicorn-letter-choice-button">유니콘에게 맡기기 · 체험</button>
+        <p class="forest-unicorn-letter-choice-error" aria-live="polite"></p>
+        <p class="forest-unicorn-letter-choice-note">개발 체험이라 실제 편지 저장·배송은 일어나지 않아요.</p>
+      `;
+      carrier.insertAdjacentElement("afterend", choice);
+      choice.querySelector(".forest-unicorn-letter-choice-button")?.addEventListener("click", startLetterDeliveryFromComposer);
+    }
+
+    const normalSubmit = form.querySelector('button[type="submit"]');
+    if (normalSubmit?.disabled) {
+      normalSubmit.setAttribute("aria-label", "일반 숲친구 배송은 현재 사용할 수 없어요");
+    }
+  }
+
+  function enableLetterExperienceEntry() {
+    const openButton = document.getElementById("openLetterComposer");
+    if (!openButton) return;
+    openButton.disabled = false;
+    openButton.textContent = "유니콘에게 편지 맡기기 · 체험";
+    openButton.dataset.forestUnicornPreview = "true";
+  }
+
+  function installLetterExperienceBridge() {
+    enableLetterExperienceEntry();
+    const composer = document.getElementById("letterComposerSheet");
+    const openButton = document.getElementById("openLetterComposer");
+    openButton?.addEventListener("click", () => window.setTimeout(ensureUnicornLetterChoice, 120));
+    document.getElementById("openLetters")?.addEventListener("click", () => {
+      window.setTimeout(enableLetterExperienceEntry, 140);
+    });
+
+    if (composer) {
+      const observer = new MutationObserver(() => {
+        enableLetterExperienceEntry();
+        ensureUnicornLetterChoice();
+      });
+      observer.observe(composer, { attributes: true, childList: true, subtree: true, attributeFilter: ["class"] });
+    }
+
+    // 기존 렌더링이 버튼을 다시 비활성화하는 경우에도 개발 체험 진입만 유지합니다.
+    composerWatchTimer = window.setInterval(enableLetterExperienceEntry, 900);
+  }
+
+  function openUnicornLetterExperience() {
+    const lettersButton = document.getElementById("openLetters");
+    if (lettersButton) {
+      lettersButton.click();
+      window.setTimeout(() => {
+        enableLetterExperienceEntry();
+        document.getElementById("openLetterComposer")?.click();
+        window.setTimeout(ensureUnicornLetterChoice, 180);
+      }, 180);
+      return;
+    }
+    setStatus("하단 편지에서 ‘유니콘에게 편지 맡기기 · 체험’을 눌러주세요.");
+  }
+
+  function closeComposerForDelivery() {
+    document.getElementById("letterComposerSheet")?.classList.add("hidden");
+    document.getElementById("sheetOverlay")?.classList.add("hidden");
+  }
+
+  function startLetterDeliveryFromComposer() {
+    if (!unicorn || isTravelling) {
+      composerError("유니콘이 지금은 숲길을 지나고 있어요.");
+      return;
+    }
+
+    const title = document.getElementById("letterTitle")?.value.trim() || "";
+    const message = document.getElementById("letterMessage")?.value.trim() || "";
+    const selected = document.querySelector("#letterRecipientList .letter-recipient-choice.selected");
+    if (!selected) {
+      composerError("먼저 편지를 받을 친구를 골라 주세요.");
+      return;
+    }
+    if (!title || !message) {
+      composerError("제목과 전하고 싶은 이야기를 적은 뒤 맡겨 주세요.");
+      return;
+    }
+
+    const recipient = selectedRecipientName();
+    composerError("");
+    closeComposerForDelivery();
+    beginTestDeparture({ recipient, fromLetter: true });
+  }
+
   function playFirstArrival() {
     if (!unicorn) return;
     clearAllTimers();
     isTravelling = false;
     isInteracting = false;
     unicorn?.removeAttribute("data-interacting");
+    unicorn?.removeAttribute("data-has-letter");
     interactionHit?.removeAttribute("data-interacting");
+    interactionHit?.classList.remove("is-hidden");
+    setDeliveryCard("", "", false);
     closeBubble();
     setFacing("left");
     unicorn.classList.remove("is-visible", "is-departed");
@@ -380,31 +516,47 @@ if (forestFriendPreviewEnabled) {
     }, 1800);
   }
 
-  function departFromPath() {
+  function departFromPath({ recipient = "친구", fromLetter = false } = {}) {
     if (!unicorn) return;
     isTravelling = true;
     closeBubble();
     stopCharacterMotion();
     setFacing("right");
+    unicorn.setAttribute("data-has-letter", "true");
     setSprite("send");
-    setStatus("유니콘이 편지를 안고 숲길로 떠나요. 체험에서는 8초 뒤 돌아와요.");
+    setStatus("유니콘이 편지를 품고 오른쪽 숲길로 떠나요.");
+    setDeliveryCard(
+      `유니콘이 ${recipient}에게 보낼 편지를 품고 있어요.`,
+      fromLetter ? "개발 체험 · 숲길로 떠난 뒤 8초 후 돌아와요." : "개발 체험 · 유니콘의 배송 출발 장면이에요.",
+      true
+    );
     stateTimer = window.setTimeout(() => {
       unicorn.classList.add("is-departed");
+      interactionHit?.classList.add("is-hidden");
+      setDeliveryCard(
+        "숲 유니콘이 숲길을 지나고 있어요.",
+        "개발 체험 · 실제 편지는 저장되지 않으며 8초 뒤 돌아와요.",
+        true
+      );
     }, 850);
 
     returnTimer = window.setTimeout(() => {
       if (!unicorn) return;
       setAbsolutePosition(0, { visible: false });
       setFacing("left");
+      unicorn.removeAttribute("data-has-letter");
       unicorn.classList.remove("is-departed");
+      interactionHit?.classList.remove("is-hidden");
       setSprite("return");
       unicorn.classList.add("is-visible");
       setStatus("오른쪽 숲길에서 작은 빛과 함께 유니콘이 돌아왔어요.");
+      setDeliveryCard("유니콘이 정원으로 돌아왔어요.", "잠시 뒤 다시 나무 곁에서 쉬어요.", true);
       stateTimer = window.setTimeout(() => {
         moveTo(1, {
           duration: 2200,
           afterMove: () => {
             isTravelling = false;
+            setDeliveryCard("", "", false);
             setStatus("유니콘이 다시 정원을 천천히 둘러봐요.");
             playIdleLoop();
             currentRouteIndex = 0;
@@ -415,8 +567,9 @@ if (forestFriendPreviewEnabled) {
     }, CONFIG.testReturnMs);
   }
 
-  function beginTestDeparture() {
+  function beginTestDeparture({ recipient = "친구", fromLetter = false } = {}) {
     if (!unicorn || isTravelling) return;
+    isTravelling = true;
     isInteracting = false;
     unicorn.removeAttribute("data-interacting");
     interactionHit?.removeAttribute("data-interacting");
@@ -427,14 +580,15 @@ if (forestFriendPreviewEnabled) {
     closeBubble();
 
     if (currentZone !== 0) {
-      setStatus("유니콘이 먼저 오른쪽 숲길로 걸어가고 있어요.");
+      setStatus("유니콘이 편지를 품고 먼저 오른쪽 숲길로 걸어가고 있어요.");
+      unicorn.setAttribute("data-has-letter", "true");
       moveTo(0, {
         duration: 2400,
-        afterMove: departFromPath,
+        afterMove: () => departFromPath({ recipient, fromLetter }),
       });
       return;
     }
-    departFromPath();
+    departFromPath({ recipient, fromLetter });
   }
 
   function initWhenReady() {

@@ -192,3 +192,77 @@ body.forest-unicorn-preview-enabled .forest-unicorn-preview-panel { display: blo
 .forest-unicorn-preview[data-interacting="true"] { z-index: 10; }
 .forest-unicorn-preview[data-interacting="true"] .forest-unicorn-shadow { width: 56px; opacity: .92; }
 .forest-unicorn-preview[data-interacting="true"] .forest-unicorn-bubble { z-index: 12; }
+
+
+/* v2.5: 실제 편지 저장 없이 흐름만 확인하는 유니콘 배송 체험 */
+.forest-unicorn-letter {
+  position: absolute;
+  z-index: 5;
+  right: 7px;
+  top: 15px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(255,255,255,.9);
+  border-radius: 9px;
+  background: rgba(255,255,255,.92);
+  color: #d07f99;
+  font-size: 13px;
+  box-shadow: 0 5px 12px rgba(78,98,89,.15);
+  opacity: 0;
+  transform: scale(.75) rotate(-8deg);
+  transition: opacity .22s ease, transform .22s ease;
+}
+.forest-unicorn-preview[data-has-letter="true"] .forest-unicorn-letter { opacity: 1; transform: scale(1) rotate(0deg); }
+.forest-unicorn-hit.is-hidden { opacity: 0; pointer-events: none; }
+
+.forest-unicorn-delivery-card {
+  position: absolute;
+  z-index: 16;
+  left: 50%;
+  bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: min(310px, calc(100% - 30px));
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,.92);
+  border-radius: 17px;
+  background: rgba(255,255,255,.93);
+  color: #5f796a;
+  box-shadow: 0 12px 22px rgba(78,98,89,.16);
+  transform: translate(-50%, 12px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
+  backdrop-filter: blur(7px);
+}
+.forest-unicorn-delivery-card.is-open { opacity: 1; transform: translate(-50%, 0); }
+.forest-unicorn-delivery-icon { display: grid; flex: 0 0 auto; place-items: center; width: 31px; height: 31px; border-radius: 11px; background: #fff0f2; color: #d97c99; font-size: 16px; }
+.forest-unicorn-delivery-card p { margin: 0; }
+.forest-unicorn-delivery-kicker { color: #a4ba98; font-size: 8px; font-weight: 950; letter-spacing: .075em; }
+.forest-unicorn-delivery-card strong { display: block; margin-top: 2px; color: #5f796a; font-size: 10.5px; line-height: 1.35; }
+.forest-unicorn-delivery-note { margin-top: 2px !important; color: #91a091; font-size: 8.8px; font-weight: 750; line-height: 1.35; }
+
+.forest-unicorn-letter-choice {
+  margin: 12px 0 4px;
+  padding: 12px;
+  border: 1px solid rgba(183,220,186,.92);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(248,255,246,.96), rgba(250,247,255,.96));
+  box-shadow: 0 8px 16px rgba(90,125,98,.06);
+}
+.forest-unicorn-letter-choice-copy { display: flex; align-items: flex-start; gap: 9px; }
+.forest-unicorn-letter-choice-icon { display: grid; flex: 0 0 auto; place-items: center; width: 34px; height: 34px; border-radius: 12px; background: #edf9ec; font-size: 18px; }
+.forest-unicorn-letter-choice p { margin: 0; }
+.forest-unicorn-letter-choice-kicker { color: #9ebc9d; font-size: 8px; font-weight: 950; letter-spacing: .07em; }
+.forest-unicorn-letter-choice strong { display: block; margin-top: 2px; color: #5e8069; font-size: 12px; }
+.forest-unicorn-letter-choice-copy div > p:last-child { margin-top: 3px; color: #839388; font-size: 10px; font-weight: 700; line-height: 1.4; }
+.forest-unicorn-letter-choice-button { width: 100%; margin-top: 10px; padding: 11px; border: 0; border-radius: 13px; background: linear-gradient(135deg, #9acfa7, #84c4bd); color: #fff; font-size: 12px; font-weight: 950; cursor: pointer; box-shadow: 0 9px 16px rgba(92,161,119,.17); }
+.forest-unicorn-letter-choice-error { min-height: 0; margin-top: 7px !important; color: #c8758e; font-size: 10px; font-weight: 800; line-height: 1.35; }
+.forest-unicorn-letter-choice-error:empty { display: none; }
+.forest-unicorn-letter-choice-note { margin-top: 7px !important; color: #a5a3aa; font-size: 8.7px; font-weight: 750; line-height: 1.35; }
+
+/* 평소 클릭은 대사 없이 멈춤/미세 반응만 남깁니다. */
+.forest-unicorn-preview .forest-unicorn-bubble { display: none !important; }
