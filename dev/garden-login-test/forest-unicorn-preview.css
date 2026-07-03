@@ -1,0 +1,195 @@
+/* -------------------------------------------------------------------------
+   FOREST UNICORN PREVIEW v1
+   ?forestFriendPreview=1 에서만 켜지는, DB 비저장 체험 장면입니다.
+   실제 특별 친구 해금·편지 시스템을 건드리지 않고 동선/연출을 검수합니다.
+   ------------------------------------------------------------------------- */
+.forest-unicorn-preview,
+.forest-unicorn-arrival,
+.forest-unicorn-preview-panel { display: none; }
+
+body.forest-unicorn-preview-enabled .forest-unicorn-preview,
+body.forest-unicorn-preview-enabled .forest-unicorn-arrival,
+body.forest-unicorn-preview-enabled .forest-unicorn-preview-panel { display: block; }
+
+.forest-unicorn-preview {
+  position: absolute;
+  z-index: 6;
+  width: 102px;
+  height: 126px;
+  margin-left: -51px;
+  margin-top: -112px;
+  cursor: pointer;
+  pointer-events: auto;
+  opacity: 0;
+  filter: drop-shadow(0 9px 8px rgba(66, 88, 77, .20));
+  transition: left 3.25s cubic-bezier(.25,.72,.30,1), top 3.25s cubic-bezier(.25,.72,.30,1), opacity .55s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.forest-unicorn-preview.is-visible { opacity: 1; }
+.forest-unicorn-preview.is-arriving { animation: unicornArrival .9s cubic-bezier(.18,.82,.29,1) both; }
+.forest-unicorn-preview.is-walking .forest-unicorn-sprite { animation: unicornWalkBob .38s ease-in-out infinite alternate; }
+.forest-unicorn-preview.is-flower-looking .forest-unicorn-sprite { transform: translateY(2px) rotate(-3deg) scale(1.02); }
+.forest-unicorn-preview.is-departing { pointer-events: none; opacity: 0; }
+.forest-unicorn-preview:focus-visible { outline: 3px solid rgba(255,255,255,.94); outline-offset: 5px; border-radius: 50%; }
+
+.forest-unicorn-sprite {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-origin: 52% 85%;
+  animation: unicornIdleFloat 4.2s ease-in-out infinite;
+  transition: transform .45s ease;
+}
+.forest-unicorn-sprite img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.forest-unicorn-eye-close {
+  position: absolute;
+  left: 33.7%;
+  top: 39.1%;
+  width: 15%;
+  height: 8.6%;
+  border-top: 2px solid rgba(102, 75, 79, .94);
+  border-radius: 50%;
+  background: rgba(255, 246, 233, .88);
+  box-shadow: 3px 0 0 rgba(255, 246, 233, .38);
+  opacity: 0;
+  transform: scaleX(.72) rotate(-7deg);
+  transform-origin: 50% 50%;
+  pointer-events: none;
+}
+.forest-unicorn-preview.is-blinking .forest-unicorn-eye-close { opacity: 1; }
+
+.forest-unicorn-ground-glow {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 74px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255, 244, 178, .72), rgba(221, 245, 212, .26) 58%, transparent 72%);
+  transform: translateX(-50%);
+  filter: blur(1px);
+  opacity: .7;
+  animation: unicornGroundGlow 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+.forest-unicorn-sparkles { position: absolute; inset: 4px 0 18px; pointer-events: none; }
+.forest-unicorn-sparkles i {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #fff7ad;
+  box-shadow: 0 0 8px rgba(255,242,151,.9);
+  opacity: 0;
+  animation: unicornSparkle 3.6s ease-in-out infinite;
+}
+.forest-unicorn-sparkles i:nth-child(1) { left: 13%; top: 26%; animation-delay: .1s; }
+.forest-unicorn-sparkles i:nth-child(2) { right: 13%; top: 42%; animation-delay: 1.4s; }
+.forest-unicorn-sparkles i:nth-child(3) { left: 44%; top: 7%; animation-delay: 2.5s; }
+.forest-unicorn-sparkles i:nth-child(4) { left: 20%; bottom: 18%; animation-delay: 3.1s; }
+.forest-unicorn-sparkles i:nth-child(5) { right: 24%; bottom: 10%; animation-delay: 2s; }
+.forest-unicorn-preview.is-flower-looking .forest-unicorn-sparkles i:nth-child(4),
+.forest-unicorn-preview.is-flower-looking .forest-unicorn-sparkles i:nth-child(5) {
+  background: #ffd6e4;
+  box-shadow: 0 0 8px rgba(255,190,216,.9);
+  animation-duration: 1.75s;
+}
+
+.forest-unicorn-bubble {
+  position: absolute;
+  z-index: 11;
+  left: 50%;
+  bottom: 104px;
+  width: 154px;
+  padding: 9px 10px 8px;
+  border: 1px solid rgba(255,255,255,.92);
+  border-radius: 16px;
+  background: rgba(255,255,255,.90);
+  color: #637b6f;
+  text-align: center;
+  box-shadow: 0 10px 18px rgba(78,98,89,.13);
+  transform: translateX(-50%) translateY(7px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
+  backdrop-filter: blur(8px);
+}
+.forest-unicorn-bubble.is-open { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+.forest-unicorn-bubble::after { content:""; position:absolute; left:50%; bottom:-5px; width:10px; height:10px; background:rgba(255,255,255,.90); transform:translateX(-50%) rotate(45deg); }
+.forest-unicorn-bubble p { margin: 0; font-size: 10px; font-weight: 850; line-height: 1.4; }
+.forest-unicorn-bubble button { position:relative; z-index:1; margin-top:7px; padding:6px 9px; border:0; border-radius:999px; background:#8fc89e; color:#fff; font-size:9px; font-weight:900; cursor:pointer; }
+
+.forest-unicorn-arrival {
+  position: absolute;
+  z-index: 12;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .5s ease;
+}
+.forest-unicorn-arrival.is-open { opacity: 1; }
+.forest-unicorn-arrival::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  background: radial-gradient(circle at 67% 67%, rgba(255,250,202,.35), rgba(255,255,255,.02) 40%, rgba(89,110,116,.10) 100%);
+}
+.forest-unicorn-arrival-copy {
+  position:absolute;
+  left:50%;
+  bottom:68px;
+  width:min(258px, calc(100% - 40px));
+  padding:10px 14px;
+  border:1px solid rgba(255,255,255,.9);
+  border-radius:18px;
+  background:rgba(255,255,255,.86);
+  color:#647b70;
+  text-align:center;
+  transform:translateX(-50%) translateY(8px);
+  box-shadow:0 10px 20px rgba(78,98,89,.12);
+}
+.forest-unicorn-arrival.is-open .forest-unicorn-arrival-copy { animation: unicornCopyRise .58s .28s ease both; }
+.forest-unicorn-arrival-kicker { margin:0 0 2px; color:#9bba8a; font-size:9px; font-weight:900; letter-spacing:.08em; }
+.forest-unicorn-arrival-copy p:last-child { margin:0; font-size:11px; font-weight:850; line-height:1.45; }
+.forest-unicorn-arrival-lights { position:absolute; inset:0; overflow:hidden; }
+.forest-unicorn-arrival-lights i { position:absolute; width:7px; height:7px; border-radius:50%; background:#fff5a9; box-shadow:0 0 14px rgba(255,244,151,.98); opacity:0; animation:unicornArrivalLight 2.9s ease-in-out infinite; }
+.forest-unicorn-arrival-lights i:nth-child(1){left:59%;top:67%;animation-delay:.1s}.forest-unicorn-arrival-lights i:nth-child(2){left:68%;top:57%;animation-delay:.65s}.forest-unicorn-arrival-lights i:nth-child(3){left:75%;top:71%;animation-delay:1.1s}.forest-unicorn-arrival-lights i:nth-child(4){left:64%;top:79%;animation-delay:1.65s}.forest-unicorn-arrival-lights i:nth-child(5){left:79%;top:63%;animation-delay:2.2s}
+
+.forest-unicorn-preview-panel {
+  width:min(490px, calc(100% - 22px));
+  margin:8px auto 12px;
+  padding:10px 12px;
+  border:1px solid rgba(186,221,191,.84);
+  border-radius:18px;
+  background:rgba(247,255,248,.88);
+  color:#607568;
+  box-shadow:0 10px 20px rgba(95,126,97,.07);
+}
+.forest-unicorn-preview-panel-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.forest-unicorn-preview-panel p { margin:0; }
+.forest-unicorn-preview-panel .kicker { color:#9abea0; font-size:9px; font-weight:900; letter-spacing:.08em; }
+.forest-unicorn-preview-panel strong { display:block; margin-top:2px; font-size:12px; color:#557362; }
+.forest-unicorn-preview-actions { display:flex; gap:6px; margin-top:8px; }
+.forest-unicorn-preview-actions button { flex:1; min-height:31px; padding:6px 8px; border:1px solid rgba(169,211,174,.85); border-radius:10px; background:#fff; color:#64916b; font-size:10px; font-weight:900; cursor:pointer; }
+.forest-unicorn-preview-actions button:last-child { background:#91cda0; color:#fff; border-color:#91cda0; }
+.forest-unicorn-preview-status { margin-top:7px !important; color:#81998a; font-size:9.5px; line-height:1.4; }
+
+@keyframes unicornIdleFloat { 0%,100%{transform:translateY(0) rotate(0)} 45%{transform:translateY(-3px) rotate(.6deg)} 72%{transform:translateY(-1px) rotate(-.35deg)} }
+@keyframes unicornWalkBob { from{transform:translateY(-1px) rotate(-.8deg) scale(1.015)} to{transform:translateY(2px) rotate(.8deg) scale(.99)} }
+@keyframes unicornGroundGlow { 0%,100%{opacity:.45;transform:translateX(-50%) scale(.92)} 50%{opacity:.78;transform:translateX(-50%) scale(1.08)} }
+@keyframes unicornSparkle { 0%,56%,100%{opacity:0;transform:translateY(4px) scale(.45)} 66%{opacity:.92;transform:translateY(-4px) scale(1)} 78%{opacity:.25;transform:translateY(-9px) scale(.7)} }
+@keyframes unicornArrival { 0%{opacity:0;transform:translateY(-22px) scale(.82)} 65%{opacity:1;transform:translateY(3px) scale(1.04)} 100%{opacity:1;transform:translateY(0) scale(1)} }
+@keyframes unicornCopyRise { from{opacity:0;transform:translateX(-50%) translateY(12px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+@keyframes unicornArrivalLight { 0%,100%{opacity:0;transform:translate(0,8px) scale(.4)} 35%{opacity:.95;transform:translate(-8px,-12px) scale(1)} 65%{opacity:.2;transform:translate(-14px,-28px) scale(.5)} }
+
+@media (prefers-reduced-motion: reduce) {
+  .forest-unicorn-preview, .forest-unicorn-sprite, .forest-unicorn-ground-glow, .forest-unicorn-sparkles i, .forest-unicorn-arrival-lights i { animation: none !important; }
+  .forest-unicorn-preview { transition-duration: .01ms; }
+}
