@@ -3677,18 +3677,19 @@ function renderSpecialForestFriendPreviewComposer() {
   const carrier = activeSpecialForestFriendPreview();
   if (!carrier) return;
 
-  const friends = state.friends || [];
-  if (!friends.length) {
+  // DEV 테스트 친구는 실제 수신 계정이 아니므로 유니콘 실배송 수신자로 보여주지 않습니다.
+  const realFriends = (state.friends || []).filter((friend) => !friend.isDevTest);
+  if (!realFriends.length) {
     clearSpecialForestFriendPreviewComposer();
-    showToast("친구와 연결되면 숲 유니콘에게 편지를 맡길 수 있어요.");
+    showToast("실제로 연결된 친구가 있어야 숲 유니콘에게 편지를 맡길 수 있어요.");
     return;
   }
 
-  if (!friends.some((friend) => friend.id === selectedLetterRecipientId)) {
-    selectedLetterRecipientId = friends[0].id;
+  if (!realFriends.some((friend) => friend.id === selectedLetterRecipientId)) {
+    selectedLetterRecipientId = realFriends[0].id;
   }
 
-  els.letterRecipientList.innerHTML = friends.map((friend) => {
+  els.letterRecipientList.innerHTML = realFriends.map((friend) => {
     const stage = stageForGrowth(friend.growth);
     const avatar = friend.avatarUrl
       ? `<img src="${escapeAttr(friend.avatarUrl)}" alt="${escapeAttr(friend.name)} 프로필 사진" />`
@@ -3728,8 +3729,9 @@ function openSpecialForestFriendPreviewComposer(key) {
     window.dispatchEvent(new CustomEvent("todayforest:special-friend-letter-preview-cancel", { detail: { key: carrier.key } }));
     return;
   }
-  if (!(state.friends || []).length) {
-    showToast("친구와 연결되면 숲 유니콘에게 편지를 맡길 수 있어요.");
+  const realFriends = (state.friends || []).filter((friend) => !friend.isDevTest);
+  if (!realFriends.length) {
+    showToast("실제로 연결된 친구가 있어야 숲 유니콘에게 편지를 맡길 수 있어요.");
     window.dispatchEvent(new CustomEvent("todayforest:special-friend-letter-preview-cancel", { detail: { key: carrier.key } }));
     return;
   }
@@ -3774,7 +3776,11 @@ async function submitSpecialForestFriendPreviewLetter() {
   }
 
   const recipient = (state.friends || []).find((friend) => friend.id === selectedLetterRecipientId);
-  const recipientName = recipient?.name || "친구";
+  if (!recipient || recipient.isDevTest) {
+    showToast("숲 유니콘 편지는 실제로 연결된 친구에게만 보낼 수 있어요.");
+    return true;
+  }
+  const recipientName = recipient.name;
   const submitButton = els.letterForm.querySelector('button[type="submit"]');
   const originalText = submitButton.textContent;
   submitButton.disabled = true;
