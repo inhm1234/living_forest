@@ -247,5 +247,18 @@ if (forestFriendPreviewEnabled) {
     window.setTimeout(initWhenReady, 250);
   }
 
-  window.addEventListener("load", () => window.setTimeout(initWhenReady, 850), { once: true });
+  // GitHub Pages에서 모듈이 늦게 도착해 load 이벤트가 이미 지나간 경우에도
+  // 반드시 시작되도록, DOM 준비 상태와 짧은 재시도를 함께 사용합니다.
+  function bootPreview() {
+    initWhenReady();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => window.setTimeout(bootPreview, 300), { once: true });
+  } else {
+    window.setTimeout(bootPreview, 120);
+  }
+
+  window.addEventListener("load", () => window.setTimeout(bootPreview, 700), { once: true });
+  window.setTimeout(bootPreview, 1500);
 }
