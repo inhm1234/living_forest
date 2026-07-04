@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="../../assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="../../assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="garden.css?v=inventory-v3-4-external-shelf" />
+  <link rel="stylesheet" href="garden.css?v=friends-list-first-v1" />
   <link rel="stylesheet" href="forest-unicorn-preview.css?v=2" />
   <link rel="stylesheet" href="little-light-dragon-preview.css?v=2" />
   <script>
@@ -693,39 +693,54 @@
       <button class="close-button" data-close="friendsSheet" type="button" aria-label="친구 닫기">×</button>
     </div>
 
-    <div class="friend-invite-box">
-      <div class="friend-invite-copy">
-        <span class="friend-invite-icon" aria-hidden="true">🌿</span>
+    <div class="friends-overview" id="friendsOverview">
+      <div class="friends-section-head">
         <div>
-          <b>친구를 내 정원으로 초대해요</b>
-          <p>링크를 받은 친구가 카카오로 로그인한 뒤 수락하면, 서로의 나무 성장을 볼 수 있어요.</p>
+          <p class="sheet-kicker">MY FRIENDS</p>
+          <h3>함께 자라는 친구</h3>
         </div>
+        <span class="friends-total" id="friendsTotal">0명</span>
       </div>
-      <button id="createInviteButton" class="create-invite-button" type="button">친구 초대 링크 만들기</button>
-      <div class="invite-link-wrap hidden" id="inviteLinkWrap">
-        <input id="inviteLink" type="text" readonly aria-label="친구 초대 링크" />
-        <button id="copyInviteLink" type="button">복사</button>
-      </div>
-      <p class="invite-expiry hidden" id="inviteExpiry"></p>
+      <div class="friends-list" id="friendsList" aria-live="polite"></div>
+
+      <button class="friend-invite-entry" id="openFriendInvitePanel" type="button">
+        <span class="friend-invite-entry-icon" aria-hidden="true">＋</span>
+        <span class="friend-invite-entry-copy">
+          <b>친구 초대하기</b>
+          <small>초대 링크를 만들어 정원을 함께 이어요</small>
+        </span>
+        <span class="friend-invite-entry-arrow" aria-hidden="true">›</span>
+      </button>
     </div>
 
-    <div class="dev-test-friend-box" id="devTestFriendBox">
-      <div>
-        <p class="sheet-kicker">DEV TEST FRIEND</p>
-        <b>테스트 새싹과 편지 흐름을 미리 확인해요</b>
-        <p>실제 카카오 친구가 수락하기 전에도 보내기·도착·읽음 상태를 시험해 볼 수 있어요. 이 친구는 내 개발 화면에만 보여요.</p>
-      </div>
-      <button id="enableDevFriendButton" class="enable-dev-friend-button" type="button">테스트 새싹 친구 만들기</button>
-    </div>
+    <div class="friend-invite-panel hidden" id="friendInvitePanel">
+      <button class="friend-panel-back" id="backToFriendsList" type="button">‹ 함께 자라는 친구</button>
 
-    <div class="friends-section-head">
-      <div>
-        <p class="sheet-kicker">MY FRIENDS</p>
-        <h3>함께 자라는 친구</h3>
+      <div class="friend-invite-box">
+        <div class="friend-invite-copy">
+          <span class="friend-invite-icon" aria-hidden="true">🌿</span>
+          <div>
+            <b>친구를 내 정원으로 초대해요</b>
+            <p>링크를 받은 친구가 카카오로 로그인한 뒤 수락하면, 서로의 나무 성장을 볼 수 있어요.</p>
+          </div>
+        </div>
+        <button id="createInviteButton" class="create-invite-button" type="button">친구 초대 링크 만들기</button>
+        <div class="invite-link-wrap hidden" id="inviteLinkWrap">
+          <input id="inviteLink" type="text" readonly aria-label="친구 초대 링크" />
+          <button id="copyInviteLink" type="button">복사</button>
+        </div>
+        <p class="invite-expiry hidden" id="inviteExpiry"></p>
       </div>
-      <span class="friends-total" id="friendsTotal">0명</span>
+
+      <div class="dev-test-friend-box" id="devTestFriendBox">
+        <div>
+          <p class="sheet-kicker">DEV TEST FRIEND</p>
+          <b>테스트 새싹과 편지 흐름을 미리 확인해요</b>
+          <p>실제 카카오 친구가 수락하기 전에도 보내기·도착·읽음 상태를 시험해 볼 수 있어요. 이 친구는 내 개발 화면에만 보여요.</p>
+        </div>
+        <button id="enableDevFriendButton" class="enable-dev-friend-button" type="button">테스트 새싹 친구 만들기</button>
+      </div>
     </div>
-    <div class="friends-list" id="friendsList" aria-live="polite"></div>
   </section>
 
   <section class="bottom-sheet tall-sheet hidden" id="foundItemsSheet" role="dialog" aria-modal="true" aria-labelledby="foundItemsSheetTitle">
@@ -872,7 +887,7 @@
 
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="garden.js?v=performance-cleanup-v1"></script>
+  <script type="module" src="garden.js?v=friends-list-first-v1"></script>
   <script type="module" src="forest-unicorn-preview.js?v=performance-cleanup-v1"></script>
   <script type="module" src="little-light-dragon-preview.js?v=2"></script>
 </body>

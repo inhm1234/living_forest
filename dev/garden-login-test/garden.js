@@ -546,6 +546,10 @@ const els = {
   friendsList: $("#friendsList"),
   friendsTotal: $("#friendsTotal"),
   friendCount: $("#friendCount"),
+  friendsOverview: $("#friendsOverview"),
+  friendInvitePanel: $("#friendInvitePanel"),
+  openFriendInvitePanel: $("#openFriendInvitePanel"),
+  backToFriendsList: $("#backToFriendsList"),
   createInviteButton: $("#createInviteButton"),
   inviteLinkWrap: $("#inviteLinkWrap"),
   inviteLink: $("#inviteLink"),
@@ -1695,6 +1699,22 @@ function openSheet(element) {
   els.sheetOverlay.classList.remove("hidden");
   element.classList.remove("hidden");
   window.setTimeout(() => element.querySelector("button, textarea, input")?.focus(), 60);
+}
+
+function showFriendsOverview() {
+  els.friendsOverview?.classList.remove("hidden");
+  els.friendInvitePanel?.classList.add("hidden");
+}
+
+function showFriendInvitePanel() {
+  els.friendsOverview?.classList.add("hidden");
+  els.friendInvitePanel?.classList.remove("hidden");
+}
+
+function openFriendsSheet() {
+  renderFriends();
+  showFriendsOverview();
+  openSheet(els.friendsSheet);
 }
 
 function isTreeNameSetupRequired() {
@@ -4388,8 +4408,7 @@ function returnToFriendsFromSharedTree() {
   setSharedTreeUrl("");
   els.sharedTreeView.classList.add("hidden");
   els.gardenApp.classList.remove("hidden");
-  renderFriends();
-  openSheet(els.friendsSheet);
+  openFriendsSheet();
   activeSharedTreeId = "";
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -5636,7 +5655,15 @@ function bindEvents() {
     renderFirstWalkTutorial();
   });
   $("#openRecords").addEventListener("click", () => { renderRecords(); openSheet(els.recordsSheet); });
-  els.openFriends.addEventListener("click", () => { renderFriends(); openSheet(els.friendsSheet); });
+  els.openFriends.addEventListener("click", openFriendsSheet);
+  els.openFriendInvitePanel?.addEventListener("click", () => {
+    showFriendInvitePanel();
+    window.setTimeout(() => els.createInviteButton?.focus(), 0);
+  });
+  els.backToFriendsList?.addEventListener("click", () => {
+    showFriendsOverview();
+    window.setTimeout(() => els.openFriendInvitePanel?.focus(), 0);
+  });
   $("#openLetters").addEventListener("click", () => { void openLettersSheet(); });
   els.openFeedback.addEventListener("click", openFeedbackSheet);
   els.openSupport.addEventListener("click", openSupportSheet);

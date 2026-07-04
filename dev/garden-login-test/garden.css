@@ -1263,8 +1263,56 @@ textarea::placeholder { color: #a7b4bd; }
 }
 .friend-pill:hover { transform: translateY(-1px); }
 
+.friends-overview { margin-top: 17px; }
+
+.friend-invite-entry {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 11px;
+  margin-top: 14px;
+  padding: 13px;
+  border: 1px solid rgba(129, 186, 149, .24);
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f5fcf4, #f9f7ff);
+  color: #547666;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 8px 17px rgba(102,124,143,.04);
+}
+.friend-invite-entry:hover { transform: translateY(-1px); }
+.friend-invite-entry-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  border-radius: 13px;
+  background: #e3f5e4;
+  color: #699b78;
+  font-size: 23px;
+  font-weight: 400;
+  line-height: 1;
+}
+.friend-invite-entry-copy { min-width: 0; flex: 1; }
+.friend-invite-entry-copy b { display: block; font-size: 13px; font-weight: 900; }
+.friend-invite-entry-copy small { display: block; margin-top: 3px; color: #8b9c94; font-size: 11px; font-weight: 700; line-height: 1.35; }
+.friend-invite-entry-arrow { color: #8aaa95; font-size: 24px; font-weight: 400; line-height: 1; }
+
+.friend-invite-panel { margin-top: 13px; }
+.friend-panel-back {
+  padding: 7px 2px;
+  border: 0;
+  background: transparent;
+  color: #7b9583;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
+}
+.friend-panel-back:hover { color: #5f856c; }
+
 .friend-invite-box {
-  margin: 17px 0 20px;
+  margin: 7px 0 20px;
   padding: 15px;
   border: 1px solid rgba(129, 186, 149, .22);
   border-radius: 21px;
