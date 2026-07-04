@@ -540,6 +540,40 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .garden-world .ground-shadow { bottom: 68px; width: 255px; height: 30px; }
 .stage-message { position: absolute; z-index: 8; bottom: 22px; left: 50%; width: max-content; max-width: calc(100% - 42px); margin: 0; padding: 9px 13px; border: 1px solid rgba(255,255,255,0.7); border-radius: 999px; background: rgba(255,255,255,0.52); color: #708395; font-size: 12px; font-weight: 800; text-align: center; transform: translateX(-50%); backdrop-filter: blur(8px); }
 
+/* 특별 친구 편지 수신 검수는 전용 URL에서만 열리는 작은 상태 카드입니다. */
+.special-friend-receive-debug {
+  display: grid;
+  gap: 5px;
+  margin: 10px 0 12px;
+  padding: 13px 14px;
+  border: 1px dashed rgba(190, 151, 192, .55);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255, 250, 255, .95), rgba(246, 251, 255, .95));
+  color: #6f7088;
+  box-shadow: 0 8px 18px rgba(124, 108, 141, .07);
+}
+.special-friend-receive-debug[hidden] { display: none; }
+.special-friend-receive-debug-kicker {
+  margin: 0;
+  color: #b087a8;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .1em;
+}
+.special-friend-receive-debug strong {
+  color: #7c6681;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.special-friend-receive-debug > p:last-child {
+  margin: 0;
+  color: #8a8493;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+
 .rain-layer { position: absolute; z-index: 6; inset: 0; pointer-events: none; opacity: 0; transition: opacity .35s ease; overflow: hidden; }
 .rain-layer.active { opacity: 1; }
 .rain-layer::before,

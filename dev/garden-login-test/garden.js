@@ -472,6 +472,9 @@ const els = {
   animalEncounterTime: $("#animalEncounterTime"),
   letterComposerTitle: $("#letterComposerTitle"),
   letterComposerFootnote: $("#letterComposerFootnote"),
+  specialFriendReceiveDebug: $("#specialFriendReceiveDebug"),
+  specialFriendReceiveDebugTitle: $("#specialFriendReceiveDebugTitle"),
+  specialFriendReceiveDebugBody: $("#specialFriendReceiveDebugBody"),
   nextVisitorText: $("#nextVisitorText"),
   branchLetters: $("#branchLetters"),
   foundItemsLayer: $("#foundItemsLayer"),
@@ -861,6 +864,48 @@ function showSpecialFriendDeliveryDebugNotice(error, carrier) {
   }
 
   showToast(`${userMessage}\n확인 코드: ${diagnostic}`, 9000);
+}
+
+function isSpecialFriendReceiveDebugEnabled() {
+  return new URL(window.location.href).searchParams.get("specialFriendReceiveDebug") === "1";
+}
+
+function updateSpecialFriendReceiveDebug({ error = null, rows = [], receivedCount = 0 } = {}) {
+  const panel = els.specialFriendReceiveDebug;
+  const title = els.specialFriendReceiveDebugTitle;
+  const body = els.specialFriendReceiveDebugBody;
+  if (!panel || !title || !body) return;
+
+  if (!isSpecialFriendReceiveDebugEnabled() || !currentUser) {
+    panel.hidden = true;
+    body.textContent = "";
+    return;
+  }
+
+  panel.hidden = false;
+  const gardenName = String(state.profileName || profileNameFromUser(currentUser) || "내 정원").trim() || "내 정원";
+
+  if (error) {
+    title.textContent = "특별 편지를 불러오지 못했어요.";
+    body.textContent = [
+      `로그인한 정원: ${gardenName}`,
+      "서버에서 읽은 특별 편지: 확인 실패",
+      `확인 코드: ${specialFriendDeliveryDiagnostic(error)}`,
+    ].join("\n");
+    return;
+  }
+
+  const safeRows = Array.isArray(rows) ? rows : [];
+  const sentCount = safeRows.filter((letter) => letter?.direction === "sent").length;
+  title.textContent = receivedCount > 0
+    ? "특별 편지가 서버에서 정원까지 도착했어요."
+    : "특별 편지가 서버에서 아직 보이지 않아요.";
+  body.textContent = [
+    `로그인한 정원: ${gardenName}`,
+    `서버에서 읽은 특별 편지: ${safeRows.length}통`,
+    `봉투로 표시할 수신 편지: ${receivedCount}통`,
+    `내가 보낸 배송 상태: ${sentCount}통`,
+  ].join("\n");
 }
 
 function databaseErrorMessage(error) {
@@ -1491,6 +1536,7 @@ function publishSpecialFriendJourneyState() {
 async function loadGardenState() {
   if (!currentUser) {
     state = cloneDefault();
+    updateSpecialFriendReceiveDebug();
     return;
   }
 
@@ -1674,6 +1720,14 @@ async function loadGardenState() {
         foundAt: item.found_at || item.created_at,
       })),
   };
+
+  // 수신자 정원에서만 확인하는 특별 친구 편지 검수입니다.
+  // 일반 주소에서는 숨기고, ?specialFriendReceiveDebug=1일 때만 최소 상태를 보여줍니다.
+  updateSpecialFriendReceiveDebug({
+    error: specialFriendLettersResult.error,
+    rows: specialFriendRows,
+    receivedCount: specialReceivedLetters.length,
+  });
 
   // 테스트 친구와의 공유나무는 실제 DB를 건드리지 않는 브라우저 전용 DEV 검수 상태입니다.
   mergeDevSharedTreePreview(devFriends);
