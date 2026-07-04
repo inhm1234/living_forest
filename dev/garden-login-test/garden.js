@@ -476,6 +476,7 @@ const els = {
   branchLetters: $("#branchLetters"),
   foundItemsLayer: $("#foundItemsLayer"),
   foundItemSparkle: $("#foundItemSparkle"),
+  foundItemHint: $("#foundItemHint"),
   gardenDecorateControls: $("#gardenDecorateControls"),
   openFoundItemsInventory: $("#openFoundItemsInventory"),
   foundItemsInventoryCount: $("#foundItemsInventoryCount"),
@@ -2868,11 +2869,18 @@ function renderFoundItems() {
   renderFoundItemsInventory();
 
   const canDiscover = canDiscoverFoundItem();
-  els.foundItemSparkle.hidden = gardenDecorateMode || !canDiscover;
+  const shouldShowDiscoveryGuide = !gardenDecorateMode && canDiscover;
+  els.foundItemSparkle.hidden = !shouldShowDiscoveryGuide;
+  if (els.foundItemHint) els.foundItemHint.hidden = !shouldShowDiscoveryGuide;
   els.foundItemSparkle.setAttribute(
     "aria-label",
     canDiscover ? "풀숲에서 반짝이는 작은 것 찾기" : "오늘의 작은 것을 모두 찾았어요"
   );
+  if (shouldShowDiscoveryGuide && els.foundItemHint) {
+    els.foundItemSparkle.setAttribute("aria-describedby", "foundItemHint");
+  } else {
+    els.foundItemSparkle.removeAttribute("aria-describedby");
+  }
 }
 
 function startGardenDecorateMode({ openDrawer = false } = {}) {
@@ -4946,7 +4954,7 @@ async function saveRecord(event) {
   els.treeWrap.classList.add("tree-pulse");
   showToast(
     canDiscoverFoundItem()
-      ? "오늘의 마음이 내 정원에 저장됐어요. 풀숲 어딘가가 반짝이고 있어요."
+      ? "오늘의 마음이 내 정원에 저장됐어요. 반짝이는 곳을 눌러 오늘의 작은 것을 찾아보세요."
       : "오늘의 마음이 내 정원에 저장됐어요."
   );
 }
