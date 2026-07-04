@@ -659,6 +659,7 @@ textarea::placeholder { color: #a7b4bd; }
 .detail-wrap.hidden { display: none; }
 .save-record, .letter-confirm { width: 100%; margin-top: 20px; padding: 15px; border: 0; border-radius: 17px; background: linear-gradient(135deg, #87caa0, #649c7d); color: #fff; font-size: 14px; font-weight: 950; box-shadow: 0 13px 22px rgba(86,150,105,.22); cursor: pointer; }
 .sheet-footnote { margin: 11px 0 0; color: #97a5ae; font-size: 11px; text-align: center; }
+.sheet-footnote.is-delivery-debug { color: #b8667d; font-weight: 900; line-height: 1.5; white-space: pre-line; }
 
 .records-summary { margin: 17px 0 12px; padding: 13px 14px; border-radius: 17px; background: linear-gradient(135deg, #eef9f0, #f3f5ff); color: #628276; font-size: 13px; line-height: 1.45; }
 .record-list, .letter-list { display: grid; gap: 9px; }
@@ -716,7 +717,7 @@ textarea::placeholder { color: #a7b4bd; }
 .letter-body { margin: 0; color: #6c7883; font-size: 14px; line-height: 1.72; white-space: pre-line; }
 .letter-date { margin: 16px 0 0; color: #a1aab2; font-size: 11px; }
 
-.toast { position: fixed; z-index: 80; left: 50%; bottom: 28px; max-width: calc(100% - 32px); padding: 12px 15px; border-radius: 14px; background: rgba(54,77,78,.88); color: #fff; font-size: 13px; font-weight: 800; box-shadow: 0 10px 24px rgba(35,52,52,.2); transform: translateX(-50%); }
+.toast { position: fixed; z-index: 80; left: 50%; bottom: 28px; max-width: calc(100% - 32px); padding: 12px 15px; border-radius: 14px; background: rgba(54,77,78,.88); color: #fff; font-size: 13px; font-weight: 800; line-height: 1.45; text-align: center; white-space: pre-line; box-shadow: 0 10px 24px rgba(35,52,52,.2); transform: translateX(-50%); }
 .toast.hidden { display: none; }
 
 @keyframes foundItemSettle {

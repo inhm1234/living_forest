@@ -829,6 +829,40 @@ function normalizeRpcRow(data) {
   return Array.isArray(data) ? data[0] || null : data || null;
 }
 
+function compactSpecialFriendDiagnostic(value, maxLength = 120) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  if (!text) return "";
+  return text.length > maxLength ? `${text.slice(0, Math.max(1, maxLength - 1))}…` : text;
+}
+
+function specialFriendDeliveryDiagnostic(error) {
+  const message = compactSpecialFriendDiagnostic(error?.message);
+  const code = compactSpecialFriendDiagnostic(error?.code, 40);
+  const marker = message.match(/\bSPECIAL_FRIEND_[A-Z0-9_]+\b/)?.[0];
+
+  // F12 없이도 서버가 준 식별값만 화면에서 확인합니다.
+  // 원문 전체나 민감한 응답은 보여주지 않습니다.
+  if (marker && code) return `${marker} · ${code}`;
+  if (marker) return marker;
+  if (code && message) return compactSpecialFriendDiagnostic(`${code} · ${message}`);
+  if (code) return code;
+  if (message) return message;
+  return "UNKNOWN_SPECIAL_FRIEND_ERROR";
+}
+
+function showSpecialFriendDeliveryDebugNotice(error, carrier) {
+  const diagnostic = specialFriendDeliveryDiagnostic(error);
+  const userMessage = databaseErrorMessage(error);
+  const debugNotice = `테스트 확인 코드 · ${diagnostic}\n이 화면을 캡처해서 보내 주세요.`;
+
+  if (els.letterComposerFootnote) {
+    els.letterComposerFootnote.textContent = debugNotice;
+    els.letterComposerFootnote.classList.add("is-delivery-debug");
+  }
+
+  showToast(`${userMessage}\n확인 코드: ${diagnostic}`, 9000);
+}
+
 function databaseErrorMessage(error) {
   console.error("TodayForest database error:", error);
   const message = String(error?.message || "");
@@ -3757,6 +3791,7 @@ function renderSpecialForestFriendPreviewComposer() {
   submitButton.textContent = `${carrier.icon} ${carrier.name}에게 편지 맡기기 · 도착 30분`;
   submitButton.disabled = false;
   els.letterComposerFootnote.textContent = `편지가 도착한 뒤에도 ${carrier.name}은 30분 동안 돌아오는 중이에요. 귀환 전에는 새 편지를 맡길 수 없어요.`;
+  els.letterComposerFootnote.classList.remove("is-delivery-debug");
 }
 
 function openSpecialForestFriendPreviewComposer(key) {
@@ -3868,7 +3903,7 @@ async function submitSpecialForestFriendPreviewLetter() {
     }
   } catch (error) {
     console.error("TodayForest special-friend letter send error:", error);
-    showToast(databaseErrorMessage(error));
+    showSpecialFriendDeliveryDebugNotice(error, carrier);
   } finally {
     // 성공했다면 시트가 이미 닫혀 있어도, 다음 열림에서 정상 문구가 다시 그려집니다.
     submitButton.disabled = false;
@@ -5101,11 +5136,11 @@ async function removeFriend(friendId, name, isDevTest = false) {
   showToast(isDevTest ? "테스트 새싹과 테스트 편지를 정리했어요." : `${name || "친구"}님과의 친구 관계를 정리했어요.`);
 }
 
-function showToast(message) {
+function showToast(message, duration = 3200) {
   clearTimeout(toastTimer);
   els.toast.textContent = message;
   els.toast.classList.remove("hidden");
-  toastTimer = window.setTimeout(() => els.toast.classList.add("hidden"), 3200);
+  toastTimer = window.setTimeout(() => els.toast.classList.add("hidden"), duration);
 }
 
 function escapeHTML(value) {
