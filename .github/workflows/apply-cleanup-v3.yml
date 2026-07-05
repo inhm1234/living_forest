@@ -1,0 +1,199 @@
+name: Apply Living Forest cleanup v3
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply verified cleanup
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import shutil
+          
+          root = Path('.')
+          
+          def remove_file(rel: str) -> None:
+              path = root / rel
+              if path.exists() and path.is_file():
+                  path.unlink()
+          
+          def move_if_present(source: str, destination: str) -> None:
+              src = root / source
+              dst = root / destination
+              if src.exists():
+                  dst.parent.mkdir(parents=True, exist_ok=True)
+                  if dst.exists():
+                      dst.unlink()
+                  src.replace(dst)
+          
+          # A. Preserve the three service-setup references, but place them outside the app root.
+          move_if_present('APPS_SCRIPT_CODE.txt', 'docs/setup/APPS_SCRIPT_CODE.txt')
+          move_if_present('KAKAO_SHARE_SETUP_GUIDE.txt', 'docs/setup/KAKAO_SHARE_SETUP_GUIDE.txt')
+          move_if_present('SHEETS_SETUP_GUIDE.txt', 'docs/setup/SHEETS_SETUP_GUIDE.txt')
+          
+          # B. Preserve the one current special-friend delivery note. Older v2.8/v2.9 patch notes are removed below.
+          special_candidates = [
+              'README_유니콘_실제배송_v2_10.txt',
+              'README_#Uc720#Ub2c8#Ucf58_#Uc2e4#Uc81c#Ubc30#Uc1a1_v2_10.txt',
+          ]
+          for source in special_candidates:
+              if (root / source).exists():
+                  move_if_present(source, 'docs/history/special-friend-unicorn-delivery-v2_10.md')
+                  break
+          
+          # C. Update the only live paths needed before removing verified duplicate assets.
+          app = root / 'dev/app.js'
+          app_text = app.read_text(encoding='utf-8')
+          old_tree = 'const TREE_GROWTH_ASSET_BASE = "assets/garden/tree_growth";'
+          new_tree = 'const TREE_GROWTH_ASSET_BASE = "../assets/garden/tree_growth";'
+          if old_tree in app_text:
+              app_text = app_text.replace(old_tree, new_tree, 1)
+          elif new_tree not in app_text:
+              raise RuntimeError('Stopped: dev/app.js tree-growth path did not match the expected source.')
+          old_share = 'return `${window.location.origin}${window.location.pathname.replace(/[^/]*$/, "")}assets/world/world-overview-day-v2.png`;'
+          new_share = 'return new URL("../assets/world/world-overview-day-v2.png", window.location.href).href;'
+          if old_share in app_text:
+              app_text = app_text.replace(old_share, new_share, 1)
+          elif new_share not in app_text:
+              raise RuntimeError('Stopped: dev/app.js Kakao share image path did not match the expected source.')
+          app.write_text(app_text, encoding='utf-8')
+          
+          style = root / 'dev/style.css'
+          style_text = style.read_text(encoding='utf-8')
+          for moment in ('day', 'sunset', 'night'):
+              old = f'../assets/garden/garden-inner-{moment}-v2.png'
+              new = f'../assets/world/world-overview-{moment}-v2.png'
+              if old in style_text:
+                  style_text = style_text.replace(old, new)
+              elif new not in style_text:
+                  raise RuntimeError(f'Stopped: dev/style.css {moment} background path did not match the expected source.')
+          style.write_text(style_text, encoding='utf-8')
+          
+          # D. Remove only listed obsolete patch notes and exact duplicate documentation.
+          doc_targets = [
+              'ANIMAL_V2_CARD_IN_STAGE_SAFE_SLOT_README.txt',
+              'ANIMAL_V2_CARD_SAFE_DOCK_README.txt',
+              'DEV_ALWAYS_AVAILABLE_INSTALL_MENU_README.txt',
+              'DEV_DECORATIONS12_CONNECTION_README.txt',
+              'DEV_DECORATIONS_12_UPLOAD_README.txt',
+              'DEV_FRIEND_DECORATIONS_CONNECTION_README.txt',
+              'LAUNCH_CHECKLIST.txt',
+              'PUBLIC_SHARE_COPY.txt',
+              'README.txt',
+              'README_PRODUCTION_UPLOAD.txt',
+              'README_UPLOAD.txt',
+              'README_유니콘_만남카드_후_편지작성_v2_9_안전패치.txt',
+              'README_유니콘_클릭_기존편지화면_v2_8_안전패치.txt',
+              'README_#Uc720#Ub2c8#Ucf58_#Ub9cc#Ub0a8#Uce74#Ub4dc_#Ud6c4_#Ud3b8#Uc9c0#Uc791#Uc131_v2_9_#Uc548#Uc804#Ud328#Uce58.txt',
+              'README_#Uc720#Ub2c8#Ucf58_#Ud074#Ub9ad_#Uae30#Uc874#Ud3b8#Uc9c0#Ud654#Uba74_v2_8_#Uc548#Uc804#Ud328#Uce58.txt',
+              'TUTORIAL_FIRST_WALK_V1_README.txt',
+              'TUTORIAL_FIRST_WALK_V2_README.txt',
+              'UPLOAD_GUIDE.txt',
+              'UPLOAD_TRADE_STALL_ASSETS_V1.txt',
+              'VERSION.txt',
+              'WHITEPAPER.md',
+              'assets/README.txt',
+              'assets/README_ASSETS.txt',
+              'dev/APPS_SCRIPT_CODE.txt',
+              'dev/COORDINATE_WORLD_README.md',
+              'dev/DEV_README.txt',
+              'dev/KAKAO_SHARE_SETUP_GUIDE.txt',
+              'dev/LAUNCH_CHECKLIST.txt',
+              'dev/PATCH_NOTES_v0.3.2.txt',
+              'dev/PRIORITY2_SUPPORT_AD_README.txt',
+              'dev/PRIORITY3_GROWTH_SYNC_README.txt',
+              'dev/PRIORITY3_LABEL_POLISH_README.txt',
+              'dev/PUBLIC_SHARE_COPY.txt',
+              'dev/README.md',
+              'dev/SHEETS_SETUP_GUIDE.txt',
+              'dev/UPLOAD_GUIDE.txt',
+              'dev/VERSION.txt',
+              'dev/WHITEPAPER.md',
+              'dev/garden-login-test/ANIMAL_V2_CARD_CLICK_FIX_README.txt',
+              'dev/garden-login-test/ANIMAL_VISIT_V1_STEP2_README.txt',
+              'dev/garden-login-test/ANIMAL_VISIT_V2_CARD_COMPACT_PATCH_README.txt',
+              'dev/garden-login-test/ANIMAL_VISIT_V2_STAGE2_README.txt',
+              'dev/garden-login-test/COORDINATE_WORLD_V1_README.txt',
+              'dev/garden-login-test/COORDINATE_WORLD_V2_README.txt',
+              'dev/garden-login-test/INVENTORY_V1_README.txt',
+              'dev/garden-login-test/INVENTORY_V2_INLINE_DECORATE_README.txt',
+              'dev/garden-login-test/INVENTORY_V3_1_FIX_README.txt',
+              'dev/garden-login-test/INVENTORY_V3_2_DRAWER_FIX_README.txt',
+              'dev/garden-login-test/INVENTORY_V3_3_ALWAYS_OPEN_README.txt',
+              'dev/garden-login-test/INVENTORY_V3_4_EXTERNAL_SHELF_README.txt',
+              'dev/garden-login-test/INVENTORY_V3_GARDEN_DOCK_README.txt',
+              'dev/garden-login-test/README.txt',
+              'dev/garden-login-test/README_SHARED_TREE_SEED_V1.txt',
+          ]
+          for rel in doc_targets:
+              remove_file(rel)
+          
+          # E. Remove verified byte-identical assets. The two source paths above now point to the retained originals.
+          for rel in [
+              'assets/garden/garden-inner-day-v2.png',
+              'assets/garden/garden-inner-sunset-v2.png',
+              'assets/garden/garden-inner-night-v2.png',
+              'dev/dev_style_background_dedup_v1.css',
+          ]:
+              remove_file(rel)
+          shutil.rmtree(root / 'dev/assets', ignore_errors=True)
+          
+          # F. New project map; ads.txt, SQL history, all SQL files, prototype folders and PWA files remain untouched.
+          (root / 'README.md').write_text('''# 오늘의숲 / Living Forest
+          
+          현재 정리 기준의 소스 구조입니다.
+          
+          ## 실행 경로
+          - 운영 화면: `/index.html`
+          - 현재 DEV 정원: `/dev/garden-login-test/`
+          - 이전 DEV 월드 실험 화면: `/dev/`
+          
+          ## 핵심 소스
+          - 운영 화면: `index.html`, `style.css`, `app.js`
+          - DEV 정원: `dev/garden-login-test/index.html`, `garden.css`, `garden.js`
+          - 공용 이미지: `assets/`
+          
+          ## Supabase SQL
+          `dev/garden-login-test/`의 SQL 6개는 이미 적용된 DB 기능 이력입니다.
+          기존 운영 DB에 다시 실행하지 말고, 새 DB를 처음부터 구성할 때만
+          `SQL_HISTORY_README.md`의 순서를 확인합니다.
+          
+          ## 외부 서비스 설정
+          - Google Apps Script 원본: `docs/setup/APPS_SCRIPT_CODE.txt`
+          - Kakao 공유 설정 안내: `docs/setup/KAKAO_SHARE_SETUP_GUIDE.txt`
+          - Google Sheets 안내: `docs/setup/SHEETS_SETUP_GUIDE.txt`
+          
+          ## 특별 숲친구
+          유니콘 실제 배송의 기존 규칙 및 적용 기록은
+          `docs/history/special-friend-unicorn-delivery-v2_10.md`에 보관합니다.
+          ''', encoding='utf-8')
+          
+          # Delete only empty directories produced by this cleanup.
+          for folder in sorted((p for p in root.rglob('*') if p.is_dir()), key=lambda p: len(p.parts), reverse=True):
+              try:
+                  folder.rmdir()
+              except OSError:
+                  pass
+          
+          print('Cleanup v3 applied successfully.')
+          PY
+
+      - name: Commit cleanup and remove this one-time workflow
+        run: |
+          rm -f .github/workflows/apply-cleanup-v3.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: cleanup duplicate assets and stale docs" || exit 0
+          git push
