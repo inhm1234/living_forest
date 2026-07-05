@@ -1243,7 +1243,7 @@ async function loadGardenState() {
 
   const nowIso = new Date().toISOString();
   const retentionTestActive = Boolean(retentionTestModeFromUrl());
-  const [profileResult, recordsResult, foundItemsResult, lettersResult, sentLettersResult, friendsResult, sharedTreesResult, sharedTreeInvitesResult, devFriendResult, devSentLettersResult, retentionDevLetters] = await Promise.all([
+  const [profileResult, recordsResult, foundItemsResult, lettersResult, sentLettersResult, friendsResult, sharedTreesResult, sharedTreeInvitesResult, retentionDevLetters] = await Promise.all([
     loadMyGardenProfile(),
     supabase.from("garden_records").select("id, mood, one_line, detail, created_at").order("created_at", { ascending: false }),
     loadFoundGardenItems(),
@@ -1256,8 +1256,6 @@ async function loadGardenState() {
     supabase.rpc("list_my_garden_friends"),
     supabase.rpc("list_my_garden_shared_trees"),
     supabase.rpc("list_my_garden_shared_tree_invites"),
-    supabase.rpc("get_my_dev_test_friend"),
-    supabase.rpc("list_my_dev_test_sent_letters"),
     loadRetentionDevLetters(),
   ]);
 
@@ -1275,8 +1273,6 @@ async function loadGardenState() {
   if (friendsResult.error) console.warn("TodayForest friend load skipped:", friendsResult.error);
   if (sharedTreesResult.error) console.warn("TodayForest shared-tree load skipped:", sharedTreesResult.error);
   if (sharedTreeInvitesResult.error) console.warn("TodayForest shared-tree invite load skipped:", sharedTreeInvitesResult.error);
-  if (devFriendResult.error) console.warn("TodayForest DEV friend load skipped:", devFriendResult.error);
-  if (devSentLettersResult.error) console.warn("TodayForest DEV sent-letter load skipped:", devSentLettersResult.error);
 
   const profile = profileResult.data;
   const realFriends = (friendsResult.data || []).map((friend) => ({
@@ -1287,16 +1283,8 @@ async function loadGardenState() {
     becameFriendsAt: friend.became_friends_at,
     isDevTest: Boolean(friend.is_dev_test),
   }));
-  const devFriends = (devFriendResult.data || []).map((friend) => ({
-    id: friend.friend_id,
-    name: friend.nickname || "테스트 새싹",
-    avatarUrl: friend.avatar_url || "",
-    growth: Number(friend.growth_count || 5),
-    becameFriendsAt: friend.became_friends_at,
-    isDevTest: true,
-  }));
   const friendsById = new Map();
-  [...realFriends, ...devFriends].forEach((friend) => {
+  realFriends.forEach((friend) => {
     if (friend?.id) friendsById.set(friend.id, friend);
   });
 
@@ -1310,18 +1298,8 @@ async function loadGardenState() {
     readAt: letter.read_at,
     isDevTest: Boolean(letter.is_dev_test),
   }));
-  const devSentLetters = (devSentLettersResult.data || []).map((letter) => ({
-    id: letter.id,
-    to: letter.recipient_name || "테스트 새싹",
-    title: letter.title,
-    deliveryKind: letter.delivery_kind,
-    sentAt: letter.sent_at,
-    availableAt: letter.available_at,
-    readAt: letter.read_at,
-    isDevTest: true,
-  }));
   const sentById = new Map();
-  [...realSentLetters, ...devSentLetters].forEach((letter) => {
+  realSentLetters.forEach((letter) => {
     if (letter?.id) sentById.set(letter.id, letter);
   });
 
@@ -1378,9 +1356,6 @@ async function loadGardenState() {
         foundAt: item.found_at || item.created_at,
       })),
   };
-
-  // 테스트 친구와의 공유나무는 실제 DB를 건드리지 않는 브라우저 전용 DEV 검수 상태입니다.
-  mergeDevSharedTreePreview(devFriends);
 
   // v9 보관 정책 검수 봉투도 실제 수신 편지와 분리된 DEV 전용 데이터입니다.
   if (retentionDevLetters.length) {
