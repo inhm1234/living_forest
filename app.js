@@ -327,6 +327,10 @@ let selectedAnimalV2VisitId = "";
 let animalVisitSyncBusy = false;
 let animalVisitArrivalTimer = null;
 let animalDepartureTimer = null;
+// 편지함을 열어 둔 동안에만 30초마다 배송 상태를 다시 읽습니다.
+// 정원 전체 데이터를 주기적으로 다시 불러오지 않기 위한 별도 타이머입니다.
+let lettersRefreshTimer = null;
+let lettersRefreshBusy = false;
 let animalEncounterVisitId = "";
 let pendingExpiredLetterReturn = null;
 let pendingRetentionNextVisitNoticeCount = 0;
@@ -1458,8 +1462,12 @@ function closeAllSheets({ force = false } = {}) {
   [els.recordSheet, els.recordsSheet, els.friendsSheet, els.lettersSheet, els.feedbackSheet, els.supportSheet, els.accountMenuSheet, els.letterComposerSheet, els.treeNameSheet].filter(Boolean).forEach((sheet) => sheet.classList.add("hidden"));
   els.sheetOverlay.classList.add("hidden");
   window.setTimeout(() => renderFirstWalkTutorial(), 0);
-  // 봉투 화면을 닫을 때만 배송 도착 알림을 다음 진입 시점으로 넘깁니다.
-  if (wasViewingLetters) clearAnimalDeliveryArrivals();
+  // 봉투 화면을 닫을 때만 배송 도착 알림을 다음 진입 시점으로 넘기고,
+  // 편지함 전용 30초 갱신도 함께 멈춥니다.
+  if (wasViewingLetters) {
+    clearAnimalDeliveryArrivals();
+    stopLettersAutoRefresh();
+  }
 }
 
 function getStage() {
@@ -4656,6 +4664,7 @@ async function signOut() {
     return;
   }
   currentUser = null;
+  stopLettersAutoRefresh();
   clearAnimalVisitArrivalTimer();
   activeAnimalVisit = null;
   activeAnimalV2Visits = [];
@@ -4674,17 +4683,114 @@ async function signOut() {
   setAuthError("");
 }
 
+function isLettersSheetOpen() {
+  return Boolean(els.lettersSheet && !els.lettersSheet.classList.contains("hidden"));
+}
+
+function stopLettersAutoRefresh() {
+  if (lettersRefreshTimer) {
+    window.clearInterval(lettersRefreshTimer);
+    lettersRefreshTimer = null;
+  }
+}
+
+function startLettersAutoRefresh() {
+  stopLettersAutoRefresh();
+  if (!currentUser || !isLettersSheetOpen()) return;
+
+  lettersRefreshTimer = window.setInterval(() => {
+    void refreshLettersWhileOpen();
+  }, 30000);
+}
+
+async function refreshLettersWhileOpen() {
+  if (!currentUser || !isLettersSheetOpen() || document.hidden || lettersRefreshBusy) return;
+
+  const refreshUserId = currentUser.id;
+  lettersRefreshBusy = true;
+  try {
+    const nowIso = new Date().toISOString();
+    const retentionTestActive = Boolean(retentionTestModeFromUrl());
+    const [lettersResult, sentLettersResult, retentionDevLetters] = await Promise.all([
+      // 보관 정책 검수 주소에서는 실제 받은 편지를 섞지 않는 기존 규칙을 그대로 지킵니다.
+      retentionTestActive
+        ? Promise.resolve({ data: [], error: null })
+        : supabase
+          .from("garden_letters")
+          .select("id, sender_name, title, delivery_kind, sent_at, available_at, read_at, created_at")
+          .lte("available_at", nowIso)
+          .is("read_at", null)
+          .order("available_at", { ascending: true })
+          .limit(60),
+      supabase.rpc("list_my_sent_garden_letters"),
+      loadRetentionDevLetters(),
+    ]);
+
+    // 새로 연 편지함을 이미 닫았거나 계정이 바뀌었다면 화면 상태를 덮어쓰지 않습니다.
+    if (!currentUser || currentUser.id !== refreshUserId || !isLettersSheetOpen()) return;
+
+    if (lettersResult.error) {
+      console.warn("TodayForest received-letter refresh skipped:", lettersResult.error);
+    } else {
+      state.letters = (lettersResult.data || []).map((letter) => ({
+        id: letter.id,
+        from: letter.sender_name || "친구의 마음",
+        title: letter.title,
+        body: null,
+        bodyLoaded: false,
+        delivery: deliveryText(letter.delivery_kind),
+        deliveryKind: letter.delivery_kind,
+        date: letter.available_at || letter.sent_at || letter.created_at,
+        read: false,
+      }));
+
+      // v9 보관 정책 검수 봉투는 실제 수신 편지와 분리된 DEV 전용 데이터입니다.
+      if (retentionDevLetters.length) {
+        const existing = new Set(state.letters.map((letter) => String(letter.id)));
+        state.letters = [...state.letters, ...retentionDevLetters.filter((letter) => !existing.has(String(letter.id)))];
+      }
+
+      // 개발 미리보기 주소의 로컬 봉투도 기존처럼 유지합니다.
+      mergeReceivedPreviewLetters();
+    }
+
+    if (sentLettersResult.error) {
+      console.warn("TodayForest sent-letter refresh skipped:", sentLettersResult.error);
+    } else {
+      state.sentLetters = (sentLettersResult.data || [])
+        .filter((letter) => !letter.is_dev_test)
+        .map((letter) => ({
+          id: letter.id,
+          to: letter.recipient_name || "친구",
+          title: letter.title,
+          deliveryKind: letter.delivery_kind,
+          sentAt: letter.sent_at,
+          availableAt: letter.available_at,
+          readAt: letter.read_at,
+          isDevTest: false,
+        }))
+        .map(applyAnimalDeliveryMeta);
+    }
+
+    // 편지 상태만 다시 그립니다. 정원 전체·친구·기록·장식·공유나무는 다시 읽지 않습니다.
+    renderGarden();
+    renderLetters();
+  } catch (error) {
+    console.warn("TodayForest letter refresh skipped:", error);
+  } finally {
+    lettersRefreshBusy = false;
+  }
+}
+
 async function openLettersSheet() {
-  // 편지 버튼을 누르는 순간 한 번 바로 새로 읽어, 오래 닫아뒀다가 열어도 최신 배송 상태를 보여줍니다.
+  // 편지 버튼을 누르는 순간 한 번 바로 새로 읽고,
+  // 열어 둔 동안에만 30초 단위로 배송 상태를 갱신합니다.
   renderLetters();
   openSheet(els.lettersSheet);
   if (!currentUser) return;
-  try {
-    await loadGardenState();
-    renderAll();
-  } catch (error) {
-    console.warn("TodayForest letter open refresh skipped:", error);
-  }
+
+  await refreshLettersWhileOpen();
+  startLettersAutoRefresh();
 }
 
 function openTreeNameSheet() {
@@ -4765,6 +4871,8 @@ function bindEvents() {
     }
     if (currentUser) {
       void syncMyGardenAnimalVisit({ beginWhenReady: true, silent: true, rerender: true });
+      // 편지함을 보고 있다가 다시 돌아오면 배송 상태만 한 번 최신으로 맞춥니다.
+      if (isLettersSheetOpen()) void refreshLettersWhileOpen();
     }
   });
   els.signOutButton.addEventListener("click", signOut);
@@ -5388,16 +5496,8 @@ async function init() {
     return;
   }
 
-  window.setInterval(async () => {
-    if (!currentUser) return;
-    try {
-      await loadGardenState();
-      await syncMyGardenAnimalVisit({ beginWhenReady: true, silent: true });
-      renderAll();
-    } catch (error) {
-      console.warn("TodayForest letter refresh skipped:", error);
-    }
-  }, 30000);
+  // 전체 정원 데이터는 주기적으로 다시 읽지 않습니다.
+  // 편지 배송 상태는 편지함을 열었을 때만 refreshLettersWhileOpen()이 갱신합니다.
 
   supabase.auth.onAuthStateChange(async (_event, session) => {
     const nextUser = session?.user || null;
@@ -5421,6 +5521,7 @@ async function init() {
     }
 
     if (!currentUser) {
+      stopLettersAutoRefresh();
       configureRetentionWindPolling();
       state = cloneDefault();
       resetWelcomeOnboardingSurface();
