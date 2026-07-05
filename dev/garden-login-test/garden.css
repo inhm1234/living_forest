@@ -2689,7 +2689,7 @@ textarea::placeholder { color: #a7b4bd; }
   overflow: hidden;
 }
 .welcome-still-art {
-  background: url("assets/welcome/welcome-forest-v1.png") center 51% / cover no-repeat;
+  background: url("../../assets/welcome/welcome-forest-v1.png") center 51% / cover no-repeat;
   filter: saturate(.92) brightness(1.01);
   /* 숲 전체에서 시작해, 가운데 공터를 향해 한 번만 아주 천천히 가까워집니다. */
   transform-origin: 50% 66%;
