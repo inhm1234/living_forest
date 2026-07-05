@@ -1,32 +1,36 @@
 /* -------------------------------------------------------------------------
-   SPECIAL FOREST FRIEND SWITCHER v1
-   DEV 전용: 특별 숲친구 미리보기 화면에서 유니콘 / 작은 빛 용을 한 번에 전환합니다.
+   SPECIAL FOREST FRIEND SWITCHER v2
+   DEV 전용: 특별 숲친구 미리보기 화면에서 유니콘 / 작은 빛 용을 바로 전환합니다.
    - 실제 편지, 배송 RPC, 친구·동물 방문 상태는 변경하지 않습니다.
-   - URL의 forestFriendPreview 값만 바꾼 뒤 현재 DEV 화면을 다시 엽니다.
+   - 로그인·정원 초기화가 끝난 뒤 미리보기 패널이 늦게 만들어져도 MutationObserver로 기다립니다.
    ------------------------------------------------------------------------- */
 (() => {
   const params = new URLSearchParams(window.location.search);
   const activeMode = params.get("forestFriendPreview");
 
-  // 특별 친구 미리보기에서만 노출합니다.
   if (activeMode !== "1" && activeMode !== "light-dragon") return;
   if (!/\/dev(?:\/|$)/.test(window.location.pathname)) return;
 
   const friends = [
-    { value: "1", icon: "🦄", label: "숲 유니콘", shortLabel: "유니콘" },
-    { value: "light-dragon", icon: "🐲", label: "작은 빛 용", shortLabel: "작은 빛 용" },
+    { value: "1", icon: "🦄", shortLabel: "유니콘" },
+    { value: "light-dragon", icon: "🐲", shortLabel: "작은 빛 용" },
   ];
+
+  const anchorSelector = activeMode === "1"
+    ? ".forest-unicorn-preview-panel"
+    : ".little-light-dragon-preview-panel";
+
+  let observer = null;
+
+  function stopWatching() {
+    observer?.disconnect();
+    observer = null;
+  }
 
   function mountSwitcher() {
     if (document.querySelector(".special-friend-switcher")) return true;
 
-    const anchor = document.querySelector(
-      activeMode === "1"
-        ? ".forest-unicorn-preview-panel"
-        : ".little-light-dragon-preview-panel"
-    );
-
-    // 기존 친구 생활 패널이 만들어진 뒤에만 바로 아래에 붙입니다.
+    const anchor = document.querySelector(anchorSelector);
     if (!anchor) return false;
 
     const current = friends.find((friend) => friend.value === activeMode) || friends[0];
@@ -47,7 +51,7 @@
             type="button"
             class="${friend.value === activeMode ? "is-active" : ""}"
             data-special-friend-preview="${friend.value}"
-            ${friend.value === activeMode ? 'aria-pressed="true"' : 'aria-pressed="false"'}
+            aria-pressed="${friend.value === activeMode ? "true" : "false"}"
           >
             <span aria-hidden="true">${friend.icon}</span>${friend.shortLabel} 보기
           </button>
@@ -68,17 +72,25 @@
     });
 
     anchor.insertAdjacentElement("afterend", switcher);
+    stopWatching();
     return true;
   }
 
-  function boot(attempt = 0) {
-    if (mountSwitcher() || attempt >= 20) return;
-    window.setTimeout(() => boot(attempt + 1), 200);
+  function watchForAnchor() {
+    if (mountSwitcher()) return;
+
+    observer = new MutationObserver(() => {
+      mountSwitcher();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // 드물게 패널이 렌더된 직후 바로 붙는 경우까지 한 번 더 확인합니다.
+    window.setTimeout(mountSwitcher, 0);
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => boot(), { once: true });
+    document.addEventListener("DOMContentLoaded", watchForAnchor, { once: true });
   } else {
-    boot();
+    watchForAnchor();
   }
 })();
