@@ -409,6 +409,7 @@ const els = {
   branchLetters: $("#branchLetters"),
   foundItemsLayer: $("#foundItemsLayer"),
   foundItemSparkle: $("#foundItemSparkle"),
+  foundItemHint: $("#foundItemHint"),
   gardenDecorateControls: $("#gardenDecorateControls"),
   openGardenDecorate: $("#openGardenDecorate"),
   gardenDecorateEditActions: $("#gardenDecorateEditActions"),
@@ -468,6 +469,10 @@ const els = {
   friendsList: $("#friendsList"),
   friendsTotal: $("#friendsTotal"),
   friendCount: $("#friendCount"),
+  friendsOverview: $("#friendsOverview"),
+  friendInvitePanel: $("#friendInvitePanel"),
+  openFriendInvitePanel: $("#openFriendInvitePanel"),
+  backToFriendsList: $("#backToFriendsList"),
   createInviteButton: $("#createInviteButton"),
   inviteLinkWrap: $("#inviteLinkWrap"),
   inviteLink: $("#inviteLink"),
@@ -1434,6 +1439,22 @@ function openSheet(element) {
   window.setTimeout(() => element.querySelector("button, textarea, input")?.focus(), 60);
 }
 
+function showFriendsOverview() {
+  els.friendsOverview?.classList.remove("hidden");
+  els.friendInvitePanel?.classList.add("hidden");
+}
+
+function showFriendInvitePanel() {
+  els.friendsOverview?.classList.add("hidden");
+  els.friendInvitePanel?.classList.remove("hidden");
+}
+
+function openFriendsSheet() {
+  renderFriends();
+  showFriendsOverview();
+  openSheet(els.friendsSheet);
+}
+
 function isTreeNameSetupRequired() {
   return Boolean(currentUser) && !String(state.treeName || "").trim();
 }
@@ -2355,11 +2376,18 @@ function renderFoundItems() {
   renderGardenDecorateControls(foundItems);
 
   const canDiscover = canDiscoverFoundItem();
-  els.foundItemSparkle.hidden = gardenDecorateMode || !canDiscover;
+  const shouldShowDiscoveryGuide = !gardenDecorateMode && canDiscover;
+  els.foundItemSparkle.hidden = !shouldShowDiscoveryGuide;
+  if (els.foundItemHint) els.foundItemHint.hidden = !shouldShowDiscoveryGuide;
   els.foundItemSparkle.setAttribute(
     "aria-label",
     canDiscover ? "풀숲에서 반짝이는 작은 것 찾기" : "오늘의 작은 것을 모두 찾았어요"
   );
+  if (shouldShowDiscoveryGuide && els.foundItemHint) {
+    els.foundItemSparkle.setAttribute("aria-describedby", "foundItemHint");
+  } else {
+    els.foundItemSparkle.removeAttribute("aria-describedby");
+  }
 }
 
 function startGardenDecorateMode() {
@@ -4777,7 +4805,15 @@ function bindEvents() {
     renderFirstWalkTutorial();
   });
   $("#openRecords").addEventListener("click", () => { renderRecords(); openSheet(els.recordsSheet); });
-  els.openFriends.addEventListener("click", () => { renderFriends(); openSheet(els.friendsSheet); });
+  els.openFriends.addEventListener("click", openFriendsSheet);
+  els.openFriendInvitePanel?.addEventListener("click", () => {
+    showFriendInvitePanel();
+    window.setTimeout(() => els.createInviteButton?.focus(), 0);
+  });
+  els.backToFriendsList?.addEventListener("click", () => {
+    showFriendsOverview();
+    window.setTimeout(() => els.openFriendInvitePanel?.focus(), 0);
+  });
   $("#openLetters").addEventListener("click", () => { void openLettersSheet(); });
   els.openFeedback.addEventListener("click", openFeedbackSheet);
   els.openSupport.addEventListener("click", openSupportSheet);

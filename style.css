@@ -408,6 +408,43 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .found-item-sparkle:disabled { opacity: .55; cursor: wait; }
 .found-item-sparkle span { display: block; text-shadow: 0 0 14px rgba(255, 235, 154, .95); }
 
+/* 기록 뒤 발견 전까지, 반짝임이 오늘 눌러야 할 자리라는 것을 가까이에서 알려줍니다. */
+.found-item-hint {
+  position: absolute;
+  z-index: 8;
+  right: 7%;
+  bottom: 41%;
+  display: grid;
+  gap: 2px;
+  width: 154px;
+  padding: 9px 11px;
+  border: 1px solid rgba(255, 242, 192, .94);
+  border-radius: 15px;
+  background: linear-gradient(145deg, rgba(255, 254, 243, .95), rgba(249, 255, 237, .91));
+  color: #7f8065;
+  box-shadow: 0 7px 17px rgba(116, 114, 77, .14);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.35;
+  pointer-events: none;
+  animation: foundItemHintFloat 2.4s ease-in-out infinite;
+}
+.found-item-hint[hidden] { display: none; }
+.found-item-hint::after {
+  content: "";
+  position: absolute;
+  right: 24px;
+  bottom: -6px;
+  width: 11px;
+  height: 11px;
+  border-right: 1px solid rgba(255, 242, 192, .94);
+  border-bottom: 1px solid rgba(255, 242, 192, .94);
+  background: #fbfef0;
+  transform: rotate(45deg);
+}
+.found-item-hint span { color: #9b9879; }
+.found-item-hint strong { color: #687e63; font-size: 11px; font-weight: 950; }
+
 .branch-letters { position: absolute; z-index: 5; inset: 0; pointer-events: none; }
 .branch-letters[hidden] { display: none; }
 .branch-letter-item, .branch-letter-bundle {
@@ -625,6 +662,10 @@ textarea::placeholder { color: #a7b4bd; }
 @keyframes foundItemSparkle {
   0%, 100% { transform: scale(.82) rotate(-8deg); opacity: .68; }
   50% { transform: scale(1.12) rotate(10deg); opacity: 1; }
+}
+@keyframes foundItemHintFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
 }
 
 @keyframes treeSway { 0%,100% { transform: translateX(-50%) rotate(0deg); } 50% { transform: translateX(-50%) rotate(1.4deg); } }
@@ -1189,6 +1230,54 @@ textarea::placeholder { color: #a7b4bd; }
   box-shadow: 0 8px 16px rgba(92, 143, 107, .08);
 }
 .friend-pill:hover { transform: translateY(-1px); }
+
+.friends-overview { margin-top: 17px; }
+
+.friend-invite-entry {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 11px;
+  margin-top: 14px;
+  padding: 13px;
+  border: 1px solid rgba(129, 186, 149, .24);
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f5fcf4, #f9f7ff);
+  color: #547666;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 8px 17px rgba(102,124,143,.04);
+}
+.friend-invite-entry:hover { transform: translateY(-1px); }
+.friend-invite-entry-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  border-radius: 13px;
+  background: #e3f5e4;
+  color: #699b78;
+  font-size: 23px;
+  font-weight: 400;
+  line-height: 1;
+}
+.friend-invite-entry-copy { min-width: 0; flex: 1; }
+.friend-invite-entry-copy b { display: block; font-size: 13px; font-weight: 900; }
+.friend-invite-entry-copy small { display: block; margin-top: 3px; color: #8b9c94; font-size: 11px; font-weight: 700; line-height: 1.35; }
+.friend-invite-entry-arrow { color: #8aaa95; font-size: 24px; font-weight: 400; line-height: 1; }
+
+.friend-invite-panel { margin-top: 13px; }
+.friend-panel-back {
+  padding: 7px 2px;
+  border: 0;
+  background: transparent;
+  color: #7b9583;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
+}
+.friend-panel-back:hover { color: #5f856c; }
 
 .friend-invite-box {
   margin: 17px 0 20px;
