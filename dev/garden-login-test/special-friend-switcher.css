@@ -1,0 +1,97 @@
+/* DEV special forest friend quick switcher v1 */
+.special-friend-switcher {
+  width: min(490px, calc(100% - 22px));
+  margin: 0 auto 12px;
+  padding: 10px 12px;
+  border: 1px dashed rgba(205, 176, 224, .9);
+  border-radius: 18px;
+  background: rgba(253, 249, 255, .92);
+  color: #6e6680;
+  box-shadow: 0 10px 20px rgba(115, 91, 133, .06);
+}
+
+.special-friend-switcher-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.special-friend-switcher p {
+  margin: 0;
+}
+
+.special-friend-switcher-kicker {
+  color: #a58cb4;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.special-friend-switcher strong {
+  display: block;
+  margin-top: 2px;
+  color: #73607e;
+  font-size: 12px;
+}
+
+.special-friend-switcher-current {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(239, 228, 247, .92);
+  color: #896f96;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.special-friend-switcher-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.special-friend-switcher-actions button {
+  min-height: 34px;
+  padding: 7px 8px;
+  border: 1px solid rgba(208, 185, 223, .92);
+  border-radius: 11px;
+  background: #fff;
+  color: #856e91;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform .15s ease, background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.special-friend-switcher-actions button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(180, 145, 201, .98);
+  background: rgba(249, 244, 252, .98);
+}
+
+.special-friend-switcher-actions button.is-active {
+  border-color: #b58aca;
+  background: #b58aca;
+  color: #fff;
+  cursor: default;
+}
+
+.special-friend-switcher-actions button:focus-visible {
+  outline: 3px solid rgba(181, 138, 202, .32);
+  outline-offset: 2px;
+}
+
+.special-friend-switcher-note {
+  margin-top: 7px !important;
+  color: #9989a1;
+  font-size: 9.5px;
+  line-height: 1.42;
+}
+
+@media (max-width: 360px) {
+  .special-friend-switcher-actions {
+    grid-template-columns: 1fr;
+  }
+}
