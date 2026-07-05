@@ -284,7 +284,7 @@ const forestDiaryRules = {
   }
 };
 
-const TREE_GROWTH_ASSET_BASE = "assets/garden/tree_growth";
+const TREE_GROWTH_ASSET_BASE = "../assets/garden/tree_growth";
 
 const growthStageRules = [
   { minDays: 0, maxDays: 2, name: "처음 깨어난 새싹" },
@@ -4182,7 +4182,7 @@ function getFriendInviteUrl() {
 }
 
 function getKakaoShareImageUrl() {
-  return `${window.location.origin}${window.location.pathname.replace(/[^/]*$/, "")}assets/world/world-overview-day-v2.png`;
+  return new URL("../assets/world/world-overview-day-v2.png", window.location.href).href;
 }
 
 function updateFriendInviteLinkText() {

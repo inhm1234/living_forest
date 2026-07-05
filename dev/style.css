@@ -10791,15 +10791,15 @@ h1,
 
 /* V1.46.1 test · 정원 배경/장식 투명 보정 */
 .garden-stage.garden-time-day {
-  background: url("../assets/garden/garden-inner-day-v2.png") center center / cover no-repeat !important;
+  background: url("../assets/world/world-overview-day-v2.png") center center / cover no-repeat !important;
 }
 
 .garden-stage.garden-time-sunset {
-  background: url("../assets/garden/garden-inner-sunset-v2.png") center center / cover no-repeat !important;
+  background: url("../assets/world/world-overview-sunset-v2.png") center center / cover no-repeat !important;
 }
 
 .garden-stage.garden-time-night {
-  background: url("../assets/garden/garden-inner-night-v2.png") center center / cover no-repeat !important;
+  background: url("../assets/world/world-overview-night-v2.png") center center / cover no-repeat !important;
 }
 
 .garden-stage .garden-depth,
