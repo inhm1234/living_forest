@@ -1275,29 +1275,36 @@ async function loadGardenState() {
   if (sharedTreeInvitesResult.error) console.warn("TodayForest shared-tree invite load skipped:", sharedTreeInvitesResult.error);
 
   const profile = profileResult.data;
-  const realFriends = (friendsResult.data || []).map((friend) => ({
-    id: friend.friend_id,
-    name: friend.nickname || "친구",
-    avatarUrl: friend.avatar_url || "",
-    growth: Number(friend.growth_count || 0),
-    becameFriendsAt: friend.became_friends_at,
-    isDevTest: Boolean(friend.is_dev_test),
-  }));
+  // 운영에서는 목록 RPC가 함께 돌려줄 수 있는 DEV 테스트 친구를 화면 데이터에서 제외합니다.
+  // 실제 친구 관계와 테스트 친구를 서버에서 삭제하지 않고, 운영 UI에만 섞이지 않게 합니다.
+  const realFriends = (friendsResult.data || [])
+    .filter((friend) => !friend.is_dev_test)
+    .map((friend) => ({
+      id: friend.friend_id,
+      name: friend.nickname || "친구",
+      avatarUrl: friend.avatar_url || "",
+      growth: Number(friend.growth_count || 0),
+      becameFriendsAt: friend.became_friends_at,
+      isDevTest: false,
+    }));
   const friendsById = new Map();
   realFriends.forEach((friend) => {
     if (friend?.id) friendsById.set(friend.id, friend);
   });
 
-  const realSentLetters = (sentLettersResult.data || []).map((letter) => ({
-    id: letter.id,
-    to: letter.recipient_name || "친구",
-    title: letter.title,
-    deliveryKind: letter.delivery_kind,
-    sentAt: letter.sent_at,
-    availableAt: letter.available_at,
-    readAt: letter.read_at,
-    isDevTest: Boolean(letter.is_dev_test),
-  }));
+  // 운영에서는 DEV 테스트 친구에게 보낸 편지도 일반 보낸 편지 목록에서 제외합니다.
+  const realSentLetters = (sentLettersResult.data || [])
+    .filter((letter) => !letter.is_dev_test)
+    .map((letter) => ({
+      id: letter.id,
+      to: letter.recipient_name || "친구",
+      title: letter.title,
+      deliveryKind: letter.delivery_kind,
+      sentAt: letter.sent_at,
+      availableAt: letter.available_at,
+      readAt: letter.read_at,
+      isDevTest: false,
+    }));
   const sentById = new Map();
   realSentLetters.forEach((letter) => {
     if (letter?.id) sentById.set(letter.id, letter);

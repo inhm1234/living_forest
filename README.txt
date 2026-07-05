@@ -1,18 +1,13 @@
-오늘의숲 손님맞이 정지 시안 v3 — DEV 전용 변경 파일
+오늘의숲 운영 반영용 v2 — 테스트 새싹 DEV 숨김 보완
 
-업로드 위치: dev/garden-login-test/
+이 ZIP에는 app.js 한 파일만 있습니다.
 
-바꿀 파일 3개:
-- index.html
-- garden.css
-- garden.js
+왜 v2가 필요한가:
+- v1은 별도 DEV RPC 호출을 끄는 처리만 했습니다.
+- 실제 친구 목록 RPC(list_my_garden_friends)가 is_dev_test=true 행을 함께 돌려주면,
+  테스트 새싹 DEV 카드가 계속 운영 화면에 나타날 수 있었습니다.
 
-새로 올릴 폴더/이미지 1개:
-- assets/welcome/welcome-forest-v1.png
-
-확인 주소:
-https://inhm1234.github.io/living_forest/dev/garden-login-test/?welcomePreview=1
-
-이 버전은 손님맞이 첫 정지 장면만 확인합니다.
-카메라, 빛, 씨앗, 카카오 로그인 연결은 넣지 않았습니다.
-기본 DEV 주소와 실제 카카오 계정/정원 데이터는 건드리지 않습니다.
+v2 변경:
+- friendsResult에서 is_dev_test=true 친구를 운영 화면 데이터로 만들기 전에 제외합니다.
+- sentLettersResult에서 is_dev_test=true 보낸 편지도 운영 화면 데이터로 만들기 전에 제외합니다.
+- DB 삭제, RPC 변경, SQL 변경, 실제 친구/실제 편지 데이터 변경은 하지 않습니다.
