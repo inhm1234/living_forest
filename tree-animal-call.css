@@ -1,0 +1,229 @@
+/* 오늘의숲 · 나무 손길로 숲친구 부르기 v1 */
+.tree-wrap { --tree-call-glow: rgba(255, 238, 143, .94); }
+
+.tree-call-hitbox {
+  position: absolute;
+  z-index: 3;
+  inset: 4% 8% 2%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 48% 48% 30% 30%;
+  background: transparent;
+  /* garden-world는 기본 pointer-events:none이므로 클릭 영역은 반드시 다시 활성화합니다. */
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.tree-call-hitbox:disabled { cursor: default; }
+.tree-call-hitbox:focus-visible {
+  outline: 3px solid rgba(255,255,255,.96);
+  outline-offset: 3px;
+}
+
+.tree-call-effect {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+.tree-call-ready-light,
+.tree-call-charge-light,
+.tree-call-path-light {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.tree-call-ready-light {
+  top: 27%;
+  left: 52%;
+  width: 12px;
+  height: 12px;
+  background: radial-gradient(circle, #fff 0 17%, #fff4a5 30%, rgba(255,228,119,.45) 58%, transparent 75%);
+  filter: drop-shadow(0 0 8px rgba(255,231,128,.92));
+  opacity: 0;
+}
+.tree-wrap.is-tree-call-ready .tree-call-ready-light {
+  opacity: .92;
+  animation: treeCallReadyLure 5s ease-in-out infinite;
+}
+
+.tree-call-charge-light {
+  width: 22px;
+  height: 22px;
+  background: radial-gradient(circle, #fff 0 15%, #fff3a3 34%, rgba(255,218,100,.48) 62%, transparent 77%);
+  border: 1px solid rgba(255,255,255,.92);
+  box-shadow: 0 0 0 4px rgba(255,239,159,.13), 0 0 17px rgba(255,218,91,.88);
+  filter: drop-shadow(0 0 11px rgba(255,224,114,.98));
+  opacity: 0;
+  transform: scale(.35);
+  transition: opacity .25s ease, transform .35s cubic-bezier(.2,.8,.25,1);
+}
+.tree-call-charge-light.charge-one { top: 51%; left: 42%; }
+.tree-call-charge-light.charge-two { top: 46%; left: 57%; }
+.tree-call-charge-light.charge-three { top: 34%; left: 49%; }
+.tree-call-effect::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 49%;
+  width: 126px;
+  height: 126px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,245,164,.58) 0%, rgba(255,229,115,.22) 42%, transparent 72%);
+  filter: blur(4px);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.55);
+  transition: opacity .3s ease, transform .42s cubic-bezier(.2,.8,.25,1);
+}
+.tree-wrap[data-tree-call-charge="1"] .tree-call-effect::after { opacity: .28; transform: translate(-50%, -50%) scale(.72); }
+.tree-wrap[data-tree-call-charge="2"] .tree-call-effect::after { opacity: .48; transform: translate(-50%, -50%) scale(.9); }
+.tree-wrap[data-tree-call-charge="3"] .tree-call-effect::after,
+.tree-wrap.is-tree-call-sending .tree-call-effect::after { opacity: .7; transform: translate(-50%, -50%) scale(1.08); }
+.tree-wrap[data-tree-call-charge="1"] .charge-one,
+.tree-wrap[data-tree-call-charge="2"] .charge-one,
+.tree-wrap[data-tree-call-charge="2"] .charge-two,
+.tree-wrap[data-tree-call-charge="3"] .tree-call-charge-light {
+  opacity: 1;
+  transform: scale(1);
+}
+.tree-wrap.is-tree-call-charging .tree-call-charge-light { animation: treeCallChargePop .52s ease-out; }
+.tree-wrap.is-tree-call-charge-fading .tree-call-charge-light { animation: treeCallChargeFade .5s ease-out both; }
+
+.tree-call-path-light {
+  z-index: 6;
+  top: 39%;
+  left: 54%;
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle, #fff 0 13%, #fff1a1 31%, rgba(248,211,98,.5) 60%, transparent 78%);
+  filter: drop-shadow(0 0 12px rgba(255,226,114,.96));
+  opacity: 0;
+}
+.tree-wrap.is-tree-call-sending .tree-call-path-light {
+  animation: treeCallToForestPath 3s cubic-bezier(.2,.7,.25,1) both;
+}
+
+.tree-call-status {
+  /* 나무 이미지 안이 아니라 정원 카드 위에 떠야 장식과 나무줄기에 가려지지 않습니다. */
+  position: absolute;
+  z-index: 40;
+  left: 50%;
+  bottom: 82px;
+  min-width: 210px;
+  max-width: calc(100% - 34px);
+  padding: 10px 15px;
+  border: 1px solid rgba(126, 157, 133, .34);
+  border-radius: 999px;
+  background: rgba(255,255,255,.97);
+  color: #496153;
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.35;
+  text-align: center;
+  box-shadow: 0 10px 28px rgba(62, 91, 70, .22), 0 0 0 3px rgba(255,255,255,.34);
+  backdrop-filter: blur(10px);
+  transform: translateX(-50%);
+  animation: treeCallStatusIn .2s ease-out both;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.tree-call-status[hidden] { display: none; }
+.tree-call-status.is-hiding { opacity: 0; transform: translateX(-50%) translateY(4px); transition: .2s ease; }
+
+.tree-wrap.is-tree-call-tapped .tree-image {
+  animation: treeCallTap .5s cubic-bezier(.2,.78,.25,1);
+}
+.tree-wrap.is-tree-call-tapped .tree-aura {
+  animation: treeCallAura .5s ease-out;
+}
+.tree-wrap.is-tree-call-sending .tree-aura {
+  animation: treeCallAuraGather 3s ease-in-out both;
+}
+
+/* 이미 숲친구 한 마리가 머무는 동안 다음 방문은 숲길의 기척으로만 암시합니다. */
+.garden-world.is-animal-v2-waiting::before {
+  content: "";
+  position: absolute;
+  z-index: 7;
+  right: 24px;
+  bottom: 92px;
+  width: 54px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(171,214,174,.42), transparent 70%);
+  opacity: .72;
+  animation: treeCallWaitingRustle 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes treeCallTap {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  24% { transform: rotate(-1.5deg) translateY(-2px); }
+  52% { transform: rotate(1.15deg) translateY(0); }
+  76% { transform: rotate(-.45deg); }
+}
+@keyframes treeCallAura {
+  0% { opacity: .8; transform: scale(1); }
+  45% { opacity: 1; transform: scale(1.045); }
+  100% { opacity: .8; transform: scale(1); }
+}
+@keyframes treeCallReadyLure {
+  0%, 8%, 100% { opacity: .38; transform: translate(0,0) scale(.78); }
+  15% { opacity: 1; transform: translate(-2px,8px) scale(1.16); }
+  23% { opacity: .55; transform: translate(0,18px) scale(.9); }
+  30% { opacity: .95; transform: translate(1px,24px) scale(1.05); }
+  38%, 84% { opacity: .32; transform: translate(0,24px) scale(.72); }
+}
+@keyframes treeCallChargePop {
+  0% { filter: drop-shadow(0 0 0 rgba(255,224,114,0)); }
+  55% { filter: drop-shadow(0 0 16px rgba(255,224,114,1)); }
+  100% { filter: drop-shadow(0 0 9px rgba(255,224,114,.9)); }
+}
+@keyframes treeCallChargeFade {
+  to { opacity: 0; transform: translateY(-7px) scale(.55); }
+}
+@keyframes treeCallAuraGather {
+  0% { opacity: .8; transform: scale(1); }
+  32% { opacity: 1; transform: scale(1.08); }
+  72% { opacity: .88; transform: scale(.98); }
+  100% { opacity: .8; transform: scale(1); }
+}
+@keyframes treeCallToForestPath {
+  0% { opacity: 0; transform: translate(0,0) scale(.55); }
+  12% { opacity: 1; transform: translate(7px,-5px) scale(1.25); }
+  52% { opacity: .95; transform: translate(82px,84px) scale(.95); }
+  78% { opacity: .7; transform: translate(126px,135px) scale(.72); }
+  100% { opacity: 0; transform: translate(151px,165px) scale(.38); }
+}
+@keyframes treeCallStatusIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(5px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes treeCallWaitingRustle {
+  0%, 100% { opacity: .25; transform: translateX(0) scale(.9); }
+  45% { opacity: .75; transform: translateX(-5px) scale(1.05); }
+  70% { opacity: .42; transform: translateX(3px) scale(.96); }
+}
+
+@media (max-width: 520px) {
+  .tree-call-status {
+    bottom: 78px;
+    min-width: 0;
+    padding: 9px 13px;
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tree-wrap.is-tree-call-ready .tree-call-ready-light,
+  .tree-wrap.is-tree-call-tapped .tree-image,
+  .tree-wrap.is-tree-call-tapped .tree-aura,
+  .tree-wrap.is-tree-call-sending .tree-call-path-light,
+  .tree-wrap.is-tree-call-sending .tree-aura,
+  .garden-world.is-animal-v2-waiting::before { animation-duration: .01ms; animation-iteration-count: 1; }
+}

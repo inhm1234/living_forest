@@ -12,6 +12,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   },
 });
 
+// 나무 상호작용 모듈은 기존 인증 세션과 같은 Supabase 클라이언트를 공유합니다.
+window.__todayForestSupabase = supabase;
+
 
 // GA4에는 닉네임·편지 제목·본문·계정 ID처럼 개인을 식별할 수 있는 값은 보내지 않습니다.
 // DEV에서는 ?analyticsDebug=1 일 때 콘솔에만 이벤트를 보여주고, 실제 GA4 전송은 하지 않습니다.
@@ -1636,6 +1639,9 @@ async function syncMyGardenAnimalVisit({ silent = false, rerender = false } = {}
 
     const synced = normalizeAnimalV2Sync(data);
     activeAnimalV2Visits = synced.visits;
+    window.dispatchEvent(new CustomEvent("todayforest:animal-visits-updated", {
+      detail: { visits: activeAnimalV2Visits.map((visit) => ({ ...visit })) },
+    }));
     reconcileAnimalV2Selection();
     scheduleAnimalVisitRefresh();
     if (rerender) renderAll();
@@ -1753,9 +1759,13 @@ function v2TraceMeta(visit) {
 function renderAnimalV2Scene() {
   if (!els.animalV2Layer || !els.animalV2TraceLayer) return;
 
-  const approaching = animalV2VisitsByState("approaching");
-  const active = animalV2VisitsByState("visiting", "departing");
+  const allApproaching = animalV2VisitsByState("approaching");
+  const allActive = animalV2VisitsByState("visiting", "departing");
   const traces = animalV2VisitsByState("trace");
+  // 한 번에 한 마리만 보여주고, 겹친 다음 방문은 숲길의 기척으로만 남깁니다.
+  const active = allActive.slice(0, 1);
+  const approaching = active.length ? [] : allApproaching.slice(0, 1);
+  const waitingCount = Math.max(0, allActive.length + allApproaching.length - active.length - approaching.length);
 
   els.animalV2Layer.innerHTML = [
     ...approaching.map((visit) => `
@@ -1799,7 +1809,10 @@ function renderAnimalV2Scene() {
 
   els.animalV2Layer.hidden = !(approaching.length || active.length);
   els.animalV2TraceLayer.hidden = !traces.length;
-  if (els.gardenWorld) els.gardenWorld.classList.toggle("is-animal-v2-approaching", approaching.length > 0);
+  if (els.gardenWorld) {
+    els.gardenWorld.classList.toggle("is-animal-v2-approaching", approaching.length > 0);
+    els.gardenWorld.classList.toggle("is-animal-v2-waiting", waitingCount > 0);
+  }
 }
 
 function handleAnimalV2LayerClick(event) {
@@ -4874,6 +4887,9 @@ function bindEvents() {
       // 편지함을 보고 있다가 다시 돌아오면 배송 상태만 한 번 최신으로 맞춥니다.
       if (isLettersSheetOpen()) void refreshLettersWhileOpen();
     }
+  });
+  window.addEventListener("todayforest:tree-animal-call-sync", () => {
+    void syncMyGardenAnimalVisit({ silent: true, rerender: true });
   });
   els.signOutButton.addEventListener("click", signOut);
   els.accountButton?.addEventListener("click", openAccountMenu);
