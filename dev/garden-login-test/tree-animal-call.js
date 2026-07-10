@@ -312,6 +312,8 @@ function createTreeCallSurface() {
   hitbox.type = "button";
   hitbox.id = "treeCallHitbox";
   hitbox.className = "tree-call-hitbox";
+  // 정원 좌표 레이어의 pointer-events:none 상속을 확실히 끊습니다.
+  hitbox.style.pointerEvents = "auto";
   hitbox.setAttribute("aria-label", "나무에 손길 건네기");
 
   const effect = document.createElement("span");
