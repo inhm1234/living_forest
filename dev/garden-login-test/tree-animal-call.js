@@ -118,7 +118,7 @@ function showStatus(text) {
       if (statusBubble) statusBubble.hidden = true;
       statusBubble?.classList.remove("is-hiding");
     }, 220);
-  }, 2300);
+  }, 4000);
 }
 
 function playTapReaction() {
@@ -262,7 +262,7 @@ function handleTreeTap(event) {
     return;
   }
   if (isCooldownActive()) {
-    showStatus(`나무의 빛이 다시 모이기까지 ${formatRemaining(cooldownUntilMs - Date.now())}`);
+    showStatus(`다시 부르기 · ${formatRemaining(cooldownUntilMs - Date.now())}`);
     renderState();
     return;
   }
@@ -337,7 +337,9 @@ function createTreeCallSurface() {
   const branchLetters = treeWrap.querySelector("#branchLetters");
   treeWrap.insertBefore(hitbox, branchLetters || null);
   treeWrap.insertBefore(effect, branchLetters || null);
-  treeWrap.insertBefore(statusBubble, branchLetters || null);
+  // 상태 문구는 나무 내부에 두면 줄기·꽃·장식에 가려지므로 정원 카드의 최상위 토스트로 둡니다.
+  const gardenStage = document.querySelector("#gardenStage");
+  (gardenStage || treeWrap).appendChild(statusBubble);
   readyLight = effect.querySelector(".tree-call-ready-light");
   pathLight = effect.querySelector(".tree-call-path-light");
   hitbox.addEventListener("click", handleTreeTap);

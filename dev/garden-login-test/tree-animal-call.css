@@ -109,23 +109,24 @@
 }
 
 .tree-call-status {
+  /* 나무 이미지 안이 아니라 정원 카드 위에 떠야 장식과 나무줄기에 가려지지 않습니다. */
   position: absolute;
-  z-index: 8;
+  z-index: 40;
   left: 50%;
-  bottom: 3%;
-  min-width: 190px;
-  max-width: 260px;
-  padding: 9px 12px;
-  border: 1px solid rgba(255,255,255,.9);
+  bottom: 82px;
+  min-width: 210px;
+  max-width: calc(100% - 34px);
+  padding: 10px 15px;
+  border: 1px solid rgba(126, 157, 133, .34);
   border-radius: 999px;
-  background: rgba(255,255,255,.88);
-  color: #68776c;
-  font-size: 12px;
-  font-weight: 700;
+  background: rgba(255,255,255,.97);
+  color: #496153;
+  font-size: 13px;
+  font-weight: 850;
   line-height: 1.35;
   text-align: center;
-  box-shadow: 0 8px 22px rgba(73,100,82,.14);
-  backdrop-filter: blur(7px);
+  box-shadow: 0 10px 28px rgba(62, 91, 70, .22), 0 0 0 3px rgba(255,255,255,.34);
+  backdrop-filter: blur(10px);
   transform: translateX(-50%);
   animation: treeCallStatusIn .2s ease-out both;
   pointer-events: none;
@@ -207,6 +208,15 @@
   0%, 100% { opacity: .25; transform: translateX(0) scale(.9); }
   45% { opacity: .75; transform: translateX(-5px) scale(1.05); }
   70% { opacity: .42; transform: translateX(3px) scale(.96); }
+}
+
+@media (max-width: 520px) {
+  .tree-call-status {
+    bottom: 78px;
+    min-width: 0;
+    padding: 9px 13px;
+    font-size: 12px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
