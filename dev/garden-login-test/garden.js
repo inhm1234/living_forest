@@ -385,6 +385,7 @@ let activeFriendFruitName = "";
 let activeHeartFruitMode = "mine";
 let activeHeartFruitRecordId = "";
 let heartFruitVisibilityReady = true;
+let heartFruitRevealForcedThisPage = false;
 
 const HEART_FRUIT_COMPLETE_COUNT = 30;
 const HEART_FRUIT_REVEAL_STORAGE_PREFIX = "todayforest-heart-fruit-revealed-v1";
@@ -3724,11 +3725,38 @@ function renderHeartFruitLayer(layer, count, { visible = true } = {}) {
   layer.classList.toggle("hidden", !visible || safeCount <= 0);
 }
 
+function isHeartFruitPreviewMode() {
+  return growthPreviewFromUrl() !== null && isHeartFruitTreeComplete();
+}
+
+function heartFruitPreviewRecords() {
+  const realRecords = [...(state.records || [])]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const result = realRecords.slice(0, HEART_FRUIT_COMPLETE_COUNT);
+  const base = new Date();
+  while (result.length < HEART_FRUIT_COMPLETE_COUNT) {
+    const index = result.length;
+    const date = new Date(base);
+    date.setDate(base.getDate() - index);
+    result.push({
+      id: `heart-fruit-preview-${index + 1}`,
+      mood: ["good", "calm", "tired"][index % 3],
+      oneLine: index === 0 ? "이 기록은 마음 열매 화면을 확인하기 위한 미리보기예요." : `미리보기 마음 ${index + 1}`,
+      detail: index === 0 ? "실제 나무가 완성되면 이 자리에는 그날 직접 남긴 마음이 보여요." : "",
+      isPublic: false,
+      isPreview: true,
+      createdAt: date.toISOString(),
+    });
+  }
+  return result;
+}
+
 function renderMyHeartFruits() {
   const complete = isHeartFruitTreeComplete();
-  const recordCount = complete ? (state.records || []).length : 0;
-  const previewCount = growthPreviewFromUrl() !== null && complete ? HEART_FRUIT_COMPLETE_COUNT : 0;
-  const decorativeCount = Math.max(recordCount, previewCount);
+  const previewMode = isHeartFruitPreviewMode();
+  const records = complete ? (previewMode ? heartFruitPreviewRecords() : (state.records || [])) : [];
+  const recordCount = records.length;
+  const decorativeCount = previewMode ? HEART_FRUIT_COMPLETE_COUNT : recordCount;
   renderHeartFruitLayer(els.heartFruitLayer, decorativeCount, { visible: complete });
   els.treeWrap?.classList.toggle("has-heart-fruits", complete && decorativeCount > 0);
   if (els.openHeartFruits) els.openHeartFruits.classList.toggle("hidden", !complete || recordCount <= 0);
@@ -3750,9 +3778,13 @@ function heartFruitRevealStorageKey() {
 }
 
 function maybePlayHeartFruitReveal() {
-  if (!currentUser || !isHeartFruitTreeComplete() || !(state.records || []).length || !els.treeWrap) return;
+  const records = isHeartFruitPreviewMode() ? heartFruitPreviewRecords() : (state.records || []);
+  if (!currentUser || !isHeartFruitTreeComplete() || !records.length || !els.treeWrap) return;
   const key = heartFruitRevealStorageKey();
-  const forceReplay = new URL(window.location.href).searchParams.get("heartFruitReveal") === "1";
+  const forceReplayRequested = new URL(window.location.href).searchParams.get("heartFruitReveal") === "1";
+  const forceReplay = forceReplayRequested && !heartFruitRevealForcedThisPage;
+  if (forceReplayRequested && heartFruitRevealForcedThisPage) return;
+  if (forceReplay) heartFruitRevealForcedThisPage = true;
   try {
     if (!forceReplay && window.localStorage.getItem(key) === "1") return;
     if (!forceReplay) window.localStorage.setItem(key, "1");
@@ -3769,7 +3801,8 @@ function maybePlayHeartFruitReveal() {
 }
 
 function heartFruitRecordsForMode() {
-  return activeHeartFruitMode === "friend" ? activeFriendFruitRecords : (state.records || []);
+  if (activeHeartFruitMode === "friend") return activeFriendFruitRecords;
+  return isHeartFruitPreviewMode() ? heartFruitPreviewRecords() : (state.records || []);
 }
 
 function selectedHeartFruitRecord() {
@@ -3795,12 +3828,13 @@ function renderHeartFruitDetail() {
   els.heartFruitDetailMore.classList.toggle("hidden", !record.detail);
 
   const isMine = activeHeartFruitMode === "mine";
-  els.heartFruitVisibilityStatus.textContent = isMine
-    ? (record.isPublic ? "친구에게 공개 중" : "나만 볼 수 있어요")
-    : "친구가 공개한 마음";
-  els.heartFruitVisibilityStatus.classList.toggle("is-public", Boolean(record.isPublic));
-  els.heartFruitVisibilityButton.classList.toggle("hidden", !isMine);
-  if (isMine) {
+  const isPreviewRecord = Boolean(record.isPreview);
+  els.heartFruitVisibilityStatus.textContent = isPreviewRecord
+    ? "화면 확인용 미리보기"
+    : (isMine ? (record.isPublic ? "친구에게 공개 중" : "나만 볼 수 있어요") : "친구가 공개한 마음");
+  els.heartFruitVisibilityStatus.classList.toggle("is-public", Boolean(record.isPublic) && !isPreviewRecord);
+  els.heartFruitVisibilityButton.classList.toggle("hidden", !isMine || isPreviewRecord);
+  if (isMine && !isPreviewRecord) {
     els.heartFruitVisibilityButton.disabled = false;
     els.heartFruitVisibilityButton.textContent = record.isPublic ? "나만 보기로 바꾸기" : "친구에게 공개하기";
     els.heartFruitVisibilityButton.setAttribute("aria-pressed", record.isPublic ? "true" : "false");
@@ -3812,7 +3846,9 @@ function renderHeartFruitSheet() {
   const isMine = activeHeartFruitMode === "mine";
   els.heartFruitSheetTitle.textContent = isMine ? "내 마음 열매" : `${activeFriendFruitName || "친구"}의 마음 열매`;
   els.heartFruitSummary.textContent = isMine
-    ? `이 나무에는 지금까지 ${records.length}개의 마음이 열매로 맺혀 있어요.`
+    ? (isHeartFruitPreviewMode()
+      ? `완성 화면 미리보기예요. 실제 완성 뒤에는 직접 남긴 마음 ${HEART_FRUIT_COMPLETE_COUNT}개가 보여요.`
+      : `이 나무에는 지금까지 ${records.length}개의 마음이 열매로 맺혀 있어요.`)
     : `${activeFriendFruitName || "친구"}가 공개한 마음 열매 ${records.length}개예요.`;
 
   if (!records.length) {
@@ -3840,12 +3876,13 @@ function renderHeartFruitSheet() {
 }
 
 function openMyHeartFruits() {
-  if (!isHeartFruitTreeComplete() || !(state.records || []).length) {
+  const records = isHeartFruitPreviewMode() ? heartFruitPreviewRecords() : (state.records || []);
+  if (!isHeartFruitTreeComplete() || !records.length) {
     showToast("나무가 완성되면 마음 열매를 만날 수 있어요.");
     return;
   }
   activeHeartFruitMode = "mine";
-  activeHeartFruitRecordId = String([...state.records].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0]?.id || "");
+  activeHeartFruitRecordId = String([...records].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0]?.id || "");
   renderHeartFruitSheet();
   openSheet(els.heartFruitSheet);
 }
@@ -6042,7 +6079,15 @@ function bindEvents() {
   });
   $("#openRecords").addEventListener("click", () => { renderRecords(); openSheet(els.recordsSheet); });
   els.openHeartFruits?.addEventListener("click", openMyHeartFruits);
+  els.heartFruitLayer?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    openMyHeartFruits();
+  });
   els.openFriendHeartFruits?.addEventListener("click", openFriendHeartFruits);
+  els.friendHeartFruitLayer?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    openFriendHeartFruits();
+  });
   els.heartFruitPicker?.addEventListener("click", handleHeartFruitPickerClick);
   els.heartFruitVisibilityButton?.addEventListener("click", () => { void toggleHeartFruitVisibility(); });
   els.openFriends.addEventListener("click", openFriendsSheet);

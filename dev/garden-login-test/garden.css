@@ -4056,8 +4056,21 @@ textarea::placeholder { color: #a7b4bd; }
 .heart-fruit-layer {
   position: absolute;
   inset: 2% 6% 23% 6%;
-  z-index: 4;
-  pointer-events: none;
+  z-index: 5;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.heart-fruit-layer:focus-visible {
+  outline: 3px solid rgba(255,255,255,.94);
+  outline-offset: 3px;
+  border-radius: 42%;
 }
 
 .heart-fruit {
@@ -4090,23 +4103,35 @@ textarea::placeholder { color: #a7b4bd; }
 
 .heart-fruit-open {
   position: absolute;
-  left: 50%;
-  bottom: 4%;
-  z-index: 10;
-  transform: translateX(-50%);
+  z-index: 14;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-height: 38px;
-  padding: 7px 12px;
-  border: 1px solid rgba(139, 92, 110, .2);
+  gap: 7px;
+  min-height: 40px;
+  padding: 8px 13px;
+  border: 1px solid rgba(139, 92, 110, .24);
   border-radius: 999px;
-  background: rgba(255, 250, 248, .92);
-  box-shadow: 0 8px 20px rgba(96, 79, 111, .16);
-  color: #6f4c5b;
+  background: rgba(255, 250, 248, .97);
+  box-shadow: 0 10px 24px rgba(96, 79, 111, .2);
+  color: #684452;
   font: inherit;
   cursor: pointer;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
+  touch-action: manipulation;
+}
+
+.garden-stage > .heart-fruit-open {
+  top: 58px;
+  left: 14px;
+}
+
+.garden-stage > .heart-fruit-open:hover {
+  transform: translateY(-1px);
+}
+
+.garden-stage > .heart-fruit-open:focus-visible {
+  outline: 3px solid rgba(255,255,255,.96);
+  outline-offset: 3px;
 }
 
 .heart-fruit-open > span {
@@ -4131,7 +4156,10 @@ textarea::placeholder { color: #a7b4bd; }
 }
 
 .friend-heart-fruit-open {
+  left: 50%;
+  top: auto;
   bottom: 5%;
+  transform: translateX(-50%);
   min-height: 36px;
   padding: 6px 10px;
 }
@@ -4309,7 +4337,8 @@ textarea::placeholder { color: #a7b4bd; }
 
 @media (max-width: 420px) {
   .heart-fruit-layer { inset: 3% 5% 24% 5%; }
-  .heart-fruit-open { bottom: 3%; }
+  .garden-stage > .heart-fruit-open { top: 56px; left: 11px; min-height: 38px; padding: 7px 11px; }
+  .friend-heart-fruit-open { top: auto; bottom: 3%; }
   .heart-fruit-picker { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .heart-fruit-detail { padding: 16px; }
 }

@@ -222,12 +222,7 @@
               src="assets/garden/tree_growth/tree_stage4_morning.png"
               alt="꽃과 잎이 피어난 내 마음 나무"
             />
-            <div class="heart-fruit-layer hidden" id="heartFruitLayer" aria-hidden="true"></div>
-            <button class="heart-fruit-open hidden" id="openHeartFruits" type="button" aria-label="내 마음 열매 보기">
-              <span aria-hidden="true">●</span>
-              <b>마음 열매</b>
-              <em id="heartFruitCount">0</em>
-            </button>
+            <button class="heart-fruit-layer hidden" id="heartFruitLayer" type="button" aria-label="마음 열매 열기"></button>
             <p class="heart-fruit-reveal-message hidden" id="heartFruitRevealMessage" role="status" aria-live="polite">지금까지의 마음이 열매로 맺혔어요.</p>
             <div class="branch-letters" id="branchLetters" aria-live="polite" aria-label="나뭇가지에 도착한 새 편지"></div>
           </div>
@@ -243,6 +238,12 @@
           <div class="ground-shadow" aria-hidden="true"></div>
         </div>
       </div>
+
+      <button class="heart-fruit-open hidden" id="openHeartFruits" type="button" aria-label="내 마음 열매 보기">
+        <span aria-hidden="true">●</span>
+        <b>마음 열매 보기</b>
+        <em id="heartFruitCount">0</em>
+      </button>
 
       <!-- 동물 카드는 정원 안의 안전 구역(왼쪽 하늘)에만 열립니다.
            상단 상태칩·오른쪽 방문 안내·나무·장식·꾸미기 버튼과 겹치지 않는 전용 자리입니다. -->
@@ -393,7 +394,7 @@
           <div class="tree-wrap friend-visit-tree-wrap" id="friendVisitTreeWrap">
             <div class="tree-aura" aria-hidden="true"></div>
             <img id="friendVisitTree" class="tree-image" src="assets/garden/tree_growth/tree_stage1_morning.png" alt="친구의 마음 나무" />
-            <div class="heart-fruit-layer friend-heart-fruit-layer hidden" id="friendHeartFruitLayer" aria-hidden="true"></div>
+            <button class="heart-fruit-layer friend-heart-fruit-layer hidden" id="friendHeartFruitLayer" type="button" aria-label="친구가 공개한 마음 열매 열기"></button>
             <button class="heart-fruit-open friend-heart-fruit-open hidden" id="openFriendHeartFruits" type="button" aria-label="친구가 공개한 마음 열매 보기">
               <span aria-hidden="true">●</span>
               <b>공개한 마음 열매</b>
