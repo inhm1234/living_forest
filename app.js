@@ -3111,6 +3111,7 @@ function renderHeartFruitDetail() {
 
 function renderHeartFruitSheet() {
   const records = [...heartFruitRecordsForMode()].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const previousPickerScrollLeft = els.heartFruitPicker?.scrollLeft || 0;
   const isMine = activeHeartFruitMode === "mine";
   els.heartFruitSheetTitle.textContent = isMine ? "내 마음 열매" : `${activeFriendFruitName || "친구"}의 마음 열매`;
   els.heartFruitSummary.textContent = isMine
@@ -3134,12 +3135,17 @@ function renderHeartFruitSheet() {
     const mood = moodMap[record.mood] || moodMap.good;
     const selected = String(record.id) === String(activeHeartFruitRecordId);
     return `
-      <button class="heart-fruit-choice${selected ? " selected" : ""}" type="button" data-heart-fruit-id="${escapeAttr(record.id)}" aria-pressed="${selected ? "true" : "false"}">
+      <button class="heart-fruit-choice${selected ? " selected" : ""}" type="button" data-heart-fruit-id="${escapeAttr(record.id)}" aria-pressed="${selected ? "true" : "false"}" aria-label="${escapeAttr(formatDate(record.createdAt))} 마음 열매">
         <span class="heart-fruit-choice-icon" aria-hidden="true">${mood.icon}</span>
         <span>${escapeHTML(formatShortDate(record.createdAt))}</span>
       </button>
     `;
   }).join("");
+  if (els.heartFruitPicker) {
+    window.requestAnimationFrame(() => {
+      els.heartFruitPicker.scrollLeft = previousPickerScrollLeft;
+    });
+  }
   renderHeartFruitDetail();
 }
 
@@ -3151,6 +3157,7 @@ function openMyHeartFruits() {
   }
   activeHeartFruitMode = "mine";
   activeHeartFruitRecordId = String([...records].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0]?.id || "");
+  if (els.heartFruitPicker) els.heartFruitPicker.scrollLeft = 0;
   renderHeartFruitSheet();
   openSheet(els.heartFruitSheet);
 }
@@ -3162,6 +3169,7 @@ function openFriendHeartFruits() {
   }
   activeHeartFruitMode = "friend";
   activeHeartFruitRecordId = String([...activeFriendFruitRecords].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0]?.id || "");
+  if (els.heartFruitPicker) els.heartFruitPicker.scrollLeft = 0;
   renderHeartFruitSheet();
   openSheet(els.heartFruitSheet);
 }

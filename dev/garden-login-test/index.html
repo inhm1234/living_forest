@@ -631,7 +631,11 @@
       <button class="close-button" data-close="heartFruitSheet" type="button" aria-label="마음 열매 닫기">×</button>
     </div>
     <p class="heart-fruit-summary" id="heartFruitSummary"></p>
-    <div class="heart-fruit-picker" id="heartFruitPicker" aria-label="마음 열매 날짜 선택"></div>
+    <div class="heart-fruit-timeline-head" aria-hidden="true">
+      <span>최근 마음부터</span>
+      <span>옆으로 넘겨보세요</span>
+    </div>
+    <div class="heart-fruit-picker" id="heartFruitPicker" aria-label="최근 마음부터 날짜순으로 보는 마음 열매"></div>
     <article class="heart-fruit-detail" id="heartFruitDetail" aria-live="polite">
       <div class="heart-fruit-detail-head">
         <span class="heart-fruit-detail-date" id="heartFruitDetailDate"></span>
@@ -938,7 +942,7 @@
 
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="garden.js?v=heart-fruits-v1"></script>
+  <script type="module" src="garden.js?v=heart-fruits-v1-2"></script>
   <script type="module" src="tree-animal-call.js?v=tree-animal-call-v4-status-hotfix"></script>
   <script type="module" src="forest-unicorn-preview.js?v=performance-cleanup-v1"></script>
   <script type="module" src="little-light-dragon-preview.js?v=2"></script>
