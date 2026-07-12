@@ -15,7 +15,11 @@
 4. `SQL_GARDEN_FEEDBACK_V1.sql`
 5. `SQL_GARDEN_FEEDBACK_REPLY_V1.sql`
 6. `SQL_GARDEN_FEEDBACK_ADMIN_V1.sql`
+7. `SQL_HEART_FRUITS_V1.sql`  
+   - 이번 마음 열매 배포 전에 운영 DB에서 한 번만 실행합니다.
+   - 실행 뒤에는 다른 SQL과 마찬가지로 이력 파일로 보관합니다.
 
 ## 현재 기능 연결
 - 공유나무: 씨앗 생성 → 별도 빛 남기기
 - 피드백: 사용자 의견 저장 → 사용자 답장 확인 → 운영자 전용 문의함
+- 마음 열매: 기존 기록 비공개 기본값 → 본인 공개 설정 → 친구에게 공개 기록만 표시

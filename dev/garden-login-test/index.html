@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="../../assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="../../assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="garden.css?v=friends-list-first-v1" />
+  <link rel="stylesheet" href="garden.css?v=heart-fruits-v1" />
   <link rel="stylesheet" href="tree-animal-call.css?v=tree-animal-call-v4-status-hotfix" />
   <link rel="stylesheet" href="forest-unicorn-preview.css?v=2" />
   <link rel="stylesheet" href="little-light-dragon-preview.css?v=2" />
@@ -224,6 +224,13 @@
               src="../../assets/garden/tree_growth/tree_stage4_morning.png"
               alt="꽃과 잎이 피어난 내 마음 나무"
             />
+            <div class="heart-fruit-layer hidden" id="heartFruitLayer" aria-hidden="true"></div>
+            <button class="heart-fruit-open hidden" id="openHeartFruits" type="button" aria-label="내 마음 열매 보기">
+              <span aria-hidden="true">●</span>
+              <b>마음 열매</b>
+              <em id="heartFruitCount">0</em>
+            </button>
+            <p class="heart-fruit-reveal-message hidden" id="heartFruitRevealMessage" role="status" aria-live="polite">지금까지의 마음이 열매로 맺혔어요.</p>
             <div class="branch-letters" id="branchLetters" aria-live="polite" aria-label="나뭇가지에 도착한 새 편지"></div>
           </div>
 
@@ -421,6 +428,12 @@
           <div class="tree-wrap friend-visit-tree-wrap" id="friendVisitTreeWrap">
             <div class="tree-aura" aria-hidden="true"></div>
             <img id="friendVisitTree" class="tree-image" src="../../assets/garden/tree_growth/tree_stage1_morning.png" alt="친구의 마음 나무" />
+            <div class="heart-fruit-layer friend-heart-fruit-layer hidden" id="friendHeartFruitLayer" aria-hidden="true"></div>
+            <button class="heart-fruit-open friend-heart-fruit-open hidden" id="openFriendHeartFruits" type="button" aria-label="친구가 공개한 마음 열매 보기">
+              <span aria-hidden="true">●</span>
+              <b>공개한 마음 열매</b>
+              <em id="friendHeartFruitCount">0</em>
+            </button>
           </div>
 
           <div class="found-items-layer friend-found-items-layer" id="friendFoundItemsLayer" aria-live="polite" aria-label="친구가 정원에 놓아둔 작은 것"></div>
@@ -446,7 +459,7 @@
       <div class="friend-visit-note-icon" aria-hidden="true">🌿</div>
       <div>
         <p class="growth-note-kicker">FRIEND'S TREE</p>
-        <p class="friend-visit-note-text">이곳에서는 친구의 나무와 정원 분위기만 볼 수 있어요. 기록의 내용은 서로 보이지 않아요.</p>
+        <p class="friend-visit-note-text">이곳에서는 친구가 공개한 마음 열매만 조용히 열어볼 수 있어요. 비공개 마음은 보이지 않아요.</p>
       </div>
     </section>
 
@@ -603,6 +616,30 @@
     </div>
     <div class="records-summary" id="recordsSummary"></div>
     <div class="record-list" id="recordList" aria-live="polite"></div>
+  </section>
+
+
+
+  <section class="bottom-sheet tall-sheet hidden" id="heartFruitSheet" role="dialog" aria-modal="true" aria-labelledby="heartFruitSheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="sheet-kicker">HEART FRUITS</p>
+        <h2 id="heartFruitSheetTitle">내 마음 열매</h2>
+      </div>
+      <button class="close-button" data-close="heartFruitSheet" type="button" aria-label="마음 열매 닫기">×</button>
+    </div>
+    <p class="heart-fruit-summary" id="heartFruitSummary"></p>
+    <div class="heart-fruit-picker" id="heartFruitPicker" aria-label="마음 열매 날짜 선택"></div>
+    <article class="heart-fruit-detail" id="heartFruitDetail" aria-live="polite">
+      <div class="heart-fruit-detail-head">
+        <span class="heart-fruit-detail-date" id="heartFruitDetailDate"></span>
+        <span class="heart-fruit-visibility-status" id="heartFruitVisibilityStatus"></span>
+      </div>
+      <p class="heart-fruit-detail-line" id="heartFruitDetailLine"></p>
+      <p class="heart-fruit-detail-more hidden" id="heartFruitDetailMore"></p>
+      <button class="heart-fruit-visibility-button hidden" id="heartFruitVisibilityButton" type="button"></button>
+    </article>
   </section>
 
   <section class="bottom-sheet hidden" id="feedbackSheet" role="dialog" aria-modal="true" aria-labelledby="feedbackSheetTitle">
@@ -865,7 +902,7 @@
       <p class="letter-delivery">GARDEN INVITATION</p>
       <p class="letter-from" id="friendInviteFrom">친구의 정원</p>
       <h2 id="friendInviteTitle">내 정원을 함께 키울래?</h2>
-      <p class="letter-body">친구가 마음을 남기며 나무를 키우는 정원으로 초대했어요. 수락하면 서로의 나무 성장 모습만 가볍게 볼 수 있어요. 기록 내용은 서로 보이지 않아요.</p>
+      <p class="letter-body">친구가 마음을 남기며 나무를 키우는 정원으로 초대했어요. 수락하면 서로의 나무 성장 모습과 공개한 마음 열매만 가볍게 볼 수 있어요. 비공개 마음은 보이지 않아요.</p>
       <button class="letter-confirm" id="acceptFriendInviteButton" type="button">친구 되기</button>
       <button class="secondary-sheet-button" id="declineFriendInviteButton" type="button">나중에 하기</button>
     </div>
@@ -900,7 +937,7 @@
 
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="garden.js?v=tree-animal-call-v2"></script>
+  <script type="module" src="garden.js?v=heart-fruits-v1"></script>
   <script type="module" src="tree-animal-call.js?v=tree-animal-call-v4-status-hotfix"></script>
   <script type="module" src="forest-unicorn-preview.js?v=performance-cleanup-v1"></script>
   <script type="module" src="little-light-dragon-preview.js?v=2"></script>
