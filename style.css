@@ -4903,3 +4903,107 @@ html.shared-tree-start-moment-open body {
   .shared-tree-start-moment.is-visible .shared-tree-start-moment-leaf.is-right { transform:rotate(-20deg) scale(1); }
   .shared-tree-start-moment.is-visible .shared-tree-start-moment-glow { opacity:.55; transform:translateX(-50%) scale(1); }
 }
+
+
+/* ONE-OF-TEN v1: 개인 정원에서 선택형 숲속 놀이로 진입합니다. */
+.forest-play-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .82);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 8% 10%, rgba(255,255,255,.92), transparent 34%),
+    linear-gradient(135deg, rgba(239,247,239,.95), rgba(239,238,252,.9));
+  box-shadow: 0 18px 36px rgba(92, 112, 103, .11);
+}
+.forest-play-card::after {
+  content: "";
+  position: absolute;
+  right: -50px;
+  bottom: -70px;
+  width: 170px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(157, 190, 167, .14);
+  pointer-events: none;
+}
+.forest-play-art {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  border-radius: 24px;
+  background: rgba(255,255,255,.7);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.72), 0 10px 20px rgba(93,115,102,.08);
+}
+.forest-play-art img {
+  position: relative;
+  z-index: 2;
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  filter: drop-shadow(0 7px 8px rgba(76, 91, 80, .16));
+}
+.forest-play-glow {
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  background: rgba(255, 225, 154, .34);
+  filter: blur(5px);
+}
+.forest-play-card-chip {
+  position: absolute;
+  z-index: 3;
+  right: -4px;
+  bottom: -3px;
+  min-width: 34px;
+  padding: 5px 6px;
+  border: 2px solid rgba(255,255,255,.9);
+  border-radius: 999px;
+  background: #6f987e;
+  color: white;
+  font-size: 10px;
+  font-weight: 950;
+  text-align: center;
+  box-shadow: 0 7px 14px rgba(75, 111, 88, .2);
+}
+.forest-play-copy { position: relative; z-index: 1; min-width: 0; }
+.forest-play-copy h2 { margin: 2px 0 5px; color: #4f675b; font-size: 18px; line-height: 1.25; }
+.forest-play-copy > p:not(.growth-note-kicker) { margin: 0; color: #718079; font-size: 13px; line-height: 1.52; }
+.forest-play-copy > span { display: block; margin-top: 6px; color: #91a099; font-size: 11px; font-weight: 750; }
+.forest-play-launch {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 45px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: #638b72;
+  color: white;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 900;
+  box-shadow: 0 10px 20px rgba(74, 117, 89, .2);
+  transition: transform .16s ease, background .16s ease;
+}
+.forest-play-launch:hover { background: #557c65; transform: translateY(-1px); }
+.forest-play-launch:active { transform: scale(.98); }
+.forest-play-launch b { font-size: 16px; }
+@media (max-width: 560px) {
+  .forest-play-card { grid-template-columns: 68px minmax(0, 1fr); gap: 12px; padding: 14px; }
+  .forest-play-art { width: 68px; height: 68px; border-radius: 21px; }
+  .forest-play-art img { width: 52px; height: 52px; }
+  .forest-play-copy h2 { font-size: 17px; }
+  .forest-play-copy > p:not(.growth-note-kicker) { font-size: 12px; }
+  .forest-play-launch { grid-column: 1 / -1; width: 100%; min-height: 44px; }
+}
