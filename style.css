@@ -3746,6 +3746,35 @@ textarea::placeholder { color: #a7b4bd; }
   background: radial-gradient(circle at 35% 30%, #fffef4 0 12%, #f4cf83 34%, #d49a4f 78%, #9c6f39 100%);
 }
 
+.heart-fruit.is-public {
+  box-shadow:
+    0 2px 4px rgba(104, 42, 65, .18),
+    0 0 8px rgba(255, 210, 218, .58),
+    0 0 0 1px rgba(255, 249, 226, .46),
+    0 0 7px rgba(255, 232, 196, .38);
+}
+
+.heart-fruit.is-public::after {
+  content: "";
+  position: absolute;
+  inset: -48%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 70% 19%, rgba(255, 255, 255, .96) 0 5%, rgba(255, 255, 255, 0) 8%),
+    radial-gradient(circle, rgba(255, 247, 215, .64) 0 18%, rgba(255, 229, 190, .25) 44%, rgba(255, 220, 203, 0) 72%);
+  opacity: .3;
+  transform: scale(.82);
+  pointer-events: none;
+  animation: heart-fruit-public-glow 6.4s ease-in-out infinite;
+  animation-delay: var(--public-glow-delay, 0s);
+}
+
+@keyframes heart-fruit-public-glow {
+  0%, 60%, 100% { opacity: .22; transform: scale(.8); }
+  73% { opacity: .76; transform: scale(1.2); }
+  84% { opacity: .3; transform: scale(.92); }
+}
+
 .tree-wrap.has-heart-fruits .tree-image {
   filter: saturate(1.03) drop-shadow(0 10px 12px rgba(91, 93, 128, .13));
 }
@@ -3920,6 +3949,7 @@ textarea::placeholder { color: #a7b4bd; }
 }
 
 .heart-fruit-choice {
+  position: relative;
   display: grid;
   flex: 0 0 72px;
   place-items: center;
@@ -3951,6 +3981,30 @@ textarea::placeholder { color: #a7b4bd; }
   background: #fff0f3;
   box-shadow: 0 7px 16px rgba(139, 73, 94, .12);
   color: #8d4d61;
+}
+
+.heart-fruit-choice-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.heart-fruit-choice-public {
+  padding: 1px 3px;
+  border: 1px solid rgba(139, 99, 119, .12);
+  border-radius: 999px;
+  background: rgba(248, 229, 235, .94);
+  color: #965b6d;
+  font-size: 7px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -.02em;
+}
+
+.heart-fruit-choice.is-public:not(.selected) {
+  background: #fffafb;
 }
 
 .heart-fruit-choice-icon {
@@ -4049,8 +4103,14 @@ textarea::placeholder { color: #a7b4bd; }
 @media (prefers-reduced-motion: reduce) {
   .tree-wrap.is-heart-fruit-revealing .heart-fruit,
   .tree-wrap.is-heart-fruit-revealing .tree-aura,
-  .heart-fruit-reveal-message {
+  .heart-fruit-reveal-message,
+  .heart-fruit.is-public::after {
     animation: none !important;
+  }
+
+  .heart-fruit.is-public::after {
+    opacity: .42;
+    transform: scale(.92);
   }
 }
 

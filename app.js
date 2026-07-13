@@ -2979,17 +2979,21 @@ function isHeartFruitTreeComplete(growth = null) {
   return Number(resolvedGrowth || 0) >= HEART_FRUIT_COMPLETE_COUNT;
 }
 
-function heartFruitLayerMarkup(count) {
+function heartFruitLayerMarkup(count, { records = [], markPublic = false } = {}) {
   const visibleCount = Math.min(HEART_FRUIT_POSITIONS.length, Math.max(0, Number(count || 0)));
-  return HEART_FRUIT_POSITIONS.slice(0, visibleCount).map(([x, y], index) => `
-    <span class="heart-fruit fruit-${(index % 4) + 1}" style="--fruit-x:${x}%; --fruit-y:${y}%; --fruit-delay:${index * 42}ms" aria-hidden="true"></span>
-  `).join("");
+  return HEART_FRUIT_POSITIONS.slice(0, visibleCount).map(([x, y], index) => {
+    const record = records[index] || null;
+    const publicClass = markPublic && record?.isPublic ? " is-public" : "";
+    return `
+      <span class="heart-fruit fruit-${(index % 4) + 1}${publicClass}" style="--fruit-x:${x}%; --fruit-y:${y}%; --fruit-delay:${index * 42}ms; --public-glow-delay:-${(index % 11) * 0.53}s" aria-hidden="true"></span>
+    `;
+  }).join("");
 }
 
-function renderHeartFruitLayer(layer, count, { visible = true } = {}) {
+function renderHeartFruitLayer(layer, count, { visible = true, records = [], markPublic = false } = {}) {
   if (!layer) return;
   const safeCount = Math.max(0, Number(count || 0));
-  layer.innerHTML = heartFruitLayerMarkup(safeCount);
+  layer.innerHTML = heartFruitLayerMarkup(safeCount, { records, markPublic });
   layer.classList.toggle("hidden", !visible || safeCount <= 0);
 }
 
@@ -3025,7 +3029,14 @@ function renderMyHeartFruits() {
   const records = complete ? (previewMode ? heartFruitPreviewRecords() : (state.records || [])) : [];
   const recordCount = records.length;
   const decorativeCount = previewMode ? HEART_FRUIT_COMPLETE_COUNT : recordCount;
-  renderHeartFruitLayer(els.heartFruitLayer, decorativeCount, { visible: complete });
+  const decorativeRecords = previewMode
+    ? records
+    : [...records].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  renderHeartFruitLayer(els.heartFruitLayer, decorativeCount, {
+    visible: complete,
+    records: decorativeRecords,
+    markPublic: true,
+  });
   els.treeWrap?.classList.toggle("has-heart-fruits", complete && decorativeCount > 0);
   if (els.openHeartFruits) els.openHeartFruits.classList.toggle("hidden", !complete || recordCount <= 0);
   if (els.heartFruitCount) els.heartFruitCount.textContent = String(recordCount);
@@ -3134,10 +3145,16 @@ function renderHeartFruitSheet() {
   els.heartFruitPicker.innerHTML = records.map((record) => {
     const mood = moodMap[record.mood] || moodMap.good;
     const selected = String(record.id) === String(activeHeartFruitRecordId);
+    const showPublicBadge = isMine && Boolean(record.isPublic) && !record.isPreview;
+    const publicClass = showPublicBadge ? " is-public" : "";
+    const publicLabel = showPublicBadge ? " · 친구에게 공개 중" : "";
     return `
-      <button class="heart-fruit-choice${selected ? " selected" : ""}" type="button" data-heart-fruit-id="${escapeAttr(record.id)}" aria-pressed="${selected ? "true" : "false"}" aria-label="${escapeAttr(formatDate(record.createdAt))} 마음 열매">
+      <button class="heart-fruit-choice${selected ? " selected" : ""}${publicClass}" type="button" data-heart-fruit-id="${escapeAttr(record.id)}" aria-pressed="${selected ? "true" : "false"}" aria-label="${escapeAttr(formatDate(record.createdAt))} 마음 열매${publicLabel}">
         <span class="heart-fruit-choice-icon" aria-hidden="true">${mood.icon}</span>
-        <span>${escapeHTML(formatShortDate(record.createdAt))}</span>
+        <span class="heart-fruit-choice-meta">
+          <span>${escapeHTML(formatShortDate(record.createdAt))}</span>
+          ${showPublicBadge ? '<span class="heart-fruit-choice-public" aria-hidden="true">공개</span>' : ""}
+        </span>
       </button>
     `;
   }).join("");
@@ -3209,6 +3226,7 @@ async function toggleHeartFruitVisibility() {
   }
 
   record.isPublic = nextValue;
+  renderMyHeartFruits();
   renderHeartFruitSheet();
   showToast(nextValue ? "이 마음 열매를 친구에게 공개했어요." : "이 마음 열매를 나만 보도록 바꿨어요.");
 }
