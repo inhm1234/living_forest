@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=heart-fruits-v1-5-continuous-records" />
+  <link rel="stylesheet" href="style.css?v=shared-tree-completion-ui-v1-6" />
   <link rel="stylesheet" href="tree-animal-call.css?v=tree-animal-call-v4-status-hotfix" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
@@ -35,7 +35,7 @@
         enabled: !isDevPath,
         debug: query.get("sheetsDebug") === "1",
         environment: isDevPath ? "dev" : "production",
-        build: isDevPath ? "dev-v15" : "operation-v15",
+        build: isDevPath ? "dev-v16" : "operation-v16",
       };
 
       if (!window.TODAYFOREST_ANALYTICS.enabled) return;
@@ -474,6 +474,10 @@
         </div>
         <span class="shared-tree-progress-count" id="sharedTreeProgressCount" aria-live="polite">0 / 20</span>
       </div>
+      <div class="shared-tree-lifecycle" id="sharedTreeLifecycle" aria-live="polite">
+        <span class="shared-tree-lifecycle-badge" id="sharedTreeLifecycleBadge">함께 자라는 중</span>
+        <span class="shared-tree-lifecycle-dates" id="sharedTreeLifecycleDates">시작한 날을 불러오는 중이에요</span>
+      </div>
       <div class="shared-tree-leaves" id="sharedTreeLeaves" aria-label="빛 조각 20개"></div>
       <div class="shared-tree-today-row" id="sharedTreeTodayRow"></div>
       <button class="shared-tree-record-light-button" id="sharedTreeRecordLightButton" type="button">오늘의 빛 남기기</button>
@@ -883,7 +887,7 @@
   <div class="heart-fruit-ceremony-lock hidden" id="heartFruitCeremonyLock" aria-hidden="true"></div>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="app.js?v=heart-fruits-v1-5-continuous-records"></script>
+  <script type="module" src="app.js?v=shared-tree-completion-ui-v1-6"></script>
   <script type="module" src="tree-animal-call.js?v=tree-animal-call-v5-heart-fruit-bridge-134"></script>
 </body>
 </html>

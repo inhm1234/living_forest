@@ -1669,6 +1669,8 @@ textarea::placeholder { color: #a7b4bd; }
   cursor: pointer;
 }
 .shared-tree-open-button { border-color: rgba(103, 151, 124, .25); background: linear-gradient(135deg, #eff9eb, #f7f3ff); color: #609174; }
+.shared-tree-open-button.is-complete { border-color: rgba(196, 151, 83, .3); background: linear-gradient(135deg, #fff7d8, #f4f1ff); color: #92713e; box-shadow: 0 6px 13px rgba(176, 132, 74, .08); }
+.shared-tree-open-button.is-pending-completion { border-style: dashed; color: #8f829f; }
 .shared-tree-dev-open-button { border-style: dashed; }
 .shared-tree-dev-create-button { border-color: rgba(133, 115, 183, .28); background: linear-gradient(135deg, #fbf2ff, #eefaf2); color: #7f6aa8; }
 .shared-tree-incoming-button { border-color: rgba(208, 161, 191, .3); background: linear-gradient(135deg, #fff3f7, #f4f0ff); color: #a8758d; }
@@ -1807,12 +1809,20 @@ textarea::placeholder { color: #a7b4bd; }
 .shared-tree-progress-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .shared-tree-progress-copy { margin: 0; color: #69778b; font-size: 12px; font-weight: 700; line-height: 1.5; }
 .shared-tree-progress-count { flex: 0 0 auto; padding: 6px 8px; border-radius: 999px; background: #f0ebff; color: #8471b0; font-size: 11px; font-weight: 900; }
+.shared-tree-progress-count.is-complete { background: #fff1b8; color: #aa783c; }
+.shared-tree-lifecycle { display: flex; align-items: center; flex-wrap: wrap; gap: 7px 9px; margin-top: 13px; padding: 10px 11px; border: 1px solid rgba(145, 157, 174, .14); border-radius: 14px; background: rgba(247, 249, 250, .78); }
+.shared-tree-lifecycle-badge { flex: 0 0 auto; padding: 5px 8px; border-radius: 999px; background: #eef3ef; color: #6e8b78; font-size: 10px; font-weight: 900; }
+.shared-tree-lifecycle-dates { min-width: 0; color: #808b97; font-size: 11px; font-weight: 750; line-height: 1.45; }
+.shared-tree-lifecycle.is-complete { border-color: rgba(225, 185, 105, .24); background: linear-gradient(135deg, rgba(255, 248, 218, .78), rgba(249, 246, 255, .82)); }
+.shared-tree-lifecycle.is-complete .shared-tree-lifecycle-badge { background: #ffeaae; color: #a06f31; }
+.shared-tree-lifecycle.is-pending-completion { border-style: dashed; }
 .shared-tree-leaves { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin-top: 15px; }
 .shared-tree-leaf { display: grid; min-height: 24px; place-items: center; border: 1px solid #e3e7e5; border-radius: 8px; background: #fbfdfb; color: #d1d8d3; font-size: 12px; }
 .shared-tree-leaf.is-filled { border-color: #efdc90; background: linear-gradient(135deg, #fff2ad, #f9d990); color: #e4a75b; box-shadow: 0 5px 10px rgba(229,171,92,.14); }
 .shared-tree-today-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
 .shared-tree-today { padding: 7px 9px; border-radius: 999px; background: #f6f7f9; color: #99a4ac; font-size: 11px; font-weight: 800; }
 .shared-tree-today.is-on { background: #fff3c9; color: #bd8a42; }
+.shared-tree-today.is-complete { background: linear-gradient(135deg, #fff1b9, #f4ecff); color: #9d7040; }
 .shared-tree-record-light-button {
   width: 100%;
   margin-top: 13px;

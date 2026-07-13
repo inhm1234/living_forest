@@ -556,6 +556,9 @@ const els = {
   sharedTreeStageCopy: $("#sharedTreeStageCopy"),
   sharedTreeProgressCopy: $("#sharedTreeProgressCopy"),
   sharedTreeProgressCount: $("#sharedTreeProgressCount"),
+  sharedTreeLifecycle: $("#sharedTreeLifecycle"),
+  sharedTreeLifecycleBadge: $("#sharedTreeLifecycleBadge"),
+  sharedTreeLifecycleDates: $("#sharedTreeLifecycleDates"),
   sharedTreeLeaves: $("#sharedTreeLeaves"),
   sharedTreeTodayRow: $("#sharedTreeTodayRow"),
   sharedTreeFireflies: $("#sharedTreeFireflies"),
@@ -3656,6 +3659,29 @@ async function sendGardenLetter(event) {
   }
 }
 
+function sharedTreeReachedTarget(tree) {
+  const target = Math.max(1, Number(tree?.targetSteps || 20));
+  const progress = Math.max(0, Number(tree?.progressCount || 0));
+  return progress >= target;
+}
+
+function sharedTreeIsComplete(tree) {
+  // completed_at is the authoritative server completion marker.
+  // The progress fallback keeps a 20/20 tree safely locked if an older server response is briefly cached.
+  return Boolean(tree?.completedAt) || sharedTreeReachedTarget(tree);
+}
+
+function formatSharedTreeLifecycleDate(iso) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "날짜를 확인할 수 없어요";
+  return new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(date);
+}
+
 function sharedTreeForFriend(friendId) {
   return (state.sharedTrees || []).find((tree) => tree.partnerId === friendId) || null;
 }
@@ -3679,8 +3705,15 @@ function sharedTreeActionMarkup(friend) {
   }
 
   if (tree) {
-    const done = tree.completedAt ? "완성된 둘만의 나무" : "함께 키우는 나무 보기";
-    return `<button class="shared-tree-open-button" type="button" data-view-shared-tree="${escapeAttr(tree.id)}">🌿 ${escapeHTML(done)}</button>`;
+    const serverComplete = Boolean(tree.completedAt);
+    const reachedTarget = sharedTreeReachedTarget(tree);
+    const done = serverComplete
+      ? "완성된 둘만의 나무"
+      : reachedTarget
+        ? "완성 상태 확인 중"
+        : "함께 키우는 나무 보기";
+    const completeClass = serverComplete ? " is-complete" : reachedTarget ? " is-pending-completion" : "";
+    return `<button class="shared-tree-open-button${completeClass}" type="button" data-view-shared-tree="${escapeAttr(tree.id)}">🌿 ${escapeHTML(done)}</button>`;
   }
 
   const invite = sharedTreeInviteForFriend(friend.id);
@@ -3863,31 +3896,55 @@ function renderSharedTreeView(treeId = activeSharedTreeId) {
   const target = Math.max(1, Number(tree.targetSteps || 20));
   const progress = Math.min(target, Math.max(0, Number(tree.progressCount || 0)));
   const bothToday = tree.myRecordedToday && tree.partnerRecordedToday;
-  const complete = Boolean(tree.completedAt) || progress >= target;
+  const serverComplete = Boolean(tree.completedAt);
+  const reachedTarget = progress >= target;
+  const complete = serverComplete || reachedTarget;
   const stage = sharedTreeStageForProgress(progress, target);
 
-  els.sharedTreePartnerName.textContent = `${friend.name}와 함께 키우는 나무`;
+  els.sharedTreePartnerName.textContent = serverComplete
+    ? `${friend.name}와 함께 완성한 나무`
+    : `${friend.name}와 함께 키우는 나무`;
   els.sharedTreeView.dataset.stage = String(stage);
   if (els.sharedTreeImage) {
     els.sharedTreeImage.src = sharedTreeImagePath(stage);
   }
   els.sharedTreeProgressCount.textContent = `${progress} / ${target}`;
-  els.sharedTreeProgressCopy.textContent = complete
+  els.sharedTreeProgressCount.classList.toggle("is-complete", serverComplete);
+  els.sharedTreeProgressCopy.textContent = serverComplete
     ? "스무 개의 빛 조각이 모여, 둘만의 나무가 완성됐어요."
-    : "각자가 오늘의 빛을 남길 때마다 빛 조각이 하나씩 쌓여요.";
+    : reachedTarget
+      ? "빛 조각은 모두 모였어요. 서버의 완성 기록을 확인하고 있어요."
+      : "각자가 오늘의 빛을 남길 때마다 빛 조각이 하나씩 쌓여요.";
+
+  const startedDate = formatSharedTreeLifecycleDate(tree.createdAt);
+  els.sharedTreeLifecycle.classList.toggle("is-complete", serverComplete);
+  els.sharedTreeLifecycle.classList.toggle("is-pending-completion", reachedTarget && !serverComplete);
+  els.sharedTreeLifecycleBadge.textContent = serverComplete
+    ? "완성된 나무"
+    : reachedTarget
+      ? "완성 확인 중"
+      : "함께 자라는 중";
+  els.sharedTreeLifecycleDates.textContent = serverComplete
+    ? `시작 ${startedDate} · 완성 ${formatSharedTreeLifecycleDate(tree.completedAt)}`
+    : `시작 ${startedDate}`;
+
   els.sharedTreeRecordLightButton.disabled = complete || Boolean(tree.myRecordedToday);
-  els.sharedTreeRecordLightButton.textContent = complete
-    ? "빛 조각이 모두 모였어요"
-    : tree.myRecordedToday
-      ? "오늘의 빛을 남겼어요"
-      : "오늘의 빛 남기기";
+  els.sharedTreeRecordLightButton.textContent = serverComplete
+    ? "이 나무는 완성되었어요"
+    : reachedTarget
+      ? "완성 상태를 확인하고 있어요"
+      : tree.myRecordedToday
+        ? "오늘의 빛을 남겼어요"
+        : "오늘의 빛 남기기";
   els.sharedTreeRecordLightButton.setAttribute(
     "aria-label",
-    complete
-      ? "공유나무의 빛 조각이 모두 모였어요"
-      : tree.myRecordedToday
-        ? "오늘의 빛을 이미 남겼어요"
-        : "공유나무에 오늘의 빛을 남기기"
+    serverComplete
+      ? "완성된 공유나무예요"
+      : reachedTarget
+        ? "공유나무의 완성 상태를 확인하고 있어요"
+        : tree.myRecordedToday
+          ? "오늘의 빛을 이미 남겼어요"
+          : "공유나무에 오늘의 빛을 남기기"
   );
   els.sharedTreeLeaves.innerHTML = Array.from({ length: target }, (_, index) => {
     const filled = index < progress;
@@ -3907,10 +3964,12 @@ function renderSharedTreeView(treeId = activeSharedTreeId) {
     els.sharedTreeStageCopy.textContent = "두 개의 작은 빛이 씨앗 곁에서 조용히 기다리고 있어요.";
   }
 
-  els.sharedTreeTodayRow.innerHTML = `
-    <span class="shared-tree-today ${tree.myRecordedToday ? "is-on" : ""}">${tree.myRecordedToday ? "✦ 내 빛이 닿았어요" : "○ 오늘의 빛을 기다려요"}</span>
-    <span class="shared-tree-today ${tree.partnerRecordedToday ? "is-on" : ""}">${tree.partnerRecordedToday ? `✦ ${escapeHTML(friend.name)}의 빛이 닿았어요` : `○ ${escapeHTML(friend.name)}의 빛을 기다려요`}</span>
-  `;
+  els.sharedTreeTodayRow.innerHTML = serverComplete
+    ? '<span class="shared-tree-today is-complete">✦ 두 사람의 빛이 모두 모였어요</span>'
+    : `
+      <span class="shared-tree-today ${tree.myRecordedToday ? "is-on" : ""}">${tree.myRecordedToday ? "✦ 내 빛이 닿았어요" : "○ 오늘의 빛을 기다려요"}</span>
+      <span class="shared-tree-today ${tree.partnerRecordedToday ? "is-on" : ""}">${tree.partnerRecordedToday ? `✦ ${escapeHTML(friend.name)}의 빛이 닿았어요` : `○ ${escapeHTML(friend.name)}의 빛을 기다려요`}</span>
+    `;
   els.sharedTreeFireflies.innerHTML = bothToday ? '<i>✦</i><i>✦</i><i>✦</i><i>✦</i><i>✦</i><i>✦</i>' : "";
   els.sharedTreeView.classList.toggle("my-recorded-today", Boolean(tree.myRecordedToday));
   els.sharedTreeView.classList.toggle("partner-recorded-today", Boolean(tree.partnerRecordedToday));
@@ -3928,7 +3987,7 @@ async function leaveSharedTreeLight() {
 
   const target = Math.max(1, Number(tree.targetSteps || 20));
   const progress = Math.max(0, Number(tree.progressCount || 0));
-  if (Boolean(tree.completedAt) || progress >= target) {
+  if (sharedTreeIsComplete(tree)) {
     showToast("이 나무의 빛 조각은 이미 모두 모였어요.");
     return;
   }
