@@ -327,6 +327,8 @@ let activeHeartFruitMode = "mine";
 let activeHeartFruitRecordId = "";
 let heartFruitVisibilityReady = true;
 let heartFruitRevealForcedThisPage = false;
+let pendingHeartFruitCompletionReveal = false;
+let heartFruitRevealRunning = false;
 
 const HEART_FRUIT_COMPLETE_COUNT = 30;
 const HEART_FRUIT_REVEAL_STORAGE_PREFIX = "todayforest-heart-fruit-revealed-v1";
@@ -3057,26 +3059,42 @@ function heartFruitRevealStorageKey() {
 }
 
 function maybePlayHeartFruitReveal() {
-  const records = isHeartFruitPreviewMode() ? heartFruitPreviewRecords() : (state.records || []);
+  const previewMode = isHeartFruitPreviewMode();
+  const records = previewMode ? heartFruitPreviewRecords() : (state.records || []);
   if (!currentUser || !isHeartFruitTreeComplete() || !records.length || !els.treeWrap) return;
-  const key = heartFruitRevealStorageKey();
+
   const forceReplayRequested = new URL(window.location.href).searchParams.get("heartFruitReveal") === "1";
   const forceReplay = forceReplayRequested && !heartFruitRevealForcedThisPage;
+  const completionReveal = !previewMode && pendingHeartFruitCompletionReveal;
+
   if (forceReplayRequested && heartFruitRevealForcedThisPage) return;
+  // 실제 계정에서는 30번째 마음을 막 저장한 순간에만 자동으로 보여줍니다.
+  // 이미 완성된 나무를 새 기기나 새로고침으로 열었을 때는 다시 재생하지 않습니다.
+  if (!forceReplay && !completionReveal && !previewMode) return;
+  if (heartFruitRevealRunning) return;
+
+  const key = heartFruitRevealStorageKey();
   if (forceReplay) heartFruitRevealForcedThisPage = true;
+
   try {
-    if (!forceReplay && window.localStorage.getItem(key) === "1") return;
-    if (!forceReplay) window.localStorage.setItem(key, "1");
+    // 미리보기의 평상시 재생은 브라우저당 한 번만 유지합니다.
+    if (previewMode && !forceReplay && window.localStorage.getItem(key) === "1") return;
+    window.localStorage.setItem(key, "1");
   } catch (error) {
-    // 저장 공간이 막혀도 연출 자체는 한 번 보여줍니다.
+    // 저장 공간이 막혀도 이번 완성 순간의 연출은 그대로 보여줍니다.
   }
 
+  pendingHeartFruitCompletionReveal = false;
+  heartFruitRevealRunning = true;
   els.treeWrap.classList.remove("is-heart-fruit-revealing");
   void els.treeWrap.offsetWidth;
   els.treeWrap.classList.add("is-heart-fruit-revealing");
   els.heartFruitRevealMessage?.classList.remove("hidden");
   window.setTimeout(() => els.heartFruitRevealMessage?.classList.add("hidden"), 4200);
-  window.setTimeout(() => els.treeWrap?.classList.remove("is-heart-fruit-revealing"), 4600);
+  window.setTimeout(() => {
+    els.treeWrap?.classList.remove("is-heart-fruit-revealing");
+    heartFruitRevealRunning = false;
+  }, 4600);
 }
 
 function heartFruitRecordsForMode() {
@@ -4394,6 +4412,8 @@ async function saveRecord(event) {
     return;
   }
 
+  const treeWasCompleteBeforeSave = Number(state.growth || 0) >= HEART_FRUIT_COMPLETE_COUNT;
+
   submitButton.disabled = true;
   submitButton.textContent = "나무에 마음을 남기는 중이에요";
   const { error } = await supabase.rpc("save_garden_record", {
@@ -4432,13 +4452,24 @@ async function saveRecord(event) {
     detail_added: detail ? "yes" : "no",
   });
 
+  const treeCompletedWithThisRecord = !treeWasCompleteBeforeSave
+    && Number(state.growth || 0) >= HEART_FRUIT_COMPLETE_COUNT;
+
   els.recordForm.reset();
   selectedMood = "good";
   renderMoodSelection();
   els.detailWrap.classList.add("hidden");
   els.toggleDetail.innerHTML = '조금 더 적기 <span aria-hidden="true">⌄</span>';
   closeAllSheets();
+
+  // 30번째 마음은 일반 저장 반응 대신, 기록 화면이 닫힌 뒤 정원에서 완성 장면으로 이어집니다.
+  pendingHeartFruitCompletionReveal = treeCompletedWithThisRecord;
   renderAll();
+
+  if (treeCompletedWithThisRecord) {
+    return;
+  }
+
   els.treeWrap.classList.remove("tree-pulse");
   void els.treeWrap.offsetWidth;
   els.treeWrap.classList.add("tree-pulse");
