@@ -551,6 +551,8 @@ const els = {
   friendInviteModal: $("#friendInviteModal"),
   sharedTreeInviteModal: $("#sharedTreeInviteModal"),
   sharedTreeInviteFrom: $("#sharedTreeInviteFrom"),
+  sharedTreeInviteTitle: $("#sharedTreeInviteTitle"),
+  sharedTreeInviteBody: $("#sharedTreeInviteBody"),
   acceptSharedTreeInviteButton: $("#acceptSharedTreeInviteButton"),
   laterSharedTreeInviteButton: $("#laterSharedTreeInviteButton"),
   togetherForestView: $("#togetherForestView"),
@@ -3711,6 +3713,7 @@ function sharedTreeActionMarkup(friend) {
   const trees = sharedTreesForFriend(friend.id);
   const currentTree = trees.find((tree) => !sharedTreeIsComplete(tree)) || null;
   const completedCount = trees.filter((tree) => sharedTreeIsComplete(tree)).length;
+  const invite = sharedTreeInviteForFriend(friend.id);
 
   if (friend.isDevTest) {
     if (trees.length) {
@@ -3727,16 +3730,19 @@ function sharedTreeActionMarkup(friend) {
   if (trees.length) {
     const status = currentTree
       ? "나무가 함께 자라고 있어요"
-      : completedCount > 0
-        ? `완성한 나무 ${completedCount}그루가 머물러 있어요`
-        : "함께한 시간이 머물러 있어요";
+      : invite?.direction === "incoming"
+        ? "친구가 다음 씨앗을 건넸어요"
+        : invite?.direction === "outgoing"
+          ? "다음 씨앗을 천천히 기다리는 중이에요"
+          : completedCount > 0
+            ? `완성한 나무 ${completedCount}그루가 머물러 있어요`
+            : "함께한 시간이 머물러 있어요";
     return `
       <button class="shared-tree-open-button${currentTree ? "" : " is-complete"}" type="button" data-view-together-forest="${escapeAttr(friend.id)}">🌲 함께한 숲 보기</button>
       <span class="shared-tree-status together-forest-status">${escapeHTML(status)}</span>
     `;
   }
 
-  const invite = sharedTreeInviteForFriend(friend.id);
   if (invite?.direction === "incoming") {
     return `<button class="shared-tree-incoming-button" type="button" data-open-shared-tree-invite="${escapeAttr(invite.id)}">✦ 작은 씨앗이 도착했어요</button>`;
   }
@@ -3868,8 +3874,23 @@ function openSharedTreeInvite(inviteId) {
     return;
   }
   const friend = (state.friends || []).find((item) => item.id === invite.otherUserId);
+  const trees = sharedTreesForFriend(invite.otherUserId);
+  const hasCurrentTree = trees.some((tree) => !sharedTreeIsComplete(tree));
+  const isNextTreeInvite = !hasCurrentTree && trees.some((tree) => sharedTreeIsComplete(tree));
+
   pendingSharedTreeInvite = invite;
   els.sharedTreeInviteFrom.textContent = `${friend?.name || "친구"}의 정원`;
+  if (els.sharedTreeInviteTitle) {
+    els.sharedTreeInviteTitle.textContent = isNextTreeInvite
+      ? "다음 나무도 함께 심어볼래? 🌿"
+      : "우리 둘만의 나무 하나 키워볼래? 🌿";
+  }
+  if (els.sharedTreeInviteBody) {
+    els.sharedTreeInviteBody.textContent = isNextTreeInvite
+      ? "완성한 나무는 함께한 숲에 그대로 남아요. 새 씨앗을 심으면 두 사람의 다음 시간이 새로운 나무로 천천히 자라요."
+      : "각자의 하루가 닿을 때마다 조금씩 자라요. 서로의 기록 내용은 보이지 않고, 둘만의 작은 나무만 남아요.";
+  }
+  els.acceptSharedTreeInviteButton.textContent = isNextTreeInvite ? "다음 나무 함께 심기" : "함께 심기";
   els.sharedTreeInviteModal.classList.remove("hidden");
 }
 
@@ -3878,7 +3899,7 @@ function closeSharedTreeInviteModal() {
   els.sharedTreeInviteModal.classList.add("hidden");
 }
 
-async function inviteSharedTree(friendId) {
+async function inviteSharedTree(friendId, { nextTree = false } = {}) {
   const friend = (state.friends || []).find((item) => item.id === friendId);
   if (!friendId || !friend || friend.isDevTest) return;
 
@@ -3892,19 +3913,25 @@ async function inviteSharedTree(friendId) {
   await loadGardenState();
   renderAll();
   renderFriends();
-  showToast(`${friend.name}님에게 작은 씨앗을 보냈어요.`);
+  if (activeTogetherForestFriendId === friendId) renderTogetherForest(friendId);
+  showToast(nextTree
+    ? `${friend.name}님에게 다음 나무의 씨앗을 제안했어요.`
+    : `${friend.name}님에게 작은 씨앗을 보냈어요.`);
 }
 
 async function acceptSharedTreeInvite() {
   if (!pendingSharedTreeInvite) return;
+  const invite = pendingSharedTreeInvite;
+  const hadCompletedTree = sharedTreesForFriend(invite.otherUserId).some((tree) => sharedTreeIsComplete(tree));
   const button = els.acceptSharedTreeInviteButton;
+  const originalText = button.textContent;
   button.disabled = true;
   button.textContent = "씨앗을 심는 중이에요";
 
-  const { data, error } = await supabase.rpc("accept_my_garden_shared_tree_invite", { p_invite_id: pendingSharedTreeInvite.id });
+  const { data, error } = await supabase.rpc("accept_my_garden_shared_tree_invite", { p_invite_id: invite.id });
 
   button.disabled = false;
-  button.textContent = "함께 심기";
+  button.textContent = originalText || "함께 심기";
   if (error) {
     console.warn("TodayForest shared-tree accept error:", error);
     showToast(databaseErrorMessage(error));
@@ -3916,8 +3943,9 @@ async function acceptSharedTreeInvite() {
   await loadGardenState();
   renderAll();
   renderFriends();
+  activeTogetherForestFriendId = invite.otherUserId;
   if (tree?.tree_id) openSharedTree(tree.tree_id);
-  showToast("둘만의 작은 씨앗을 심었어요.");
+  showToast(hadCompletedTree ? "함께한 숲에 다음 씨앗을 심었어요." : "둘만의 작은 씨앗을 심었어요.");
 }
 
 function sharedTreeStageForProgress(progress, target) {
@@ -3961,6 +3989,45 @@ function togetherForestTreeCardMarkup(tree, { current = false, index = 0 } = {})
   `;
 }
 
+function togetherForestNextSeedMarkup(friend, invite) {
+  if (invite?.direction === "incoming") {
+    return `
+      <div class="together-forest-next-seed is-incoming">
+        <span class="together-forest-next-seed-icon" aria-hidden="true">✦</span>
+        <div class="together-forest-next-seed-copy">
+          <strong>${escapeHTML(friend.name)}님이 다음 씨앗을 건넸어요</strong>
+          <p>원할 때 수락하면 완성한 나무 곁에서 새 나무가 자라기 시작해요.</p>
+        </div>
+        <button class="together-forest-next-seed-button" type="button" data-open-shared-tree-invite="${escapeAttr(invite.id)}">함께 심기</button>
+      </div>
+    `;
+  }
+
+  if (invite?.direction === "outgoing") {
+    return `
+      <div class="together-forest-next-seed is-waiting">
+        <span class="together-forest-next-seed-icon" aria-hidden="true">🌱</span>
+        <div class="together-forest-next-seed-copy">
+          <strong>다음 씨앗을 건넸어요</strong>
+          <p>친구가 원할 때 수락하면 새 나무가 시작돼요. 기다리는 동안 이전 나무는 그대로 머물러 있어요.</p>
+        </div>
+        <span class="together-forest-next-seed-state">천천히 기다리는 중</span>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="together-forest-next-seed">
+      <span class="together-forest-next-seed-icon" aria-hidden="true">🌱</span>
+      <div class="together-forest-next-seed-copy">
+        <strong>다음 나무를 함께 심어볼까요?</strong>
+        <p>완성한 나무는 이곳에 남고, 새 씨앗은 두 사람의 다음 시간을 담아요.</p>
+      </div>
+      <button class="together-forest-next-seed-button" type="button" data-invite-next-shared-tree="${escapeAttr(friend.id)}">다음 나무 제안하기</button>
+    </div>
+  `;
+}
+
 function renderTogetherForest(friendId = activeTogetherForestFriendId) {
   const friend = (state.friends || []).find((item) => item.id === friendId);
   if (!friend) return false;
@@ -3970,6 +4037,7 @@ function renderTogetherForest(friendId = activeTogetherForestFriendId) {
   const completedTrees = trees
     .filter((tree) => sharedTreeIsComplete(tree))
     .sort((a, b) => new Date(b.completedAt || b.createdAt || 0).getTime() - new Date(a.completedAt || a.createdAt || 0).getTime());
+  const invite = sharedTreeInviteForFriend(friendId);
 
   els.togetherForestFriendName.textContent = `${friend.name}와의 함께한 숲`;
   els.togetherForestCompletedCount.textContent = completedTrees.length
@@ -3988,15 +4056,17 @@ function renderTogetherForest(friendId = activeTogetherForestFriendId) {
 
   els.togetherForestCurrent.innerHTML = currentTrees.length
     ? togetherForestTreeCardMarkup(currentTrees[0], { current: true })
-    : `
-      <div class="together-forest-empty-current">
-        <span aria-hidden="true">🌱</span>
-        <div>
-          <strong>지금 자라는 나무는 없어요</strong>
-          <p>완성한 나무 곁에서 다음 씨앗을 천천히 기다릴 수 있어요.</p>
+    : completedTrees.length
+      ? togetherForestNextSeedMarkup(friend, invite)
+      : `
+        <div class="together-forest-empty-current">
+          <span aria-hidden="true">🌱</span>
+          <div>
+            <strong>지금 자라는 나무는 없어요</strong>
+            <p>첫 씨앗 제안은 친구 목록에서 시작할 수 있어요.</p>
+          </div>
         </div>
-      </div>
-    `;
+      `;
 
   els.togetherForestCompletedList.innerHTML = completedTrees.length
     ? completedTrees.map((tree, index) => togetherForestTreeCardMarkup(tree, { index })).join("")
@@ -4004,6 +4074,14 @@ function renderTogetherForest(friendId = activeTogetherForestFriendId) {
 
   els.togetherForestView.querySelectorAll('[data-view-shared-tree]').forEach((button) => {
     button.addEventListener("click", () => openSharedTree(button.dataset.viewSharedTree));
+  });
+  els.togetherForestView.querySelectorAll('[data-invite-next-shared-tree]').forEach((button) => {
+    button.addEventListener("click", () => {
+      void inviteSharedTree(button.dataset.inviteNextSharedTree, { nextTree: true });
+    });
+  });
+  els.togetherForestView.querySelectorAll('[data-open-shared-tree-invite]').forEach((button) => {
+    button.addEventListener("click", () => openSharedTreeInvite(button.dataset.openSharedTreeInvite));
   });
   return true;
 }

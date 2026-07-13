@@ -4576,3 +4576,102 @@ html.heart-fruit-ceremony-locked body {
 @media (prefers-reduced-motion: reduce) {
   .together-forest-tree-card:hover { transform: none; }
 }
+
+/* Shared tree next seed v1.8: 완성된 나무 곁에서 다음 나무 제안/수락 */
+.together-forest-next-seed {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 94px;
+  padding: 14px 15px;
+  border: 1px solid rgba(122, 158, 132, .23);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(243,251,239,.96), rgba(250,247,255,.95));
+  box-shadow: 0 8px 20px rgba(83, 106, 88, .07);
+}
+.together-forest-next-seed.is-incoming {
+  border-color: rgba(211, 164, 81, .29);
+  background: linear-gradient(135deg, rgba(255,249,224,.98), rgba(249,244,255,.96));
+}
+.together-forest-next-seed.is-waiting {
+  border-style: dashed;
+  background: rgba(247,250,247,.75);
+}
+.together-forest-next-seed-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.84);
+  box-shadow: 0 6px 16px rgba(82, 106, 88, .09);
+  font-size: 23px;
+}
+.together-forest-next-seed-copy { min-width: 0; }
+.together-forest-next-seed-copy strong {
+  display: block;
+  color: #647269;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.together-forest-next-seed-copy p {
+  margin: 4px 0 0;
+  color: #969d98;
+  font-size: 10px;
+  line-height: 1.55;
+  font-weight: 700;
+}
+.together-forest-next-seed-button {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid rgba(113, 153, 125, .22);
+  border-radius: 13px;
+  background: rgba(255,255,255,.9);
+  color: #63806b;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 5px 13px rgba(78, 104, 84, .07);
+}
+.together-forest-next-seed-button:hover { transform: translateY(-1px); }
+.together-forest-next-seed-button:focus-visible {
+  outline: 3px solid rgba(126, 169, 142, .28);
+  outline-offset: 2px;
+}
+.together-forest-next-seed-state {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 11px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.72);
+  color: #9ca39e;
+  font-size: 9px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .together-forest-next-seed {
+    grid-template-columns: 42px minmax(0, 1fr);
+    padding: 13px;
+  }
+  .together-forest-next-seed-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 15px;
+    font-size: 21px;
+  }
+  .together-forest-next-seed-button,
+  .together-forest-next-seed-state {
+    grid-column: 1 / -1;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .together-forest-next-seed-button:hover { transform: none; }
+}
