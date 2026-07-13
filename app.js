@@ -138,6 +138,7 @@ const DEFAULT_STATE = {
   sharedTrees: [],
   sharedTreeInvites: [],
   sharedTreeNotes: [],
+  sharedTreeStartMoments: [],
   foundItems: [],
   profileName: "새 친구",
   treeName: "",
@@ -290,6 +291,8 @@ const DEV_SHARED_TREE_STORAGE_PREFIX = "todayforest-dev-shared-tree-preview-v1";
 // 공유나무를 보고 있을 때 새로고침해도 같은 나무로 돌아오기 위한 주소 상태입니다.
 const SHARED_TREE_URL_PARAM = "sharedTree";
 const TOGETHER_FOREST_URL_PARAM = "togetherForest";
+// 새 공유나무가 시작된 순간은 참여자마다 한 번만, 약 2초 동안 조용히 보여줍니다.
+const SHARED_TREE_START_MOMENT_DURATION_MS = 2200;
 // 오래된 편지 정책을 실제 시간으로 기다리지 않고 안전하게 검수하기 위한 DEV 전용 테스트입니다.
 // 실제 garden_letters와 분리된 DEV 전용 테이블만 사용합니다.
 // 준비는 ?retentionTest=21|wind|31&retentionReset=1 일 때만, 검수는 retentionTest 주소에서만 동작합니다.
@@ -352,6 +355,8 @@ const HEART_FRUIT_PREVIEW_MAX_COUNT = 120;
 let activeSharedTreeId = "";
 let activeTogetherForestFriendId = "";
 let pendingSharedTreeInvite = null;
+let sharedTreeStartMomentPlaying = false;
+let sharedTreeStartMomentTimer = null;
 // DEV Animal Visit v2: V1의 한 마리 상태와 분리된, 최대 두 마리의 계정 공통 방문 목록입니다.
 let activeAnimalVisit = null;
 let activeAnimalV2Visits = [];
@@ -556,6 +561,9 @@ const els = {
   sharedTreeInviteBody: $("#sharedTreeInviteBody"),
   acceptSharedTreeInviteButton: $("#acceptSharedTreeInviteButton"),
   laterSharedTreeInviteButton: $("#laterSharedTreeInviteButton"),
+  sharedTreeStartMoment: $("#sharedTreeStartMoment"),
+  sharedTreeStartMomentTitle: $("#sharedTreeStartMomentTitle"),
+  sharedTreeStartMomentBody: $("#sharedTreeStartMomentBody"),
   togetherForestView: $("#togetherForestView"),
   togetherForestFriendName: $("#togetherForestFriendName"),
   togetherForestSummary: $("#togetherForestSummary"),
@@ -1351,7 +1359,7 @@ async function loadGardenState() {
 
   const nowIso = new Date().toISOString();
   const retentionTestActive = Boolean(retentionTestModeFromUrl());
-  const [profileResult, recordsResult, foundItemsResult, lettersResult, sentLettersResult, friendsResult, sharedTreesResult, sharedTreeInvitesResult, sharedTreeNotesResult, retentionDevLetters] = await Promise.all([
+  const [profileResult, recordsResult, foundItemsResult, lettersResult, sentLettersResult, friendsResult, sharedTreesResult, sharedTreeInvitesResult, sharedTreeNotesResult, sharedTreeStartMomentsResult, retentionDevLetters] = await Promise.all([
     loadMyGardenProfile(),
     loadMyGardenRecords(),
     loadFoundGardenItems(),
@@ -1365,6 +1373,7 @@ async function loadGardenState() {
     supabase.rpc("list_my_garden_shared_trees"),
     supabase.rpc("list_my_garden_shared_tree_invites"),
     supabase.rpc("list_my_garden_shared_tree_notes"),
+    supabase.rpc("list_my_unseen_garden_shared_tree_start_moments"),
     loadRetentionDevLetters(),
   ]);
 
@@ -1383,6 +1392,7 @@ async function loadGardenState() {
   if (sharedTreesResult.error) console.warn("TodayForest shared-tree load skipped:", sharedTreesResult.error);
   if (sharedTreeInvitesResult.error) console.warn("TodayForest shared-tree invite load skipped:", sharedTreeInvitesResult.error);
   if (sharedTreeNotesResult.error) console.warn("TodayForest shared-tree note load skipped:", sharedTreeNotesResult.error);
+  if (sharedTreeStartMomentsResult.error) console.warn("TodayForest shared-tree start moment load skipped:", sharedTreeStartMomentsResult.error);
 
   const profile = profileResult.data;
   // 운영에서는 목록 RPC가 함께 돌려줄 수 있는 DEV 테스트 친구를 화면 데이터에서 제외합니다.
@@ -1469,6 +1479,12 @@ async function loadGardenState() {
       isMine: Boolean(note.is_mine),
       createdAt: note.created_at,
       updatedAt: note.updated_at,
+    })),
+    sharedTreeStartMoments: (sharedTreeStartMomentsResult.data || []).map((moment) => ({
+      treeId: moment.tree_id,
+      partnerId: moment.partner_id,
+      sceneRole: moment.scene_role === "accepted" ? "accepted" : "proposed",
+      createdAt: moment.created_at,
     })),
     foundItems: (foundItemsResult.data || [])
       .filter((item) => foundItemCatalog[item.item_key])
@@ -3970,13 +3986,123 @@ async function acceptSharedTreeInvite() {
   }
 
   const tree = normalizeRpcRow(data);
+  const treeId = tree?.tree_id || "";
   closeSharedTreeInviteModal();
   await loadGardenState();
   renderAll();
   renderFriends();
   activeTogetherForestFriendId = invite.otherUserId;
-  if (tree?.tree_id) openSharedTree(tree.tree_id);
-  showToast(hadCompletedTree ? "함께한 숲에 다음 씨앗을 심었어요." : "둘만의 작은 씨앗을 심었어요.");
+
+  const openNewTree = () => {
+    if (treeId) {
+      openSharedTree(treeId);
+    } else {
+      openTogetherForest(invite.otherUserId);
+    }
+  };
+
+  const moment = (state.sharedTreeStartMoments || []).find((item) => item.treeId === treeId)
+    || (treeId ? {
+      treeId,
+      partnerId: invite.otherUserId,
+      sceneRole: "accepted",
+      createdAt: new Date().toISOString(),
+    } : null);
+
+  if (!playSharedTreeStartMoment(moment, { onComplete: openNewTree })) {
+    openNewTree();
+    showToast(hadCompletedTree ? "함께한 숲에 다음 씨앗을 심었어요." : "둘만의 작은 씨앗을 심었어요.");
+  }
+}
+
+function sharedTreeStartMomentForFriend(friendId) {
+  return (state.sharedTreeStartMoments || []).find((moment) => moment.partnerId === friendId) || null;
+}
+
+function removeSharedTreeStartMomentFromState(treeId) {
+  state.sharedTreeStartMoments = (state.sharedTreeStartMoments || []).filter((moment) => moment.treeId !== treeId);
+}
+
+async function markSharedTreeStartMomentSeen(treeId) {
+  if (!treeId || !currentUser) return false;
+
+  const { error } = await supabase.rpc("mark_my_garden_shared_tree_start_moment_seen", {
+    p_tree_id: treeId,
+  });
+  if (error) {
+    // 화면은 막지 않습니다. 서버 기록이 실패하면 다음 방문에 한 번 더 나타날 수 있습니다.
+    console.warn("TodayForest shared-tree start moment mark skipped:", error);
+    return false;
+  }
+  return true;
+}
+
+function sharedTreeStartMomentCopy(moment) {
+  const friend = (state.friends || []).find((item) => item.id === moment.partnerId);
+  const friendName = friend?.name || "친구";
+  const hasCompletedTree = sharedTreesForFriend(moment.partnerId)
+    .some((tree) => tree.id !== moment.treeId && sharedTreeIsComplete(tree));
+
+  if (moment.sceneRole === "accepted") {
+    return {
+      role: "accepted",
+      title: hasCompletedTree
+        ? "둘의 다음 나무가 이 숲에 심겼어요."
+        : "둘의 나무가 이 숲에 심겼어요.",
+      body: hasCompletedTree
+        ? "완성한 나무 곁에서, 두 사람의 다음 시간이 천천히 자라기 시작해요."
+        : "작은 씨앗이 두 사람의 하루를 기다리며 천천히 자라기 시작해요.",
+    };
+  }
+
+  return {
+    role: "proposed",
+    title: "친구가 씨앗을 함께 심었어요.",
+    body: `${friendName}님이 네가 건넨 씨앗을 받아주었어요. 새 나무가 함께한 숲에서 조용히 기다리고 있어요.`,
+  };
+}
+
+function playSharedTreeStartMoment(moment, { onComplete = null } = {}) {
+  if (!moment || sharedTreeStartMomentPlaying || !els.sharedTreeStartMoment) return false;
+
+  sharedTreeStartMomentPlaying = true;
+  removeSharedTreeStartMomentFromState(moment.treeId);
+
+  const copy = sharedTreeStartMomentCopy(moment);
+  els.sharedTreeStartMoment.dataset.role = copy.role;
+  els.sharedTreeStartMomentTitle.textContent = copy.title;
+  els.sharedTreeStartMomentBody.textContent = copy.body;
+  els.sharedTreeStartMoment.classList.remove("hidden", "is-visible", "is-leaving");
+  document.documentElement.classList.add("shared-tree-start-moment-open");
+
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => els.sharedTreeStartMoment?.classList.add("is-visible"));
+  });
+
+  void markSharedTreeStartMomentSeen(moment.treeId);
+
+  if (sharedTreeStartMomentTimer) window.clearTimeout(sharedTreeStartMomentTimer);
+  sharedTreeStartMomentTimer = window.setTimeout(() => {
+    els.sharedTreeStartMoment?.classList.add("is-leaving");
+    els.sharedTreeStartMoment?.classList.remove("is-visible");
+
+    window.setTimeout(() => {
+      els.sharedTreeStartMoment?.classList.add("hidden");
+      els.sharedTreeStartMoment?.classList.remove("is-leaving");
+      document.documentElement.classList.remove("shared-tree-start-moment-open");
+      sharedTreeStartMomentPlaying = false;
+      sharedTreeStartMomentTimer = null;
+      if (typeof onComplete === "function") onComplete();
+    }, 280);
+  }, SHARED_TREE_START_MOMENT_DURATION_MS);
+
+  return true;
+}
+
+function showSharedTreeStartMomentForFriend(friendId) {
+  if (sharedTreeStartMomentPlaying) return false;
+  const moment = sharedTreeStartMomentForFriend(friendId);
+  return moment ? playSharedTreeStartMoment(moment) : false;
 }
 
 function sharedTreeStageForProgress(progress, target) {
@@ -4132,6 +4258,13 @@ function openTogetherForest(friendId, { updateUrl = true, scroll = true, silent 
   els.sharedTreeView.classList.add("hidden");
   els.togetherForestView.classList.remove("hidden");
   if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
+
+  // 제안자는 친구가 수락한 사실을 함께한 숲에 들어왔을 때 한 번 발견합니다.
+  window.setTimeout(() => {
+    if (activeTogetherForestFriendId !== friendId) return;
+    if (els.togetherForestView.classList.contains("hidden")) return;
+    showSharedTreeStartMomentForFriend(friendId);
+  }, 140);
   return true;
 }
 

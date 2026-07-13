@@ -4818,3 +4818,88 @@ html.heart-fruit-ceremony-locked body {
   .shared-tree-note-form-foot { align-items: stretch; flex-direction: column; }
   .shared-tree-note-submit { width: 100%; }
 }
+
+
+/* SHARED TREE v2.0 · 새 나무가 심어진 순간 ----------------------------- */
+html.shared-tree-start-moment-open,
+html.shared-tree-start-moment-open body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+.shared-tree-start-moment {
+  position: fixed;
+  z-index: 2147483200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
+  opacity: 0;
+  pointer-events: auto;
+  touch-action: none;
+  transition: opacity .28s ease;
+}
+.shared-tree-start-moment.is-visible { opacity: 1; }
+.shared-tree-start-moment.is-leaving { opacity: 0; }
+.shared-tree-start-moment-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 43%, rgba(255,244,203,.16), transparent 34%), linear-gradient(180deg, rgba(45,48,67,.72), rgba(55,48,68,.82));
+  backdrop-filter: blur(8px);
+}
+.shared-tree-start-moment-card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 410px);
+  padding: 28px 24px 25px;
+  border: 1px solid rgba(255,247,225,.74);
+  border-radius: 30px;
+  background: rgba(255,252,245,.94);
+  box-shadow: 0 26px 70px rgba(34,31,53,.34), inset 0 1px 0 rgba(255,255,255,.92);
+  text-align: center;
+  transform: translateY(12px) scale(.97);
+  opacity: 0;
+  transition: transform .5s cubic-bezier(.2,.82,.25,1), opacity .42s ease;
+}
+.shared-tree-start-moment.is-visible .shared-tree-start-moment-card { transform: translateY(0) scale(1); opacity: 1; }
+.shared-tree-start-moment-kicker { margin: 0; color: #9b7b69; font-size: 10px; font-weight: 900; letter-spacing: .14em; }
+.shared-tree-start-moment-scene { position: relative; width: 154px; height: 138px; margin: 8px auto 4px; }
+.shared-tree-start-moment-glow { position: absolute; left: 50%; bottom: 14px; width: 116px; height: 78px; border-radius: 50%; background: radial-gradient(circle, rgba(255,221,144,.54), rgba(255,224,159,0) 68%); transform: translateX(-50%) scale(.7); opacity: 0; }
+.shared-tree-start-moment-soil { position: absolute; left: 50%; bottom: 17px; width: 98px; height: 24px; border-radius: 50%; background: linear-gradient(180deg,#ad8263,#805e4c); box-shadow: inset 0 5px 8px rgba(255,235,203,.18), 0 8px 18px rgba(91,65,53,.16); transform: translateX(-50%) scaleX(.84); }
+.shared-tree-start-moment-seed { position: absolute; left: 50%; bottom: 38px; width: 17px; height: 22px; border-radius: 58% 42% 58% 42%; background: linear-gradient(145deg,#d9a666,#8d6744); box-shadow: inset 3px 3px 4px rgba(255,231,190,.34), 0 5px 9px rgba(93,64,42,.18); transform: translate(-50%,-24px) rotate(23deg); opacity: 0; }
+.shared-tree-start-moment-sprout { position: absolute; left: 50%; bottom: 34px; width: 58px; height: 70px; transform: translateX(-50%); opacity: 0; }
+.shared-tree-start-moment-stem { position: absolute; left: 50%; bottom: 0; width: 5px; height: 49px; border-radius: 999px; background: linear-gradient(90deg,#5f9161,#86b574); transform: translateX(-50%) scaleY(0); transform-origin: 50% 100%; }
+.shared-tree-start-moment-leaf { position: absolute; top: 12px; width: 25px; height: 16px; border-radius: 90% 12% 90% 12%; background: linear-gradient(145deg,#9ecb82,#5f9864); opacity: 0; }
+.shared-tree-start-moment-leaf.is-left { left: 5px; transform: rotate(21deg) scale(.2); transform-origin: 100% 100%; }
+.shared-tree-start-moment-leaf.is-right { right: 4px; border-radius: 12% 90% 12% 90%; transform: rotate(-20deg) scale(.2); transform-origin: 0 100%; }
+.shared-tree-start-moment-sparkle { position: absolute; color: #e7b96a; opacity: 0; text-shadow: 0 0 12px rgba(255,221,142,.8); }
+.shared-tree-start-moment-sparkle.is-one { left: 18px; top: 42px; font-size: 17px; }
+.shared-tree-start-moment-sparkle.is-two { right: 17px; top: 25px; font-size: 12px; }
+.shared-tree-start-moment-sparkle.is-three { right: 29px; bottom: 31px; font-size: 24px; }
+.shared-tree-start-moment.is-visible .shared-tree-start-moment-glow { animation: shared-tree-start-glow 1.65s .18s ease both; }
+.shared-tree-start-moment.is-visible .shared-tree-start-moment-seed { animation: shared-tree-start-seed .72s .12s cubic-bezier(.24,.82,.28,1) both; }
+.shared-tree-start-moment.is-visible .shared-tree-start-moment-sprout { animation: shared-tree-start-sprout .28s .73s ease both; }
+.shared-tree-start-moment.is-visible .shared-tree-start-moment-stem { animation: shared-tree-start-stem .72s .66s cubic-bezier(.2,.82,.25,1) both; }
+.shared-tree-start-moment.is-visible .shared-tree-start-moment-leaf.is-left { animation: shared-tree-start-leaf-left .52s 1.02s cubic-bezier(.2,.82,.25,1) both; }
+.shared-tree-start-moment.is-visible .shared-tree-start-moment-leaf.is-right { animation: shared-tree-start-leaf-right .52s 1.12s cubic-bezier(.2,.82,.25,1) both; }
+.shared-tree-start-moment.is-visible .shared-tree-start-moment-sparkle.is-one { animation: shared-tree-start-sparkle .78s .76s ease both; }
+.shared-tree-start-moment.is-visible .shared-tree-start-moment-sparkle.is-two { animation: shared-tree-start-sparkle .72s 1.02s ease both; }
+.shared-tree-start-moment.is-visible .shared-tree-start-moment-sparkle.is-three { animation: shared-tree-start-sparkle .64s 1.22s ease both; }
+.shared-tree-start-moment-card h2 { margin: 2px auto 10px; max-width: 330px; color: #5e4d58; font-size: clamp(20px,5.5vw,25px); line-height: 1.38; letter-spacing: -.045em; }
+.shared-tree-start-moment-card > p:last-child { margin: 0 auto; max-width: 330px; color: #7a6d70; font-size: 13px; line-height: 1.72; word-break: keep-all; }
+.shared-tree-start-moment[data-role="proposed"] .shared-tree-start-moment-kicker { color: #7e7a9d; }
+@keyframes shared-tree-start-seed { 0% { opacity:0; transform:translate(-50%,-25px) rotate(23deg) scale(.82); } 32% { opacity:1; } 72% { opacity:1; transform:translate(-50%,4px) rotate(12deg) scale(1); } 100% { opacity:0; transform:translate(-50%,11px) rotate(5deg) scale(.88); } }
+@keyframes shared-tree-start-sprout { from { opacity:0; } to { opacity:1; } }
+@keyframes shared-tree-start-stem { from { transform:translateX(-50%) scaleY(0); } to { transform:translateX(-50%) scaleY(1); } }
+@keyframes shared-tree-start-leaf-left { from { opacity:0; transform:rotate(8deg) scale(.2); } to { opacity:1; transform:rotate(21deg) scale(1); } }
+@keyframes shared-tree-start-leaf-right { from { opacity:0; transform:rotate(-7deg) scale(.2); } to { opacity:1; transform:rotate(-20deg) scale(1); } }
+@keyframes shared-tree-start-glow { 0% { opacity:0; transform:translateX(-50%) scale(.65); } 48% { opacity:.9; transform:translateX(-50%) scale(1.06); } 100% { opacity:.5; transform:translateX(-50%) scale(1); } }
+@keyframes shared-tree-start-sparkle { 0% { opacity:0; transform:translateY(7px) scale(.45) rotate(-12deg); } 48% { opacity:1; } 100% { opacity:.42; transform:translateY(-6px) scale(1) rotate(7deg); } }
+@media (max-width:420px) { .shared-tree-start-moment { padding-inline:15px; } .shared-tree-start-moment-card { padding:24px 18px 22px; border-radius:26px; } .shared-tree-start-moment-scene { width:144px; height:128px; } }
+@media (prefers-reduced-motion:reduce) {
+  .shared-tree-start-moment,.shared-tree-start-moment-card,.shared-tree-start-moment-glow,.shared-tree-start-moment-seed,.shared-tree-start-moment-sprout,.shared-tree-start-moment-stem,.shared-tree-start-moment-leaf,.shared-tree-start-moment-sparkle { animation:none !important; transition:none !important; }
+  .shared-tree-start-moment.is-visible,.shared-tree-start-moment.is-visible .shared-tree-start-moment-card,.shared-tree-start-moment.is-visible .shared-tree-start-moment-sprout,.shared-tree-start-moment.is-visible .shared-tree-start-moment-leaf,.shared-tree-start-moment.is-visible .shared-tree-start-moment-sparkle { opacity:1; }
+  .shared-tree-start-moment.is-visible .shared-tree-start-moment-stem { transform:translateX(-50%) scaleY(1); }
+  .shared-tree-start-moment.is-visible .shared-tree-start-moment-leaf.is-left { transform:rotate(21deg) scale(1); }
+  .shared-tree-start-moment.is-visible .shared-tree-start-moment-leaf.is-right { transform:rotate(-20deg) scale(1); }
+  .shared-tree-start-moment.is-visible .shared-tree-start-moment-glow { opacity:.55; transform:translateX(-50%) scale(1); }
+}
