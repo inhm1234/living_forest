@@ -5250,11 +5250,23 @@ function bindEvents() {
   $("#openRecords").addEventListener("click", () => { renderRecords(); openSheet(els.recordsSheet); });
   els.openHeartFruits?.addEventListener("click", openMyHeartFruits);
   els.heartFruitLayer?.addEventListener("click", (event) => {
+    const fruit = event.target.closest?.(".heart-fruit");
     event.stopPropagation();
-    openMyHeartFruits();
+    if (fruit && els.heartFruitLayer.contains(fruit)) {
+      openMyHeartFruits();
+      return;
+    }
+
+    // 투명한 열매 레이어의 빈 부분은 기존 나무 손길 기능으로 명시적으로 전달합니다.
+    // pointer-events 통과 여부에 기대지 않아 모바일 브라우저에서도 나무 반응이 유지됩니다.
+    window.dispatchEvent(new CustomEvent("todayforest:tree-tap-request", {
+      detail: { source: "heart-fruit-layer" },
+    }));
   });
   els.openFriendHeartFruits?.addEventListener("click", openFriendHeartFruits);
   els.friendHeartFruitLayer?.addEventListener("click", (event) => {
+    const fruit = event.target.closest?.(".heart-fruit");
+    if (!fruit || !els.friendHeartFruitLayer.contains(fruit)) return;
     event.stopPropagation();
     openFriendHeartFruits();
   });

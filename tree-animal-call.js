@@ -343,6 +343,8 @@ function createTreeCallSurface() {
   readyLight = effect.querySelector(".tree-call-ready-light");
   pathLight = effect.querySelector(".tree-call-path-light");
   hitbox.addEventListener("click", handleTreeTap);
+  // 마음 열매 레이어처럼 나무 위에 놓이는 기능도 동일한 반응 경로를 사용합니다.
+  window.addEventListener("todayforest:tree-tap-request", handleTreeTap);
   return true;
 }
 

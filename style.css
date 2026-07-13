@@ -3710,6 +3710,14 @@ textarea::placeholder { color: #a7b4bd; }
   padding: 0;
   border: 0;
   background: transparent;
+  /* 기본값은 열매 자체만 누를 수 있게 둡니다. */
+  pointer-events: none;
+  cursor: default;
+}
+
+/* 내 정원에서는 투명 영역 클릭을 나무 손길 기능으로 직접 전달합니다.
+   브라우저의 레이어 통과 처리에 의존하지 않아 모바일에서도 안정적으로 반응합니다. */
+#heartFruitLayer {
   pointer-events: auto;
   cursor: pointer;
   touch-action: manipulation;
@@ -3732,6 +3740,10 @@ textarea::placeholder { color: #a7b4bd; }
   border-radius: 50% 45% 52% 48%;
   background: radial-gradient(circle at 35% 30%, #fff9e9 0 12%, #f7a6b7 34%, #cb5e79 78%, #9f405a 100%);
   box-shadow: 0 2px 4px rgba(104, 42, 65, .18), 0 0 8px rgba(255, 210, 218, .58);
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .heart-fruit.fruit-2 {
