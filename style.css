@@ -4353,3 +4353,31 @@ html.heart-fruit-ceremony-locked body {
     transform: translate(-50%, -50%) scale(1) !important;
   }
 }
+
+/* Shared tree v1.6.1: 나무와 완성 정보를 한 화면에서 함께 보기 위한 크기 조정 */
+.shared-tree-stage {
+  min-height: clamp(370px, 50vh, 430px);
+}
+.shared-tree-plant {
+  bottom: 0;
+  width: min(78%, 410px);
+}
+.shared-tree-image { transform: scale(1.02); }
+.shared-tree-view[data-stage="2"] .shared-tree-image { transform: scale(1.035); }
+.shared-tree-view[data-stage="3"] .shared-tree-image { transform: scale(1.05); }
+.shared-tree-view[data-stage="4"] .shared-tree-image { transform: scale(1.065); }
+.shared-tree-view[data-stage="5"] .shared-tree-image { transform: scale(1.08); }
+.shared-tree-view[data-stage="6"] .shared-tree-image { transform: scale(1.095); }
+
+@media (max-width: 470px) {
+  .shared-tree-stage {
+    min-height: clamp(350px, 54vh, 400px);
+  }
+  .shared-tree-plant {
+    bottom: 2%;
+    width: min(86%, 360px);
+  }
+  .shared-tree-stage-copy {
+    max-width: calc(100% - 28px);
+  }
+}
