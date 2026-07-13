@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=heart-fruits-v1-3-3" />
+  <link rel="stylesheet" href="style.css?v=heart-fruits-v1-3-4" />
   <link rel="stylesheet" href="tree-animal-call.css?v=tree-animal-call-v4-status-hotfix" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
@@ -223,11 +223,6 @@
               alt="꽃과 잎이 피어난 내 마음 나무"
             />
             <div class="heart-fruit-layer hidden" id="heartFruitLayer" aria-hidden="true"></div>
-            <button class="heart-fruit-open hidden" id="openHeartFruits" type="button" aria-label="내 마음 열매 보기">
-              <span aria-hidden="true">●</span>
-              <b>마음 열매</b>
-              <em id="heartFruitCount">0</em>
-            </button>
             <p class="heart-fruit-reveal-message hidden" id="heartFruitRevealMessage" role="status" aria-live="polite">지금까지의 마음이 열매로 맺혔어요.</p>
             <div class="branch-letters" id="branchLetters" aria-live="polite" aria-label="나뭇가지에 도착한 새 편지"></div>
           </div>
@@ -268,6 +263,12 @@
         <span class="dot">·</span>
         <span id="treeStageLabel">처음 깨어난 새싹</span>
       </div>
+
+      <button class="heart-fruit-open hidden" id="openHeartFruits" type="button" aria-label="내 마음 열매 보기">
+        <span aria-hidden="true">●</span>
+        <b>마음 열매</b>
+        <em id="heartFruitCount">0</em>
+      </button>
 
       <button class="visitor-card" id="visitorButton" type="button" aria-label="오늘의 방문자 보기">
         <img id="visitorImage" src="assets/garden/bird-silhouette-v3.png" alt="오늘 내 나무를 찾아온 작은 새" hidden />
@@ -879,7 +880,7 @@
 
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="app.js?v=heart-fruits-v1-3-3"></script>
-  <script type="module" src="tree-animal-call.js?v=tree-animal-call-v5-heart-fruit-bridge-133"></script>
+  <script type="module" src="app.js?v=heart-fruits-v1-3-4"></script>
+  <script type="module" src="tree-animal-call.js?v=tree-animal-call-v5-heart-fruit-bridge-134"></script>
 </body>
 </html>
