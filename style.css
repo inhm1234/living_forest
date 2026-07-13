@@ -4675,3 +4675,146 @@ html.heart-fruit-ceremony-locked body {
 @media (prefers-reduced-motion: reduce) {
   .together-forest-next-seed-button:hover { transform: none; }
 }
+
+
+/* Shared tree v1.9: 완성된 나무에 두 사람이 각자 남기는 한마디 */
+.shared-tree-memory-note {
+  margin-top: 15px;
+  padding: 18px;
+  border: 1px solid rgba(196, 164, 112, .2);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 235, 184, .34), transparent 34%),
+    linear-gradient(145deg, rgba(255, 253, 243, .94), rgba(247, 244, 255, .9));
+  box-shadow: 0 13px 27px rgba(126, 111, 145, .08);
+}
+.shared-tree-memory-heading h2 {
+  margin: 3px 0 5px;
+  color: #59677a;
+  font-size: 19px;
+  letter-spacing: -.04em;
+}
+.shared-tree-memory-heading > p:last-child {
+  margin: 0;
+  color: #8993a0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+.shared-tree-memory-words {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 15px;
+}
+.shared-tree-memory-word {
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid rgba(183, 169, 202, .17);
+  border-radius: 17px;
+  background: rgba(255,255,255,.73);
+}
+.shared-tree-memory-word span {
+  display: block;
+  margin-bottom: 7px;
+  color: #8a7aa1;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .02em;
+}
+.shared-tree-memory-word p {
+  min-height: 2.9em;
+  margin: 0;
+  color: #566374;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.48;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.shared-tree-memory-word p.is-empty {
+  color: #a2a8af;
+  font-weight: 650;
+}
+.shared-tree-note-form {
+  margin-top: 12px;
+  padding: 13px;
+  border: 1px solid rgba(157, 147, 180, .14);
+  border-radius: 17px;
+  background: rgba(255,255,255,.58);
+}
+.shared-tree-note-form label {
+  display: block;
+  margin-bottom: 7px;
+  color: #657186;
+  font-size: 11px;
+  font-weight: 900;
+}
+.shared-tree-note-form textarea {
+  display: block;
+  width: 100%;
+  min-height: 70px;
+  resize: vertical;
+  padding: 11px 12px;
+  border: 1px solid #ddd8e7;
+  border-radius: 13px;
+  outline: none;
+  background: rgba(255,255,255,.9);
+  color: #4f5b6b;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  box-sizing: border-box;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+.shared-tree-note-form textarea:focus {
+  border-color: #c7b6df;
+  box-shadow: 0 0 0 3px rgba(199, 182, 223, .16);
+}
+.shared-tree-note-form textarea::placeholder { color: #b2b5bd; }
+.shared-tree-note-form-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 11px;
+  margin-top: 9px;
+}
+.shared-tree-note-count {
+  color: #9aa1aa;
+  font-size: 10px;
+  font-weight: 850;
+}
+.shared-tree-note-count.is-limit { color: #a27886; }
+.shared-tree-note-submit {
+  flex: 0 0 auto;
+  padding: 10px 13px;
+  border: 1px solid rgba(153, 128, 187, .22);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fff8d9, #f2ecff);
+  color: #765f95;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 6px 13px rgba(119, 92, 155, .08);
+}
+.shared-tree-note-submit:disabled {
+  cursor: default;
+  opacity: .62;
+  box-shadow: none;
+}
+.shared-tree-note-help {
+  margin: 9px 0 0;
+  color: #989eaa;
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+@media (max-width: 470px) {
+  .shared-tree-memory-note { padding: 15px; }
+  .shared-tree-memory-words { grid-template-columns: 1fr; }
+  .shared-tree-memory-word p { min-height: auto; }
+  .shared-tree-note-form-foot { align-items: stretch; flex-direction: column; }
+  .shared-tree-note-submit { width: 100%; }
+}

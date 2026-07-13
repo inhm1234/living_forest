@@ -137,6 +137,7 @@ const DEFAULT_STATE = {
   friends: [],
   sharedTrees: [],
   sharedTreeInvites: [],
+  sharedTreeNotes: [],
   foundItems: [],
   profileName: "새 친구",
   treeName: "",
@@ -580,6 +581,14 @@ const els = {
   sharedTreeSeedGlow: $("#sharedTreeSeedGlow"),
   sharedTreeImage: $("#sharedTreeImage"),
   sharedTreeRecordLightButton: $("#sharedTreeRecordLightButton"),
+  sharedTreeMemoryNote: $("#sharedTreeMemoryNote"),
+  sharedTreeMyNoteText: $("#sharedTreeMyNoteText"),
+  sharedTreePartnerNoteLabel: $("#sharedTreePartnerNoteLabel"),
+  sharedTreePartnerNoteText: $("#sharedTreePartnerNoteText"),
+  sharedTreeNoteForm: $("#sharedTreeNoteForm"),
+  sharedTreeNoteInput: $("#sharedTreeNoteInput"),
+  sharedTreeNoteCount: $("#sharedTreeNoteCount"),
+  sharedTreeNoteSubmit: $("#sharedTreeNoteSubmit"),
   returnToFriendsFromSharedTree: $("#returnToFriendsFromSharedTree"),
   friendInviteFrom: $("#friendInviteFrom"),
   acceptFriendInviteButton: $("#acceptFriendInviteButton"),
@@ -867,6 +876,18 @@ function databaseErrorMessage(error) {
   }
   if (message.includes("SHARED_TREE_LIGHT_NOT_FOUND")) {
     return "이 함께 키우는 나무를 다시 불러와 주세요.";
+  }
+  if (message.includes("SHARED_TREE_NOTE_REQUIRED")) {
+    return "한마디를 한 글자 이상 남겨 주세요.";
+  }
+  if (message.includes("SHARED_TREE_NOTE_TOO_LONG")) {
+    return "한마디는 40자 안으로 남길 수 있어요.";
+  }
+  if (message.includes("SHARED_TREE_NOT_COMPLETED")) {
+    return "완성된 나무에만 한마디를 남길 수 있어요.";
+  }
+  if (message.includes("upsert_my_garden_shared_tree_note") || message.includes("list_my_garden_shared_tree_notes") || message.includes("garden_shared_tree_notes")) {
+    return "공유나무 한마디 저장소가 아직 준비되지 않았어요. v1.9 SQL 설정을 확인해 주세요.";
   }
   if (message.includes("setup_my_garden_retention_dev_test") || message.includes("run_my_garden_retention_dev_cleanup") || message.includes("list_my_garden_retention_dev_tests")) {
     return "오래된 편지 테스트를 준비하지 못했어요. v9 DEV 보관 정책 SQL을 먼저 실행해 주세요.";
@@ -1330,7 +1351,7 @@ async function loadGardenState() {
 
   const nowIso = new Date().toISOString();
   const retentionTestActive = Boolean(retentionTestModeFromUrl());
-  const [profileResult, recordsResult, foundItemsResult, lettersResult, sentLettersResult, friendsResult, sharedTreesResult, sharedTreeInvitesResult, retentionDevLetters] = await Promise.all([
+  const [profileResult, recordsResult, foundItemsResult, lettersResult, sentLettersResult, friendsResult, sharedTreesResult, sharedTreeInvitesResult, sharedTreeNotesResult, retentionDevLetters] = await Promise.all([
     loadMyGardenProfile(),
     loadMyGardenRecords(),
     loadFoundGardenItems(),
@@ -1343,6 +1364,7 @@ async function loadGardenState() {
     supabase.rpc("list_my_garden_friends"),
     supabase.rpc("list_my_garden_shared_trees"),
     supabase.rpc("list_my_garden_shared_tree_invites"),
+    supabase.rpc("list_my_garden_shared_tree_notes"),
     loadRetentionDevLetters(),
   ]);
 
@@ -1360,6 +1382,7 @@ async function loadGardenState() {
   if (friendsResult.error) console.warn("TodayForest friend load skipped:", friendsResult.error);
   if (sharedTreesResult.error) console.warn("TodayForest shared-tree load skipped:", sharedTreesResult.error);
   if (sharedTreeInvitesResult.error) console.warn("TodayForest shared-tree invite load skipped:", sharedTreeInvitesResult.error);
+  if (sharedTreeNotesResult.error) console.warn("TodayForest shared-tree note load skipped:", sharedTreeNotesResult.error);
 
   const profile = profileResult.data;
   // 운영에서는 목록 RPC가 함께 돌려줄 수 있는 DEV 테스트 친구를 화면 데이터에서 제외합니다.
@@ -1438,6 +1461,14 @@ async function loadGardenState() {
       direction: invite.direction,
       otherUserId: invite.other_user_id,
       createdAt: invite.created_at,
+    })),
+    sharedTreeNotes: (sharedTreeNotesResult.data || []).map((note) => ({
+      treeId: note.tree_id,
+      authorId: note.author_id,
+      body: note.note_body || "",
+      isMine: Boolean(note.is_mine),
+      createdAt: note.created_at,
+      updatedAt: note.updated_at,
     })),
     foundItems: (foundItemsResult.data || [])
       .filter((item) => foundItemCatalog[item.item_key])
@@ -4116,6 +4147,101 @@ function returnToFriendsFromTogetherForest() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+
+function sharedTreeNotesForTree(treeId) {
+  return (state.sharedTreeNotes || []).filter((note) => note.treeId === treeId);
+}
+
+function updateSharedTreeNoteCount() {
+  if (!els.sharedTreeNoteInput || !els.sharedTreeNoteCount) return;
+  const length = Array.from(els.sharedTreeNoteInput.value || "").length;
+  els.sharedTreeNoteCount.textContent = `${length} / 40`;
+  els.sharedTreeNoteCount.classList.toggle("is-limit", length >= 40);
+}
+
+function renderSharedTreeMemoryNote(tree, friend, isComplete) {
+  if (!els.sharedTreeMemoryNote) return;
+
+  els.sharedTreeMemoryNote.classList.toggle("hidden", !isComplete);
+  if (!isComplete) return;
+
+  const notes = sharedTreeNotesForTree(tree.id);
+  const myNote = notes.find((note) => note.isMine) || null;
+  const partnerNote = notes.find((note) => !note.isMine) || null;
+
+  els.sharedTreeMyNoteText.textContent = myNote?.body || "아직 한마디를 남기지 않았어요.";
+  els.sharedTreeMyNoteText.classList.toggle("is-empty", !myNote);
+  els.sharedTreePartnerNoteLabel.textContent = `${friend.name}의 한마디`;
+  els.sharedTreePartnerNoteText.textContent = partnerNote?.body || "아직 남겨진 말이 없어요.";
+  els.sharedTreePartnerNoteText.classList.toggle("is-empty", !partnerNote);
+
+  const inputIsBeingEdited =
+    document.activeElement === els.sharedTreeNoteInput &&
+    els.sharedTreeNoteInput.dataset.treeId === tree.id;
+  if (!inputIsBeingEdited) {
+    els.sharedTreeNoteInput.value = myNote?.body || "";
+  }
+  els.sharedTreeNoteInput.dataset.treeId = tree.id;
+  els.sharedTreeNoteInput.placeholder = "예: 함께해서 좋았어.";
+  els.sharedTreeNoteSubmit.textContent = myNote ? "한마디 수정하기" : "한마디 남기기";
+  updateSharedTreeNoteCount();
+}
+
+async function saveSharedTreeMemoryNote(event) {
+  event.preventDefault();
+
+  const tree = (state.sharedTrees || []).find((item) => item.id === activeSharedTreeId);
+  if (!tree) {
+    showToast("완성된 나무를 다시 불러와 주세요.");
+    return;
+  }
+  if (!tree.completedAt) {
+    showToast("완성된 나무에만 한마디를 남길 수 있어요.");
+    return;
+  }
+
+  const body = String(els.sharedTreeNoteInput?.value || "").trim();
+  const bodyLength = Array.from(body).length;
+  if (!bodyLength) {
+    showToast("한마디를 한 글자 이상 남겨 주세요.");
+    els.sharedTreeNoteInput?.focus();
+    return;
+  }
+  if (bodyLength > 40) {
+    showToast("한마디는 40자 안으로 남길 수 있어요.");
+    els.sharedTreeNoteInput?.focus();
+    return;
+  }
+
+  const button = els.sharedTreeNoteSubmit;
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = "마음을 남기는 중이에요";
+
+  try {
+    const { error } = await supabase.rpc("upsert_my_garden_shared_tree_note", {
+      p_tree_id: tree.id,
+      p_body: body,
+    });
+    if (error) throw error;
+
+    await loadGardenState();
+    renderAll();
+    renderSharedTreeView(tree.id);
+    showToast("이 나무에 마음 한 줄을 남겼어요.");
+  } catch (error) {
+    console.warn("TodayForest shared-tree note save error:", error);
+    showToast(databaseErrorMessage(error));
+  } finally {
+    if (activeSharedTreeId === tree.id) {
+      renderSharedTreeView(tree.id);
+    } else {
+      button.disabled = false;
+      button.textContent = originalText || "한마디 남기기";
+    }
+  }
+}
+
 function renderSharedTreeView(treeId = activeSharedTreeId) {
   const tree = (state.sharedTrees || []).find((item) => item.id === treeId);
   if (!tree) return false;
@@ -4203,6 +4329,7 @@ function renderSharedTreeView(treeId = activeSharedTreeId) {
   els.sharedTreeView.classList.toggle("partner-recorded-today", Boolean(tree.partnerRecordedToday));
   els.sharedTreeView.classList.toggle("both-recorded-today", bothToday);
   els.sharedTreeView.classList.toggle("is-complete", complete);
+  renderSharedTreeMemoryNote(tree, friend, serverComplete);
   return true;
 }
 
@@ -5757,6 +5884,8 @@ function bindEvents() {
   els.returnToFriendsFromTogetherForestBottom.addEventListener("click", returnToFriendsFromTogetherForest);
   els.returnToFriendsFromSharedTree.addEventListener("click", returnToFriendsFromSharedTree);
   els.sharedTreeRecordLightButton.addEventListener("click", () => { void leaveSharedTreeLight(); });
+  els.sharedTreeNoteForm?.addEventListener("submit", (event) => { void saveSharedTreeMemoryNote(event); });
+  els.sharedTreeNoteInput?.addEventListener("input", updateSharedTreeNoteCount);
   window.addEventListener("focus", async () => {
     if (!currentUser) return;
     try {
