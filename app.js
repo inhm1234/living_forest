@@ -345,6 +345,8 @@ const HEART_FRUIT_POSITIONS = Object.freeze([
   [63, 56], [75, 58], [31, 65], [44, 64], [57, 66], [69, 67], [39, 74],
   [52, 74], [63, 76]
 ]);
+const HEART_FRUIT_VISIBLE_CAPACITY = HEART_FRUIT_POSITIONS.length;
+const HEART_FRUIT_PREVIEW_MAX_COUNT = 120;
 let activeSharedTreeId = "";
 let pendingSharedTreeInvite = null;
 // DEV Animal Visit v2: V1의 한 마리 상태와 분리된, 최대 두 마리의 계정 공통 방문 목록입니다.
@@ -2989,7 +2991,7 @@ function isHeartFruitTreeComplete(growth = null) {
 }
 
 function heartFruitLayerMarkup(count, { records = [], markPublic = false } = {}) {
-  const visibleCount = Math.min(HEART_FRUIT_POSITIONS.length, Math.max(0, Number(count || 0)));
+  const visibleCount = Math.min(HEART_FRUIT_VISIBLE_CAPACITY, Math.max(0, Number(count || 0)));
   return HEART_FRUIT_POSITIONS.slice(0, visibleCount).map(([x, y], index) => {
     const record = records[index] || null;
     const publicClass = markPublic && record?.isPublic ? " is-public" : "";
@@ -3010,12 +3012,20 @@ function isHeartFruitPreviewMode() {
   return growthPreviewFromUrl() !== null && isHeartFruitTreeComplete();
 }
 
+function heartFruitPreviewRecordCountFromUrl() {
+  const raw = new URL(window.location.href).searchParams.get("heartFruitCountPreview");
+  const count = Number.parseInt(raw || "", 10);
+  if (!Number.isFinite(count)) return HEART_FRUIT_COMPLETE_COUNT;
+  return Math.min(HEART_FRUIT_PREVIEW_MAX_COUNT, Math.max(HEART_FRUIT_COMPLETE_COUNT, count));
+}
+
 function heartFruitPreviewRecords() {
+  const targetCount = heartFruitPreviewRecordCountFromUrl();
   const realRecords = [...(state.records || [])]
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  const result = realRecords.slice(0, HEART_FRUIT_COMPLETE_COUNT);
+  const result = realRecords.slice(0, targetCount);
   const base = new Date();
-  while (result.length < HEART_FRUIT_COMPLETE_COUNT) {
+  while (result.length < targetCount) {
     const index = result.length;
     const date = new Date(base);
     date.setDate(base.getDate() - index);
@@ -3037,7 +3047,8 @@ function renderMyHeartFruits() {
   const previewMode = isHeartFruitPreviewMode();
   const records = complete ? (previewMode ? heartFruitPreviewRecords() : (state.records || [])) : [];
   const recordCount = records.length;
-  const decorativeCount = previewMode ? HEART_FRUIT_COMPLETE_COUNT : recordCount;
+  // 첫 완성 모습은 열매 30개로 유지하되, 31번째 이후 마음은 데이터와 타임라인에 계속 쌓입니다.
+  const decorativeCount = Math.min(recordCount, HEART_FRUIT_VISIBLE_CAPACITY);
   const decorativeRecords = previewMode
     ? records
     : [...records].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
@@ -3197,8 +3208,12 @@ function renderHeartFruitSheet() {
   els.heartFruitSheetTitle.textContent = isMine ? "내 마음 열매" : `${activeFriendFruitName || "친구"}의 마음 열매`;
   els.heartFruitSummary.textContent = isMine
     ? (isHeartFruitPreviewMode()
-      ? `완성 화면 미리보기예요. 실제 완성 뒤에는 직접 남긴 마음 ${HEART_FRUIT_COMPLETE_COUNT}개가 보여요.`
-      : `이 나무에는 지금까지 ${records.length}개의 마음이 열매로 맺혀 있어요.`)
+      ? (records.length > HEART_FRUIT_COMPLETE_COUNT
+        ? `지속 기록 검수용으로 ${records.length}개의 마음을 보여주고 있어요. 나무는 첫 완성 모습으로 머물고, 31번째 이후 마음도 이곳에 계속 쌓여요.`
+        : `완성 화면 미리보기예요. 실제 완성 뒤에는 직접 남긴 마음 ${HEART_FRUIT_COMPLETE_COUNT}개가 보여요.`)
+      : (records.length > HEART_FRUIT_COMPLETE_COUNT
+        ? `나무는 첫 완성 모습으로 머물고, 지금까지 ${records.length}개의 마음이 계속 쌓여 있어요.`
+        : `이 나무에는 지금까지 ${records.length}개의 마음이 열매로 맺혀 있어요.`))
     : `${activeFriendFruitName || "친구"}가 공개한 마음 열매 ${records.length}개예요.`;
 
   if (!records.length) {

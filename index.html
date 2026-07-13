@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=heart-fruits-v1-4-1-ceremony" />
+  <link rel="stylesheet" href="style.css?v=heart-fruits-v1-5-continuous-records" />
   <link rel="stylesheet" href="tree-animal-call.css?v=tree-animal-call-v4-status-hotfix" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
@@ -35,7 +35,7 @@
         enabled: !isDevPath,
         debug: query.get("sheetsDebug") === "1",
         environment: isDevPath ? "dev" : "production",
-        build: isDevPath ? "dev-v14-1" : "operation-v14-1",
+        build: isDevPath ? "dev-v15" : "operation-v15",
       };
 
       if (!window.TODAYFOREST_ANALYTICS.enabled) return;
@@ -883,7 +883,7 @@
   <div class="heart-fruit-ceremony-lock hidden" id="heartFruitCeremonyLock" aria-hidden="true"></div>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="app.js?v=heart-fruits-v1-4-1-ceremony"></script>
+  <script type="module" src="app.js?v=heart-fruits-v1-5-continuous-records"></script>
   <script type="module" src="tree-animal-call.js?v=tree-animal-call-v5-heart-fruit-bridge-134"></script>
 </body>
 </html>
