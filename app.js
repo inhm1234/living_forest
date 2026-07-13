@@ -329,6 +329,12 @@ let heartFruitVisibilityReady = true;
 let heartFruitRevealForcedThisPage = false;
 let pendingHeartFruitCompletionReveal = false;
 let heartFruitRevealRunning = false;
+let heartFruitRevealMessageTimer = null;
+let heartFruitRevealHideTimer = null;
+let heartFruitRevealFinishTimer = null;
+const HEART_FRUIT_CEREMONY_DURATION_MS = 7000;
+const HEART_FRUIT_CEREMONY_MESSAGE_DELAY_MS = 3000;
+const HEART_FRUIT_CEREMONY_MESSAGE_HIDE_MS = 6100;
 
 const HEART_FRUIT_COMPLETE_COUNT = 30;
 const HEART_FRUIT_REVEAL_STORAGE_PREFIX = "todayforest-heart-fruit-revealed-v1";
@@ -404,6 +410,7 @@ const els = {
   openHeartFruits: $("#openHeartFruits"),
   heartFruitCount: $("#heartFruitCount"),
   heartFruitRevealMessage: $("#heartFruitRevealMessage"),
+  heartFruitCeremonyLock: $("#heartFruitCeremonyLock"),
   treeNameLabel: $("#treeNameLabel"),
   weatherButton: $("#weatherButton"),
   weatherIcon: $("#weatherIcon"),
@@ -3058,6 +3065,38 @@ function heartFruitRevealStorageKey() {
   return `${HEART_FRUIT_REVEAL_STORAGE_PREFIX}:${currentUser?.id || "guest"}:first-tree${previewSuffix}`;
 }
 
+function clearHeartFruitRevealTimers() {
+  window.clearTimeout(heartFruitRevealMessageTimer);
+  window.clearTimeout(heartFruitRevealHideTimer);
+  window.clearTimeout(heartFruitRevealFinishTimer);
+  heartFruitRevealMessageTimer = null;
+  heartFruitRevealHideTimer = null;
+  heartFruitRevealFinishTimer = null;
+}
+
+function setHeartFruitCeremonyLocked(locked) {
+  els.gardenApp?.classList.toggle("is-heart-fruit-ceremony", locked);
+  if (locked) {
+    els.gardenApp?.setAttribute("aria-busy", "true");
+    els.heartFruitCeremonyLock?.classList.remove("hidden");
+    document.documentElement.classList.add("heart-fruit-ceremony-locked");
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    return;
+  }
+
+  els.gardenApp?.removeAttribute("aria-busy");
+  els.heartFruitCeremonyLock?.classList.add("hidden");
+  document.documentElement.classList.remove("heart-fruit-ceremony-locked");
+}
+
+function finishHeartFruitRevealCeremony() {
+  clearHeartFruitRevealTimers();
+  els.heartFruitRevealMessage?.classList.add("hidden");
+  els.treeWrap?.classList.remove("is-heart-fruit-revealing");
+  setHeartFruitCeremonyLocked(false);
+  heartFruitRevealRunning = false;
+}
+
 function maybePlayHeartFruitReveal() {
   const previewMode = isHeartFruitPreviewMode();
   const records = previewMode ? heartFruitPreviewRecords() : (state.records || []);
@@ -3085,16 +3124,29 @@ function maybePlayHeartFruitReveal() {
   }
 
   pendingHeartFruitCompletionReveal = false;
+  clearHeartFruitRevealTimers();
   heartFruitRevealRunning = true;
+  els.heartFruitRevealMessage?.classList.add("hidden");
   els.treeWrap.classList.remove("is-heart-fruit-revealing");
-  void els.treeWrap.offsetWidth;
+  els.gardenApp?.classList.remove("is-heart-fruit-ceremony");
+  void (els.gardenStage || els.treeWrap).offsetWidth;
+
+  // 완성 순간에는 정원만 남기고 모든 입력을 막은 뒤, 정원 세계 전체를 나무 중심으로 확대합니다.
+  setHeartFruitCeremonyLocked(true);
   els.treeWrap.classList.add("is-heart-fruit-revealing");
-  els.heartFruitRevealMessage?.classList.remove("hidden");
-  window.setTimeout(() => els.heartFruitRevealMessage?.classList.add("hidden"), 4200);
-  window.setTimeout(() => {
-    els.treeWrap?.classList.remove("is-heart-fruit-revealing");
-    heartFruitRevealRunning = false;
-  }, 4600);
+
+  heartFruitRevealMessageTimer = window.setTimeout(() => {
+    els.heartFruitRevealMessage?.classList.remove("hidden");
+  }, HEART_FRUIT_CEREMONY_MESSAGE_DELAY_MS);
+
+  heartFruitRevealHideTimer = window.setTimeout(() => {
+    els.heartFruitRevealMessage?.classList.add("hidden");
+  }, HEART_FRUIT_CEREMONY_MESSAGE_HIDE_MS);
+
+  heartFruitRevealFinishTimer = window.setTimeout(
+    finishHeartFruitRevealCeremony,
+    HEART_FRUIT_CEREMONY_DURATION_MS
+  );
 }
 
 function heartFruitRecordsForMode() {
@@ -5229,7 +5281,20 @@ async function saveTreeName(event) {
   }
 }
 
+function blockHeartFruitCeremonyInput(event) {
+  if (!heartFruitRevealRunning) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}
+
 function bindEvents() {
+  ["pointerdown", "pointerup", "click", "contextmenu", "wheel", "touchmove"].forEach((type) => {
+    els.heartFruitCeremonyLock?.addEventListener(type, blockHeartFruitCeremonyInput, {
+      passive: false,
+      capture: true,
+    });
+  });
+  document.addEventListener("keydown", blockHeartFruitCeremonyInput, true);
   els.signInKakao.addEventListener("click", beginKakaoLogin);
   els.installAppButton.addEventListener("click", () => { void requestAppInstall(); });
   els.dismissInstallCard.addEventListener("click", dismissInstallCardForAWhile);
