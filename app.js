@@ -325,6 +325,8 @@ let pendingFriendInvite = null;
 let invitePreviewHandled = false;
 let toastTimer = null;
 let authBusy = false;
+// 로그인하지 않은 방문자는 먼저 공개 소개 화면을 보고, 버튼을 눌렀을 때 로그인 화면으로 이동합니다.
+let publicEntryView = "home";
 let activeFriendGardenId = "";
 let activeFriendFruitRecords = [];
 let activeFriendFruitName = "";
@@ -412,6 +414,8 @@ let activeFoundItemDrag = null;
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 const els = {
+  publicHome: $("#publicHome"),
+  backToPublicHome: $("#backToPublicHome"),
   gardenStage: $("#gardenStage"),
   gardenWorld: $("#gardenWorld"),
   treeWrap: $("#treeWrap"),
@@ -5272,8 +5276,14 @@ function renderAuthUI() {
   const isSignedIn = Boolean(currentUser);
   const onboardingVisible = welcomeFlowMode === "onboarding";
   const welcomeSurfaceVisible = onboardingVisible || welcomeFlowMode === "transitioning";
+  const showPublicHome = !isSignedIn && publicEntryView !== "auth";
+  const showAuthScreen = !isSignedIn && publicEntryView === "auth";
 
-  els.authScreen.classList.toggle("hidden", isSignedIn);
+  els.publicHome?.classList.toggle("hidden", !showPublicHome);
+  els.authScreen.classList.toggle("hidden", !showAuthScreen);
+  document.body.classList.toggle("is-public-home", showPublicHome);
+  document.body.classList.toggle("is-auth-entry", showAuthScreen);
+
   // 신규 사용자는 손님맞이 장면을 마칠 때까지 실제 정원 UI를 뒤에만 준비합니다.
   els.gardenApp.classList.toggle("hidden", !isSignedIn || onboardingVisible);
   if (!welcomeSurfaceVisible && !isWelcomePreviewMode()) {
@@ -5286,6 +5296,22 @@ function renderAuthUI() {
     els.accountName.textContent = `${gardenName}의 정원`;
     els.accountButton.setAttribute("aria-label", `${gardenName}의 정원`);
   }
+}
+
+function openPublicLogin() {
+  if (currentUser) return;
+  publicEntryView = "auth";
+  renderAuthUI();
+  window.scrollTo({ top: 0, behavior: "auto" });
+  window.setTimeout(() => els.signInKakao?.focus(), 80);
+}
+
+function returnToPublicHome() {
+  if (currentUser) return;
+  publicEntryView = "home";
+  setAuthError("");
+  renderAuthUI();
+  window.scrollTo({ top: 0, behavior: "auto" });
 }
 
 function tutorialPreviewPhase() {
@@ -5587,6 +5613,8 @@ function renderAll() {
 
 async function beginKakaoLogin() {
   if (authBusy) return;
+  publicEntryView = "auth";
+  renderAuthUI();
   authBusy = true;
   setAuthError("");
   els.signInKakao.disabled = true;
@@ -5613,6 +5641,7 @@ async function handleOAuthCallback() {
   const currentUrl = new URL(window.location.href);
   const code = currentUrl.searchParams.get("code");
   if (!code) return;
+  publicEntryView = "auth";
 
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
@@ -5669,6 +5698,7 @@ async function signOut() {
     return;
   }
   currentUser = null;
+  publicEntryView = "home";
   stopLettersAutoRefresh();
   clearAnimalVisitArrivalTimer();
   activeAnimalVisit = null;
@@ -5867,6 +5897,8 @@ function bindEvents() {
     });
   });
   document.addEventListener("keydown", blockHeartFruitCeremonyInput, true);
+  $$("[data-public-login]").forEach((button) => button.addEventListener("click", openPublicLogin));
+  els.backToPublicHome?.addEventListener("click", returnToPublicHome);
   els.signInKakao.addEventListener("click", beginKakaoLogin);
   els.installAppButton.addEventListener("click", () => { void requestAppInstall(); });
   els.dismissInstallCard.addEventListener("click", dismissInstallCardForAWhile);
@@ -6439,6 +6471,7 @@ function initWelcomePreview({ liveEntry = false, onboarding = false } = {}) {
   document.body.classList.add("is-welcome-preview");
   document.body.classList.toggle("is-welcome-live-entry", liveEntry);
   preview.classList.remove("hidden");
+  els.publicHome?.classList.add("hidden");
   els.authScreen?.classList.add("hidden");
   els.gardenApp?.classList.add("hidden");
 
@@ -6578,6 +6611,7 @@ async function init() {
     }
 
     if (!currentUser) {
+      publicEntryView = "home";
       stopLettersAutoRefresh();
       configureRetentionWindPolling();
       state = cloneDefault();

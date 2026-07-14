@@ -8,11 +8,21 @@
   <meta name="color-scheme" content="light" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <title>오늘의숲 | 마음을 심는 내 정원</title>
+  <title>오늘의숲 | 오늘의 마음을 나무로 남기는 기록 정원</title>
+  <meta name="description" content="오늘의숲은 하루의 마음을 기록하며 30일 동안 나만의 나무를 키우고, 마음 열매와 공유나무로 시간을 남기는 작은 기록 정원입니다." />
+  <meta name="keywords" content="마음 기록, 감정 기록, 나무 키우기, 일기, 오늘의숲, 공유나무" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta property="og:site_name" content="오늘의숲" />
+  <meta property="og:title" content="오늘의숲 | 오늘의 마음을 나무로 남기는 기록 정원" />
+  <meta property="og:description" content="하루 한 번 마음을 남기고, 한 그루의 나무가 자라는 시간을 만나보세요." />
+  <meta property="og:url" content="https://todayforest.pages.dev/" />
+  <meta property="og:image" content="https://todayforest.pages.dev/assets/share/living-forest-og.png" />
+  <link rel="canonical" href="https://todayforest.pages.dev/" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=home-nav-restore-v0-4-1" />
+  <link rel="stylesheet" href="style.css?v=public-home-v0-1" />
   <link rel="stylesheet" href="oot-notifications.css?v=home-priority-v0-4" />
   <link rel="stylesheet" href="tree-animal-call.css?v=tree-animal-call-v4-status-hotfix" />
   <script>
@@ -55,8 +65,183 @@
     })();
   </script>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2394251223563817" crossorigin="anonymous"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "오늘의숲",
+    "url": "https://todayforest.pages.dev/",
+    "applicationCategory": "LifestyleApplication",
+    "operatingSystem": "Web",
+    "inLanguage": "ko-KR",
+    "description": "하루의 마음을 기록하며 나만의 나무를 키우는 작은 기록 정원"
+  }
+  </script>
 </head>
 <body>
+  <!-- PUBLIC HOME v0.1: 로그인하지 않아도 오늘의숲의 목적과 이용 방식을 충분히 볼 수 있는 공개 소개 화면입니다. -->
+  <section class="public-home" id="publicHome" aria-label="오늘의숲 공개 소개">
+    <header class="public-nav">
+      <a class="public-brand" href="#top" aria-label="오늘의숲 소개 첫 화면으로 이동">
+        <span class="public-brand-mark" aria-hidden="true">🌳</span>
+        <span>오늘의숲</span>
+      </a>
+      <nav class="public-nav-links" aria-label="소개 페이지 메뉴">
+        <a href="#about">소개</a>
+        <a href="#how">이용 방법</a>
+        <a href="#faq">자주 묻는 질문</a>
+      </nav>
+      <button type="button" class="public-nav-login" data-public-login>로그인</button>
+    </header>
+
+    <main id="top">
+      <section class="public-hero" aria-labelledby="publicHeroTitle">
+        <div class="public-hero-copy">
+          <p class="public-kicker">A SMALL FOREST FOR YOUR DAY</p>
+          <h1 id="publicHeroTitle">오늘의 마음을<br /><span>나무로 남겨보세요.</span></h1>
+          <p class="public-hero-lead">오늘의숲은 하루에 한 번 마음을 기록하며, 30일 동안 한 그루의 나무를 천천히 키우는 작은 기록 공간이에요.</p>
+          <div class="public-hero-actions">
+            <button type="button" class="public-primary-button" data-public-login>내 숲 시작하기</button>
+            <a class="public-secondary-button" href="#about">어떤 공간인지 보기</a>
+          </div>
+          <p class="public-hero-note">길게 쓰지 않아도 괜찮아요. 오늘을 기억할 한마디면 충분해요.</p>
+        </div>
+        <figure class="public-hero-visual">
+          <img class="public-hero-background" src="assets/welcome/welcome-forest-v1.png" alt="햇살과 꽃, 여러 나무가 어우러진 오늘의숲 풍경" />
+          <figcaption class="public-hero-caption">
+            <span aria-hidden="true">🌱</span>
+            <strong>하루 한 번 마음 심기</strong>
+            <small>기록이 쌓일수록 나무가 자라요</small>
+          </figcaption>
+        </figure>
+      </section>
+
+      <section class="public-intro" id="about" aria-labelledby="publicIntroTitle">
+        <div class="public-section-heading">
+          <p class="public-kicker">ABOUT TODAYFOREST</p>
+          <h2 id="publicIntroTitle">마음을 남기는 일이<br />부담스럽지 않도록</h2>
+          <p>오늘의숲은 잘 쓴 일기를 요구하지 않아요. 지금의 기분과 짧은 한 줄을 남기면 그 하루가 나무의 성장으로 이어집니다.</p>
+        </div>
+        <div class="public-feature-grid">
+          <article class="public-feature-card">
+            <div class="public-feature-art public-feature-art-record" aria-hidden="true">✎</div>
+            <p class="public-feature-number">01</p>
+            <h3>하루 한 번 마음 기록</h3>
+            <p>오늘의 기분을 고르고, 기억하고 싶은 한마디를 남겨요. 자세한 이야기는 쓰고 싶은 날에만 덧붙일 수 있어요.</p>
+          </article>
+          <article class="public-feature-card">
+            <img src="assets/garden/tree_growth/tree_stage3_morning.png" alt="조금 자란 어린 나무" />
+            <p class="public-feature-number">02</p>
+            <h3>30일 동안 자라는 나무</h3>
+            <p>마음을 기록할 때마다 나무가 조금씩 자라요. 서두르지 않고 하루하루 쌓인 시간이 한 그루의 나무가 됩니다.</p>
+          </article>
+          <article class="public-feature-card">
+            <div class="public-feature-fruit" aria-hidden="true"><span>●</span><span>●</span><span>●</span></div>
+            <p class="public-feature-number">03</p>
+            <h3>마음이 열매가 되는 기록</h3>
+            <p>완성된 나무에는 지나온 마음이 열매로 맺혀요. 열매를 눌러 그날의 기록을 다시 돌아볼 수 있습니다.</p>
+          </article>
+          <article class="public-feature-card">
+            <img src="assets/garden/tree-hero-v2.png" alt="친구와 함께 바라볼 수 있는 큰 나무" />
+            <p class="public-feature-number">04</p>
+            <h3>친구와 키우는 공유나무</h3>
+            <p>친구와 각자의 하루를 남기며 둘만의 나무를 키워요. 완성된 나무는 함께한 숲에 한 시절의 기억으로 남습니다.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="public-how" id="how" aria-labelledby="publicHowTitle">
+        <div class="public-how-visual" aria-hidden="true">
+          <div class="public-growth-stage"><span>1일</span><img src="assets/garden/tree_growth/tree_stage1_morning.png" alt="" /></div>
+          <div class="public-growth-line"></div>
+          <div class="public-growth-stage is-grown"><span>30일</span><img src="assets/garden/tree_growth/tree_stage6_morning.png" alt="" /></div>
+        </div>
+        <div class="public-how-copy">
+          <p class="public-kicker">HOW IT GROWS</p>
+          <h2 id="publicHowTitle">작은 기록이<br />한 그루가 되기까지</h2>
+          <ol class="public-step-list">
+            <li><span>1</span><div><strong>오늘의 마음을 골라요</strong><p>포근한 날도, 지친 날도 있는 그대로 남겨요.</p></div></li>
+            <li><span>2</span><div><strong>한 줄을 나무에 심어요</strong><p>짧은 기록 하나가 오늘 나무의 양분이 됩니다.</p></div></li>
+            <li><span>3</span><div><strong>기록과 함께 정원이 달라져요</strong><p>나무가 자라고, 작은 장식과 숲친구가 찾아옵니다.</p></div></li>
+            <li><span>4</span><div><strong>완성된 나무에서 시간을 돌아봐요</strong><p>마음 열매와 함께 지나온 날들을 다시 만나요.</p></div></li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="public-values" aria-labelledby="publicValuesTitle">
+        <div class="public-values-copy">
+          <p class="public-kicker">A QUIET PROMISE</p>
+          <h2 id="publicValuesTitle">내 기록은 조용히,<br />연결은 다정하게</h2>
+          <p>오늘의숲은 마음 기록을 보여주기 위한 공간이 아니라, 나를 위해 남기는 정원이에요. 친구와 연결되어도 비공개 기록은 다른 사람에게 보이지 않습니다.</p>
+          <ul>
+            <li>기록마다 공개 여부를 선택할 수 있어요.</li>
+            <li>친구가 없어도 개인 나무를 온전히 키울 수 있어요.</li>
+            <li>공유나무와 편지는 참여하고 싶은 사람만 이용해요.</li>
+          </ul>
+          <a href="privacy.html">개인정보·광고 안내 자세히 보기</a>
+        </div>
+        <div class="public-values-scene" aria-hidden="true">
+          <span class="public-values-moon">☾</span>
+          <img src="assets/garden/tree_growth/tree_stage6_night.png" alt="" />
+          <span class="public-values-light is-one">✦</span>
+          <span class="public-values-light is-two">✦</span>
+          <span class="public-values-light is-three">·</span>
+        </div>
+      </section>
+
+      <section class="public-faq" id="faq" aria-labelledby="publicFaqTitle">
+        <div class="public-section-heading is-centered">
+          <p class="public-kicker">FREQUENTLY ASKED</p>
+          <h2 id="publicFaqTitle">처음 오신 분들이<br />자주 묻는 이야기</h2>
+        </div>
+        <div class="public-faq-list">
+          <details>
+            <summary>내 마음 기록은 다른 사람에게 보이나요?</summary>
+            <p>기록은 기본적으로 내 정원에 보관됩니다. 친구에게 보여주고 싶은 마음 열매만 공개로 바꿀 수 있고, 비공개 기록은 친구에게 표시되지 않아요.</p>
+          </details>
+          <details>
+            <summary>하루에 몇 번 기록할 수 있나요?</summary>
+            <p>나무의 성장은 하루 한 번의 마음 기록으로 이어집니다. 오늘 기록을 마쳤다면 내일 다시 새로운 마음을 남길 수 있어요.</p>
+          </details>
+          <details>
+            <summary>친구가 없어도 이용할 수 있나요?</summary>
+            <p>물론이에요. 개인 나무와 마음 기록은 혼자서도 모두 이용할 수 있습니다. 친구, 편지, 공유나무는 원할 때만 선택해서 이용해요.</p>
+          </details>
+          <details>
+            <summary>30일이 지나 나무가 완성되면 기록이 끝나나요?</summary>
+            <p>완성된 뒤에도 마음 기록은 계속 남길 수 있어요. 완성된 나무와 마음 열매를 보며 지나온 시간을 돌아볼 수 있습니다.</p>
+          </details>
+          <details>
+            <summary>공유나무에서는 서로의 기록을 모두 보나요?</summary>
+            <p>공유나무는 두 사람의 참여가 성장으로 이어지는 공간이지만, 각자의 개인 기록 내용이 자동으로 공개되지는 않아요.</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="public-final-cta" aria-labelledby="publicFinalTitle">
+        <div>
+          <p class="public-kicker">YOUR FOREST IS WAITING</p>
+          <h2 id="publicFinalTitle">오늘의 마음부터<br />천천히 심어볼까요?</h2>
+          <p>카카오로 로그인하면 이전에 키우던 정원이 있는 경우 그대로 이어집니다.</p>
+        </div>
+        <button type="button" class="public-primary-button" data-public-login>카카오로 내 숲 시작하기</button>
+      </section>
+    </main>
+
+    <footer class="public-footer">
+      <div>
+        <strong>오늘의숲</strong>
+        <p>하루의 마음이 작은 숲이 되는 곳</p>
+      </div>
+      <nav aria-label="공개 문서">
+        <a href="whitepaper.html">서비스 소개</a>
+        <a href="privacy.html">개인정보·광고 안내</a>
+        <button type="button" data-public-login>로그인</button>
+      </nav>
+      <p class="public-footer-copy">© 2026 TodayForest. 오늘의숲은 지금도 천천히 자라고 있어요.</p>
+    </footer>
+  </section>
+
   <!-- WELCOME PREVIEW v12: ?welcomePreview=1 에서만 보이는 손님맞이 장면입니다.
        실제 카카오 계정·기록·친구·편지 DB는 읽거나 바꾸지 않습니다. -->
   <section class="welcome-preview hidden" id="welcomePreview" aria-label="오늘의숲 첫 방문 손님맞이 장면" data-preview-mode="real-garden-transition">
@@ -142,10 +327,11 @@
 
   </section>
 
-  <section class="auth-screen" id="authScreen" aria-label="오늘의숲 로그인 화면">
+  <section class="auth-screen hidden" id="authScreen" aria-label="오늘의숲 로그인 화면">
     <div class="auth-screen-glow auth-screen-glow-one" aria-hidden="true"></div>
     <div class="auth-screen-glow auth-screen-glow-two" aria-hidden="true"></div>
     <div class="auth-card">
+      <button type="button" class="auth-back-button" id="backToPublicHome" aria-label="오늘의숲 소개 화면으로 돌아가기">← 소개로 돌아가기</button>
       <div class="auth-copy-stack">
         <p class="eyebrow auth-eyebrow">WELCOME TO TODAYFOREST</p>
         <h1>오늘의숲</h1>
@@ -1025,7 +1211,7 @@
   <div class="heart-fruit-ceremony-lock hidden" id="heartFruitCeremonyLock" aria-hidden="true"></div>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="app.js?v=shared-tree-start-moment-v2-0"></script>
+  <script type="module" src="app.js?v=public-home-v0-1"></script>
   <script type="module" src="tree-animal-call.js?v=tree-animal-call-v5-heart-fruit-bridge-134"></script>
   <script type="module" src="oot-notifications.js?v=oot-push-v0-3"></script>
 </body>
