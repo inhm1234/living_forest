@@ -39,6 +39,7 @@ const els = {
 const state = {
   user: null,
   friends: [], invites: [], matches: [], match: null,
+  friendsLoadFailed: false, lobbyWarnings: [],
   selectedOperation: null, selectedNumber: null,
   historyExpanded: false, busy: false,
   serverOffset: 0, timeoutResolving: false,
@@ -54,6 +55,22 @@ function normalizeRows(data) {
   if (!data) return [];
   if (Array.isArray(data)) return data;
   return [data];
+}
+
+function normalizeFriendRow(friend) {
+  if (!friend || typeof friend !== "object") return null;
+
+  const friendId = friend.friend_id || friend.friendId || friend.id || "";
+  if (!friendId) return null;
+
+  return {
+    ...friend,
+    friend_id: friendId,
+    nickname: friend.nickname || friend.name || "친구",
+    avatar_url: friend.avatar_url || friend.avatarUrl || "",
+    growth_count: Number(friend.growth_count ?? friend.growth ?? 0),
+    is_dev_test: Boolean(friend.is_dev_test ?? friend.isDevTest ?? false),
+  };
 }
 function getMatchIdFromUrl() { return String(new URL(location.href).searchParams.get("match") || "").trim(); }
 function setMatchUrl(matchId = "") {
@@ -129,19 +146,69 @@ function showView(name) {
 
 async function loadLobby({ silent = false } = {}) {
   if (lobbyLoading || !state.user || getMatchIdFromUrl()) return;
+
   lobbyLoading = true;
+  state.lobbyWarnings = [];
   if (!silent) els.refreshLobbyButton.disabled = true;
+
   try {
-    const [friendsData, invitesData, matchesData] = await Promise.all([
-      rpc("list_my_garden_friends"), rpc("oot_list_my_invites"), rpc("oot_list_my_matches", { p_limit: 30 }),
+    // 친구 목록은 초대/경기 조회와 분리합니다.
+    // 다른 RPC 하나가 실패해도 실제 친구 목록은 화면에 먼저 보여야 합니다.
+    const [friendsResult, invitesResult, matchesResult] = await Promise.allSettled([
+      rpc("list_my_garden_friends"),
+      rpc("oot_list_my_invites"),
+      rpc("oot_list_my_matches", { p_limit: 30 }),
     ]);
-    state.friends = normalizeRows(friendsData).filter((friend) => !friend.is_dev_test);
-    state.invites = normalizeRows(invitesData);
-    state.matches = normalizeRows(matchesData);
+
+    if (friendsResult.status === "fulfilled") {
+      state.friends = normalizeRows(friendsResult.value)
+        .map(normalizeFriendRow)
+        .filter(Boolean)
+        .filter((friend) => !friend.is_dev_test);
+      state.friendsLoadFailed = false;
+    } else {
+      state.friends = [];
+      state.friendsLoadFailed = true;
+      state.lobbyWarnings.push("friends");
+      console.warn("OneOfTen friend list load error", friendsResult.reason);
+    }
+
+    if (invitesResult.status === "fulfilled") {
+      state.invites = normalizeRows(invitesResult.value);
+    } else {
+      state.invites = [];
+      state.lobbyWarnings.push("invites");
+      console.warn("OneOfTen invite list load error", invitesResult.reason);
+    }
+
+    if (matchesResult.status === "fulfilled") {
+      state.matches = normalizeRows(matchesResult.value);
+    } else {
+      state.matches = [];
+      state.lobbyWarnings.push("matches");
+      console.warn("OneOfTen match list load error", matchesResult.reason);
+    }
+
     renderLobby();
-    els.connectionStatus.textContent = "서버와 연결됨";
+
+    if (!state.lobbyWarnings.length) {
+      els.connectionStatus.textContent = "서버와 연결됨";
+    } else if (!state.friendsLoadFailed) {
+      els.connectionStatus.textContent = "친구 목록 연결됨 · 일부 경기 정보 확인 중";
+      if (!silent) showToast("친구 목록은 불러왔어요. 초대나 경기 정보는 다시 확인 중이에요.");
+    } else {
+      els.connectionStatus.textContent = "친구 목록을 불러오지 못함";
+      if (!silent) showToast("친구 목록 연결이 어긋났어요. 새로고침을 눌러 주세요.");
+    }
   } catch (error) {
-    console.warn("OneOfTen lobby load error", error);
+    // 예상하지 못한 화면 오류만 이곳에서 처리합니다.
+    console.warn("OneOfTen lobby render error", error);
+    state.friendsLoadFailed = true;
+    state.friends = [];
+    state.invites = [];
+    state.matches = [];
+    renderLobby();
+    els.connectionStatus.textContent = "로비 연결 확인 필요";
     if (!silent) showToast(friendlyError(error));
   } finally {
     lobbyLoading = false;
@@ -183,8 +250,16 @@ function renderLobby() {
     actions: `<button class="ootf-secondary" data-cancel-invite="${item.invite_id}">취소</button>`,
   })).join("");
 
-  els.noFriendsView.classList.toggle("is-hidden", state.friends.length > 0);
-  els.friendsList.classList.toggle("is-hidden", state.friends.length === 0);
+  const hasFriends = state.friends.length > 0;
+  els.noFriendsView.classList.toggle("is-hidden", hasFriends);
+  els.friendsList.classList.toggle("is-hidden", !hasFriends);
+
+  if (!hasFriends) {
+    els.noFriendsView.innerHTML = state.friendsLoadFailed
+      ? `<span>🌿</span><strong>친구 목록 연결을 다시 확인하고 있어요.</strong><p>위의 새로고침 버튼을 한 번 눌러 주세요. 내 정원의 친구 관계는 그대로 보존돼요.</p>`
+      : `<span>🌱</span><strong>아직 초대할 친구가 없어요.</strong><p>내 정원에서 친구를 맺으면 이곳에서 원오브텐을 함께할 수 있어요.</p>`;
+  }
+
   els.friendsList.innerHTML = state.friends.map((friend) => {
     const activeMatch = activeByOpponent.get(friend.friend_id);
     const invite = inviteByOpponent.get(friend.friend_id);
@@ -449,6 +524,7 @@ function closeHelp() { els.helpOverlay.classList.add("is-hidden"); }
 function applyViewport() { if (state.match) renderHistory(state.match); }
 
 async function initialize() {
+  console.info("TodayForest OneOfTen Friend v1.0.1");
   showView("loading");
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error || !session?.user) { showView("login"); return; }
