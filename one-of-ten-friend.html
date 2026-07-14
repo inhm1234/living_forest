@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#edf3ee" />
+  <meta name="color-scheme" content="light" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>원오브텐 친구 대전 | 오늘의숲</title>
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
+  <link rel="stylesheet" href="one-of-ten-friend.css?v=1" />
+</head>
+<body>
+  <main class="ootf-app">
+    <header class="ootf-header">
+      <a class="ootf-back" href="index.html" aria-label="내 정원으로 돌아가기">← <span>내 정원</span></a>
+      <div class="ootf-title">
+        <p>FOREST NUMBER GAME</p>
+        <h1>원오브텐 <span>친구 대전</span></h1>
+      </div>
+      <button class="ootf-help" id="helpButton" type="button">안내</button>
+    </header>
+
+    <nav class="ootf-mode-nav" aria-label="원오브텐 대전 방식">
+      <a href="one-of-ten.html">🐿️ 다람쥐와 하기</a>
+      <span class="is-active" aria-current="page">🌿 친구와 하기</span>
+    </nav>
+
+    <section class="ootf-loading" id="loadingView" aria-live="polite">
+      <span class="ootf-loading-leaf">🌿</span>
+      <strong>친구 대전을 준비하고 있어요.</strong>
+      <p>로그인과 경기 상태를 확인하는 중이에요.</p>
+    </section>
+
+    <section class="ootf-login is-hidden" id="loginView">
+      <div class="ootf-empty-icon">🔐</div>
+      <h2>로그인이 필요해요</h2>
+      <p>친구 대전은 오늘의숲 친구와 함께하는 기능이라 먼저 정원에 로그인해야 해요.</p>
+      <a href="index.html">내 정원에서 로그인하기</a>
+    </section>
+
+    <section class="ootf-lobby is-hidden" id="lobbyView" aria-live="polite">
+      <article class="ootf-hero">
+        <div>
+          <p>FRIEND MATCH</p>
+          <h2>친구와 한 판 놀아볼까요?</h2>
+          <span>초대는 5분 동안 기다려요. 한 턴은 30초예요.</span>
+        </div>
+        <div class="ootf-hero-cards" aria-hidden="true"><i>7</i><b>+</b><i>3</i></div>
+      </article>
+
+      <section class="ootf-section is-hidden" id="activeMatchesSection">
+        <div class="ootf-section-title">
+          <div><small>CONTINUE</small><h2>진행 중인 경기</h2></div>
+          <span id="activeMatchCount">0</span>
+        </div>
+        <div class="ootf-list" id="activeMatchesList"></div>
+      </section>
+
+      <section class="ootf-section is-hidden" id="incomingSection">
+        <div class="ootf-section-title">
+          <div><small>INVITATION</small><h2>도착한 초대</h2></div>
+          <span id="incomingCount">0</span>
+        </div>
+        <div class="ootf-list" id="incomingList"></div>
+      </section>
+
+      <section class="ootf-section is-hidden" id="outgoingSection">
+        <div class="ootf-section-title">
+          <div><small>WAITING</small><h2>기다리는 초대</h2></div>
+          <span id="outgoingCount">0</span>
+        </div>
+        <div class="ootf-list" id="outgoingList"></div>
+      </section>
+
+      <section class="ootf-section">
+        <div class="ootf-section-title">
+          <div><small>MY FRIENDS</small><h2>함께할 친구</h2></div>
+          <button class="ootf-refresh" id="refreshLobbyButton" type="button" aria-label="목록 새로고침">↻</button>
+        </div>
+        <div class="ootf-list" id="friendsList"></div>
+        <div class="ootf-empty is-hidden" id="noFriendsView">
+          <span>🌱</span>
+          <strong>아직 초대할 친구가 없어요.</strong>
+          <p>내 정원에서 친구를 맺으면 이곳에서 원오브텐을 함께할 수 있어요.</p>
+          <a href="index.html#friendsSection">친구 메뉴로 가기</a>
+        </div>
+      </section>
+
+      <p class="ootf-lobby-note">초대 화면을 열어둔 동안 약 4초마다 새 초대와 경기 상태를 조용히 확인해요.</p>
+    </section>
+
+    <section class="ootf-match is-hidden" id="matchView" aria-live="polite">
+      <article class="ootf-panel ootf-opponent-panel">
+        <div class="ootf-player-row">
+          <div class="ootf-player-profile">
+            <span class="ootf-avatar" id="opponentAvatar"><b>친</b></span>
+            <div><strong id="opponentName">친구</strong><small id="opponentStatus">경기 상태를 불러오는 중이에요.</small></div>
+          </div>
+          <span class="ootf-card-count" id="opponentCardCount">손패 -장</span>
+        </div>
+        <div class="ootf-hidden-hand" id="opponentHand" aria-label="상대의 숨겨진 숫자카드"></div>
+      </article>
+
+      <article class="ootf-panel ootf-history-panel">
+        <div class="ootf-section-head">
+          <span>지금까지 놓인 카드</span>
+          <div><button class="ootf-history-toggle is-hidden" id="historyToggle" type="button">전체 보기</button><b id="operationCount">수식 0 / 4</b></div>
+        </div>
+        <div class="ootf-history" id="matchHistory"></div>
+      </article>
+
+      <article class="ootf-panel ootf-arena">
+        <div class="ootf-turn-row">
+          <span class="ootf-turn-pill" id="turnPill">경기 준비</span>
+          <div class="ootf-timer is-hidden" id="turnTimer"><span id="timerText">30초</span><div><i id="timerBar"></i></div></div>
+        </div>
+        <p class="ootf-timeout-hint is-hidden" id="timeoutHint"></p>
+        <div class="ootf-expression">
+          <span class="ootf-current is-empty" id="currentValue">?</span>
+          <button class="ootf-selected-operation is-hidden" id="selectedOperation" type="button" aria-label="선택한 수식 취소"></button>
+          <span class="ootf-selected-number is-hidden" id="selectedNumber"></span>
+        </div>
+        <p class="ootf-message" id="arenaMessage">친구와의 경기 상태를 확인하고 있어요.</p>
+        <p class="ootf-calculation-note is-hidden" id="calculationNote"></p>
+        <div class="ootf-operations" id="operationCards"></div>
+      </article>
+
+      <article class="ootf-panel ootf-actions is-hidden" id="actionPanel">
+        <button class="ootf-stop" id="stopButton" type="button">여기서 스톱</button>
+        <button class="ootf-draw" id="drawButton" type="button">카드 한 장 받기</button>
+      </article>
+
+      <article class="ootf-panel ootf-hand-panel">
+        <div class="ootf-section-head"><span>내 숫자카드</span><b id="deckCount">더미 -장</b></div>
+        <div class="ootf-my-hand" id="myHand"></div>
+        <p class="ootf-hand-help" id="handHelp">경기 상태를 불러오고 있어요.</p>
+      </article>
+
+      <div class="ootf-match-footer">
+        <button id="leaveMatchButton" type="button">대전 목록으로</button>
+        <span id="connectionStatus">서버와 연결 중</span>
+      </div>
+    </section>
+  </main>
+
+  <section class="ootf-overlay is-hidden" id="helpOverlay" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="ootf-modal-card">
+      <button class="ootf-modal-close" id="closeHelpButton" type="button" aria-label="안내 닫기">×</button>
+      <p>FRIEND MATCH</p>
+      <h2 id="helpTitle">친구 대전 안내</h2>
+      <ol>
+        <li>친구에게 초대를 보내고 상대가 수락하면 경기가 시작돼요.</li>
+        <li>선공은 서버에서 무작위로 정해요.</li>
+        <li>첫 숫자를 낸 뒤 상대는 수식과 숫자를 바로 내요.</li>
+        <li>그다음부터 스톱하거나 카드 한 장을 받고 계산을 이어가요.</li>
+        <li>한 턴은 30초이며, 시간이 끝나면 서버가 자동 스톱 또는 자동 제출해요.</li>
+        <li>경기 중 상대의 숫자카드는 숨겨지고 경기 종료 후에만 공개돼요.</li>
+        <li>화면을 나갔다 돌아와도 진행 중인 경기로 다시 들어갈 수 있어요.</li>
+      </ol>
+      <button class="ootf-modal-confirm" id="helpConfirmButton" type="button">알겠어요</button>
+    </div>
+  </section>
+
+  <section class="ootf-overlay is-hidden" id="resultOverlay" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <div class="ootf-result-card">
+      <span class="ootf-result-symbol" id="resultSymbol">🌿</span>
+      <h2 id="resultTitle">경기 결과</h2>
+      <p id="resultDescription"></p>
+      <div class="ootf-result-history"><span>이번 판 카드 기록</span><div id="resultHistory"></div><strong id="resultValue">최종 결과값: -</strong></div>
+      <div class="ootf-showdown">
+        <div><small>나의 가까운 카드</small><b id="myTarget">-</b><span id="myDistance">거리 -</span></div>
+        <em>VS</em>
+        <div><small id="opponentTargetLabel">친구의 가까운 카드</small><b id="opponentTarget">-</b><span id="opponentDistance">거리 -</span></div>
+      </div>
+      <button class="ootf-result-primary" id="resultLobbyButton" type="button">대전 목록으로</button>
+      <a class="ootf-result-secondary" href="index.html">내 정원으로 돌아가기</a>
+    </div>
+  </section>
+
+  <div class="ootf-toast is-hidden" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="one-of-ten-friend.js?v=1"></script>
+</body>
+</html>

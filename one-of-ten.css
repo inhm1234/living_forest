@@ -521,3 +521,48 @@ body.oot-compact .oot-no-reward-note { display: none; }
   body.oot-compact .oot-arena-message { font-size: 8px; }
   body.oot-compact .oot-expression { min-height: 59px; }
 }
+
+
+/* ONE-OF-TEN v1.2 — 대전 방식 선택 */
+.oot-mode-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin: 0 0 8px;
+  padding: 4px;
+  border: 1px solid rgba(91,116,100,.13);
+  border-radius: 15px;
+  background: rgba(255,255,255,.62);
+  box-shadow: 0 6px 18px rgba(68,89,76,.06);
+}
+.oot-mode-nav a,
+.oot-mode-nav span {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  color: #718078;
+  font-size: 11px;
+  font-weight: 950;
+  text-decoration: none;
+}
+.oot-mode-nav .is-active {
+  background: #e3eee5;
+  color: #4f725c;
+  box-shadow: inset 0 0 0 1px rgba(87,126,99,.13);
+}
+.oot-mode-nav a:hover { background: #f1f4ef; }
+body.oot-compact .oot-mode-nav {
+  flex: 0 0 auto;
+  min-height: 32px;
+  margin-bottom: 5px;
+  padding: 3px;
+  border-radius: 12px;
+}
+body.oot-compact .oot-mode-nav a,
+body.oot-compact .oot-mode-nav span {
+  min-height: 27px;
+  border-radius: 9px;
+  font-size: 9px;
+}
