@@ -10,7 +10,7 @@
   <title>원오브텐 | 오늘의숲</title>
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="one-of-ten.css?v=1" />
+  <link rel="stylesheet" href="one-of-ten.css?v=1.1" />
 </head>
 <body>
   <main class="oot-app">
@@ -18,7 +18,7 @@
       <a class="oot-back" href="index.html" aria-label="내 정원으로 돌아가기">← <span>내 정원</span></a>
       <div class="oot-title-wrap">
         <p>FOREST NUMBER GAME</p>
-        <h1>원오브텐</h1>
+        <h1>원오브텐 <span class="oot-mode-badge">컴퓨터 대전</span></h1>
       </div>
       <button class="oot-help-button" id="rulesButton" type="button">게임 방법</button>
     </header>
@@ -36,6 +36,7 @@
           <span class="oot-hand-count" id="aiCardCount">손패 2장</span>
         </div>
         <div class="oot-ai-hand" id="aiHand" aria-label="다람쥐의 숨겨진 숫자카드"></div>
+        <p class="oot-ai-reaction" id="aiReaction">도토리를 가지런히 놓고 있어요.</p>
         <div class="oot-difficulty-row">
           <span>난이도</span>
           <div class="oot-difficulty-options" role="group" aria-label="컴퓨터 난이도">
@@ -49,7 +50,10 @@
       <article class="oot-panel oot-history-panel">
         <div class="oot-section-head">
           <span>지금까지 놓인 카드</span>
-          <b id="operationCount">수식 0 / 4</b>
+          <div class="oot-history-head-actions">
+            <button class="oot-history-toggle is-hidden" id="historyToggle" type="button">전체 보기</button>
+            <b id="operationCount">수식 0 / 4</b>
+          </div>
         </div>
         <div class="oot-history" id="history"></div>
       </article>
@@ -62,6 +66,7 @@
             <div class="oot-timer-track"><i id="timerBar"></i></div>
           </div>
         </div>
+        <p class="oot-timeout-hint is-hidden" id="timeoutHint" aria-live="polite"></p>
 
         <div class="oot-expression" aria-label="현재 수식">
           <span class="oot-current-value is-empty" id="currentValue">?</span>
@@ -70,10 +75,11 @@
         </div>
 
         <p class="oot-arena-message" id="arenaMessage">숲 다람쥐가 첫 숫자카드를 내고 있어요.</p>
+        <p class="oot-calculation-note is-hidden" id="calculationNote"></p>
         <div class="oot-operations" id="operations" aria-label="수식카드"></div>
       </article>
 
-      <article class="oot-panel oot-action-panel">
+      <article class="oot-panel oot-action-panel" id="actionPanel">
         <div class="oot-decision-actions is-hidden" id="decisionActions">
           <button class="oot-action-button oot-stop-button" id="stopButton" type="button">여기서 스톱</button>
           <button class="oot-action-button oot-draw-button" id="drawButton" type="button">카드 한 장 받기</button>
@@ -102,11 +108,12 @@
       <span class="oot-result-symbol" id="resultSymbol">🌿</span>
       <h2 id="resultTitle">승부 결과</h2>
       <p class="oot-result-description" id="resultDesc"></p>
+      <p class="oot-result-reaction" id="resultReaction"></p>
 
       <div class="oot-result-history">
         <span>이번 판 카드 기록</span>
         <div id="resultEquation"></div>
-        <strong id="resultFinalValue">최종 결과값 -</strong>
+        <strong id="resultFinalValue">최종 결과값: -</strong>
       </div>
 
       <div class="oot-showdown">
@@ -122,8 +129,20 @@
           <span id="aiDistanceResult">거리 -</span>
         </div>
       </div>
-      <button class="oot-result-new" id="newGameButton" type="button">한 판 더</button>
-      <a class="oot-result-back" href="index.html">내 정원으로 돌아가기</a>
+
+      <div class="oot-result-actions">
+        <button class="oot-result-new" id="newGameButton" type="button">같은 난이도로 한 판 더</button>
+        <button class="oot-result-change" id="changeDifficultyButton" type="button">난이도 바꾸기</button>
+        <a class="oot-result-back" href="index.html">내 정원으로 돌아가기</a>
+      </div>
+      <div class="oot-result-difficulty is-hidden" id="resultDifficultyPicker">
+        <span>다음 판 난이도</span>
+        <div>
+          <button type="button" data-result-difficulty="easy">쉬움</button>
+          <button type="button" data-result-difficulty="normal">보통</button>
+          <button type="button" data-result-difficulty="hard">어려움</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -141,11 +160,27 @@
         <li>나눗셈은 소수점 없이 정수 몫으로 계산하고, 음수와 0도 허용해요.</li>
         <li>스톱하면 남은 카드 중 최종 결과값에 가장 가까운 카드끼리 자동으로 비교해요.</li>
         <li>내 차례는 30초예요. 선택 단계에서 시간이 끝나면 자동 스톱하고, 반드시 계산해야 할 때는 가능한 카드가 자동으로 제출돼요.</li>
+        <li>시간이 5초 이하로 남으면 어떤 자동 진행이 일어나는지 화면에 알려줘요.</li>
+        <li>경기가 끝나면 누가 어떤 카드와 수식을 냈는지 전체 기록을 확인할 수 있어요.</li>
       </ol>
       <button class="oot-rules-confirm" id="rulesConfirmButton" type="button">알겠어요</button>
     </div>
   </section>
 
-  <script src="one-of-ten.js?v=1"></script>
+  <section class="oot-overlay is-hidden" id="introOverlay" role="dialog" aria-modal="true" aria-labelledby="introTitle">
+    <div class="oot-intro-card">
+      <p class="oot-intro-kicker">FIRST PLAY</p>
+      <h2 id="introTitle">다람쥐와 처음 놀아볼까요?</h2>
+      <div class="oot-intro-steps">
+        <div><b>1</b><span>다람쥐가 먼저 숫자카드를 내요.</span></div>
+        <div><b>2</b><span>수식과 숫자를 골라 계산을 이어가요.</span></div>
+        <div><b>3</b><span>내 남은 카드가 결과값에 가깝다고 느껴지면 스톱하세요.</span></div>
+      </div>
+      <p class="oot-intro-note">이 안내는 처음 한 번만 보여요. 게임 방법은 언제든 다시 볼 수 있어요.</p>
+      <button class="oot-intro-start" id="introStartButton" type="button">다람쥐와 시작하기</button>
+    </div>
+  </section>
+
+  <script src="one-of-ten.js?v=1.1"></script>
 </body>
 </html>

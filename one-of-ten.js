@@ -6,6 +6,7 @@
   const AI_THINK_MS = 1050;
   const EQUATION_REVEAL_MS = 800;
   const SHOWDOWN_REVEAL_MS = 1150;
+  const INTRO_KEY = "todayforest-one-of-ten-intro-seen-v1";
 
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -14,18 +15,24 @@
     aiStatus: $("#aiStatus"),
     aiCardCount: $("#aiCardCount"),
     aiHand: $("#aiHand"),
+    aiReaction: $("#aiReaction"),
     difficultyButtons: $$('[data-difficulty]'),
+    resultDifficultyButtons: $$('[data-result-difficulty]'),
     history: $("#history"),
+    historyToggle: $("#historyToggle"),
     operationCount: $("#operationCount"),
     turnPill: $("#turnPill"),
     turnTimer: $("#turnTimer"),
     timerText: $("#timerText"),
     timerBar: $("#timerBar"),
+    timeoutHint: $("#timeoutHint"),
     currentValue: $("#currentValue"),
     selectedOperationPreview: $("#selectedOperationPreview"),
     selectedNumberPreview: $("#selectedNumberPreview"),
     arenaMessage: $("#arenaMessage"),
+    calculationNote: $("#calculationNote"),
     operations: $("#operations"),
+    actionPanel: $("#actionPanel"),
     decisionActions: $("#decisionActions"),
     newGameActions: $("#newGameActions"),
     stopButton: $("#stopButton"),
@@ -38,6 +45,7 @@
     resultSymbol: $("#resultSymbol"),
     resultTitle: $("#resultTitle"),
     resultDesc: $("#resultDesc"),
+    resultReaction: $("#resultReaction"),
     resultEquation: $("#resultEquation"),
     resultFinalValue: $("#resultFinalValue"),
     humanTargetResult: $("#humanTargetResult"),
@@ -45,6 +53,10 @@
     aiTargetResult: $("#aiTargetResult"),
     aiDistanceResult: $("#aiDistanceResult"),
     newGameButton: $("#newGameButton"),
+    changeDifficultyButton: $("#changeDifficultyButton"),
+    resultDifficultyPicker: $("#resultDifficultyPicker"),
+    introOverlay: $("#introOverlay"),
+    introStartButton: $("#introStartButton"),
     rulesModal: $("#rulesModal"),
     rulesButton: $("#rulesButton"),
     closeRulesButton: $("#closeRulesButton"),
@@ -100,7 +112,7 @@
     pendingTimeout = null;
   }
 
-  function resetGame() {
+  function resetGame({ deferOpening = false } = {}) {
     clearHumanTimer();
     clearPendingTimeout();
 
@@ -117,14 +129,18 @@
       pendingShowdownReason: "",
       difficulty: selectedDifficulty,
       turnDeadline: 0,
+      aiReaction: "도토리를 가지런히 놓고 있어요.",
+      lastCalculationNote: "",
+      historyExpanded: false,
       gameOver: false,
     };
 
     state.humanHand.push(drawCard(), drawCard());
     state.aiHand.push(drawCard(), drawCard());
     els.resultOverlay.classList.add("is-hidden");
+    els.resultDifficultyPicker.classList.add("is-hidden");
     render();
-    pendingTimeout = window.setTimeout(runAiOpeningTurn, 700);
+    if (!deferOpening) pendingTimeout = window.setTimeout(runAiOpeningTurn, 700);
   }
 
   function render() {
@@ -156,6 +172,7 @@
       "game-over": "승부가 끝났어요.",
     };
     els.aiStatus.textContent = status[state.phase] || "상대 카드는 아직 보이지 않아요.";
+    els.aiReaction.textContent = state.aiReaction || "";
   }
 
   function renderDifficulty() {
@@ -164,28 +181,43 @@
       button.classList.toggle("is-selected", selected);
       button.setAttribute("aria-pressed", selected ? "true" : "false");
     });
+    els.resultDifficultyButtons.forEach((button) => {
+      const selected = button.dataset.resultDifficulty === selectedDifficulty;
+      button.classList.toggle("is-selected", selected);
+      button.setAttribute("aria-pressed", selected ? "true" : "false");
+    });
   }
 
   function renderHistory() {
     els.history.innerHTML = "";
-    if (!state.history.length) {
+    const compact = document.body.classList.contains("oot-compact");
+    const source = compact && !state.historyExpanded && state.history.length
+      ? [state.history[state.history.length - 1]]
+      : state.history;
+
+    if (!source.length) {
       const empty = document.createElement("span");
       empty.className = "oot-history-empty";
       empty.textContent = "아직 놓인 카드가 없어요.";
       els.history.appendChild(empty);
     } else {
-      state.history.forEach((item, index) => {
+      source.forEach((item) => {
         const step = document.createElement("span");
         step.className = `oot-history-step ${item.player === "ai" ? "is-ai" : "is-human"}`;
-        if (index === 0) {
-          step.textContent = `🐿 ${item.number}`;
+        if (item.type === "opening") {
+          step.textContent = `🐿 첫 카드 ${item.number}`;
         } else {
-          step.textContent = `${item.before} ${item.operation} ${item.number} = ${item.after}`;
+          const owner = item.player === "ai" ? "🐿" : "나";
+          step.textContent = `${owner} · ${item.before} ${item.operation} ${item.number} = ${item.after}`;
         }
         els.history.appendChild(step);
       });
       requestAnimationFrame(() => { els.history.scrollLeft = els.history.scrollWidth; });
     }
+
+    const canToggle = compact && state.history.length > 1;
+    els.historyToggle.classList.toggle("is-hidden", !canToggle);
+    els.historyToggle.textContent = state.historyExpanded ? "간단히" : "전체 보기";
     els.operationCount.textContent = `수식 ${OPERATIONS.length - state.availableOperations.length} / ${OPERATIONS.length}`;
   }
 
@@ -222,6 +254,8 @@
     }
     els.turnPill.textContent = pill;
     els.arenaMessage.textContent = message;
+    els.calculationNote.textContent = state.lastCalculationNote || "";
+    els.calculationNote.classList.toggle("is-hidden", !state.lastCalculationNote);
   }
 
   function renderOperations() {
@@ -248,8 +282,11 @@
   }
 
   function renderActions() {
-    els.decisionActions.classList.toggle("is-hidden", state.phase !== "human-decision");
-    els.newGameActions.classList.toggle("is-hidden", state.phase !== "game-over");
+    const showDecision = state.phase === "human-decision";
+    const showNewGame = state.phase === "game-over";
+    els.actionPanel.classList.toggle("is-hidden", !showDecision && !showNewGame);
+    els.decisionActions.classList.toggle("is-hidden", !showDecision);
+    els.newGameActions.classList.toggle("is-hidden", !showNewGame);
     els.drawButton.disabled = !state.deck.length || !state.availableOperations.length;
   }
 
@@ -313,6 +350,7 @@
   function renderTimer(forcedRemaining = null) {
     const active = isHumanTimedPhase();
     els.turnTimer.classList.toggle("is-hidden", !active);
+    els.timeoutHint.classList.toggle("is-hidden", true);
     if (!active) return;
     const remaining = forcedRemaining ?? Math.max(0, state.turnDeadline - Date.now());
     const seconds = Math.max(0, Math.ceil(remaining / 1000));
@@ -321,6 +359,14 @@
     els.timerBar.style.width = `${ratio * 100}%`;
     els.turnTimer.classList.toggle("is-warning", seconds <= 10 && seconds > 5);
     els.turnTimer.classList.toggle("is-danger", seconds <= 5);
+
+    if (seconds <= 5) {
+      const hint = state.phase === "human-decision"
+        ? "시간이 끝나면 자동으로 스톱해요."
+        : "시간이 끝나면 가능한 카드가 자동으로 나가요.";
+      els.timeoutHint.textContent = hint;
+      els.timeoutHint.classList.remove("is-hidden");
+    }
   }
 
   function handleHumanTimeout() {
@@ -353,6 +399,7 @@
     removeOne(state.aiHand, openingNumber);
     state.currentValue = openingNumber;
     state.history.push({ player: "ai", type: "opening", number: openingNumber });
+    state.aiReaction = `첫 카드로 ${openingNumber}을 내밀었어요.`;
     state.phase = "human-play";
     state.selectedOperation = null;
     state.selectedNumber = null;
@@ -387,6 +434,14 @@
     state.availableOperations.splice(state.availableOperations.indexOf(operation), 1);
     state.currentValue = after;
     state.history.push({ player: "human", type: "calculation", before, operation, number, after, timedOut });
+    state.lastCalculationNote = operation === "÷" && before % number !== 0
+      ? `${before} ÷ ${number}은 소수점을 버려 ${after}로 계산했어요.`
+      : "";
+    state.aiReaction = randomItem([
+      "결과값을 보며 꼬리를 살랑였어요.",
+      "도토리를 만지작거리며 다음 수를 생각해요.",
+      "놓인 수식을 가만히 바라보고 있어요.",
+    ]);
     state.selectedOperation = null;
     state.selectedNumber = null;
 
@@ -464,6 +519,7 @@
 
     const stopDecision = evaluateAiStop();
     if (stopDecision.shouldStop) {
+      state.aiReaction = "꼬리를 번쩍 세우며 스톱을 외쳤어요.";
       beginShowdown(`다람쥐가 자기 카드와 결과값의 차이 ${stopDecision.distance}을 보고 스톱했어요.`);
       return;
     }
@@ -481,6 +537,10 @@
     state.availableOperations.splice(state.availableOperations.indexOf(move.operation), 1);
     state.currentValue = after;
     state.history.push({ player: "ai", type: "calculation", before, operation: move.operation, number: move.number, after });
+    state.lastCalculationNote = move.operation === "÷" && before % move.number !== 0
+      ? `${before} ÷ ${move.number}은 소수점을 버려 ${after}로 계산했어요.`
+      : "";
+    state.aiReaction = `${move.operation} ${move.number} 카드를 조심스럽게 내려놓았어요.`;
 
     if (!state.availableOperations.length) {
       beginShowdown("수식카드 네 장을 모두 사용했어요.");
@@ -496,6 +556,7 @@
     clearHumanTimer();
     clearPendingTimeout();
     state.pendingShowdownReason = reason;
+    state.aiReaction = "남은 카드를 한 장씩 펼치고 있어요.";
     state.phase = "showdown-resolving";
     state.selectedOperation = null;
     state.selectedNumber = null;
@@ -505,19 +566,19 @@
 
   function renderResultHistory() {
     els.resultEquation.innerHTML = "";
-    state.history.forEach((item, index) => {
+    state.history.forEach((item) => {
       const line = document.createElement("span");
       line.className = "oot-result-step";
-      if (index === 0) {
-        line.innerHTML = `<b>다람쥐가 낸 첫 카드:</b> ${item.number}`;
+      if (item.type === "opening") {
+        line.innerHTML = `<b>다람쥐가 낸 숫자카드:</b> ${item.number}`;
       } else {
-        const owner = item.player === "ai" ? "다람쥐가 낸 카드" : "내가 낸 카드";
+        const owner = item.player === "ai" ? "다람쥐 차례" : "내 차례";
         const timeoutLabel = item.timedOut ? " · 시간 종료 자동 제출" : "";
-        line.innerHTML = `<b>${owner}:</b> ${item.operation} ${item.number} → ${item.after}<small>${timeoutLabel}</small>`;
+        line.innerHTML = `<b>${owner}:</b> ${item.before} ${item.operation} ${item.number} = ${item.after}<small>${timeoutLabel}</small>`;
       }
       els.resultEquation.appendChild(line);
     });
-    els.resultFinalValue.textContent = `최종 결과값 ${state.currentValue}`;
+    els.resultFinalValue.textContent = `최종 결과값: ${state.currentValue}`;
   }
 
   function finishAutomaticShowdown() {
@@ -534,19 +595,23 @@
     let title = "무승부예요";
     let symbol = "🤝";
     let description = `${state.pendingShowdownReason} 두 카드가 최종 결과값 ${state.currentValue}에서 같은 거리였어요.`;
+    let reaction = "다람쥐도 같은 거리라며 신기해해요.";
     if (humanDistance < aiDistance) {
       title = "당신이 이겼어요";
       symbol = "🏆";
       description = `${state.pendingShowdownReason} 남은 카드를 펼쳐 보니 내 카드가 최종 결과값 ${state.currentValue}에 더 가까웠어요.`;
+      reaction = "다람쥐가 고개를 갸웃하며 다음 판을 기다려요.";
     } else if (humanDistance > aiDistance) {
       title = "숲 다람쥐가 이겼어요";
       symbol = "🐿️";
       description = `${state.pendingShowdownReason} 남은 카드를 펼쳐 보니 다람쥐 카드가 최종 결과값 ${state.currentValue}에 더 가까웠어요.`;
+      reaction = "다람쥐가 꼬리를 살랑이며 기뻐해요.";
     }
 
     els.resultSymbol.textContent = symbol;
     els.resultTitle.textContent = title;
     els.resultDesc.textContent = description;
+    els.resultReaction.textContent = reaction;
     els.humanTargetResult.textContent = humanTarget;
     els.humanDistanceResult.textContent = `거리 ${humanDistance}`;
     els.aiTargetResult.textContent = aiTarget;
@@ -554,6 +619,47 @@
     renderResultHistory();
     render();
     els.resultOverlay.classList.remove("is-hidden");
+  }
+
+  function toggleResultDifficulty() {
+    els.resultDifficultyPicker.classList.toggle("is-hidden");
+  }
+
+  function selectResultDifficulty(difficulty) {
+    if (!["easy", "normal", "hard"].includes(difficulty)) return;
+    selectedDifficulty = difficulty;
+    resetGame();
+  }
+
+  function applyViewportMode() {
+    const compact = window.innerWidth <= 600 && window.innerHeight <= 900;
+    document.body.classList.toggle("oot-compact", compact);
+    if (state) renderHistory();
+  }
+
+  function isIntroSeen() {
+    if (new URLSearchParams(window.location.search).get("skipIntro") === "1") return true;
+    try {
+      return window.localStorage.getItem(INTRO_KEY) === "true";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function markIntroSeen() {
+    try {
+      window.localStorage.setItem(INTRO_KEY, "true");
+    } catch (_) {
+      // 저장이 막혀 있어도 게임은 계속 진행합니다.
+    }
+  }
+
+  function startAfterIntro() {
+    markIntroSeen();
+    els.introOverlay.classList.add("is-hidden");
+    if (state.phase === "ai-opening" && !pendingTimeout) {
+      pendingTimeout = window.setTimeout(runAiOpeningTurn, 350);
+    }
   }
 
   function setDifficulty(difficulty) {
@@ -566,6 +672,15 @@
   function closeRules() { els.rulesModal.classList.add("is-hidden"); }
 
   els.difficultyButtons.forEach((button) => button.addEventListener("click", () => setDifficulty(button.dataset.difficulty)));
+  els.resultDifficultyButtons.forEach((button) => {
+    button.addEventListener("click", () => selectResultDifficulty(button.dataset.resultDifficulty));
+  });
+  els.historyToggle.addEventListener("click", () => {
+    state.historyExpanded = !state.historyExpanded;
+    renderHistory();
+  });
+  els.changeDifficultyButton.addEventListener("click", toggleResultDifficulty);
+  els.introStartButton.addEventListener("click", startAfterIntro);
   els.stopButton.addEventListener("click", () => beginShowdown("당신이 스톱했어요."));
   els.drawButton.addEventListener("click", startHumanDraw);
   els.selectedOperationPreview.addEventListener("click", cancelOperationFromPreview);
@@ -578,6 +693,10 @@
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden && isHumanTimedPhase()) updateHumanTimer();
   });
+  window.addEventListener("resize", applyViewportMode);
 
-  resetGame();
+  applyViewportMode();
+  const showIntro = !isIntroSeen();
+  resetGame({ deferOpening: showIntro });
+  els.introOverlay.classList.toggle("is-hidden", !showIntro);
 })();
