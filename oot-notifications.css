@@ -1,0 +1,110 @@
+.oot-notification-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  margin: 14px 0;
+  padding: 15px 16px;
+  border: 1px solid rgba(99, 124, 105, .18);
+  border-radius: 22px;
+  background: rgba(249, 252, 249, .9);
+  box-shadow: 0 14px 34px rgba(75, 101, 82, .08);
+}
+.oot-notification-card[hidden] { display: none !important; }
+.oot-notification-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 15px; background: #e8f2ea; font-size: 23px; }
+.oot-notification-copy { min-width: 0; }
+.oot-notification-copy strong { display: block; color: #405749; font-size: 14px; }
+.oot-notification-copy span { display: block; margin-top: 3px; color: #748077; font-size: 12px; line-height: 1.45; }
+.oot-notification-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; }
+.oot-notification-actions button,
+.oot-notification-actions a {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 13px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+.oot-notification-actions button { color: white; background: #5f806b; }
+.oot-notification-actions button.is-enabled { color: #496452; background: #dcebe0; }
+.oot-notification-actions button:disabled { cursor: default; opacity: .65; }
+.oot-notification-actions a { display: inline-grid; place-items: center; color: #5a685e; background: #edf1ed; }
+.oot-entry-badge { margin-left: auto; padding: 5px 8px; border-radius: 999px; color: #fff; background: #d16d73; font-size: 11px; line-height: 1; }
+.oot-entry-badge[hidden] { display: none !important; }
+
+.oot-ready-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 15px 17px;
+  border: 1px solid rgba(94, 125, 104, .16);
+  border-radius: 20px;
+  background: rgba(250, 252, 250, .92);
+  box-shadow: 0 12px 28px rgba(70, 92, 77, .07);
+}
+.oot-ready-copy strong { display: block; color: #42584a; font-size: 14px; }
+.oot-ready-copy span { display: block; margin-top: 4px; color: #778179; font-size: 12px; line-height: 1.5; }
+.oot-ready-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; }
+.oot-ready-actions button {
+  min-height: 40px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 13px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+#ootGameReadyButton { color: #fff; background: #66846f; }
+#ootGameReadyButton.is-ready { color: #47604f; background: #d8eadc; }
+.oot-ready-actions [data-oot-enable-push] { color: #5d685f; background: #edf1ed; }
+.oot-ready-actions [data-oot-enable-push].is-enabled { color: #496452; background: #dcebe0; }
+
+.oot-availability { display: inline-flex; align-items: center; gap: 5px; font-weight: 800; }
+.oot-availability.is-ready { color: #40885b; }
+.oot-availability.is-online { color: #5e7d68; }
+.oot-availability.is-away { color: #9a7e55; }
+.oot-availability.is-offline { color: #8a908b; }
+.oot-availability.is-game { color: #8665a5; }
+
+.oot-global-invite {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: rgba(37, 48, 40, .38);
+  backdrop-filter: blur(8px);
+}
+.oot-global-invite.is-hidden { display: none; }
+.oot-global-invite-card {
+  width: min(100%, 350px);
+  padding: 25px 22px 20px;
+  border-radius: 27px;
+  background: #fbfdfb;
+  box-shadow: 0 26px 70px rgba(35, 52, 40, .22);
+  text-align: center;
+}
+.oot-global-invite-icon { display: grid; place-items: center; width: 58px; height: 58px; margin: 0 auto 10px; border-radius: 20px; background: #e7f1e9; font-size: 29px; }
+.oot-global-invite-card > p { margin: 0; color: #879188; font-size: 10px; font-weight: 900; letter-spacing: .16em; }
+.oot-global-invite-card h2 { margin: 7px 0 6px; color: #3d5546; font-size: 20px; }
+.oot-global-invite-card > span { display: block; color: #717d74; font-size: 13px; line-height: 1.55; }
+.oot-global-invite-card > div { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 18px; }
+.oot-global-invite-card a,
+.oot-global-invite-card button { min-height: 45px; border: 0; border-radius: 15px; font: inherit; font-size: 13px; font-weight: 900; cursor: pointer; }
+.oot-global-invite-card a { display: grid; place-items: center; color: #fff; background: #63816c; text-decoration: none; }
+.oot-global-invite-card button { color: #627067; background: #edf1ed; }
+
+@media (max-width: 620px) {
+  .oot-notification-card { grid-template-columns: auto minmax(0, 1fr); }
+  .oot-notification-actions { grid-column: 1 / -1; justify-content: stretch; }
+  .oot-notification-actions > * { flex: 1; }
+  .oot-ready-card { grid-template-columns: 1fr; }
+  .oot-ready-actions { justify-content: stretch; }
+  .oot-ready-actions button { flex: 1; }
+}

@@ -10,7 +10,9 @@
   <title>원오브텐 친구 대전 | 오늘의숲</title>
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="one-of-ten-friend.css?v=1.0.2" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="one-of-ten-friend.css?v=1.0.3" />
+  <link rel="stylesheet" href="oot-notifications.css?v=oot-push-v0-3" />
 </head>
 <body>
   <main class="ootf-app">
@@ -46,10 +48,21 @@
         <div>
           <p>FRIEND MATCH</p>
           <h2>친구와 한 판 놀아볼까요?</h2>
-          <span>초대는 5분 동안 기다려요. 한 턴은 30초예요.</span>
+          <span>초대는 10분 동안 기다려요. 한 턴은 30초예요.</span>
         </div>
         <div class="ootf-hero-cards" aria-hidden="true"><i>7</i><b>+</b><i>3</i></div>
       </article>
+
+      <section class="oot-ready-card" aria-label="친구 대전 초대 상태">
+        <div class="oot-ready-copy">
+          <strong>친구에게 지금 상태를 알려줄까요?</strong>
+          <span id="ootReadyStatus">켜지 않아도 초대는 받을 수 있고, 알림으로 놓치지 않게 전달해요.</span>
+        </div>
+        <div class="oot-ready-actions">
+          <button id="ootGameReadyButton" type="button">10분 동안 한 판 가능</button>
+          <button type="button" data-oot-enable-push>초대 알림 받기</button>
+        </div>
+      </section>
 
       <section class="ootf-section is-hidden" id="activeMatchesSection">
         <div class="ootf-section-title">
@@ -89,7 +102,7 @@
         </div>
       </section>
 
-      <p class="ootf-lobby-note">초대 화면을 열어둔 동안 약 4초마다 새 초대와 경기 상태를 조용히 확인해요.</p>
+      <p class="ootf-lobby-note">새 초대는 실시간으로 표시하고, 연결이 잠시 어긋나면 10초마다 조용히 다시 확인해요.</p>
     </section>
 
     <section class="ootf-match is-hidden" id="matchView" aria-live="polite">
@@ -181,6 +194,7 @@
   </section>
 
   <div class="ootf-toast is-hidden" id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="one-of-ten-friend.js?v=1.0.2"></script>
+  <script type="module" src="oot-notifications.js?v=oot-push-v0-3"></script>
+  <script type="module" src="one-of-ten-friend.js?v=1.0.3"></script>
 </body>
 </html>

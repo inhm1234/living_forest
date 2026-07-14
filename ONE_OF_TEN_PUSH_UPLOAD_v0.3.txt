@@ -1,0 +1,12 @@
+원오브텐 초대 알림 프론트 v0.3
+
+GitHub 저장소 최상단에 업로드/덮어쓰기:
+- index.html
+- one-of-ten-friend.html
+- one-of-ten-friend.js
+- sw.js
+- oot-notifications.js (새 파일)
+- oot-notifications.css (새 파일)
+
+먼저 Supabase Edge Function과 Secrets, Database Webhook을 설정한 뒤 업로드하는 것을 권장합니다.
+SQL 재실행은 필요 없습니다.

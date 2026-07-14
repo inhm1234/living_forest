@@ -8,7 +8,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 
 const TURN_LIMIT_MS = 30000;
 const EQUATION_REVEAL_MS = 700;
-const LOBBY_POLL_MS = 2500;
+const LOBBY_POLL_MS = 10000;
 const MATCH_POLL_MS = 2500;
 const OPERATIONS = [
   { value: "+", label: "+" },
@@ -39,13 +39,14 @@ const els = {
 const state = {
   user: null,
   friends: [], invites: [], matches: [], match: null,
+  friendAvailability: new Map(),
   friendsLoadFailed: false, invitesLoadFailed: false, lobbyWarnings: [],
   knownIncomingInviteIds: new Set(),
   selectedOperation: null, selectedNumber: null,
   historyExpanded: false, busy: false,
   serverOffset: 0, timeoutResolving: false,
   lobbyInterval: null, matchInterval: null, timerInterval: null,
-  realtimeChannel: null, renderResultForMatchId: null,
+  realtimeChannel: null, inviteRealtimeChannel: null, renderResultForMatchId: null,
 };
 let toastTimer = null;
 let actionTimer = null;
@@ -71,6 +72,31 @@ function normalizeFriendRow(friend) {
     avatar_url: friend.avatar_url || friend.avatarUrl || "",
     growth_count: Number(friend.growth_count ?? friend.growth ?? 0),
     is_dev_test: Boolean(friend.is_dev_test ?? friend.isDevTest ?? false),
+  };
+}
+function friendById(friendId) {
+  return state.friends.find((friend) => String(friend.friend_id) === String(friendId)) || null;
+}
+function availabilityByFriendId(friendId) {
+  return state.friendAvailability.get(String(friendId)) || { availability: "offline", has_push: false };
+}
+function availabilityPresentation(value) {
+  const availability = value?.availability || "offline";
+  const map = {
+    game_ready: { label: "🟢 지금 한 판 가능", className: "is-ready", button: "바로 초대" },
+    online: { label: "🌿 오늘의숲 이용 중", className: "is-online", button: "초대 보내기" },
+    away: { label: "🌙 잠시 자리 비움", className: "is-away", button: value?.has_push ? "알림으로 초대" : "초대 남기기" },
+    offline: { label: "⚪ 오프라인", className: "is-offline", button: value?.has_push ? "알림으로 초대" : "초대 남기기" },
+    in_game: { label: "🎮 게임 중", className: "is-game", button: "게임 중" },
+  };
+  return map[availability] || map.offline;
+}
+function inviteDisplay(item) {
+  const friend = friendById(item?.other_user_id);
+  return {
+    ...item,
+    other_nickname: friend?.nickname || item?.other_nickname || "친구",
+    other_avatar_url: friend?.avatar_url || item?.other_avatar_url || "",
   };
 }
 function getMatchIdFromUrl() { return String(new URL(location.href).searchParams.get("match") || "").trim(); }
@@ -135,6 +161,10 @@ async function stopRealtime() {
   if (state.realtimeChannel) await supabase.removeChannel(state.realtimeChannel);
   state.realtimeChannel = null;
 }
+async function stopInviteRealtime() {
+  if (state.inviteRealtimeChannel) await supabase.removeChannel(state.inviteRealtimeChannel);
+  state.inviteRealtimeChannel = null;
+}
 function clearActionTimer() { if (actionTimer) clearTimeout(actionTimer); actionTimer = null; }
 
 function showView(name) {
@@ -155,10 +185,11 @@ async function loadLobby({ silent = false } = {}) {
   try {
     // 친구 목록은 초대/경기 조회와 분리합니다.
     // 다른 RPC 하나가 실패해도 실제 친구 목록은 화면에 먼저 보여야 합니다.
-    const [friendsResult, invitesResult, matchesResult] = await Promise.allSettled([
+    const [friendsResult, invitesResult, matchesResult, availabilityResult] = await Promise.allSettled([
       rpc("list_my_garden_friends"),
       rpc("oot_list_my_invites"),
       rpc("oot_list_my_matches", { p_limit: 30 }),
+      rpc("oot_list_friend_availability"),
     ]);
 
     if (friendsResult.status === "fulfilled") {
@@ -175,7 +206,7 @@ async function loadLobby({ silent = false } = {}) {
     }
 
     if (invitesResult.status === "fulfilled") {
-      const nextInvites = normalizeRows(invitesResult.value);
+      const nextInvites = normalizeRows(invitesResult.value).map(inviteDisplay);
       const incomingIds = nextInvites
         .filter((item) => item.direction === "incoming")
         .map((item) => String(item.invite_id));
@@ -187,6 +218,12 @@ async function loadLobby({ silent = false } = {}) {
       state.invites = nextInvites;
       state.invitesLoadFailed = false;
       state.knownIncomingInviteIds = new Set(incomingIds);
+
+      const incomingInvites = nextInvites.filter((item) => item.direction === "incoming");
+      if (incomingInvites.length) {
+        Promise.allSettled(incomingInvites.map((item) => rpc("oot_ack_invite", { p_invite_id: item.invite_id })))
+          .catch(() => {});
+      }
 
       if (silent && hasNewIncoming) {
         showToast("친구에게서 원오브텐 초대가 도착했어요.");
@@ -204,6 +241,16 @@ async function loadLobby({ silent = false } = {}) {
       state.matches = [];
       state.lobbyWarnings.push("matches");
       console.warn("OneOfTen match list load error", matchesResult.reason);
+    }
+
+    if (availabilityResult.status === "fulfilled") {
+      state.friendAvailability = new Map(
+        normalizeRows(availabilityResult.value).map((row) => [String(row.friend_id), row])
+      );
+    } else {
+      state.friendAvailability = new Map();
+      state.lobbyWarnings.push("availability");
+      console.warn("OneOfTen friend availability load error", availabilityResult.reason);
     }
 
     renderLobby();
@@ -285,8 +332,10 @@ function renderLobby() {
   els.friendsList.innerHTML = state.friends.map((friend) => {
     const activeMatch = activeByOpponent.get(friend.friend_id);
     const invite = inviteByOpponent.get(friend.friend_id);
-    let subtitle = `마음 ${Number(friend.growth_count || 0)}번을 키운 친구`;
-    let action = `<button class="ootf-primary" data-create-invite="${friend.friend_id}">한 판 초대</button>`;
+    const availability = availabilityByFriendId(friend.friend_id);
+    const presentation = availabilityPresentation(availability);
+    let subtitle = `<span class="oot-availability ${presentation.className}">${presentation.label}</span> · 마음 ${Number(friend.growth_count || 0)}번`;
+    let action = `<button class="ootf-primary" data-create-invite="${friend.friend_id}" ${availability.availability === "in_game" ? "disabled" : ""}>${presentation.button}</button>`;
     if (activeMatch) { subtitle = "진행 중인 경기가 있어요."; action = `<button class="ootf-primary" data-open-match="${activeMatch.match_id}">경기 계속</button>`; }
     else if (invite?.direction === "incoming") {
       subtitle = `이 친구가 원오브텐 한 판을 기다려요 · ${formatRemaining(invite.expires_at)}`;
@@ -296,7 +345,7 @@ function renderLobby() {
       subtitle = `친구의 수락을 기다리는 중 · ${formatRemaining(invite.expires_at)}`;
       action = `<button class="ootf-secondary" disabled>보낸 초대 대기</button>`;
     }
-    return cardTemplate({ avatarUrl: friend.avatar_url, name: friend.nickname, subtitle, actions: action });
+    return `<article class="ootf-list-card"><span class="ootf-list-avatar">${avatarMarkup(friend.avatar_url, friend.nickname)}</span><div class="ootf-list-copy"><strong>${escapeHtml(friend.nickname || "친구")}</strong><span>${subtitle}</span></div>${action}</article>`;
   }).join("");
 
   bindLobbyActions();
@@ -311,7 +360,14 @@ function bindLobbyActions() {
 }
 async function createInvite(friendId, button) {
   button.disabled = true;
-  try { await rpc("oot_create_invite", { p_friend_id: friendId }); showToast("초대를 보냈어요. 친구 화면에 수락·거절 버튼이 나타나요."); await loadLobby({ silent: true }); }
+  try {
+    await rpc("oot_create_invite", { p_friend_id: friendId });
+    const availability = availabilityByFriendId(friendId);
+    showToast(availability.has_push && ["away", "offline"].includes(availability.availability)
+      ? "초대를 남기고 휴대폰 알림도 준비했어요."
+      : "초대를 보냈어요. 친구 화면에 바로 표시돼요.");
+    await loadLobby({ silent: true });
+  }
   catch (error) { showToast(friendlyError(error)); await loadLobby({ silent: true }); }
   finally { button.disabled = false; }
 }
@@ -341,7 +397,7 @@ async function returnToLobby() {
   state.match = null; state.selectedOperation = null; state.selectedNumber = null; state.renderResultForMatchId = null;
   els.resultOverlay.classList.add("is-hidden");
   setMatchUrl(""); showView("lobby");
-  await loadLobby(); startLobbyPolling();
+  await loadLobby(); startLobbyPolling(); subscribeInvites();
 }
 
 async function loadMatch({ force = false } = {}) {
@@ -369,6 +425,13 @@ async function loadMatch({ force = false } = {}) {
 }
 function startLobbyPolling() { stopLobbyPolling(); state.lobbyInterval = setInterval(() => loadLobby({ silent: true }), LOBBY_POLL_MS); }
 function startMatchPolling() { stopMatchPolling(); state.matchInterval = setInterval(() => loadMatch(), MATCH_POLL_MS); }
+async function subscribeInvites() {
+  await stopInviteRealtime();
+  if (!state.user) return;
+  state.inviteRealtimeChannel = supabase.channel(`oot-invites-${state.user.id}`)
+    .on("postgres_changes", { event: "*", schema: "public", table: "oot_invites" }, () => loadLobby({ silent: true }))
+    .subscribe();
+}
 function subscribeMatch(matchId) {
   stopRealtime();
   state.realtimeChannel = supabase.channel(`oot-friend-${matchId}-${state.user.id}`)
@@ -554,7 +617,7 @@ function closeHelp() { els.helpOverlay.classList.add("is-hidden"); }
 function applyViewport() { if (state.match) renderHistory(state.match); }
 
 async function initialize() {
-  console.info("TodayForest OneOfTen Friend v1.0.2");
+  console.info("TodayForest OneOfTen Friend v1.0.3");
   showView("loading");
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error || !session?.user) { showView("login"); return; }
@@ -571,6 +634,7 @@ async function initialize() {
     showView("lobby");
     await loadLobby();
     startLobbyPolling();
+    subscribeInvites();
   }
 }
 
@@ -580,7 +644,8 @@ els.refreshLobbyButton.addEventListener("click", () => loadLobby()); els.history
 els.selectedOperation.addEventListener("click", cancelOperation); els.stopButton.addEventListener("click", stopMatch); els.drawButton.addEventListener("click", drawCard);
 els.leaveMatchButton.addEventListener("click", returnToLobby); els.resultLobbyButton.addEventListener("click", returnToLobby);
 window.addEventListener("resize", applyViewport); window.addEventListener("popstate", () => getMatchIdFromUrl() ? openMatch(getMatchIdFromUrl()) : returnToLobby());
+window.addEventListener("oot-game-ready-changed", () => loadLobby({ silent: true }));
 document.addEventListener("visibilitychange", () => { if (!document.hidden) getMatchIdFromUrl() ? loadMatch({ force: true }) : loadLobby({ silent: true }); });
-window.addEventListener("beforeunload", () => { stopLobbyPolling(); stopMatchPolling(); stopTimer(); stopRealtime(); });
+window.addEventListener("beforeunload", () => { stopLobbyPolling(); stopMatchPolling(); stopTimer(); stopRealtime(); stopInviteRealtime(); });
 
 initialize();

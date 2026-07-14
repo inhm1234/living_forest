@@ -13,6 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
   <link rel="stylesheet" href="style.css?v=one-of-ten-v1" />
+  <link rel="stylesheet" href="oot-notifications.css?v=oot-push-v0-3" />
   <link rel="stylesheet" href="tree-animal-call.css?v=tree-animal-call-v4-status-hotfix" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
@@ -323,8 +324,21 @@
       </div>
       <a class="forest-play-launch" href="one-of-ten.html" aria-label="원오브텐 놀이 화면 열기">
         <span>놀이 선택하기</span>
+        <span class="oot-entry-badge" data-oot-invite-badge hidden></span>
         <b aria-hidden="true">→</b>
       </a>
+    </section>
+
+    <section class="oot-notification-card" id="ootNotificationCard" data-oot-auth-only hidden aria-live="polite">
+      <span class="oot-notification-icon" aria-hidden="true">🔔</span>
+      <div class="oot-notification-copy">
+        <strong>원오브텐 초대 알림</strong>
+        <span id="ootNotificationStatus" data-oot-notification-status>사이트를 닫아둬도 친구의 한 판 초대를 알려드려요.</span>
+      </div>
+      <div class="oot-notification-actions">
+        <button type="button" data-oot-enable-push>초대 알림 받기</button>
+        <a id="ootOpenInvites" href="one-of-ten-friend.html" hidden>도착한 초대 <b data-oot-invite-count>0</b></a>
+      </div>
     </section>
 
     <section class="install-card hidden" id="installCard" aria-live="polite" aria-label="홈 화면에 오늘의숲 추가하기">
@@ -1013,5 +1027,6 @@
 
   <script type="module" src="app.js?v=shared-tree-start-moment-v2-0"></script>
   <script type="module" src="tree-animal-call.js?v=tree-animal-call-v5-heart-fruit-bridge-134"></script>
+  <script type="module" src="oot-notifications.js?v=oot-push-v0-3"></script>
 </body>
 </html>
