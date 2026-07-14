@@ -5279,3 +5279,87 @@ html.shared-tree-start-moment-open body {
     padding-inline: 9px;
   }
 }
+
+
+/* ==========================================================================
+   HOME NAV RESTORE v0.4.1
+   마음 남기기·내 기록·편지·의견 남기기를 다시 4개 한 줄 메뉴로 배치합니다.
+   ========================================================================== */
+
+.garden-record-primary {
+  display: none;
+}
+
+.garden-nav-secondary {
+  display: none;
+}
+
+.garden-nav-four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.garden-nav-four .nav-action {
+  min-height: 62px;
+  padding: 9px 6px;
+  border-radius: 18px;
+}
+
+.garden-nav-four .nav-action .nav-icon {
+  font-size: 16px;
+}
+
+.garden-nav-four .nav-action > span:last-child {
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.garden-nav-four .nav-primary {
+  color: #4f805e;
+  border-color: rgba(126, 190, 143, .6);
+  background: linear-gradient(180deg, #eff9f1, #e7f4ea);
+  box-shadow: 0 9px 20px rgba(81, 126, 92, .1);
+}
+
+.garden-nav-four .nav-primary .nav-icon {
+  color: #5f966e;
+}
+
+.garden-nav-four .nav-primary.record-complete {
+  color: #557a62;
+  border-color: rgba(133, 190, 151, .54);
+  background: linear-gradient(180deg, #eef7f0, #e6f1e9);
+}
+
+.growth-note {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 420px) {
+  .garden-nav-four {
+    gap: 6px;
+  }
+
+  .garden-nav-four .nav-action {
+    min-height: 59px;
+    padding-inline: 4px;
+    border-radius: 16px;
+  }
+
+  .garden-nav-four .nav-action > span:last-child {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 350px) {
+  .garden-nav-four {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .garden-nav-four .nav-action > span:last-child {
+    font-size: 11px;
+  }
+}

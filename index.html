@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=home-priority-v0-4" />
+  <link rel="stylesheet" href="style.css?v=home-nav-restore-v0-4-1" />
   <link rel="stylesheet" href="oot-notifications.css?v=home-priority-v0-4" />
   <link rel="stylesheet" href="tree-animal-call.css?v=tree-animal-call-v4-status-hotfix" />
   <script>
@@ -300,12 +300,6 @@
     </section>
 
 
-    <!-- HOME PRIORITY v0.4: 오늘의숲의 핵심 행동을 나무 바로 아래에 둡니다. -->
-    <button type="button" class="nav-action nav-primary garden-record-primary" id="openRecord">
-      <span class="nav-icon" aria-hidden="true">✦</span>
-      <span>마음 남기기</span>
-    </button>
-
     <section class="growth-note" aria-label="나무 성장 안내">
       <div class="growth-note-icon" aria-hidden="true">🌱</div>
       <div>
@@ -314,7 +308,12 @@
       </div>
     </section>
 
-    <nav class="garden-nav garden-nav-secondary" aria-label="내 정원 기록과 소식">
+    <!-- HOME NAV RESTORE v0.4.1: 핵심 메뉴 4개를 다시 한 줄로 배치합니다. -->
+    <nav class="garden-nav garden-nav-four" aria-label="내 정원 메뉴">
+      <button type="button" class="nav-action nav-primary" id="openRecord">
+        <span class="nav-icon" aria-hidden="true">✦</span>
+        <span>마음 남기기</span>
+      </button>
       <button type="button" class="nav-action" id="openRecords">
         <span class="nav-icon" aria-hidden="true">▤</span>
         <span>내 기록</span>
