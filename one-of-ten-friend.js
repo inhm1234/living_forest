@@ -8,7 +8,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 
 const TURN_LIMIT_MS = 30000;
 const EQUATION_REVEAL_MS = 700;
-const LOBBY_POLL_MS = 4000;
+const LOBBY_POLL_MS = 2500;
 const MATCH_POLL_MS = 2500;
 const OPERATIONS = [
   { value: "+", label: "+" },
@@ -39,7 +39,8 @@ const els = {
 const state = {
   user: null,
   friends: [], invites: [], matches: [], match: null,
-  friendsLoadFailed: false, lobbyWarnings: [],
+  friendsLoadFailed: false, invitesLoadFailed: false, lobbyWarnings: [],
+  knownIncomingInviteIds: new Set(),
   selectedOperation: null, selectedNumber: null,
   historyExpanded: false, busy: false,
   serverOffset: 0, timeoutResolving: false,
@@ -174,9 +175,25 @@ async function loadLobby({ silent = false } = {}) {
     }
 
     if (invitesResult.status === "fulfilled") {
-      state.invites = normalizeRows(invitesResult.value);
+      const nextInvites = normalizeRows(invitesResult.value);
+      const incomingIds = nextInvites
+        .filter((item) => item.direction === "incoming")
+        .map((item) => String(item.invite_id));
+
+      const hasNewIncoming = incomingIds.some(
+        (id) => !state.knownIncomingInviteIds.has(id)
+      );
+
+      state.invites = nextInvites;
+      state.invitesLoadFailed = false;
+      state.knownIncomingInviteIds = new Set(incomingIds);
+
+      if (silent && hasNewIncoming) {
+        showToast("친구에게서 원오브텐 초대가 도착했어요.");
+      }
     } else {
       state.invites = [];
+      state.invitesLoadFailed = true;
       state.lobbyWarnings.push("invites");
       console.warn("OneOfTen invite list load error", invitesResult.reason);
     }
@@ -234,12 +251,17 @@ function renderLobby() {
     actions: `<button class="ootf-primary" data-open-match="${item.match_id}">계속하기</button>`,
   })).join("");
 
-  els.incomingSection.classList.toggle("is-hidden", !incoming.length);
-  els.incomingCount.textContent = String(incoming.length);
-  els.incomingList.innerHTML = incoming.map((item) => cardTemplate({
+  els.incomingSection.classList.toggle(
+    "is-hidden",
+    !incoming.length && !state.invitesLoadFailed
+  );
+  els.incomingCount.textContent = state.invitesLoadFailed ? "!" : String(incoming.length);
+  els.incomingList.innerHTML = state.invitesLoadFailed
+    ? `<article class="ootf-list-card"><span class="ootf-list-avatar"><b>!</b></span><div class="ootf-list-copy"><strong>초대 목록 연결을 다시 확인해 주세요.</strong><span>새로고침 버튼을 누르면 받은 초대를 다시 불러와요.</span></div><button class="ootf-secondary" data-retry-invites>다시 확인</button></article>`
+    : incoming.map((item) => cardTemplate({
     avatarUrl: item.other_avatar_url, name: item.other_nickname,
     subtitle: `원오브텐 한 판을 기다려요 · ${formatRemaining(item.expires_at)}`,
-    actions: `<div class="ootf-list-actions"><button class="ootf-primary" data-accept-invite="${item.invite_id}">함께하기</button><button class="ootf-secondary" data-decline-invite="${item.invite_id}">괜찮아요</button></div>`,
+    actions: `<div class="ootf-list-actions"><button class="ootf-primary" data-accept-invite="${item.invite_id}">수락</button><button class="ootf-secondary" data-decline-invite="${item.invite_id}">거절</button></div>`,
   })).join("");
 
   els.outgoingSection.classList.toggle("is-hidden", !outgoing.length);
@@ -266,7 +288,14 @@ function renderLobby() {
     let subtitle = `마음 ${Number(friend.growth_count || 0)}번을 키운 친구`;
     let action = `<button class="ootf-primary" data-create-invite="${friend.friend_id}">한 판 초대</button>`;
     if (activeMatch) { subtitle = "진행 중인 경기가 있어요."; action = `<button class="ootf-primary" data-open-match="${activeMatch.match_id}">경기 계속</button>`; }
-    else if (invite) { subtitle = invite.direction === "incoming" ? "이 친구의 초대가 도착했어요." : "수락을 기다리고 있어요."; action = `<button class="ootf-secondary" disabled>초대 대기</button>`; }
+    else if (invite?.direction === "incoming") {
+      subtitle = `이 친구가 원오브텐 한 판을 기다려요 · ${formatRemaining(invite.expires_at)}`;
+      action = `<div class="ootf-list-actions"><button class="ootf-primary" data-accept-invite="${invite.invite_id}">수락</button><button class="ootf-secondary" data-decline-invite="${invite.invite_id}">거절</button></div>`;
+    }
+    else if (invite) {
+      subtitle = `친구의 수락을 기다리는 중 · ${formatRemaining(invite.expires_at)}`;
+      action = `<button class="ootf-secondary" disabled>보낸 초대 대기</button>`;
+    }
     return cardTemplate({ avatarUrl: friend.avatar_url, name: friend.nickname, subtitle, actions: action });
   }).join("");
 
@@ -278,10 +307,11 @@ function bindLobbyActions() {
   $$('[data-decline-invite]').forEach((button) => button.addEventListener("click", () => simpleInviteAction("oot_decline_invite", button.dataset.declineInvite, "초대를 조용히 내려놓았어요.", button)));
   $$('[data-cancel-invite]').forEach((button) => button.addEventListener("click", () => simpleInviteAction("oot_cancel_invite", button.dataset.cancelInvite, "초대를 취소했어요.", button)));
   $$('[data-open-match]').forEach((button) => button.addEventListener("click", () => openMatch(button.dataset.openMatch)));
+  $$('[data-retry-invites]').forEach((button) => button.addEventListener("click", () => loadLobby()));
 }
 async function createInvite(friendId, button) {
   button.disabled = true;
-  try { await rpc("oot_create_invite", { p_friend_id: friendId }); showToast("친구에게 원오브텐 초대를 보냈어요."); await loadLobby({ silent: true }); }
+  try { await rpc("oot_create_invite", { p_friend_id: friendId }); showToast("초대를 보냈어요. 친구 화면에 수락·거절 버튼이 나타나요."); await loadLobby({ silent: true }); }
   catch (error) { showToast(friendlyError(error)); await loadLobby({ silent: true }); }
   finally { button.disabled = false; }
 }
@@ -524,7 +554,7 @@ function closeHelp() { els.helpOverlay.classList.add("is-hidden"); }
 function applyViewport() { if (state.match) renderHistory(state.match); }
 
 async function initialize() {
-  console.info("TodayForest OneOfTen Friend v1.0.1");
+  console.info("TodayForest OneOfTen Friend v1.0.2");
   showView("loading");
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error || !session?.user) { showView("login"); return; }
