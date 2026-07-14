@@ -108,3 +108,84 @@
   .oot-ready-actions { justify-content: stretch; }
   .oot-ready-actions button { flex: 1; }
 }
+
+
+/* HOME PRIORITY v0.4: 원오브텐 카드 안에 초대 알림을 보조 기능으로 통합합니다. */
+.forest-play-card .forest-play-notification {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 9px;
+  margin: 11px -2px -2px;
+  padding: 9px 10px;
+  border-color: rgba(99, 124, 105, .12);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, .5);
+  box-shadow: none;
+}
+
+.forest-play-card .forest-play-notification .oot-notification-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 11px;
+  font-size: 16px;
+}
+
+.forest-play-card .forest-play-notification .oot-notification-copy strong {
+  font-size: 11px;
+}
+
+.forest-play-card .forest-play-notification .oot-notification-copy span {
+  margin-top: 2px;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.forest-play-card .forest-play-notification .oot-notification-actions {
+  gap: 5px;
+}
+
+.forest-play-card .forest-play-notification .oot-notification-actions button,
+.forest-play-card .forest-play-notification .oot-notification-actions a {
+  min-height: 31px;
+  padding: 0 9px;
+  border-radius: 10px;
+  font-size: 10px;
+}
+
+.forest-play-card .forest-play-notification .oot-entry-badge {
+  padding: 4px 6px;
+  font-size: 9px;
+}
+
+@media (max-width: 560px) {
+  .forest-play-card .forest-play-notification {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .forest-play-card .forest-play-notification .oot-notification-actions {
+    grid-column: auto;
+    justify-content: flex-end;
+  }
+
+  .forest-play-card .forest-play-notification .oot-notification-actions > * {
+    flex: 0 0 auto;
+  }
+
+  .forest-play-card .forest-play-notification .oot-notification-copy span {
+    display: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .forest-play-card .forest-play-notification {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .forest-play-card .forest-play-notification .oot-notification-actions {
+    grid-column: 1 / -1;
+    justify-content: stretch;
+  }
+
+  .forest-play-card .forest-play-notification .oot-notification-actions > * {
+    flex: 1;
+  }
+}

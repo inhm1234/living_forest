@@ -5007,3 +5007,275 @@ html.shared-tree-start-moment-open body {
   .forest-play-copy > p:not(.growth-note-kicker) { font-size: 12px; }
   .forest-play-launch { grid-column: 1 / -1; width: 100%; min-height: 44px; }
 }
+
+
+/* ==========================================================================
+   HOME PRIORITY v0.4
+   핵심인 마음 기록을 나무 바로 아래에 두고, 선택형 놀이는 작게 정리합니다.
+   ========================================================================== */
+
+.garden-record-primary {
+  position: relative;
+  width: calc(100% - 8px);
+  min-height: 76px;
+  margin: 14px 4px 0;
+  padding: 13px 56px 13px 64px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: hidden;
+  border-radius: 23px;
+  text-align: left;
+}
+
+.garden-record-primary .nav-icon {
+  position: absolute;
+  left: 14px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, .18);
+  font-size: 19px;
+}
+
+.garden-record-primary > span:last-child {
+  display: block;
+  font-size: 16px;
+  font-weight: 950;
+  line-height: 1.2;
+}
+
+.garden-record-primary > span:last-child::after {
+  content: "하루 한 번, 짧게 남겨도 괜찮아요.";
+  display: block;
+  margin-top: 5px;
+  color: rgba(255, 255, 255, .82);
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.garden-record-primary::after {
+  content: "→";
+  position: absolute;
+  right: 19px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, .92);
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.garden-record-primary.record-complete {
+  color: #557a62;
+  border-color: rgba(133, 190, 151, .54);
+  background: linear-gradient(135deg, #eff8f1, #e7f3eb);
+  box-shadow: 0 12px 24px rgba(100, 125, 108, .09);
+}
+
+.garden-record-primary.record-complete .nav-icon {
+  color: #5f8f6f;
+  background: rgba(255, 255, 255, .72);
+}
+
+.garden-record-primary.record-complete > span:last-child::after {
+  content: "오늘의 마음이 나무 가까이에 머물러 있어요.";
+  color: #779180;
+}
+
+.garden-record-primary.record-complete::after {
+  content: "✓";
+  color: #6e9c7b;
+}
+
+.garden-record-primary.is-tutorial-focus {
+  z-index: 101;
+}
+
+.growth-note {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.garden-nav-secondary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.garden-nav-secondary .nav-action {
+  min-height: 58px;
+  border-radius: 18px;
+}
+
+.forest-play-card-compact {
+  display: block;
+  margin-top: 0;
+  padding: 13px;
+  border-radius: 22px;
+  box-shadow: 0 13px 28px rgba(92, 112, 103, .09);
+}
+
+.forest-play-card-compact::after {
+  width: 130px;
+  height: 112px;
+  right: -48px;
+  bottom: -54px;
+}
+
+.forest-play-summary {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+}
+
+.forest-play-card-compact .forest-play-art {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+}
+
+.forest-play-card-compact .forest-play-art img {
+  width: 43px;
+  height: 43px;
+}
+
+.forest-play-card-compact .forest-play-glow {
+  inset: 7px;
+}
+
+.forest-play-card-compact .forest-play-card-chip {
+  right: -5px;
+  bottom: -5px;
+  min-width: 31px;
+  padding: 4px 5px;
+  font-size: 9px;
+}
+
+.forest-play-card-compact .forest-play-copy h2 {
+  margin: 1px 0 3px;
+  font-size: 16px;
+}
+
+.forest-play-card-compact .forest-play-copy > p:not(.growth-note-kicker) {
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.forest-play-card-compact .forest-play-copy > span {
+  display: none;
+}
+
+.forest-play-card-compact .forest-play-launch {
+  min-height: 38px;
+  padding: 8px 11px;
+  border-radius: 13px;
+  font-size: 11px;
+  box-shadow: 0 8px 16px rgba(74, 117, 89, .17);
+}
+
+.install-card-compact {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 10px;
+  margin: 10px 4px 0;
+  padding: 10px 11px;
+  border-radius: 17px;
+  box-shadow: 0 8px 18px rgba(112, 119, 157, .07);
+}
+
+.install-card-compact .install-card-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 12px;
+  font-size: 15px;
+}
+
+.install-card-compact .install-card-copy > p:first-child {
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+.install-card-compact .install-card-actions {
+  grid-column: auto;
+  gap: 5px;
+}
+
+.install-card-compact .install-app-button,
+.install-card-compact .install-later-button {
+  min-height: 31px;
+  padding: 6px 9px;
+  border-radius: 10px;
+  font-size: 10px;
+}
+
+@media (max-width: 560px) {
+  .garden-record-primary {
+    min-height: 72px;
+    padding-left: 61px;
+  }
+
+  .garden-nav-secondary {
+    gap: 6px;
+  }
+
+  .forest-play-card-compact {
+    padding: 12px;
+  }
+
+  .forest-play-summary {
+    grid-template-columns: 50px minmax(0, 1fr) auto;
+    gap: 9px;
+  }
+
+  .forest-play-card-compact .forest-play-art {
+    width: 50px;
+    height: 50px;
+    border-radius: 17px;
+  }
+
+  .forest-play-card-compact .forest-play-art img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .forest-play-card-compact .forest-play-launch {
+    grid-column: auto;
+    width: auto;
+    min-height: 37px;
+    padding-inline: 10px;
+  }
+
+  .forest-play-card-compact .forest-play-launch b {
+    display: none;
+  }
+
+  .install-card-compact {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .install-card-compact .install-card-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 380px) {
+  .forest-play-summary {
+    grid-template-columns: 46px minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .forest-play-card-compact .forest-play-copy > p:not(.growth-note-kicker) {
+    display: none;
+  }
+
+  .forest-play-card-compact .forest-play-launch {
+    padding-inline: 9px;
+  }
+}
