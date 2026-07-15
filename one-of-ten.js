@@ -143,6 +143,10 @@
   const $$ = (selector) => [...document.querySelectorAll(selector)];
 
   const els = {
+    modeGate: $("#modeGate"),
+    computerGameArea: $("#computerGameArea"),
+    modeBadge: $("#modeBadge"),
+    computerModeButton: $("#computerModeButton"),
     aiStatus: $("#aiStatus"),
     aiName: $("#aiName"),
     aiPersonalityBadge: $("#aiPersonalityBadge"),
@@ -972,9 +976,20 @@
     renderPreparation();
   }
 
+
+  function enterComputerMode() {
+    els.modeGate.classList.add("is-hidden");
+    els.computerGameArea.classList.remove("is-hidden");
+    els.modeBadge.textContent = "다람쥐 대전";
+    resetGame({ deferOpening: true });
+    openPreparation();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   function openRules() { els.rulesModal.classList.remove("is-hidden"); }
   function closeRules() { els.rulesModal.classList.add("is-hidden"); }
 
+  els.computerModeButton.addEventListener("click", enterComputerMode);
   els.difficultyButtons.forEach((button) => button.addEventListener("click", () => setDifficulty(button.dataset.difficulty)));
   els.introDifficultyButtons.forEach((button) => {
     button.addEventListener("click", () => setIntroDifficulty(button.dataset.introDifficulty));
@@ -1004,5 +1019,7 @@
 
   applyViewportMode();
   resetGame({ deferOpening: true });
-  openPreparation();
+  els.modeGate.classList.remove("is-hidden");
+  els.computerGameArea.classList.add("is-hidden");
+  els.modeBadge.textContent = "대전 선택";
 })();

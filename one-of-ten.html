@@ -10,7 +10,7 @@
   <title>원오브텐 | 오늘의숲</title>
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="one-of-ten.css?v=1.4" />
+  <link rel="stylesheet" href="one-of-ten.css?v=1.5" />
 </head>
 <body>
   <main class="oot-app">
@@ -18,12 +18,42 @@
       <a class="oot-back" href="index.html" aria-label="내 정원으로 돌아가기">← <span>내 정원</span></a>
       <div class="oot-title-wrap">
         <p>FOREST NUMBER GAME</p>
-        <h1>원오브텐 <span class="oot-mode-badge">컴퓨터 대전</span></h1>
+        <h1>원오브텐 <span class="oot-mode-badge" id="modeBadge">대전 선택</span></h1>
       </div>
       <button class="oot-help-button" id="rulesButton" type="button">게임 방법</button>
     </header>
 
+    <section class="oot-mode-gate" id="modeGate" aria-labelledby="modeGateTitle">
+      <div class="oot-mode-gate-card">
+        <p class="oot-mode-gate-kicker">CHOOSE YOUR MATCH</p>
+        <h2 id="modeGateTitle">어떤 방식으로 플레이할까요?</h2>
+        <p class="oot-mode-gate-description">원오브텐은 혼자 연습할 수도 있고, 친구와 함께 대결할 수도 있어요.</p>
 
+        <div class="oot-mode-choice-grid">
+          <button class="oot-mode-choice is-computer" id="computerModeButton" type="button">
+            <span class="oot-mode-choice-icon" aria-hidden="true">🐿️</span>
+            <span class="oot-mode-choice-copy">
+              <strong>다람쥐와 대전하기</strong>
+              <small>난이도와 상대 성격을 고르고 혼자 바로 시작해요.</small>
+            </span>
+            <em>혼자 플레이</em>
+          </button>
+
+          <a class="oot-mode-choice is-friend" href="one-of-ten-friend.html">
+            <span class="oot-mode-choice-icon" aria-hidden="true">👥</span>
+            <span class="oot-mode-choice-copy">
+              <strong>친구와 대전하기</strong>
+              <small>친구를 초대해 편한 대전이나 원포인트 대전을 즐겨요.</small>
+            </span>
+            <em>함께 플레이</em>
+          </a>
+        </div>
+
+        <p class="oot-mode-gate-note">대전 방식을 고른 뒤에 준비 화면과 3·2·1 카운트다운이 시작돼요.</p>
+      </div>
+    </section>
+
+    <div class="oot-game-area is-hidden" id="computerGameArea">
     <nav class="oot-mode-nav" aria-label="원오브텐 대전 방식">
       <span class="is-active" aria-current="page">🐿️ 다람쥐와 하기</span>
       <a href="one-of-ten-friend.html">🌿 친구와 하기</a>
@@ -114,6 +144,7 @@
 
       <p class="oot-no-reward-note">원오브텐은 나무 성장이나 보상에 영향을 주지 않는 선택형 놀이예요.</p>
     </section>
+    </div>
   </main>
 
   <section class="oot-overlay is-hidden" id="resultOverlay" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
@@ -211,6 +242,6 @@
     </div>
   </section>
 
-  <script src="one-of-ten.js?v=1.4"></script>
+  <script src="one-of-ten.js?v=1.5"></script>
 </body>
 </html>
