@@ -68,6 +68,7 @@ const state = {
   serverOffset: 0, timeoutResolving: false,
   lobbyInterval: null, matchInterval: null, timerInterval: null,
   realtimeChannel: null, inviteRealtimeChannel: null, renderResultForMatchId: null,
+  autoOpeningMatchId: null,
 };
 let toastTimer = null;
 let actionTimer = null;
@@ -78,6 +79,24 @@ function normalizeRows(data) {
   if (!data) return [];
   if (Array.isArray(data)) return data;
   return [data];
+}
+
+function extractMatchId(value) {
+  if (!value) return "";
+  if (typeof value === "string") return value.trim();
+  if (Array.isArray(value)) return extractMatchId(value[0]);
+  if (typeof value === "object") {
+    return extractMatchId(value.match_id || value.matchId || value.id);
+  }
+  return "";
+}
+
+function activeMatchForOpponent(matches, opponentId) {
+  const activeMatches = normalizeRows(matches).filter((match) => match?.status === "active");
+  if (!opponentId) return activeMatches.length === 1 ? activeMatches[0] : null;
+  return activeMatches.find((match) => (
+    String(match?.opponent_id || match?.opponentId || "") === String(opponentId)
+  )) || null;
 }
 
 function normalizeFriendRow(friend) {
@@ -210,6 +229,12 @@ async function loadLobby({ silent = false } = {}) {
   if (lobbyLoading || !state.user || getMatchIdFromUrl()) return;
 
   lobbyLoading = true;
+  const previousOutgoingOpponentIds = new Set(
+    state.invites
+      .filter((item) => item.direction === "outgoing")
+      .map((item) => String(item.other_user_id || ""))
+      .filter(Boolean)
+  );
   state.lobbyWarnings = [];
   if (!silent) els.refreshLobbyButton.disabled = true;
 
@@ -293,6 +318,15 @@ async function loadLobby({ silent = false } = {}) {
 
     renderLobby();
 
+    const acceptedMatch = state.matches.find((match) => (
+      match?.status === "active"
+      && previousOutgoingOpponentIds.has(String(match.opponent_id || match.opponentId || ""))
+      && !state.invites.some((invite) => (
+        invite.direction === "outgoing"
+        && String(invite.other_user_id || "") === String(match.opponent_id || match.opponentId || "")
+      ))
+    ));
+
     if (!state.lobbyWarnings.length) {
       els.connectionStatus.textContent = "서버와 연결됨";
     } else if (!state.friendsLoadFailed) {
@@ -301,6 +335,13 @@ async function loadLobby({ silent = false } = {}) {
     } else {
       els.connectionStatus.textContent = "친구 목록을 불러오지 못함";
       if (!silent) showToast("친구 목록 연결이 어긋났어요. 새로고침을 눌러 주세요.");
+    }
+
+    const acceptedMatchId = extractMatchId(acceptedMatch?.match_id || acceptedMatch?.matchId);
+    if (acceptedMatchId && !state.autoOpeningMatchId && !getMatchIdFromUrl()) {
+      state.autoOpeningMatchId = acceptedMatchId;
+      showToast("친구가 초대를 수락했어요. 경기에 들어갈게요.");
+      await openMatch(acceptedMatchId);
     }
   } catch (error) {
     console.warn("OneOfTen lobby render error", error);
@@ -506,11 +547,36 @@ async function createInvite(mode) {
 }
 async function acceptInvite(inviteId, button, battleMode = "casual") {
   button.disabled = true;
+  const invite = state.invites.find((item) => String(item.invite_id) === String(inviteId));
+  const opponentId = invite?.other_user_id || "";
   try {
-    const matchId = await rpc("oot_accept_invite", { p_invite_id: inviteId });
+    const response = await rpc("oot_accept_invite", { p_invite_id: inviteId });
+    let matchId = extractMatchId(response);
+
+    if (!matchId) {
+      const matches = await rpc("oot_list_my_matches_v2", { p_limit: 30 });
+      matchId = extractMatchId(activeMatchForOpponent(matches, opponentId)?.match_id);
+    }
+
+    if (!matchId) throw new Error("OOT_MATCH_START_FAILED");
     showToast(`${battleModeLabel(battleMode)}이 시작됐어요.`);
-    await openMatch(String(matchId));
+    const opened = await openMatch(matchId);
+    if (!opened) throw new Error("OOT_MATCH_START_FAILED");
   } catch (error) {
+    console.warn("OneOfTen accept invite error", error);
+
+    try {
+      const matches = await rpc("oot_list_my_matches_v2", { p_limit: 30 });
+      const activeMatch = activeMatchForOpponent(matches, opponentId);
+      const activeMatchId = extractMatchId(activeMatch?.match_id || activeMatch?.matchId);
+      if (activeMatchId && await openMatch(activeMatchId)) {
+        showToast(`${battleModeLabel(activeMatch?.battle_mode || battleMode)}이 시작됐어요.`);
+        return;
+      }
+    } catch (recoveryError) {
+      console.warn("OneOfTen accept recovery error", recoveryError);
+    }
+
     showToast(friendlyError(error));
     await loadLobby({ silent: true });
     button.disabled = false;
@@ -523,18 +589,27 @@ async function simpleInviteAction(rpcName, inviteId, message, button) {
 }
 
 async function openMatch(matchId) {
-  if (!matchId) return;
+  const normalizedMatchId = extractMatchId(matchId);
+  if (!normalizedMatchId) return false;
   stopLobbyPolling();
-  setMatchUrl(matchId);
+  await stopInviteRealtime();
+  setMatchUrl(normalizedMatchId);
   state.selectedOperation = null; state.selectedNumber = null; state.historyExpanded = false; state.renderResultForMatchId = null;
   showView("match");
-  await loadMatch({ force: true });
+  const loaded = await loadMatch({ force: true });
+  if (!loaded || !state.match || extractMatchId(state.match.matchId) !== normalizedMatchId || getMatchIdFromUrl() !== normalizedMatchId) {
+    state.autoOpeningMatchId = null;
+    return false;
+  }
   startMatchPolling();
-  subscribeMatch(matchId);
+  subscribeMatch(normalizedMatchId);
+  state.autoOpeningMatchId = null;
+  return true;
 }
 async function returnToLobby() {
   clearActionTimer(); stopTimer(); stopMatchPolling(); await stopRealtime();
   state.match = null; state.selectedOperation = null; state.selectedNumber = null; state.renderResultForMatchId = null;
+  state.autoOpeningMatchId = null;
   els.resultOverlay.classList.add("is-hidden");
   setMatchUrl(""); showView("lobby");
   await loadLobby(); startLobbyPolling(); subscribeInvites();
@@ -542,7 +617,7 @@ async function returnToLobby() {
 
 async function loadMatch({ force = false } = {}) {
   const matchId = getMatchIdFromUrl();
-  if (!matchId || matchLoading || !state.user) return;
+  if (!matchId || matchLoading || !state.user) return false;
   matchLoading = true;
   try {
     const previousVersion = state.match?.version;
@@ -557,10 +632,12 @@ async function loadMatch({ force = false } = {}) {
     }
     renderMatch();
     els.connectionStatus.textContent = "서버와 실시간 연결됨";
+    return true;
   } catch (error) {
     console.warn("OneOfTen match load error", error);
     showToast(friendlyError(error));
     if (String(error?.message || "").includes("OOT_MATCH_NOT_FOUND")) await returnToLobby();
+    return false;
   } finally { matchLoading = false; }
 }
 function startLobbyPolling() { stopLobbyPolling(); state.lobbyInterval = setInterval(() => loadLobby({ silent: true }), LOBBY_POLL_MS); }
@@ -570,6 +647,7 @@ async function subscribeInvites() {
   if (!state.user) return;
   state.inviteRealtimeChannel = supabase.channel(`oot-invites-${state.user.id}`)
     .on("postgres_changes", { event: "*", schema: "public", table: "oot_invites" }, () => loadLobby({ silent: true }))
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "oot_matches" }, () => loadLobby({ silent: true }))
     .subscribe();
 }
 function subscribeMatch(matchId) {
@@ -833,7 +911,7 @@ function closeHelp() { els.helpOverlay.classList.add("is-hidden"); }
 function applyViewport() { if (state.match) renderHistory(state.match); }
 
 async function initialize() {
-  console.info("TodayForest OneOfTen Friend v1.1.0 · OnePoint");
+  console.info("TodayForest OneOfTen Friend v1.1.1 · Invite Start Fix");
   showView("loading");
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error || !session?.user) { showView("login"); return; }
