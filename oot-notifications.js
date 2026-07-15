@@ -5,6 +5,9 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_oMrSqUFX9UM1n4Ks-AhYKw_OvcZOfPs
 const VAPID_PUBLIC_KEY = "BDTxlizK_5G6jjdeDFibq9Zyzugu75fQXHbOBn-yQAM2xIDJpMV3Dam5Az4mUvCmJhV_LHNqOmJWeoRsIpf2x88";
 const PRESENCE_INTERVAL_MS = 25000;
 const BADGE_FALLBACK_INTERVAL_MS = 30000;
+const INVITE_ACK_STORAGE_KEY = "todayForestOotAcknowledgedInvites";
+const INVITE_TARGET_STORAGE_KEY = "todayForestOotPendingInvite";
+const INVITE_SUPPRESS_STORAGE_KEY = "todayForestOotSuppressedInvitePopups";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: "pkce" },
@@ -62,6 +65,70 @@ function openInviteLobby(inviteId = "") {
   }
 }
 
+function storedIdSet(key, storage = sessionStorage) {
+  try {
+    const parsed = JSON.parse(storage.getItem(key) || "[]");
+    return new Set(Array.isArray(parsed) ? parsed.map(String) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveIdSet(key, ids, storage = sessionStorage) {
+  try { storage.setItem(key, JSON.stringify([...ids].slice(-80))); } catch { /* ignore */ }
+}
+
+function suppressInvitePopup(inviteId) {
+  const normalizedId = String(inviteId || "").trim();
+  if (!normalizedId) return;
+  const ids = storedIdSet(INVITE_SUPPRESS_STORAGE_KEY);
+  ids.add(normalizedId);
+  saveIdSet(INVITE_SUPPRESS_STORAGE_KEY, ids);
+  try { sessionStorage.setItem(INVITE_TARGET_STORAGE_KEY, normalizedId); } catch { /* ignore */ }
+}
+
+function isInvitePopupSuppressed(inviteId) {
+  return storedIdSet(INVITE_SUPPRESS_STORAGE_KEY).has(String(inviteId || ""));
+}
+
+function cleanupStoredInviteIds(activeIds) {
+  const active = new Set(activeIds.map(String));
+  const suppressed = storedIdSet(INVITE_SUPPRESS_STORAGE_KEY);
+  const nextSuppressed = new Set([...suppressed].filter((id) => active.has(id)));
+  saveIdSet(INVITE_SUPPRESS_STORAGE_KEY, nextSuppressed);
+
+  const acknowledged = storedIdSet(INVITE_ACK_STORAGE_KEY, localStorage);
+  const nextAcknowledged = new Set([...acknowledged].filter((id) => active.has(id)));
+  saveIdSet(INVITE_ACK_STORAGE_KEY, nextAcknowledged, localStorage);
+}
+
+async function acknowledgeInviteOnce(inviteId) {
+  const normalizedId = String(inviteId || "").trim();
+  if (!normalizedId) return;
+  const ids = storedIdSet(INVITE_ACK_STORAGE_KEY, localStorage);
+  if (ids.has(normalizedId)) return;
+  ids.add(normalizedId);
+  saveIdSet(INVITE_ACK_STORAGE_KEY, ids, localStorage);
+  try {
+    await rpc("oot_ack_invite", { p_invite_id: normalizedId });
+  } catch (error) {
+    ids.delete(normalizedId);
+    saveIdSet(INVITE_ACK_STORAGE_KEY, ids, localStorage);
+    console.warn("TodayForest invite acknowledge skipped", error);
+  }
+}
+
+async function closeInviteNotification(inviteId) {
+  if (!("serviceWorker" in navigator)) return;
+  try {
+    const registration = serviceWorkerRegistration || await navigator.serviceWorker.getRegistration("./");
+    const notifications = await registration?.getNotifications({ tag: `oot-invite-${inviteId}` });
+    notifications?.forEach((notification) => notification.close());
+  } catch (error) {
+    console.warn("TodayForest notification close skipped", error);
+  }
+}
+
 function bindInviteNavigation() {
   if (document.documentElement.dataset.ootInviteNavigationBound === "true") return;
   document.documentElement.dataset.ootInviteNavigationBound = "true";
@@ -75,6 +142,10 @@ function bindInviteNavigation() {
     event.preventDefault();
     event.stopPropagation();
     const inviteId = link.dataset.inviteId || currentIncomingInviteId || "";
+    suppressInvitePopup(inviteId);
+    document.querySelector("#ootGlobalInviteDialog")?.classList.add("is-hidden");
+    currentIncomingInviteId = null;
+    void closeInviteNotification(inviteId);
     openInviteLobby(inviteId);
   }, true);
 }
@@ -323,6 +394,8 @@ function ensureInviteDialog() {
     try {
       await rpc("oot_decline_invite", { p_invite_id: currentIncomingInviteId });
       dialog.classList.add("is-hidden");
+      suppressInvitePopup(currentIncomingInviteId);
+      void closeInviteNotification(currentIncomingInviteId);
       currentIncomingInviteId = null;
       await loadBadge();
     } catch (error) {
@@ -340,9 +413,15 @@ async function showLatestIncomingInvite() {
   if (!currentUser || location.pathname.toLowerCase().endsWith("one-of-ten-friend.html")) return;
 
   try {
-    const [rows, friends] = await Promise.all([rpc("oot_list_my_invites"), friendMap()]);
-    const incoming = (Array.isArray(rows) ? rows : []).find((item) => item.direction === "incoming");
-    if (!incoming) return;
+    const [rows, friends] = await Promise.all([rpc("oot_list_my_invites_v2"), friendMap()]);
+    const incomingRows = (Array.isArray(rows) ? rows : []).filter((item) => item.direction === "incoming");
+    cleanupStoredInviteIds(incomingRows.map((item) => item.invite_id));
+    const incoming = incomingRows.find((item) => !isInvitePopupSuppressed(item.invite_id));
+    if (!incoming) {
+      document.querySelector("#ootGlobalInviteDialog")?.classList.add("is-hidden");
+      currentIncomingInviteId = null;
+      return;
+    }
 
     const inviteId = String(incoming.invite_id);
     if (currentIncomingInviteId === inviteId) return;
@@ -357,7 +436,7 @@ async function showLatestIncomingInvite() {
     openLink.dataset.inviteId = inviteId;
     dialog.classList.remove("is-hidden");
 
-    await rpc("oot_ack_invite", { p_invite_id: inviteId }).catch(() => {});
+    await acknowledgeInviteOnce(inviteId);
   } catch (error) {
     console.warn("TodayForest incoming invite popup skipped", error);
   }
@@ -421,7 +500,7 @@ function bindGameReadyButton() {
 }
 
 async function initialize() {
-  console.info("TodayForest OneOfTen Notifications v0.4 · Invite Navigation Fix");
+  console.info("TodayForest OneOfTen Notifications v0.5 · Invite Loop Fix");
   bindInviteNavigation();
   bindNotificationButtons();
   bindGameReadyButton();

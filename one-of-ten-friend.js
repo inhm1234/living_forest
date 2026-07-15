@@ -10,6 +10,8 @@ const TURN_LIMIT_MS = 30000;
 const EQUATION_REVEAL_MS = 700;
 const LOBBY_POLL_MS = 10000;
 const MATCH_POLL_MS = 2500;
+const INVITE_ACK_STORAGE_KEY = "todayForestOotAcknowledgedInvites";
+const INVITE_TARGET_STORAGE_KEY = "todayForestOotPendingInvite";
 const OPERATIONS = [
   { value: "+", label: "+" },
   { value: "-", label: "−" },
@@ -69,6 +71,7 @@ const state = {
   lobbyInterval: null, matchInterval: null, timerInterval: null,
   realtimeChannel: null, inviteRealtimeChannel: null, renderResultForMatchId: null,
   autoOpeningMatchId: null,
+  processingInviteIds: new Set(),
 };
 let toastTimer = null;
 let actionTimer = null;
@@ -84,19 +87,100 @@ function normalizeRows(data) {
 function extractMatchId(value) {
   if (!value) return "";
   if (typeof value === "string") return value.trim();
-  if (Array.isArray(value)) return extractMatchId(value[0]);
+  if (Array.isArray(value)) return value.map(extractMatchId).find(Boolean) || "";
   if (typeof value === "object") {
-    return extractMatchId(value.match_id || value.matchId || value.id);
+    return extractMatchId(
+      value.match_id || value.matchId || value.id || value.match || value.data || value.result || value.match_view
+    );
   }
   return "";
+}
+
+function matchOpponentId(match) {
+  if (!match || typeof match !== "object") return "";
+  const direct = match.opponent_id || match.opponentId || match.other_user_id || match.otherUserId;
+  if (direct) return String(direct);
+
+  const me = String(state.user?.id || "");
+  const candidates = [
+    match.inviter_id, match.invitee_id,
+    match.host_id, match.guest_id,
+    match.player_one_id, match.player_two_id,
+    match.player1_id, match.player2_id,
+  ].filter(Boolean).map(String);
+  return candidates.find((id) => id !== me) || "";
 }
 
 function activeMatchForOpponent(matches, opponentId) {
   const activeMatches = normalizeRows(matches).filter((match) => match?.status === "active");
   if (!opponentId) return activeMatches.length === 1 ? activeMatches[0] : null;
-  return activeMatches.find((match) => (
-    String(match?.opponent_id || match?.opponentId || "") === String(opponentId)
-  )) || null;
+  return activeMatches.find((match) => matchOpponentId(match) === String(opponentId)) || null;
+}
+
+function getInviteIdFromUrl() {
+  return String(new URL(location.href).searchParams.get("invite") || "").trim();
+}
+
+function getStoredInviteIds() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(INVITE_ACK_STORAGE_KEY) || "[]");
+    return new Set(Array.isArray(parsed) ? parsed.map(String) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveStoredInviteIds(ids) {
+  try {
+    localStorage.setItem(INVITE_ACK_STORAGE_KEY, JSON.stringify([...ids].slice(-80)));
+  } catch {
+    // 저장 공간이 막혀 있어도 초대 수락 자체는 계속 진행합니다.
+  }
+}
+
+async function acknowledgeInviteOnce(inviteId) {
+  const normalizedId = String(inviteId || "").trim();
+  if (!normalizedId) return;
+  const stored = getStoredInviteIds();
+  if (stored.has(normalizedId)) return;
+
+  stored.add(normalizedId);
+  saveStoredInviteIds(stored);
+  try {
+    await rpc("oot_ack_invite", { p_invite_id: normalizedId });
+  } catch (error) {
+    stored.delete(normalizedId);
+    saveStoredInviteIds(stored);
+    console.warn("OneOfTen invite acknowledge skipped", error);
+  }
+}
+
+function clearInviteTracking(inviteId) {
+  const normalizedId = String(inviteId || "").trim();
+  try {
+    if (sessionStorage.getItem(INVITE_TARGET_STORAGE_KEY) === normalizedId) {
+      sessionStorage.removeItem(INVITE_TARGET_STORAGE_KEY);
+    }
+  } catch {
+    // 세션 저장소를 사용할 수 없는 환경은 무시합니다.
+  }
+
+  const url = new URL(location.href);
+  if (!normalizedId || url.searchParams.get("invite") === normalizedId) {
+    url.searchParams.delete("invite");
+    history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
+  }
+}
+
+async function closeInviteNotification(inviteId) {
+  if (!("serviceWorker" in navigator)) return;
+  try {
+    const registration = await navigator.serviceWorker.getRegistration("./");
+    const notifications = await registration?.getNotifications({ tag: `oot-invite-${inviteId}` });
+    notifications?.forEach((notification) => notification.close());
+  } catch (error) {
+    console.warn("OneOfTen invite notification close skipped", error);
+  }
 }
 
 function normalizeFriendRow(friend) {
@@ -261,7 +345,9 @@ async function loadLobby({ silent = false } = {}) {
     }
 
     if (invitesResult.status === "fulfilled") {
-      const nextInvites = normalizeRows(invitesResult.value).map(inviteDisplay);
+      const nextInvites = normalizeRows(invitesResult.value)
+        .map(inviteDisplay)
+        .filter((item) => !state.processingInviteIds.has(String(item.invite_id)));
       const incomingIds = nextInvites
         .filter((item) => item.direction === "incoming")
         .map((item) => String(item.invite_id));
@@ -276,7 +362,7 @@ async function loadLobby({ silent = false } = {}) {
 
       const incomingInvites = nextInvites.filter((item) => item.direction === "incoming");
       if (incomingInvites.length) {
-        Promise.allSettled(incomingInvites.map((item) => rpc("oot_ack_invite", { p_invite_id: item.invite_id })))
+        Promise.allSettled(incomingInvites.map((item) => acknowledgeInviteOnce(item.invite_id)))
           .catch(() => {});
       }
 
@@ -320,10 +406,10 @@ async function loadLobby({ silent = false } = {}) {
 
     const acceptedMatch = state.matches.find((match) => (
       match?.status === "active"
-      && previousOutgoingOpponentIds.has(String(match.opponent_id || match.opponentId || ""))
+      && previousOutgoingOpponentIds.has(matchOpponentId(match))
       && !state.invites.some((invite) => (
         invite.direction === "outgoing"
-        && String(invite.other_user_id || "") === String(match.opponent_id || match.opponentId || "")
+        && String(invite.other_user_id || "") === matchOpponentId(match)
       ))
     ));
 
@@ -359,8 +445,8 @@ async function loadLobby({ silent = false } = {}) {
   }
 }
 
-function cardTemplate({ avatarUrl, name, subtitle, actions = "" }) {
-  return `<article class="ootf-list-card"><span class="ootf-list-avatar">${avatarMarkup(avatarUrl, name)}</span><div class="ootf-list-copy"><strong>${escapeHtml(name || "친구")}</strong><span>${escapeHtml(subtitle || "")}</span></div>${actions}</article>`;
+function cardTemplate({ avatarUrl, name, subtitle, actions = "", attributes = "" }) {
+  return `<article class="ootf-list-card" ${attributes}><span class="ootf-list-avatar">${avatarMarkup(avatarUrl, name)}</span><div class="ootf-list-copy"><strong>${escapeHtml(name || "친구")}</strong><span>${escapeHtml(subtitle || "")}</span></div>${actions}</article>`;
 }
 function renderPointSummary() {
   const profile = state.pointProfile;
@@ -402,7 +488,7 @@ function renderLobby() {
   const incoming = state.invites.filter((item) => item.direction === "incoming");
   const outgoing = state.invites.filter((item) => item.direction === "outgoing");
   const active = state.matches.filter((item) => item.status === "active");
-  const activeByOpponent = new Map(active.map((item) => [String(item.opponent_id), item]));
+  const activeByOpponent = new Map(active.map((item) => [matchOpponentId(item), item]));
   const inviteByOpponent = new Map(state.invites.map((item) => [String(item.other_user_id), item]));
 
   els.activeMatchesSection.classList.toggle("is-hidden", !active.length);
@@ -424,6 +510,7 @@ function renderLobby() {
       avatarUrl: item.other_avatar_url, name: item.other_nickname,
       subtitle: `${battleModeText(item.battle_mode)} · ${formatRemaining(item.expires_at)}`,
       actions: `<div class="ootf-list-actions"><button class="ootf-primary" data-accept-invite="${item.invite_id}" data-battle-mode="${item.battle_mode || "casual"}">수락</button><button class="ootf-secondary" data-decline-invite="${item.invite_id}">거절</button></div>`,
+      attributes: `data-invite-card="${escapeHtml(item.invite_id)}"`,
     })).join("");
 
   els.outgoingSection.classList.toggle("is-hidden", !outgoing.length);
@@ -468,7 +555,39 @@ function renderLobby() {
   }).join("");
 
   bindLobbyActions();
+  focusRequestedInvite();
 }
+
+function focusRequestedInvite() {
+  let requestedId = getInviteIdFromUrl();
+  try {
+    requestedId ||= String(sessionStorage.getItem(INVITE_TARGET_STORAGE_KEY) || "").trim();
+  } catch {
+    // 세션 저장소를 사용할 수 없는 환경은 URL만 사용합니다.
+  }
+  if (!requestedId) return;
+
+  const invite = state.invites.find((item) => (
+    item.direction === "incoming" && String(item.invite_id) === requestedId
+  ));
+
+  if (!invite) {
+    const activeMatch = state.matches.find((match) => match?.status === "active");
+    if (activeMatch) clearInviteTracking(requestedId);
+    return;
+  }
+
+  const card = [...document.querySelectorAll("[data-invite-card]")]
+    .find((element) => element.dataset.inviteCard === requestedId);
+  if (card && card.dataset.focused !== "true") {
+    card.dataset.focused = "true";
+    card.classList.add("is-invite-focus");
+    card.scrollIntoView({ behavior: "smooth", block: "center" });
+    window.setTimeout(() => card.classList.remove("is-invite-focus"), 2400);
+    showToast(`${invite.other_nickname || "친구"}님의 초대예요. 수락을 누르면 바로 시작해요.`);
+  }
+}
+
 function bindLobbyActions() {
   $$('[data-create-invite]').forEach((button) => button.addEventListener("click", () => openInviteMode(button.dataset.createInvite, button)));
   $$('[data-accept-invite]').forEach((button) => button.addEventListener("click", () => acceptInvite(button.dataset.acceptInvite, button, button.dataset.battleMode)));
@@ -545,17 +664,39 @@ async function createInvite(mode) {
     await loadLobby({ silent: true });
   }
 }
+async function findActiveMatchWithRetry(opponentId, attempts = 4) {
+  for (let index = 0; index < attempts; index += 1) {
+    const matches = await rpc("oot_list_my_matches_v2", { p_limit: 30 });
+    const activeMatch = activeMatchForOpponent(matches, opponentId);
+    if (activeMatch) return activeMatch;
+    if (index < attempts - 1) await new Promise((resolve) => window.setTimeout(resolve, 350));
+  }
+  return null;
+}
+
 async function acceptInvite(inviteId, button, battleMode = "casual") {
-  button.disabled = true;
-  const invite = state.invites.find((item) => String(item.invite_id) === String(inviteId));
+  const normalizedInviteId = String(inviteId || "").trim();
+  if (!normalizedInviteId || state.processingInviteIds.has(normalizedInviteId)) return;
+
+  const invite = state.invites.find((item) => String(item.invite_id) === normalizedInviteId);
   const opponentId = invite?.other_user_id || "";
+  state.processingInviteIds.add(normalizedInviteId);
+  button.disabled = true;
+
+  // 실시간 반영이 늦어도 같은 초대 버튼과 알림이 다시 나타나지 않게 먼저 화면에서 제거합니다.
+  state.invites = state.invites.filter((item) => String(item.invite_id) !== normalizedInviteId);
+  renderLobby();
+  clearInviteTracking(normalizedInviteId);
+  void closeInviteNotification(normalizedInviteId);
+
   try {
-    const response = await rpc("oot_accept_invite", { p_invite_id: inviteId });
+    const response = await rpc("oot_accept_invite", { p_invite_id: normalizedInviteId });
     let matchId = extractMatchId(response);
 
     if (!matchId) {
-      const matches = await rpc("oot_list_my_matches_v2", { p_limit: 30 });
-      matchId = extractMatchId(activeMatchForOpponent(matches, opponentId)?.match_id);
+      const activeMatch = await findActiveMatchWithRetry(opponentId);
+      matchId = extractMatchId(activeMatch);
+      battleMode = activeMatch?.battle_mode || battleMode;
     }
 
     if (!matchId) throw new Error("OOT_MATCH_START_FAILED");
@@ -566,9 +707,8 @@ async function acceptInvite(inviteId, button, battleMode = "casual") {
     console.warn("OneOfTen accept invite error", error);
 
     try {
-      const matches = await rpc("oot_list_my_matches_v2", { p_limit: 30 });
-      const activeMatch = activeMatchForOpponent(matches, opponentId);
-      const activeMatchId = extractMatchId(activeMatch?.match_id || activeMatch?.matchId);
+      const activeMatch = await findActiveMatchWithRetry(opponentId, 2);
+      const activeMatchId = extractMatchId(activeMatch);
       if (activeMatchId && await openMatch(activeMatchId)) {
         showToast(`${battleModeLabel(activeMatch?.battle_mode || battleMode)}이 시작됐어요.`);
         return;
@@ -577,15 +717,33 @@ async function acceptInvite(inviteId, button, battleMode = "casual") {
       console.warn("OneOfTen accept recovery error", recoveryError);
     }
 
+    state.processingInviteIds.delete(normalizedInviteId);
     showToast(friendlyError(error));
     await loadLobby({ silent: true });
-    button.disabled = false;
   }
 }
+
 async function simpleInviteAction(rpcName, inviteId, message, button) {
+  const normalizedInviteId = String(inviteId || "").trim();
+  if (!normalizedInviteId || state.processingInviteIds.has(normalizedInviteId)) return;
+
+  state.processingInviteIds.add(normalizedInviteId);
   button.disabled = true;
-  try { await rpc(rpcName, { p_invite_id: inviteId }); showToast(message); await loadLobby({ silent: true }); }
-  catch (error) { showToast(friendlyError(error)); button.disabled = false; }
+  state.invites = state.invites.filter((item) => String(item.invite_id) !== normalizedInviteId);
+  renderLobby();
+  clearInviteTracking(normalizedInviteId);
+  void closeInviteNotification(normalizedInviteId);
+
+  try {
+    await rpc(rpcName, { p_invite_id: normalizedInviteId });
+    showToast(message);
+    state.processingInviteIds.delete(normalizedInviteId);
+    await loadLobby({ silent: true });
+  } catch (error) {
+    state.processingInviteIds.delete(normalizedInviteId);
+    showToast(friendlyError(error));
+    await loadLobby({ silent: true });
+  }
 }
 
 async function openMatch(matchId) {
@@ -911,11 +1069,15 @@ function closeHelp() { els.helpOverlay.classList.add("is-hidden"); }
 function applyViewport() { if (state.match) renderHistory(state.match); }
 
 async function initialize() {
-  console.info("TodayForest OneOfTen Friend v1.1.1 · Invite Start Fix");
+  console.info("TodayForest OneOfTen Friend v1.1.2 · Invite Loop Fix");
   showView("loading");
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error || !session?.user) { showView("login"); return; }
   state.user = session.user;
+  const requestedInviteId = getInviteIdFromUrl();
+  if (requestedInviteId) {
+    try { sessionStorage.setItem(INVITE_TARGET_STORAGE_KEY, requestedInviteId); } catch { /* ignore */ }
+  }
   const matchId = getMatchIdFromUrl();
   if (matchId) {
     showView("match");

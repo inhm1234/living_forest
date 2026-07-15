@@ -1,4 +1,4 @@
-// 오늘의숲 운영 PWA + 원오브텐 웹 푸시 v0.4 · 초대장 이동 보강
+// 오늘의숲 운영 PWA + 원오브텐 웹 푸시 v0.5 · 중복 초대 알림 방지
 // 화면 파일은 캐시하지 않아 배포 직후 최신 코드를 읽습니다.
 self.addEventListener("install", () => {
   self.skipWaiting();
@@ -25,7 +25,7 @@ self.addEventListener("push", (event) => {
     icon: payload.icon || "./assets/pwa/icon-192.png",
     badge: payload.badge || "./assets/pwa/icon-192.png",
     tag: payload.tag || (payload.inviteId ? `oot-invite-${payload.inviteId}` : "oot-invite"),
-    renotify: true,
+    renotify: false,
     requireInteraction: false,
     actions: [{ action: "open_invite", title: "초대장 보기" }],
     data: {
