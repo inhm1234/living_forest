@@ -45,6 +45,40 @@ function activityContext() {
   return "app";
 }
 
+function inviteLobbyUrl(inviteId = "") {
+  const url = new URL("./one-of-ten-friend.html", window.location.href);
+  const normalizedInviteId = String(inviteId || "").trim();
+  if (normalizedInviteId) url.searchParams.set("invite", normalizedInviteId);
+  return url.href;
+}
+
+function openInviteLobby(inviteId = "") {
+  const targetUrl = inviteLobbyUrl(inviteId);
+  try {
+    window.location.assign(targetUrl);
+  } catch (error) {
+    console.warn("TodayForest invite navigation fallback", error);
+    window.location.href = targetUrl;
+  }
+}
+
+function bindInviteNavigation() {
+  if (document.documentElement.dataset.ootInviteNavigationBound === "true") return;
+  document.documentElement.dataset.ootInviteNavigationBound = "true";
+
+  document.addEventListener("click", (event) => {
+    const link = event.target instanceof Element
+      ? event.target.closest("#ootGlobalInviteOpen, #ootOpenInvites")
+      : null;
+    if (!link) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    const inviteId = link.dataset.inviteId || currentIncomingInviteId || "";
+    openInviteLobby(inviteId);
+  }, true);
+}
+
 function urlBase64ToUint8Array(value) {
   const padding = "=".repeat((4 - value.length % 4) % 4);
   const base64 = (value + padding).replace(/-/g, "+").replace(/_/g, "/");
@@ -318,7 +352,9 @@ async function showLatestIncomingInvite() {
     const dialog = ensureInviteDialog();
     currentIncomingInviteId = inviteId;
     dialog.querySelector("#ootGlobalInviteText").textContent = `${name}님이 원오브텐 한 판을 초대했어요.`;
-    dialog.querySelector("#ootGlobalInviteOpen").href = `one-of-ten-friend.html?invite=${encodeURIComponent(inviteId)}`;
+    const openLink = dialog.querySelector("#ootGlobalInviteOpen");
+    openLink.href = inviteLobbyUrl(inviteId);
+    openLink.dataset.inviteId = inviteId;
     dialog.classList.remove("is-hidden");
 
     await rpc("oot_ack_invite", { p_invite_id: inviteId }).catch(() => {});
@@ -385,6 +421,8 @@ function bindGameReadyButton() {
 }
 
 async function initialize() {
+  console.info("TodayForest OneOfTen Notifications v0.4 · Invite Navigation Fix");
+  bindInviteNavigation();
   bindNotificationButtons();
   bindGameReadyButton();
 

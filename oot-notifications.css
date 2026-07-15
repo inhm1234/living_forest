@@ -74,7 +74,7 @@
 .oot-global-invite {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: 2147483647;
   display: grid;
   place-items: center;
   padding: 22px;
@@ -83,6 +83,10 @@
 }
 .oot-global-invite.is-hidden { display: none; }
 .oot-global-invite-card {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+  touch-action: manipulation;
   width: min(100%, 350px);
   padding: 25px 22px 20px;
   border-radius: 27px;
@@ -96,7 +100,7 @@
 .oot-global-invite-card > span { display: block; color: #717d74; font-size: 13px; line-height: 1.55; }
 .oot-global-invite-card > div { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 18px; }
 .oot-global-invite-card a,
-.oot-global-invite-card button { min-height: 45px; border: 0; border-radius: 15px; font: inherit; font-size: 13px; font-weight: 900; cursor: pointer; }
+.oot-global-invite-card button { position: relative; z-index: 2; min-height: 45px; touch-action: manipulation; border: 0; border-radius: 15px; font: inherit; font-size: 13px; font-weight: 900; cursor: pointer; }
 .oot-global-invite-card a { display: grid; place-items: center; color: #fff; background: #63816c; text-decoration: none; }
 .oot-global-invite-card button { color: #627067; background: #edf1ed; }
 
