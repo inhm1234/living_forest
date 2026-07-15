@@ -11,7 +11,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="one-of-ten-friend.css?v=1.0.3" />
+  <link rel="stylesheet" href="one-of-ten-friend.css?v=1.1.0" />
   <link rel="stylesheet" href="oot-notifications.css?v=oot-push-v0-3" />
 </head>
 <body>
@@ -51,6 +51,22 @@
           <span>초대는 10분 동안 기다려요. 한 턴은 30초예요.</span>
         </div>
         <div class="ootf-hero-cards" aria-hidden="true"><i>7</i><b>+</b><i>3</i></div>
+      </article>
+
+      <article class="ootf-point-card" id="pointSummaryCard" aria-label="내 원포인트">
+        <div class="ootf-point-main">
+          <span class="ootf-point-icon" aria-hidden="true">🌰</span>
+          <div>
+            <small>MY ONE POINT</small>
+            <strong><b id="pointValue">0</b> 원포인트</strong>
+            <span id="pointTier">숫자씨앗</span>
+          </div>
+        </div>
+        <div class="ootf-point-progress">
+          <span id="pointProgressText">다음 등급을 확인하고 있어요.</span>
+          <div><i id="pointProgressBar"></i></div>
+          <small id="pointProtection">첫걸음 보호 10판 남음</small>
+        </div>
       </article>
 
       <section class="oot-ready-card" aria-label="친구 대전 초대 상태">
@@ -112,7 +128,10 @@
             <span class="ootf-avatar" id="opponentAvatar"><b>친</b></span>
             <div><strong id="opponentName">친구</strong><small id="opponentStatus">경기 상태를 불러오는 중이에요.</small></div>
           </div>
-          <span class="ootf-card-count" id="opponentCardCount">손패 -장</span>
+          <div class="ootf-opponent-meta">
+            <span class="ootf-match-mode" id="matchModeBadge">편한 대전</span>
+            <span class="ootf-card-count" id="opponentCardCount">손패 -장</span>
+          </div>
         </div>
         <div class="ootf-hidden-hand" id="opponentHand" aria-label="상대의 숨겨진 숫자카드"></div>
       </article>
@@ -159,6 +178,35 @@
     </section>
   </main>
 
+  <section class="ootf-overlay is-hidden" id="inviteModeOverlay" role="dialog" aria-modal="true" aria-labelledby="inviteModeTitle">
+    <div class="ootf-modal-card ootf-invite-mode-card">
+      <button class="ootf-modal-close" id="closeInviteModeButton" type="button" aria-label="대전 방식 선택 닫기">×</button>
+      <p>CHOOSE MATCH</p>
+      <h2 id="inviteModeTitle"><span id="inviteFriendName">친구</span>님과 어떻게 할까요?</h2>
+      <div class="ootf-invite-profile">
+        <span class="ootf-list-avatar" id="inviteFriendAvatar"><b>친</b></span>
+        <div>
+          <strong id="inviteFriendStatus">친구 상태를 확인하고 있어요.</strong>
+          <span>초대를 보내면 10분 동안 기다려요.</span>
+        </div>
+      </div>
+      <div class="ootf-mode-choice">
+        <button class="ootf-mode-option is-casual" id="casualInviteButton" type="button">
+          <span>🌿</span>
+          <strong>편한 대전</strong>
+          <small>점수 변화 없이 부담 없이 놀아요.</small>
+        </button>
+        <button class="ootf-mode-option is-rated" id="ratedInviteButton" type="button">
+          <span>🌰</span>
+          <strong>원포인트 대전</strong>
+          <small>승리 +5 · 무승부 +1 · 패배 -3</small>
+          <em id="ratedInviteStatus">오늘 남은 횟수를 확인하고 있어요.</em>
+        </button>
+      </div>
+      <p class="ootf-mode-note">같은 친구와 원포인트가 반영되는 경기는 하루 3판까지예요.</p>
+    </div>
+  </section>
+
   <section class="ootf-overlay is-hidden" id="helpOverlay" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
     <div class="ootf-modal-card">
       <button class="ootf-modal-close" id="closeHelpButton" type="button" aria-label="안내 닫기">×</button>
@@ -172,6 +220,7 @@
         <li>한 턴은 30초이며, 시간이 끝나면 서버가 자동 스톱 또는 자동 제출해요.</li>
         <li>경기 중 상대의 숫자카드는 숨겨지고 경기 종료 후에만 공개돼요.</li>
         <li>화면을 나갔다 돌아와도 진행 중인 경기로 다시 들어갈 수 있어요.</li>
+        <li>편한 대전은 점수 변화가 없고, 원포인트 대전은 같은 친구와 하루 3판까지 반영돼요.</li>
       </ol>
       <button class="ootf-modal-confirm" id="helpConfirmButton" type="button">알겠어요</button>
     </div>
@@ -188,6 +237,19 @@
         <em>VS</em>
         <div><small id="opponentTargetLabel">친구의 가까운 카드</small><b id="opponentTarget">-</b><span id="opponentDistance">거리 -</span></div>
       </div>
+      <section class="ootf-point-result is-hidden" id="resultPointPanel" aria-live="polite">
+        <div class="ootf-point-result-head">
+          <span id="resultPointMode">🌰 원포인트 대전</span>
+          <strong id="resultPointDelta">+0</strong>
+        </div>
+        <div class="ootf-point-change">
+          <b id="resultPointBefore">0</b>
+          <span>→</span>
+          <b id="resultPointAfter">0</b>
+        </div>
+        <p id="resultPointMessage"></p>
+        <small id="resultTierMessage"></small>
+      </section>
       <button class="ootf-result-primary" id="resultLobbyButton" type="button">대전 목록으로</button>
       <a class="ootf-result-secondary" href="index.html">내 정원으로 돌아가기</a>
     </div>
@@ -195,6 +257,6 @@
 
   <div class="ootf-toast is-hidden" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="oot-notifications.js?v=oot-push-v0-3"></script>
-  <script type="module" src="one-of-ten-friend.js?v=1.0.3"></script>
+  <script type="module" src="one-of-ten-friend.js?v=1.1.0"></script>
 </body>
 </html>

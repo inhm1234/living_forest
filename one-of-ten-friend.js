@@ -16,32 +16,53 @@ const OPERATIONS = [
   { value: "×", label: "×" },
   { value: "÷", label: "÷" },
 ];
+const TIER_LABELS = {
+  number_seed: "숫자씨앗",
+  calculation_sprout: "계산새싹",
+  formula_branch: "수식가지",
+  number_tree: "숫자나무",
+  one_of_ten_master: "원오브텐 장인",
+  forest_keeper: "숫자의 숲지기",
+};
+const TIER_START_POINTS = {
+  number_seed: 0,
+  calculation_sprout: 30,
+  formula_branch: 80,
+  number_tree: 150,
+  one_of_ten_master: 250,
+  forest_keeper: 400,
+};
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
 
 const els = {
   loadingView: $("#loadingView"), loginView: $("#loginView"), lobbyView: $("#lobbyView"), matchView: $("#matchView"),
   helpButton: $("#helpButton"), helpOverlay: $("#helpOverlay"), closeHelpButton: $("#closeHelpButton"), helpConfirmButton: $("#helpConfirmButton"),
+  pointSummaryCard: $("#pointSummaryCard"), pointValue: $("#pointValue"), pointTier: $("#pointTier"), pointProgressText: $("#pointProgressText"), pointProgressBar: $("#pointProgressBar"), pointProtection: $("#pointProtection"),
   activeMatchesSection: $("#activeMatchesSection"), activeMatchCount: $("#activeMatchCount"), activeMatchesList: $("#activeMatchesList"),
   incomingSection: $("#incomingSection"), incomingCount: $("#incomingCount"), incomingList: $("#incomingList"),
   outgoingSection: $("#outgoingSection"), outgoingCount: $("#outgoingCount"), outgoingList: $("#outgoingList"),
   friendsList: $("#friendsList"), noFriendsView: $("#noFriendsView"), refreshLobbyButton: $("#refreshLobbyButton"),
-  opponentAvatar: $("#opponentAvatar"), opponentName: $("#opponentName"), opponentStatus: $("#opponentStatus"), opponentCardCount: $("#opponentCardCount"), opponentHand: $("#opponentHand"),
+  inviteModeOverlay: $("#inviteModeOverlay"), closeInviteModeButton: $("#closeInviteModeButton"), inviteFriendName: $("#inviteFriendName"), inviteFriendAvatar: $("#inviteFriendAvatar"), inviteFriendStatus: $("#inviteFriendStatus"), casualInviteButton: $("#casualInviteButton"), ratedInviteButton: $("#ratedInviteButton"), ratedInviteStatus: $("#ratedInviteStatus"),
+  opponentAvatar: $("#opponentAvatar"), opponentName: $("#opponentName"), opponentStatus: $("#opponentStatus"), opponentCardCount: $("#opponentCardCount"), opponentHand: $("#opponentHand"), matchModeBadge: $("#matchModeBadge"),
   historyToggle: $("#historyToggle"), matchHistory: $("#matchHistory"), operationCount: $("#operationCount"),
   turnPill: $("#turnPill"), turnTimer: $("#turnTimer"), timerText: $("#timerText"), timerBar: $("#timerBar"), timeoutHint: $("#timeoutHint"),
   currentValue: $("#currentValue"), selectedOperation: $("#selectedOperation"), selectedNumber: $("#selectedNumber"), arenaMessage: $("#arenaMessage"), calculationNote: $("#calculationNote"), operationCards: $("#operationCards"),
   actionPanel: $("#actionPanel"), stopButton: $("#stopButton"), drawButton: $("#drawButton"), myHand: $("#myHand"), deckCount: $("#deckCount"), handHelp: $("#handHelp"),
   leaveMatchButton: $("#leaveMatchButton"), connectionStatus: $("#connectionStatus"),
   resultOverlay: $("#resultOverlay"), resultSymbol: $("#resultSymbol"), resultTitle: $("#resultTitle"), resultDescription: $("#resultDescription"), resultHistory: $("#resultHistory"), resultValue: $("#resultValue"), myTarget: $("#myTarget"), myDistance: $("#myDistance"), opponentTargetLabel: $("#opponentTargetLabel"), opponentTarget: $("#opponentTarget"), opponentDistance: $("#opponentDistance"), resultLobbyButton: $("#resultLobbyButton"),
+  resultPointPanel: $("#resultPointPanel"), resultPointMode: $("#resultPointMode"), resultPointDelta: $("#resultPointDelta"), resultPointBefore: $("#resultPointBefore"), resultPointAfter: $("#resultPointAfter"), resultPointMessage: $("#resultPointMessage"), resultTierMessage: $("#resultTierMessage"),
   toast: $("#toast"),
 };
 
 const state = {
   user: null,
   friends: [], invites: [], matches: [], match: null,
+  pointProfile: null,
   friendAvailability: new Map(),
   friendsLoadFailed: false, invitesLoadFailed: false, lobbyWarnings: [],
   knownIncomingInviteIds: new Set(),
+  inviteTargetFriendId: null, inviteTargetButton: null, ratedStatus: null,
   selectedOperation: null, selectedNumber: null,
   historyExpanded: false, busy: false,
   serverOffset: 0, timeoutResolving: false,
@@ -91,6 +112,14 @@ function availabilityPresentation(value) {
   };
   return map[availability] || map.offline;
 }
+function tierLabel(key) { return TIER_LABELS[key] || "숫자씨앗"; }
+function battleModeLabel(mode) { return mode === "rated" ? "원포인트 대전" : "편한 대전"; }
+function battleModeIcon(mode) { return mode === "rated" ? "🌰" : "🌿"; }
+function battleModeText(mode) { return `${battleModeIcon(mode)} ${battleModeLabel(mode)}`; }
+function pointDeltaText(value) {
+  const number = Number(value || 0);
+  return number > 0 ? `+${number}` : String(number);
+}
 function inviteDisplay(item) {
   const friend = friendById(item?.other_user_id);
   return {
@@ -125,6 +154,8 @@ function friendlyError(error) {
     ["OOT_VERSION_MISMATCH", "상대의 행동이 먼저 반영됐어요. 최신 상태를 다시 불러왔어요."], ["OOT_TURN_EXPIRED", "턴 시간이 끝나 서버가 자동 진행하고 있어요."],
     ["OOT_NOT_MY_TURN", "지금은 친구의 차례예요."], ["OOT_INVALID_PHASE", "이미 다음 단계로 넘어갔어요."],
     ["OOT_CARD_NOT_IN_HAND", "그 숫자카드는 현재 손에 없어요."], ["OOT_OPERATION_NOT_AVAILABLE", "이미 사용한 수식카드예요."],
+    ["OOT_DAILY_RATED_LIMIT_REACHED", "오늘 이 친구와 반영할 수 있는 원포인트 대전 3판을 모두 했어요."],
+    ["OOT_INVALID_BATTLE_MODE", "대전 방식을 다시 선택해 주세요."],
   ];
   return map.find(([key]) => message.includes(key))?.[1] || "잠시 연결이 어긋났어요. 다시 시도해 주세요.";
 }
@@ -183,13 +214,12 @@ async function loadLobby({ silent = false } = {}) {
   if (!silent) els.refreshLobbyButton.disabled = true;
 
   try {
-    // 친구 목록은 초대/경기 조회와 분리합니다.
-    // 다른 RPC 하나가 실패해도 실제 친구 목록은 화면에 먼저 보여야 합니다.
-    const [friendsResult, invitesResult, matchesResult, availabilityResult] = await Promise.allSettled([
+    const [friendsResult, invitesResult, matchesResult, availabilityResult, profileResult] = await Promise.allSettled([
       rpc("list_my_garden_friends"),
-      rpc("oot_list_my_invites"),
-      rpc("oot_list_my_matches", { p_limit: 30 }),
+      rpc("oot_list_my_invites_v2"),
+      rpc("oot_list_my_matches_v2", { p_limit: 30 }),
       rpc("oot_list_friend_availability"),
+      rpc("oot_get_my_point_profile"),
     ]);
 
     if (friendsResult.status === "fulfilled") {
@@ -253,24 +283,32 @@ async function loadLobby({ silent = false } = {}) {
       console.warn("OneOfTen friend availability load error", availabilityResult.reason);
     }
 
+    if (profileResult.status === "fulfilled") {
+      state.pointProfile = profileResult.value || null;
+    } else {
+      state.pointProfile = null;
+      state.lobbyWarnings.push("pointProfile");
+      console.warn("OneOfTen point profile load error", profileResult.reason);
+    }
+
     renderLobby();
 
     if (!state.lobbyWarnings.length) {
       els.connectionStatus.textContent = "서버와 연결됨";
     } else if (!state.friendsLoadFailed) {
       els.connectionStatus.textContent = "친구 목록 연결됨 · 일부 경기 정보 확인 중";
-      if (!silent) showToast("친구 목록은 불러왔어요. 초대나 경기 정보는 다시 확인 중이에요.");
+      if (!silent) showToast("친구 목록은 불러왔어요. 일부 정보는 다시 확인 중이에요.");
     } else {
       els.connectionStatus.textContent = "친구 목록을 불러오지 못함";
       if (!silent) showToast("친구 목록 연결이 어긋났어요. 새로고침을 눌러 주세요.");
     }
   } catch (error) {
-    // 예상하지 못한 화면 오류만 이곳에서 처리합니다.
     console.warn("OneOfTen lobby render error", error);
     state.friendsLoadFailed = true;
     state.friends = [];
     state.invites = [];
     state.matches = [];
+    state.pointProfile = null;
     renderLobby();
     els.connectionStatus.textContent = "로비 연결 확인 필요";
     if (!silent) showToast(friendlyError(error));
@@ -283,18 +321,54 @@ async function loadLobby({ silent = false } = {}) {
 function cardTemplate({ avatarUrl, name, subtitle, actions = "" }) {
   return `<article class="ootf-list-card"><span class="ootf-list-avatar">${avatarMarkup(avatarUrl, name)}</span><div class="ootf-list-copy"><strong>${escapeHtml(name || "친구")}</strong><span>${escapeHtml(subtitle || "")}</span></div>${actions}</article>`;
 }
+function renderPointSummary() {
+  const profile = state.pointProfile;
+  if (!profile) {
+    els.pointValue.textContent = "-";
+    els.pointTier.textContent = "원포인트 연결 확인 중";
+    els.pointProgressText.textContent = "새로고침하면 다시 확인해요.";
+    els.pointProgressBar.style.width = "0%";
+    els.pointProtection.textContent = "";
+    return;
+  }
+
+  const point = Number(profile.one_point || 0);
+  const tierKey = profile.tier_key || "number_seed";
+  const tierStart = TIER_START_POINTS[tierKey] ?? 0;
+  const nextPoint = profile.next_tier_point === null ? null : Number(profile.next_tier_point);
+  const protection = Number(profile.beginner_protection_remaining || 0);
+
+  els.pointValue.textContent = String(point);
+  els.pointTier.textContent = tierLabel(tierKey);
+
+  if (nextPoint === null || !Number.isFinite(nextPoint)) {
+    els.pointProgressText.textContent = "최고 등급에 도착했어요.";
+    els.pointProgressBar.style.width = "100%";
+  } else {
+    const span = Math.max(nextPoint - tierStart, 1);
+    const progress = Math.max(0, Math.min(100, ((point - tierStart) / span) * 100));
+    els.pointProgressText.textContent = `${tierLabel(profile.next_tier_key)}까지 ${Number(profile.points_to_next_tier || 0)}점`;
+    els.pointProgressBar.style.width = `${progress}%`;
+  }
+
+  els.pointProtection.textContent = protection > 0
+    ? `🛡️ 첫걸음 보호 ${protection}판 남음`
+    : `최고 기록 ${Number(profile.peak_one_point || 0)}점`;
+}
 function renderLobby() {
+  renderPointSummary();
+
   const incoming = state.invites.filter((item) => item.direction === "incoming");
   const outgoing = state.invites.filter((item) => item.direction === "outgoing");
   const active = state.matches.filter((item) => item.status === "active");
-  const activeByOpponent = new Map(active.map((item) => [item.opponent_id, item]));
-  const inviteByOpponent = new Map(state.invites.map((item) => [item.other_user_id, item]));
+  const activeByOpponent = new Map(active.map((item) => [String(item.opponent_id), item]));
+  const inviteByOpponent = new Map(state.invites.map((item) => [String(item.other_user_id), item]));
 
   els.activeMatchesSection.classList.toggle("is-hidden", !active.length);
   els.activeMatchCount.textContent = String(active.length);
   els.activeMatchesList.innerHTML = active.map((item) => cardTemplate({
     avatarUrl: item.opponent_avatar_url, name: item.opponent_nickname,
-    subtitle: `${phaseLabel(item)} · ${item.turn_deadline ? formatRemaining(item.turn_deadline) : "결과 확인 중"}`,
+    subtitle: `${battleModeText(item.battle_mode)} · ${phaseLabel(item)} · ${item.turn_deadline ? formatRemaining(item.turn_deadline) : "결과 확인 중"}`,
     actions: `<button class="ootf-primary" data-open-match="${item.match_id}">계속하기</button>`,
   })).join("");
 
@@ -306,16 +380,16 @@ function renderLobby() {
   els.incomingList.innerHTML = state.invitesLoadFailed
     ? `<article class="ootf-list-card"><span class="ootf-list-avatar"><b>!</b></span><div class="ootf-list-copy"><strong>초대 목록 연결을 다시 확인해 주세요.</strong><span>새로고침 버튼을 누르면 받은 초대를 다시 불러와요.</span></div><button class="ootf-secondary" data-retry-invites>다시 확인</button></article>`
     : incoming.map((item) => cardTemplate({
-    avatarUrl: item.other_avatar_url, name: item.other_nickname,
-    subtitle: `원오브텐 한 판을 기다려요 · ${formatRemaining(item.expires_at)}`,
-    actions: `<div class="ootf-list-actions"><button class="ootf-primary" data-accept-invite="${item.invite_id}">수락</button><button class="ootf-secondary" data-decline-invite="${item.invite_id}">거절</button></div>`,
-  })).join("");
+      avatarUrl: item.other_avatar_url, name: item.other_nickname,
+      subtitle: `${battleModeText(item.battle_mode)} · ${formatRemaining(item.expires_at)}`,
+      actions: `<div class="ootf-list-actions"><button class="ootf-primary" data-accept-invite="${item.invite_id}" data-battle-mode="${item.battle_mode || "casual"}">수락</button><button class="ootf-secondary" data-decline-invite="${item.invite_id}">거절</button></div>`,
+    })).join("");
 
   els.outgoingSection.classList.toggle("is-hidden", !outgoing.length);
   els.outgoingCount.textContent = String(outgoing.length);
   els.outgoingList.innerHTML = outgoing.map((item) => cardTemplate({
     avatarUrl: item.other_avatar_url, name: item.other_nickname,
-    subtitle: `친구의 수락을 기다리는 중 · ${formatRemaining(item.expires_at)}`,
+    subtitle: `${battleModeText(item.battle_mode)} · 친구의 수락을 기다리는 중 · ${formatRemaining(item.expires_at)}`,
     actions: `<button class="ootf-secondary" data-cancel-invite="${item.invite_id}">취소</button>`,
   })).join("");
 
@@ -330,51 +404,117 @@ function renderLobby() {
   }
 
   els.friendsList.innerHTML = state.friends.map((friend) => {
-    const activeMatch = activeByOpponent.get(friend.friend_id);
-    const invite = inviteByOpponent.get(friend.friend_id);
+    const friendKey = String(friend.friend_id);
+    const activeMatch = activeByOpponent.get(friendKey);
+    const invite = inviteByOpponent.get(friendKey);
     const availability = availabilityByFriendId(friend.friend_id);
     const presentation = availabilityPresentation(availability);
     let subtitle = `<span class="oot-availability ${presentation.className}">${presentation.label}</span> · 마음 ${Number(friend.growth_count || 0)}번`;
     let action = `<button class="ootf-primary" data-create-invite="${friend.friend_id}" ${availability.availability === "in_game" ? "disabled" : ""}>${presentation.button}</button>`;
-    if (activeMatch) { subtitle = "진행 중인 경기가 있어요."; action = `<button class="ootf-primary" data-open-match="${activeMatch.match_id}">경기 계속</button>`; }
-    else if (invite?.direction === "incoming") {
-      subtitle = `이 친구가 원오브텐 한 판을 기다려요 · ${formatRemaining(invite.expires_at)}`;
-      action = `<div class="ootf-list-actions"><button class="ootf-primary" data-accept-invite="${invite.invite_id}">수락</button><button class="ootf-secondary" data-decline-invite="${invite.invite_id}">거절</button></div>`;
-    }
-    else if (invite) {
-      subtitle = `친구의 수락을 기다리는 중 · ${formatRemaining(invite.expires_at)}`;
+
+    if (activeMatch) {
+      subtitle = `${battleModeText(activeMatch.battle_mode)} · 진행 중인 경기가 있어요.`;
+      action = `<button class="ootf-primary" data-open-match="${activeMatch.match_id}">경기 계속</button>`;
+    } else if (invite?.direction === "incoming") {
+      subtitle = `${battleModeText(invite.battle_mode)} · 이 친구가 한 판을 기다려요 · ${formatRemaining(invite.expires_at)}`;
+      action = `<div class="ootf-list-actions"><button class="ootf-primary" data-accept-invite="${invite.invite_id}" data-battle-mode="${invite.battle_mode || "casual"}">수락</button><button class="ootf-secondary" data-decline-invite="${invite.invite_id}">거절</button></div>`;
+    } else if (invite) {
+      subtitle = `${battleModeText(invite.battle_mode)} · 친구의 수락을 기다리는 중`;
       action = `<button class="ootf-secondary" disabled>보낸 초대 대기</button>`;
     }
+
     return `<article class="ootf-list-card"><span class="ootf-list-avatar">${avatarMarkup(friend.avatar_url, friend.nickname)}</span><div class="ootf-list-copy"><strong>${escapeHtml(friend.nickname || "친구")}</strong><span>${subtitle}</span></div>${action}</article>`;
   }).join("");
 
   bindLobbyActions();
 }
 function bindLobbyActions() {
-  $$('[data-create-invite]').forEach((button) => button.addEventListener("click", () => createInvite(button.dataset.createInvite, button)));
-  $$('[data-accept-invite]').forEach((button) => button.addEventListener("click", () => acceptInvite(button.dataset.acceptInvite, button)));
+  $$('[data-create-invite]').forEach((button) => button.addEventListener("click", () => openInviteMode(button.dataset.createInvite, button)));
+  $$('[data-accept-invite]').forEach((button) => button.addEventListener("click", () => acceptInvite(button.dataset.acceptInvite, button, button.dataset.battleMode)));
   $$('[data-decline-invite]').forEach((button) => button.addEventListener("click", () => simpleInviteAction("oot_decline_invite", button.dataset.declineInvite, "초대를 조용히 내려놓았어요.", button)));
   $$('[data-cancel-invite]').forEach((button) => button.addEventListener("click", () => simpleInviteAction("oot_cancel_invite", button.dataset.cancelInvite, "초대를 취소했어요.", button)));
   $$('[data-open-match]').forEach((button) => button.addEventListener("click", () => openMatch(button.dataset.openMatch)));
   $$('[data-retry-invites]').forEach((button) => button.addEventListener("click", () => loadLobby()));
 }
-async function createInvite(friendId, button) {
-  button.disabled = true;
+async function openInviteMode(friendId, sourceButton) {
+  const friend = friendById(friendId);
+  if (!friend) return;
+
+  state.inviteTargetFriendId = friendId;
+  state.inviteTargetButton = sourceButton || null;
+  state.ratedStatus = null;
+
+  els.inviteFriendName.textContent = friend.nickname || "친구";
+  els.inviteFriendAvatar.innerHTML = avatarMarkup(friend.avatar_url, friend.nickname);
+  const availability = availabilityByFriendId(friendId);
+  els.inviteFriendStatus.textContent = availabilityPresentation(availability).label.replace(/^[^ ]+ /, "");
+  els.ratedInviteStatus.textContent = "오늘 남은 횟수를 확인하고 있어요.";
+  els.ratedInviteButton.disabled = true;
+  els.casualInviteButton.disabled = false;
+  els.inviteModeOverlay.classList.remove("is-hidden");
+
   try {
-    await rpc("oot_create_invite", { p_friend_id: friendId });
+    const status = await rpc("oot_get_friend_rated_status", { p_friend_id: friendId });
+    if (String(state.inviteTargetFriendId) !== String(friendId)) return;
+    state.ratedStatus = status;
+    const used = Number(status?.usedToday || 0);
+    const remaining = Number(status?.remainingToday || 0);
+    els.ratedInviteStatus.textContent = status?.canStartRated
+      ? `오늘 ${used}/3판 반영 · ${remaining}판 남음`
+      : "오늘 3판을 모두 반영했어요.";
+    els.ratedInviteButton.disabled = !status?.canStartRated;
+  } catch (error) {
+    console.warn("OneOfTen rated status load error", error);
+    els.ratedInviteStatus.textContent = "점수전 상태를 불러오지 못했어요.";
+    els.ratedInviteButton.disabled = true;
+  }
+}
+function closeInviteMode() {
+  els.inviteModeOverlay.classList.add("is-hidden");
+  if (state.inviteTargetButton) state.inviteTargetButton.disabled = false;
+  state.inviteTargetFriendId = null;
+  state.inviteTargetButton = null;
+  state.ratedStatus = null;
+}
+async function createInvite(mode) {
+  const friendId = state.inviteTargetFriendId;
+  if (!friendId || !["casual", "rated"].includes(mode)) return;
+
+  els.casualInviteButton.disabled = true;
+  els.ratedInviteButton.disabled = true;
+  if (state.inviteTargetButton) state.inviteTargetButton.disabled = true;
+
+  try {
+    await rpc("oot_create_invite_with_mode", {
+      p_friend_id: friendId,
+      p_battle_mode: mode,
+    });
     const availability = availabilityByFriendId(friendId);
-    showToast(availability.has_push && ["away", "offline"].includes(availability.availability)
-      ? "초대를 남기고 휴대폰 알림도 준비했어요."
-      : "초대를 보냈어요. 친구 화면에 바로 표시돼요.");
+    const deliveryMessage = availability.has_push && ["away", "offline"].includes(availability.availability)
+      ? "휴대폰 알림도 함께 준비했어요."
+      : "친구 화면에 바로 표시돼요.";
+    closeInviteMode();
+    showToast(`${battleModeLabel(mode)} 초대를 보냈어요. ${deliveryMessage}`);
+    await loadLobby({ silent: true });
+  } catch (error) {
+    showToast(friendlyError(error));
+    els.casualInviteButton.disabled = false;
+    els.ratedInviteButton.disabled = mode === "rated" && !state.ratedStatus?.canStartRated;
+    if (state.inviteTargetButton) state.inviteTargetButton.disabled = false;
     await loadLobby({ silent: true });
   }
-  catch (error) { showToast(friendlyError(error)); await loadLobby({ silent: true }); }
-  finally { button.disabled = false; }
 }
-async function acceptInvite(inviteId, button) {
+async function acceptInvite(inviteId, button, battleMode = "casual") {
   button.disabled = true;
-  try { const matchId = await rpc("oot_accept_invite", { p_invite_id: inviteId }); showToast("친구와의 경기가 시작됐어요."); await openMatch(String(matchId)); }
-  catch (error) { showToast(friendlyError(error)); await loadLobby({ silent: true }); button.disabled = false; }
+  try {
+    const matchId = await rpc("oot_accept_invite", { p_invite_id: inviteId });
+    showToast(`${battleModeLabel(battleMode)}이 시작됐어요.`);
+    await openMatch(String(matchId));
+  } catch (error) {
+    showToast(friendlyError(error));
+    await loadLobby({ silent: true });
+    button.disabled = false;
+  }
 }
 async function simpleInviteAction(rpcName, inviteId, message, button) {
   button.disabled = true;
@@ -469,6 +609,8 @@ function renderOpponent(match) {
   const status = currentMatchIsFinished() ? "경기가 끝났어요." : match.isMyTurn ? "당신의 차례를 기다리고 있어요." : "카드를 고르고 있어요.";
   els.opponentStatus.textContent = status;
   const hand = currentMatchIsFinished() && Array.isArray(match.opponentHand) ? match.opponentHand : Array(Number(match.opponentCardCount || 0)).fill(null);
+  els.matchModeBadge.textContent = battleModeText(match.battleMode);
+  els.matchModeBadge.classList.toggle("is-rated", match.battleMode === "rated");
   els.opponentCardCount.textContent = `손패 ${hand.length}장`;
   els.opponentHand.innerHTML = hand.map((number) => `<span class="ootf-card-back${number !== null ? " is-revealed" : ""}">${number ?? ""}</span>`).join("");
 }
@@ -595,6 +737,79 @@ async function resolveTimeout() {
   finally { state.timeoutResolving = false; }
 }
 
+function animatePointNumber(element, from, to) {
+  const start = performance.now();
+  const duration = 650;
+  const step = (now) => {
+    const ratio = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - ratio, 3);
+    element.textContent = String(Math.round(from + (to - from) * eased));
+    if (ratio < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+function renderPointResult(match) {
+  const pointResult = match.pointResult;
+  const rated = match.battleMode === "rated";
+
+  els.resultPointPanel.classList.toggle("is-hidden", !rated);
+  if (!rated) return;
+
+  els.resultPointPanel.classList.remove("is-positive", "is-negative", "is-protected", "is-ineligible");
+  els.resultPointMode.textContent = "🌰 원포인트 대전";
+
+  if (!pointResult) {
+    els.resultPointDelta.textContent = "정산 확인";
+    els.resultPointBefore.textContent = "-";
+    els.resultPointAfter.textContent = "-";
+    els.resultPointMessage.textContent = "원포인트 정산 결과를 확인하고 있어요.";
+    els.resultTierMessage.textContent = "";
+    return;
+  }
+
+  const before = Number(pointResult.pointBefore || 0);
+  const after = Number(pointResult.pointAfter || 0);
+  const delta = Number(pointResult.finalDelta || 0);
+  const baseDelta = Number(pointResult.baseDelta || 0);
+  const ineligible = pointResult.resultType === "ineligible" || pointResult.reason === "daily_pair_limit";
+
+  els.resultPointBefore.textContent = String(before);
+  els.resultPointAfter.textContent = String(before);
+  els.resultPointDelta.textContent = ineligible ? "변화 없음" : pointDeltaText(delta);
+
+  if (ineligible) {
+    els.resultPointPanel.classList.add("is-ineligible");
+    els.resultPointMessage.textContent = "오늘 이 친구와 반영되는 3판을 모두 마쳐 이번 경기는 점수에 포함되지 않았어요.";
+  } else if (pointResult.beginnerProtectionApplied) {
+    els.resultPointPanel.classList.add("is-protected");
+    els.resultPointMessage.textContent = `첫걸음 보호가 적용되어 패배 ${baseDelta}점이 차감되지 않았어요.`;
+  } else if (pointResult.tierFloorApplied) {
+    els.resultPointPanel.classList.add("is-protected");
+    els.resultPointMessage.textContent = `${tierLabel(pointResult.tierAfter)} 등급 보호가 적용됐어요.`;
+  } else if (delta > 0) {
+    els.resultPointPanel.classList.add("is-positive");
+    els.resultPointMessage.textContent = pointResult.resultType === "draw"
+      ? "무승부 점수 1점을 받았어요."
+      : "승리 점수 5점을 받았어요.";
+  } else if (delta < 0) {
+    els.resultPointPanel.classList.add("is-negative");
+    els.resultPointMessage.textContent = "아쉽지만 다음 판에서 다시 올릴 수 있어요.";
+  } else {
+    els.resultPointMessage.textContent = "현재 원포인트를 그대로 유지했어요.";
+  }
+
+  const tierChanged = pointResult.tierBefore !== pointResult.tierAfter;
+  const exactMessage = pointResult.exactHit ? " · 목표값에 정확히 닿았어요 🎯" : "";
+  els.resultTierMessage.textContent = tierChanged
+    ? `새 등급: ${tierLabel(pointResult.tierAfter)}${exactMessage}`
+    : `${tierLabel(pointResult.tierAfter)} · 최고 기록 ${Number(pointResult.peakAfter || after)}점${exactMessage}`;
+
+  if (!ineligible) {
+    window.setTimeout(() => animatePointNumber(els.resultPointAfter, before, after), 180);
+  } else {
+    els.resultPointAfter.textContent = String(after);
+  }
+}
 function renderResult(match) {
   const winnerId = match.winnerId;
   const won = winnerId === state.user.id;
@@ -609,6 +824,7 @@ function renderResult(match) {
     const line = actionLabel(action); if (!line) return "";
     return `<span class="ootf-result-step"><b>${escapeHtml(line)}</b>${action.isTimeout ? "<small>시간 종료로 서버가 자동 진행했어요.</small>" : ""}</span>`;
   }).join("");
+  renderPointResult(match);
   els.resultOverlay.classList.remove("is-hidden");
 }
 
@@ -617,7 +833,7 @@ function closeHelp() { els.helpOverlay.classList.add("is-hidden"); }
 function applyViewport() { if (state.match) renderHistory(state.match); }
 
 async function initialize() {
-  console.info("TodayForest OneOfTen Friend v1.0.3");
+  console.info("TodayForest OneOfTen Friend v1.1.0 · OnePoint");
   showView("loading");
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error || !session?.user) { showView("login"); return; }
@@ -640,6 +856,10 @@ async function initialize() {
 
 els.helpButton.addEventListener("click", openHelp); els.closeHelpButton.addEventListener("click", closeHelp); els.helpConfirmButton.addEventListener("click", closeHelp);
 els.helpOverlay.addEventListener("click", (event) => { if (event.target === els.helpOverlay) closeHelp(); });
+els.closeInviteModeButton.addEventListener("click", closeInviteMode);
+els.inviteModeOverlay.addEventListener("click", (event) => { if (event.target === els.inviteModeOverlay) closeInviteMode(); });
+els.casualInviteButton.addEventListener("click", () => createInvite("casual"));
+els.ratedInviteButton.addEventListener("click", () => createInvite("rated"));
 els.refreshLobbyButton.addEventListener("click", () => loadLobby()); els.historyToggle.addEventListener("click", () => { state.historyExpanded = !state.historyExpanded; renderHistory(state.match); });
 els.selectedOperation.addEventListener("click", cancelOperation); els.stopButton.addEventListener("click", stopMatch); els.drawButton.addEventListener("click", drawCard);
 els.leaveMatchButton.addEventListener("click", returnToLobby); els.resultLobbyButton.addEventListener("click", returnToLobby);
