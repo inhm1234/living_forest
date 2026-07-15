@@ -7,12 +7,150 @@
   const EQUATION_REVEAL_MS = 800;
   const SHOWDOWN_REVEAL_MS = 1150;
   const INTRO_KEY = "todayforest-one-of-ten-intro-seen-v1";
+  const AI_PERSONALITIES = {
+    cautious: {
+      name: "겁많은 다람쥐",
+      badge: "안전형",
+      icon: "🌿",
+      intro: "결과값이 가까워지면 위험을 피하고 일찍 멈추는 편이에요.",
+      mistakeRate: 0.15,
+      stopChance(distance) {
+        if (distance <= 3) return 0.80;
+        if (distance <= 6) return 0.45;
+        return 0.06;
+      },
+      opening: [
+        "{number}이면 무리하지 않고 시작할 수 있겠어요.",
+        "조심조심 {number} 카드를 내밀었어요.",
+      ],
+      thinking: [
+        "더 했다가 멀어질까 봐 꼼꼼히 살펴봐요.",
+        "안전한 수식이 남았는지 가만히 확인해요.",
+        "도토리를 꼭 쥐고 결과값을 바라봐요.",
+      ],
+      play: [
+        "크게 흔들리지 않는 계산을 골랐어요.",
+        "조심스럽게 {operation} {number} 카드를 내려놓았어요.",
+      ],
+      stop: [
+        "이 정도면 괜찮지 않을까…? 여기서 멈출래요!",
+        "더 했다가 멀어지면 무서워요. 스톱!",
+      ],
+      mistake: [
+        "앗, 긴장해서 조금 서둘러 골랐나 봐요.",
+        "조심하려다 오히려 계산이 꼬였어요.",
+      ],
+      reveal: [
+        "두 손으로 남은 카드를 조심조심 펼쳐요.",
+        "결과를 확인하며 살짝 눈을 감았어요.",
+      ],
+      result: {
+        humanWin: "안전하게 가려다 기회를 놓쳤다며 다음 판을 준비해요.",
+        aiWin: "휴, 무리하지 않길 잘했다며 안도의 숨을 쉬어요.",
+        draw: "같은 거리라서 다행이라며 방긋 웃어요.",
+      },
+    },
+    greedy: {
+      name: "욕심쟁이 다람쥐",
+      badge: "도전형",
+      icon: "🔥",
+      intro: "좋은 숫자가 나와도 한 번 더 도전하고 큰 변화를 좋아해요.",
+      mistakeRate: 0.20,
+      stopChance(distance) {
+        if (distance === 0) return 1;
+        if (distance === 1) return 0.60;
+        if (distance <= 3) return 0.30;
+        return 0.05;
+      },
+      opening: [
+        "{number}부터 크게 키워볼까요?",
+        "신나게 {number} 카드를 탁 내려놓았어요.",
+      ],
+      thinking: [
+        "한 번만 더 하면 딱 맞을 것 같다며 눈을 반짝여요.",
+        "아직 부족하다며 더 큰 계산을 찾고 있어요.",
+        "곱셈 카드 쪽으로 자꾸 시선이 가요.",
+      ],
+      play: [
+        "과감하게 {operation} {number} 카드를 내려놓았어요!",
+        "결과가 크게 움직이자 신나서 꼬리를 흔들어요.",
+      ],
+      stop: [
+        "딱 맞았어요! 이번에는 욕심내지 않고 스톱!",
+        "조금 더 하고 싶지만… 이번에는 여기서 멈출래요!",
+      ],
+      mistake: [
+        "앗… 너무 욕심냈나 봐요!",
+        "큰 수만 보다가 가까운 길을 놓쳤어요.",
+      ],
+      reveal: [
+        "자신만만하게 남은 카드를 한꺼번에 펼쳐요.",
+        "이번에도 이길 거라며 꼬리를 힘껏 세워요.",
+      ],
+      result: {
+        humanWin: "한 번만 덜 욕심낼 걸 그랬다며 도토리를 굴려요.",
+        aiWin: "과감한 도전이 통했다며 신나게 폴짝 뛰어요.",
+        draw: "다음에는 한 번 더 가겠다며 벌써 승부욕을 보여요.",
+      },
+    },
+    genius: {
+      name: "계산왕 다람쥐",
+      badge: "분석형",
+      icon: "🧠",
+      intro: "가능한 수식을 비교하고 목표에 가장 가까운 선택을 찾아요.",
+      mistakeRate: 0.05,
+      stopChance(distance) {
+        if (distance <= 1) return 0.95;
+        if (distance === 2) return 0.70;
+        if (distance === 3) return 0.28;
+        return 0.05;
+      },
+      opening: [
+        "첫 수는 {number}. 가능한 경우를 계산해볼게요.",
+        "{number}에서 시작하는 경로를 머릿속에 그렸어요.",
+      ],
+      thinking: [
+        "가능한 경우를 하나씩 계산 중이에요.",
+        "남은 카드와 수식을 빠르게 비교하고 있어요.",
+        "가장 가까운 수식을 찾기 위해 집중해요.",
+      ],
+      play: [
+        "비교를 마치고 {operation} {number}을 선택했어요.",
+        "가장 안정적인 계산을 찾아 카드를 내려놓았어요.",
+      ],
+      stop: [
+        "계산 완료. 이 값이면 여기서 멈추는 게 좋아요.",
+        "남은 경우를 비교했어요. 스톱할게요.",
+      ],
+      mistake: [
+        "드물게 계산 하나를 놓치고 말았어요.",
+        "너무 빠르게 비교하다 작은 경우를 지나쳤어요.",
+      ],
+      reveal: [
+        "계산한 순서대로 남은 카드를 차분히 펼쳐요.",
+        "마지막 거리까지 확인하며 고개를 끄덕여요.",
+      ],
+      result: {
+        humanWin: "이번 계산은 당신이 더 정확했다며 정중히 박수쳐요.",
+        aiWin: "예상한 범위 안이었다며 조용히 고개를 끄덕여요.",
+        draw: "같은 답에 도착했다며 흥미롭게 기록해둬요.",
+      },
+    },
+  };
+  const AI_SKILL_BY_DIFFICULTY = { easy: 0.55, normal: 0.75, hard: 0.92 };
+  const AI_DISCIPLINE_BY_DIFFICULTY = { easy: 0.65, normal: 0.85, hard: 1 };
 
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => [...document.querySelectorAll(selector)];
 
   const els = {
     aiStatus: $("#aiStatus"),
+    aiName: $("#aiName"),
+    aiPersonalityBadge: $("#aiPersonalityBadge"),
+    personalityIntro: $("#personalityIntro"),
+    personalityIntroIcon: $("#personalityIntroIcon"),
+    personalityIntroName: $("#personalityIntroName"),
+    personalityIntroDesc: $("#personalityIntroDesc"),
     aiCardCount: $("#aiCardCount"),
     aiHand: $("#aiHand"),
     aiReaction: $("#aiReaction"),
@@ -45,6 +183,7 @@
     resultSymbol: $("#resultSymbol"),
     resultTitle: $("#resultTitle"),
     resultDesc: $("#resultDesc"),
+    resultPersonality: $("#resultPersonality"),
     resultReaction: $("#resultReaction"),
     resultEquation: $("#resultEquation"),
     resultFinalValue: $("#resultFinalValue"),
@@ -67,6 +206,8 @@
   let state = null;
   let turnTimerInterval = null;
   let pendingTimeout = null;
+  let personalityIntroTimeout = null;
+  let lastPersonalityKey = null;
 
   function shuffle(values) {
     const result = [...values];
@@ -79,6 +220,49 @@
 
   function randomItem(values) {
     return values[Math.floor(Math.random() * values.length)];
+  }
+
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function formatAiLine(line, values = {}) {
+    return Object.entries(values).reduce(
+      (result, [key, value]) => result.replaceAll(`{${key}}`, String(value)),
+      line,
+    );
+  }
+
+  function pickAiPersonality() {
+    const keys = Object.keys(AI_PERSONALITIES);
+    const choices = lastPersonalityKey && keys.length > 1
+      ? keys.filter((key) => key !== lastPersonalityKey)
+      : keys;
+    const selected = randomItem(choices);
+    lastPersonalityKey = selected;
+    return selected;
+  }
+
+  function getAiPersonality() {
+    return AI_PERSONALITIES[state?.aiPersonality] || AI_PERSONALITIES.cautious;
+  }
+
+  function clearPersonalityIntroTimeout() {
+    if (personalityIntroTimeout) window.clearTimeout(personalityIntroTimeout);
+    personalityIntroTimeout = null;
+  }
+
+  function showPersonalityIntro() {
+    if (!state) return;
+    clearPersonalityIntroTimeout();
+    state.personalityIntroVisible = true;
+    renderOpponent();
+    personalityIntroTimeout = window.setTimeout(() => {
+      if (!state) return;
+      state.personalityIntroVisible = false;
+      renderOpponent();
+      personalityIntroTimeout = null;
+    }, 4200);
   }
 
   function drawCard() {
@@ -115,7 +299,9 @@
   function resetGame({ deferOpening = false } = {}) {
     clearHumanTimer();
     clearPendingTimeout();
+    clearPersonalityIntroTimeout();
 
+    const aiPersonality = pickAiPersonality();
     state = {
       deck: shuffle(Array.from({ length: 10 }, (_, index) => index + 1)),
       humanHand: [],
@@ -128,8 +314,10 @@
       selectedNumber: null,
       pendingShowdownReason: "",
       difficulty: selectedDifficulty,
+      aiPersonality,
+      personalityIntroVisible: true,
       turnDeadline: 0,
-      aiReaction: "도토리를 가지런히 놓고 있어요.",
+      aiReaction: `${AI_PERSONALITIES[aiPersonality].name}가 자기 방식대로 카드를 정리하고 있어요.`,
       lastCalculationNote: "",
       historyExpanded: false,
       gameOver: false,
@@ -140,7 +328,10 @@
     els.resultOverlay.classList.add("is-hidden");
     els.resultDifficultyPicker.classList.add("is-hidden");
     render();
-    if (!deferOpening) pendingTimeout = window.setTimeout(runAiOpeningTurn, 700);
+    if (!deferOpening) {
+      showPersonalityIntro();
+      pendingTimeout = window.setTimeout(runAiOpeningTurn, 700);
+    }
   }
 
   function render() {
@@ -155,6 +346,16 @@
   }
 
   function renderOpponent() {
+    const personality = getAiPersonality();
+    els.aiName.textContent = personality.name;
+    els.aiPersonalityBadge.textContent = personality.badge;
+    els.aiPersonalityBadge.dataset.personality = state.aiPersonality;
+    els.personalityIntro.dataset.personality = state.aiPersonality;
+    els.personalityIntroIcon.textContent = personality.icon;
+    els.personalityIntroName.textContent = `오늘의 상대 · ${personality.name}`;
+    els.personalityIntroDesc.textContent = personality.intro;
+    els.personalityIntro.classList.toggle("is-hidden", !state.personalityIntroVisible);
+
     els.aiHand.innerHTML = "";
     const reveal = state.phase === "showdown-resolving" || state.gameOver;
     state.aiHand.forEach((number) => {
@@ -395,11 +596,12 @@
 
   function runAiOpeningTurn() {
     if (state.phase !== "ai-opening" || state.gameOver) return;
+    const personality = getAiPersonality();
     const openingNumber = randomItem(state.aiHand);
     removeOne(state.aiHand, openingNumber);
     state.currentValue = openingNumber;
     state.history.push({ player: "ai", type: "opening", number: openingNumber });
-    state.aiReaction = `첫 카드로 ${openingNumber}을 내밀었어요.`;
+    state.aiReaction = formatAiLine(randomItem(personality.opening), { number: openingNumber });
     state.phase = "human-play";
     state.selectedOperation = null;
     state.selectedNumber = null;
@@ -437,11 +639,7 @@
     state.lastCalculationNote = operation === "÷" && before % number !== 0
       ? `${before} ÷ ${number}은 소수점을 버려 ${after}로 계산했어요.`
       : "";
-    state.aiReaction = randomItem([
-      "결과값을 보며 꼬리를 살랑였어요.",
-      "도토리를 만지작거리며 다음 수를 생각해요.",
-      "놓인 수식을 가만히 바라보고 있어요.",
-    ]);
+    state.aiReaction = randomItem(getAiPersonality().thinking);
     state.selectedOperation = null;
     state.selectedNumber = null;
 
@@ -470,21 +668,22 @@
   }
 
   function evaluateAiStop() {
+    const personality = getAiPersonality();
     const target = closestCard(state.aiHand, state.currentValue);
     const distance = Math.abs(target - state.currentValue);
-    let chance = 0;
-
-    if (state.difficulty === "easy") {
-      chance = distance === 0 ? 1 : distance === 1 ? .65 : distance === 2 ? .35 : .04;
-    } else if (state.difficulty === "hard") {
-      chance = distance <= 2 ? 1 : distance === 3 ? .65 : distance === 4 ? .28 : .06;
-    } else {
-      chance = distance === 0 ? 1 : distance === 1 ? .98 : distance === 2 ? .9 : distance === 3 ? .16 : .04;
-    }
-    return { target, distance, shouldStop: state.history.length >= 2 && Math.random() < chance };
+    const baseChance = personality.stopChance(distance);
+    const discipline = AI_DISCIPLINE_BY_DIFFICULTY[state.difficulty] ?? 0.85;
+    const chance = clamp(0.5 + (baseChance - 0.5) * discipline, 0.02, 1);
+    return {
+      target,
+      distance,
+      chance,
+      shouldStop: state.history.length >= 2 && Math.random() < chance,
+    };
   }
 
   function chooseAiMove() {
+    const personality = getAiPersonality();
     const candidates = [];
     state.availableOperations.forEach((operation) => {
       state.aiHand.forEach((number) => {
@@ -494,24 +693,50 @@
         const ownDistance = remainingHand.length
           ? Math.min(...remainingHand.map((card) => Math.abs(card - result)))
           : 999;
-        const magnitudePenalty = Math.abs(result) > 70 ? (Math.abs(result) - 70) * .04 : 0;
-        const exactBonus = ownDistance === 0 ? 4 : 0;
+        const changeSize = Math.abs(result - state.currentValue);
+        const magnitudePenalty = Math.abs(result) > 70 ? (Math.abs(result) - 70) * 0.05 : 0;
+        const exactBonus = ownDistance === 0 ? 5 : ownDistance === 1 ? 1.4 : 0;
+        let personalityBias = 0;
+
+        if (state.aiPersonality === "cautious") {
+          if (["+", "−"].includes(operation)) personalityBias += 0.8;
+          if (operation === "×") personalityBias -= 0.65;
+          if (changeSize <= 10) personalityBias += 0.55;
+          if (Math.abs(result) > 40) personalityBias -= 0.45;
+        } else if (state.aiPersonality === "greedy") {
+          if (operation === "×") personalityBias += 1.15;
+          if (operation === "+") personalityBias += 0.35;
+          personalityBias += Math.min(1.1, changeSize * 0.025);
+        } else if (state.aiPersonality === "genius") {
+          if (ownDistance <= 2) personalityBias += 1.1;
+          if (ownDistance === 0) personalityBias += 1.8;
+          if (operation === "÷" && state.currentValue % number === 0) personalityBias += 0.25;
+        }
+
         candidates.push({
           operation,
           number,
-          score: -ownDistance - magnitudePenalty + exactBonus + Math.random() * .35,
+          result,
+          ownDistance,
+          score: -ownDistance * 1.25 - magnitudePenalty + exactBonus + personalityBias + Math.random() * 0.12,
         });
       });
     });
 
-    if (state.difficulty === "easy") return randomItem(candidates);
     candidates.sort((left, right) => right.score - left.score);
-    if (state.difficulty === "normal") return randomItem(candidates.slice(0, Math.min(3, candidates.length)));
-    return candidates[0];
+    const madeMistake = Math.random() < personality.mistakeRate;
+    if (madeMistake) return { ...randomItem(candidates), decision: "mistake" };
+
+    const skill = AI_SKILL_BY_DIFFICULTY[state.difficulty] ?? 0.75;
+    if (Math.random() < skill) return { ...candidates[0], decision: "best" };
+
+    const uncertainPoolSize = Math.max(2, Math.ceil(candidates.length * 0.35));
+    return { ...randomItem(candidates.slice(0, uncertainPoolSize)), decision: "uncertain" };
   }
 
   function runAiTurn() {
     if (state.phase !== "ai-thinking" || state.gameOver) return;
+    const personality = getAiPersonality();
     if (!state.availableOperations.length || !state.deck.length) {
       beginShowdown("더 이상 계산을 이어갈 수 없어요.");
       return;
@@ -519,8 +744,11 @@
 
     const stopDecision = evaluateAiStop();
     if (stopDecision.shouldStop) {
-      state.aiReaction = "꼬리를 번쩍 세우며 스톱을 외쳤어요.";
-      beginShowdown(`다람쥐가 자기 카드와 결과값의 차이 ${stopDecision.distance}을 보고 스톱했어요.`);
+      const stopLine = randomItem(personality.stop);
+      beginShowdown(
+        `${personality.name}가 자기 카드와 결과값의 차이 ${stopDecision.distance}을 보고 스톱했어요.`,
+        stopLine,
+      );
       return;
     }
 
@@ -540,7 +768,9 @@
     state.lastCalculationNote = move.operation === "÷" && before % move.number !== 0
       ? `${before} ÷ ${move.number}은 소수점을 버려 ${after}로 계산했어요.`
       : "";
-    state.aiReaction = `${move.operation} ${move.number} 카드를 조심스럽게 내려놓았어요.`;
+    state.aiReaction = move.decision === "mistake"
+      ? randomItem(personality.mistake)
+      : formatAiLine(randomItem(personality.play), { operation: move.operation, number: move.number });
 
     if (!state.availableOperations.length) {
       beginShowdown("수식카드 네 장을 모두 사용했어요.");
@@ -551,12 +781,12 @@
     startHumanTimer();
   }
 
-  function beginShowdown(reason) {
+  function beginShowdown(reason, reaction = "") {
     if (state.gameOver || state.phase === "showdown-resolving") return;
     clearHumanTimer();
     clearPendingTimeout();
     state.pendingShowdownReason = reason;
-    state.aiReaction = "남은 카드를 한 장씩 펼치고 있어요.";
+    state.aiReaction = reaction || randomItem(getAiPersonality().reveal);
     state.phase = "showdown-resolving";
     state.selectedOperation = null;
     state.selectedNumber = null;
@@ -565,14 +795,15 @@
   }
 
   function renderResultHistory() {
+    const personality = getAiPersonality();
     els.resultEquation.innerHTML = "";
     state.history.forEach((item) => {
       const line = document.createElement("span");
       line.className = "oot-result-step";
       if (item.type === "opening") {
-        line.innerHTML = `<b>다람쥐가 낸 숫자카드:</b> ${item.number}`;
+        line.innerHTML = `<b>${personality.name}가 낸 숫자카드:</b> ${item.number}`;
       } else {
-        const owner = item.player === "ai" ? "다람쥐 차례" : "내 차례";
+        const owner = item.player === "ai" ? `${personality.name} 차례` : "내 차례";
         const timeoutLabel = item.timedOut ? " · 시간 종료 자동 제출" : "";
         line.innerHTML = `<b>${owner}:</b> ${item.before} ${item.operation} ${item.number} = ${item.after}<small>${timeoutLabel}</small>`;
       }
@@ -583,6 +814,7 @@
 
   function finishAutomaticShowdown() {
     if (state.phase !== "showdown-resolving" || state.gameOver) return;
+    const personality = getAiPersonality();
     const humanTarget = closestCard(state.humanHand, state.currentValue);
     const aiTarget = closestCard(state.aiHand, state.currentValue);
     if (humanTarget === null || aiTarget === null) throw new Error("승부에 사용할 남은 카드가 없습니다.");
@@ -595,22 +827,24 @@
     let title = "무승부예요";
     let symbol = "🤝";
     let description = `${state.pendingShowdownReason} 두 카드가 최종 결과값 ${state.currentValue}에서 같은 거리였어요.`;
-    let reaction = "다람쥐도 같은 거리라며 신기해해요.";
+    let reaction = personality.result.draw;
     if (humanDistance < aiDistance) {
       title = "당신이 이겼어요";
       symbol = "🏆";
       description = `${state.pendingShowdownReason} 남은 카드를 펼쳐 보니 내 카드가 최종 결과값 ${state.currentValue}에 더 가까웠어요.`;
-      reaction = "다람쥐가 고개를 갸웃하며 다음 판을 기다려요.";
+      reaction = personality.result.humanWin;
     } else if (humanDistance > aiDistance) {
-      title = "숲 다람쥐가 이겼어요";
+      title = `${personality.name}가 이겼어요`;
       symbol = "🐿️";
-      description = `${state.pendingShowdownReason} 남은 카드를 펼쳐 보니 다람쥐 카드가 최종 결과값 ${state.currentValue}에 더 가까웠어요.`;
-      reaction = "다람쥐가 꼬리를 살랑이며 기뻐해요.";
+      description = `${state.pendingShowdownReason} 남은 카드를 펼쳐 보니 ${personality.name}의 카드가 최종 결과값 ${state.currentValue}에 더 가까웠어요.`;
+      reaction = personality.result.aiWin;
     }
 
     els.resultSymbol.textContent = symbol;
     els.resultTitle.textContent = title;
     els.resultDesc.textContent = description;
+    els.resultPersonality.textContent = `${personality.icon} 오늘의 상대 · ${personality.name} · ${personality.badge}`;
+    els.resultPersonality.dataset.personality = state.aiPersonality;
     els.resultReaction.textContent = reaction;
     els.humanTargetResult.textContent = humanTarget;
     els.humanDistanceResult.textContent = `거리 ${humanDistance}`;
@@ -657,6 +891,7 @@
   function startAfterIntro() {
     markIntroSeen();
     els.introOverlay.classList.add("is-hidden");
+    showPersonalityIntro();
     if (state.phase === "ai-opening" && !pendingTimeout) {
       pendingTimeout = window.setTimeout(runAiOpeningTurn, 350);
     }

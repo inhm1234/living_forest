@@ -566,3 +566,130 @@ body.oot-compact .oot-mode-nav span {
   border-radius: 9px;
   font-size: 9px;
 }
+
+/* ONE-OF-TEN v1.3 — 컴퓨터 성격 3종 */
+.oot-ai-name-row {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.oot-personality-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 21px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #edf3ee;
+  color: #667c6d;
+  font-size: 9px;
+  font-weight: 950;
+  white-space: nowrap;
+}
+.oot-personality-badge[data-personality="cautious"] {
+  background: #e9f2e9;
+  color: #5f7c65;
+}
+.oot-personality-badge[data-personality="greedy"] {
+  background: #faece2;
+  color: #a26746;
+}
+.oot-personality-badge[data-personality="genius"] {
+  background: #ececf8;
+  color: #696b9a;
+}
+.oot-personality-intro {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  align-items: center;
+  gap: 9px;
+  margin-top: 10px;
+  padding: 9px 11px;
+  border: 1px solid rgba(93,122,104,.13);
+  border-radius: 15px;
+  background: #f4f7f2;
+  animation: oot-personality-arrive .28s ease;
+}
+.oot-personality-intro[data-personality="greedy"] {
+  border-color: rgba(180,111,70,.14);
+  background: #fbf2e9;
+}
+.oot-personality-intro[data-personality="genius"] {
+  border-color: rgba(102,104,157,.14);
+  background: #f2f2fa;
+}
+.oot-personality-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(255,255,255,.78);
+  font-size: 18px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.72);
+}
+.oot-personality-intro b {
+  display: block;
+  color: #53675c;
+  font-size: 11px;
+}
+.oot-personality-intro p {
+  margin: 2px 0 0;
+  color: #7e8c84;
+  font-size: 10px;
+  line-height: 1.45;
+}
+.oot-result-personality {
+  width: fit-content;
+  max-width: 100%;
+  margin: 10px auto 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #edf3ee;
+  color: #64796b;
+  font-size: 10px;
+  font-weight: 950;
+}
+.oot-result-personality[data-personality="greedy"] {
+  background: #faeee5;
+  color: #9b6548;
+}
+.oot-result-personality[data-personality="genius"] {
+  background: #eeeeF8;
+  color: #696b96;
+}
+@keyframes oot-personality-arrive {
+  from { opacity: 0; transform: translateY(-5px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+body.oot-compact .oot-ai-name-row { gap: 4px; }
+body.oot-compact .oot-personality-badge {
+  min-height: 16px;
+  padding: 2px 5px;
+  font-size: 7px;
+}
+body.oot-compact .oot-personality-intro {
+  grid-template-columns: 24px 1fr;
+  gap: 6px;
+  margin: 4px 0 0 41px;
+  padding: 5px 7px;
+  border-radius: 10px;
+}
+body.oot-compact .oot-personality-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+body.oot-compact .oot-personality-intro b { font-size: 8px; }
+body.oot-compact .oot-personality-intro p {
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 7px;
+}
+@media (max-width: 390px) and (max-height: 700px) {
+  body.oot-compact .oot-personality-intro { margin-left: 0; }
+  body.oot-compact .oot-personality-intro p { display: none; }
+}
