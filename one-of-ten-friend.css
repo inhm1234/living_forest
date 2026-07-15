@@ -254,3 +254,50 @@ button:disabled { opacity: .45; cursor: default; }
   body.ootf-in-match .ootf-hand-help { min-height: 10px; margin-top: 1px; font-size: 7px; }
   body.ootf-in-match .ootf-match-footer { font-size: 7px; }
 }
+
+
+/* 초대 알림에서 이동했을 때 해당 초대를 잠깐 강조합니다. */
+.ootf-list-card.is-invite-focus {
+  animation: ootf-invite-focus 1.1s ease-in-out 2;
+  outline: 3px solid rgba(81, 132, 93, 0.24);
+  outline-offset: 3px;
+}
+
+@keyframes ootf-invite-focus {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* v1.2.0 · 친구 대전 대기방 */
+.ootf-ready-room-card { width: min(100%, 460px); padding: 23px 18px 18px; border: 1px solid rgba(255,255,255,.84); border-radius: 27px; background: #fffdf8; box-shadow: 0 28px 80px rgba(34,50,40,.28); }
+.ootf-ready-kicker { margin: 0; color: #9aa59e; font-size: 8px; font-weight: 950; letter-spacing: .13em; }
+.ootf-ready-room-profile { display: flex; align-items: center; gap: 12px; margin: 8px 0 12px; }
+.ootf-ready-room-avatar { width: 57px; height: 57px; flex: 0 0 auto; display: grid; place-items: center; overflow: hidden; border-radius: 19px; background: #edf2ea; color: #66806f; font-size: 20px; font-weight: 950; }
+.ootf-ready-room-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.ootf-ready-room-profile h2 { margin: 0 0 5px; color: var(--f-ink); font-size: 20px; }
+.ootf-ready-room-profile h2 span { color: var(--f-green-dark); }
+.ootf-ready-room-mode { display: inline-flex; min-height: 22px; align-items: center; padding: 3px 9px; border-radius: 999px; background: #e8f0e7; color: #5f7d68; font-size: 9px; font-weight: 950; }
+.ootf-ready-room-mode.is-rated { background: #f4ead5; color: #8b6c3d; }
+.ootf-ready-room-description { margin: 0; padding: 12px 13px; border-radius: 16px; background: #f3f6f0; color: #62736a; font-size: 10px; font-weight: 800; line-height: 1.55; }
+.ootf-ready-players { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; margin: 13px 0 10px; }
+.ootf-ready-players > div { min-height: 78px; display: grid; place-items: center; align-content: center; gap: 5px; padding: 10px; border: 1px solid rgba(75,98,82,.10); border-radius: 16px; background: #f6f7f2; text-align: center; }
+.ootf-ready-players > div.is-ready { border-color: rgba(93,136,104,.28); background: #eaf3e9; box-shadow: inset 0 0 0 1px rgba(93,136,104,.08); }
+.ootf-ready-players span { color: #7e8b84; font-size: 9px; font-weight: 900; }
+.ootf-ready-players strong { color: #8b9690; font-size: 12px; }
+.ootf-ready-players > div.is-ready strong { color: #4e7259; }
+.ootf-ready-players em { color: #96a099; font-size: 9px; font-style: normal; font-weight: 950; }
+.ootf-ready-countdown { min-height: 82px; display: grid; place-items: center; margin: 8px 0; border-radius: 20px; background: linear-gradient(145deg, #eaf3e8, #f8f1e3); color: #4e705a; font-size: 48px; font-weight: 950; animation: ootf-ready-pop .8s ease-in-out infinite; }
+.ootf-ready-room-message { min-height: 18px; margin: 8px 0 10px; color: #7c8982; text-align: center; font-size: 9px; font-weight: 850; line-height: 1.5; }
+.ootf-ready-primary, .ootf-ready-secondary { width: 100%; min-height: 47px; border-radius: 15px; font-size: 11px; font-weight: 950; cursor: pointer; }
+.ootf-ready-primary { border: 0; background: var(--f-green-dark); color: #fff; }
+.ootf-ready-primary.is-cancel { background: #eef1ec; color: #6e7c74; box-shadow: inset 0 0 0 1px rgba(74,95,81,.10); }
+.ootf-ready-secondary { margin-top: 8px; border: 1px solid var(--f-line); background: #fff; color: #7a8780; }
+.ootf-ready-primary:disabled, .ootf-ready-secondary:disabled { cursor: default; opacity: .62; }
+@keyframes ootf-ready-pop { 0%,100% { transform: scale(.96); } 50% { transform: scale(1.03); } }
+
+@media (max-width: 520px) {
+  .ootf-ready-room-card { padding: 20px 15px 15px; }
+  .ootf-ready-room-avatar { width: 51px; height: 51px; border-radius: 17px; }
+  .ootf-ready-room-profile h2 { font-size: 18px; }
+  .ootf-ready-countdown { min-height: 70px; font-size: 42px; }
+}

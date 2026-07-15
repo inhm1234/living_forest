@@ -6,7 +6,6 @@
   const AI_THINK_MS = 1050;
   const EQUATION_REVEAL_MS = 800;
   const SHOWDOWN_REVEAL_MS = 1150;
-  const INTRO_KEY = "todayforest-one-of-ten-intro-seen-v1";
   const AI_PERSONALITIES = {
     cautious: {
       name: "겁많은 다람쥐",
@@ -195,6 +194,14 @@
     changeDifficultyButton: $("#changeDifficultyButton"),
     resultDifficultyPicker: $("#resultDifficultyPicker"),
     introOverlay: $("#introOverlay"),
+    introKicker: $("#introKicker"),
+    introOpponentIcon: $("#introOpponentIcon"),
+    introOpponentName: $("#introOpponentName"),
+    introOpponentBadge: $("#introOpponentBadge"),
+    introOpponentDesc: $("#introOpponentDesc"),
+    introDifficultyButtons: $$('[data-intro-difficulty]'),
+    introCountdown: $("#introCountdown"),
+    introNote: $("#introNote"),
     introStartButton: $("#introStartButton"),
     rulesModal: $("#rulesModal"),
     rulesButton: $("#rulesButton"),
@@ -207,6 +214,7 @@
   let turnTimerInterval = null;
   let pendingTimeout = null;
   let personalityIntroTimeout = null;
+  let pregameCountdownInterval = null;
   let lastPersonalityKey = null;
 
   function shuffle(values) {
@@ -296,10 +304,50 @@
     pendingTimeout = null;
   }
 
+  function clearPregameCountdown() {
+    if (pregameCountdownInterval) window.clearInterval(pregameCountdownInterval);
+    pregameCountdownInterval = null;
+  }
+
+  function renderPreparation() {
+    if (!state) return;
+    const personality = getAiPersonality();
+    els.introOpponentIcon.textContent = personality.icon;
+    els.introOpponentName.textContent = personality.name;
+    els.introOpponentBadge.textContent = personality.badge;
+    els.introOpponentBadge.dataset.personality = state.aiPersonality;
+    els.introOpponentDesc.textContent = personality.intro;
+    els.introDifficultyButtons.forEach((button) => {
+      const selected = button.dataset.introDifficulty === selectedDifficulty;
+      button.classList.toggle("is-selected", selected);
+      button.setAttribute("aria-pressed", selected ? "true" : "false");
+      button.disabled = Boolean(pregameCountdownInterval);
+    });
+  }
+
+  function openPreparation() {
+    clearPregameCountdown();
+    els.introKicker.textContent = "TODAY'S OPPONENT";
+    els.introCountdown.classList.add("is-hidden");
+    els.introCountdown.textContent = "3";
+    els.introNote.textContent = "버튼을 누르면 3초 뒤 다람쥐가 첫 카드를 냅니다.";
+    els.introStartButton.disabled = false;
+    els.introStartButton.textContent = "게임 시작";
+    renderPreparation();
+    els.introOverlay.classList.remove("is-hidden");
+  }
+
+  function prepareNewGame() {
+    clearPregameCountdown();
+    resetGame({ deferOpening: true });
+    openPreparation();
+  }
+
   function resetGame({ deferOpening = false } = {}) {
     clearHumanTimer();
     clearPendingTimeout();
     clearPersonalityIntroTimeout();
+    clearPregameCountdown();
 
     const aiPersonality = pickAiPersonality();
     state = {
@@ -323,11 +371,11 @@
       gameOver: false,
     };
 
-    state.humanHand.push(drawCard(), drawCard());
-    state.aiHand.push(drawCard(), drawCard());
+    // 실제 카드 배정은 준비 카운트다운이 끝난 뒤에만 진행합니다.
     els.resultOverlay.classList.add("is-hidden");
     els.resultDifficultyPicker.classList.add("is-hidden");
     render();
+    renderPreparation();
     if (!deferOpening) {
       showPersonalityIntro();
       pendingTimeout = window.setTimeout(runAiOpeningTurn, 700);
@@ -384,6 +432,11 @@
     });
     els.resultDifficultyButtons.forEach((button) => {
       const selected = button.dataset.resultDifficulty === selectedDifficulty;
+      button.classList.toggle("is-selected", selected);
+      button.setAttribute("aria-pressed", selected ? "true" : "false");
+    });
+    els.introDifficultyButtons.forEach((button) => {
+      const selected = button.dataset.introDifficulty === selectedDifficulty;
       button.classList.toggle("is-selected", selected);
       button.setAttribute("aria-pressed", selected ? "true" : "false");
     });
@@ -862,7 +915,7 @@
   function selectResultDifficulty(difficulty) {
     if (!["easy", "normal", "hard"].includes(difficulty)) return;
     selectedDifficulty = difficulty;
-    resetGame();
+    prepareNewGame();
   }
 
   function applyViewportMode() {
@@ -871,42 +924,61 @@
     if (state) renderHistory();
   }
 
-  function isIntroSeen() {
-    if (new URLSearchParams(window.location.search).get("skipIntro") === "1") return true;
-    try {
-      return window.localStorage.getItem(INTRO_KEY) === "true";
-    } catch (_) {
-      return false;
-    }
-  }
-
-  function markIntroSeen() {
-    try {
-      window.localStorage.setItem(INTRO_KEY, "true");
-    } catch (_) {
-      // 저장이 막혀 있어도 게임은 계속 진행합니다.
-    }
-  }
-
   function startAfterIntro() {
-    markIntroSeen();
-    els.introOverlay.classList.add("is-hidden");
-    showPersonalityIntro();
-    if (state.phase === "ai-opening" && !pendingTimeout) {
-      pendingTimeout = window.setTimeout(runAiOpeningTurn, 350);
-    }
+    if (pregameCountdownInterval || !state || state.gameOver) return;
+    els.introStartButton.disabled = true;
+    els.introDifficultyButtons.forEach((button) => { button.disabled = true; });
+    els.introKicker.textContent = "MATCH START";
+    els.introCountdown.classList.remove("is-hidden");
+    els.introNote.textContent = `${getAiPersonality().name}가 카드를 준비하고 있어요.`;
+
+    const countdownStartedAt = Date.now();
+    const countdownMs = 3000;
+    const updateCountdown = () => {
+      const remaining = Math.max(0, countdownMs - (Date.now() - countdownStartedAt));
+      const count = Math.max(1, Math.ceil(remaining / 1000));
+      els.introCountdown.textContent = remaining > 0 ? String(count) : "시작!";
+      if (remaining > 0) return;
+
+      clearPregameCountdown();
+      if (!state.humanHand.length && !state.aiHand.length) {
+        state.humanHand.push(drawCard(), drawCard());
+        state.aiHand.push(drawCard(), drawCard());
+      }
+      els.introOverlay.classList.add("is-hidden");
+      els.introDifficultyButtons.forEach((button) => { button.disabled = false; });
+      render();
+      showPersonalityIntro();
+      if (state.phase === "ai-opening" && !pendingTimeout) {
+        pendingTimeout = window.setTimeout(runAiOpeningTurn, 250);
+      }
+    };
+
+    updateCountdown();
+    pregameCountdownInterval = window.setInterval(updateCountdown, 100);
   }
 
   function setDifficulty(difficulty) {
     if (!["easy", "normal", "hard"].includes(difficulty)) return;
     selectedDifficulty = difficulty;
-    resetGame();
+    prepareNewGame();
+  }
+
+  function setIntroDifficulty(difficulty) {
+    if (!["easy", "normal", "hard"].includes(difficulty) || pregameCountdownInterval) return;
+    selectedDifficulty = difficulty;
+    state.difficulty = difficulty;
+    renderDifficulty();
+    renderPreparation();
   }
 
   function openRules() { els.rulesModal.classList.remove("is-hidden"); }
   function closeRules() { els.rulesModal.classList.add("is-hidden"); }
 
   els.difficultyButtons.forEach((button) => button.addEventListener("click", () => setDifficulty(button.dataset.difficulty)));
+  els.introDifficultyButtons.forEach((button) => {
+    button.addEventListener("click", () => setIntroDifficulty(button.dataset.introDifficulty));
+  });
   els.resultDifficultyButtons.forEach((button) => {
     button.addEventListener("click", () => selectResultDifficulty(button.dataset.resultDifficulty));
   });
@@ -919,8 +991,8 @@
   els.stopButton.addEventListener("click", () => beginShowdown("당신이 스톱했어요."));
   els.drawButton.addEventListener("click", startHumanDraw);
   els.selectedOperationPreview.addEventListener("click", cancelOperationFromPreview);
-  els.newGameButton.addEventListener("click", resetGame);
-  els.newGameButtonInline.addEventListener("click", resetGame);
+  els.newGameButton.addEventListener("click", prepareNewGame);
+  els.newGameButtonInline.addEventListener("click", prepareNewGame);
   els.rulesButton.addEventListener("click", openRules);
   els.closeRulesButton.addEventListener("click", closeRules);
   els.rulesConfirmButton.addEventListener("click", closeRules);
@@ -931,7 +1003,6 @@
   window.addEventListener("resize", applyViewportMode);
 
   applyViewportMode();
-  const showIntro = !isIntroSeen();
-  resetGame({ deferOpening: showIntro });
-  els.introOverlay.classList.toggle("is-hidden", !showIntro);
+  resetGame({ deferOpening: true });
+  openPreparation();
 })();

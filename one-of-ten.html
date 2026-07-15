@@ -10,7 +10,7 @@
   <title>원오브텐 | 오늘의숲</title>
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="one-of-ten.css?v=1.3" />
+  <link rel="stylesheet" href="one-of-ten.css?v=1.4" />
 </head>
 <body>
   <main class="oot-app">
@@ -183,19 +183,34 @@
   </section>
 
   <section class="oot-overlay is-hidden" id="introOverlay" role="dialog" aria-modal="true" aria-labelledby="introTitle">
-    <div class="oot-intro-card">
-      <p class="oot-intro-kicker">FIRST PLAY</p>
-      <h2 id="introTitle">다람쥐와 처음 놀아볼까요?</h2>
-      <div class="oot-intro-steps">
-        <div><b>1</b><span>다람쥐가 먼저 숫자카드를 내요.</span></div>
-        <div><b>2</b><span>수식과 숫자를 골라 계산을 이어가요.</span></div>
-        <div><b>3</b><span>내 남은 카드가 결과값에 가깝다고 느껴지면 스톱하세요.</span></div>
+    <div class="oot-intro-card oot-ready-card">
+      <p class="oot-intro-kicker" id="introKicker">TODAY'S OPPONENT</p>
+      <div class="oot-ready-opponent">
+        <span class="oot-ready-icon" id="introOpponentIcon">🐿️</span>
+        <div>
+          <h2 id="introTitle"><span id="introOpponentName">오늘의 다람쥐</span>와 대결해요</h2>
+          <span class="oot-ready-badge" id="introOpponentBadge">오늘의 상대</span>
+        </div>
       </div>
-      <p class="oot-intro-note">이 안내는 처음 한 번만 보여요. 게임 방법은 언제든 다시 볼 수 있어요.</p>
-      <button class="oot-intro-start" id="introStartButton" type="button">다람쥐와 시작하기</button>
+      <p class="oot-ready-description" id="introOpponentDesc">상대의 성격을 확인하고 준비되면 시작하세요.</p>
+      <div class="oot-ready-difficulty">
+        <span>이번 판 난이도</span>
+        <div role="group" aria-label="이번 판 컴퓨터 난이도">
+          <button type="button" data-intro-difficulty="easy">쉬움</button>
+          <button type="button" data-intro-difficulty="normal">보통</button>
+          <button type="button" data-intro-difficulty="hard">어려움</button>
+        </div>
+      </div>
+      <div class="oot-ready-rule">
+        <b>준비되면 시작</b>
+        <span>시작 버튼을 누르기 전에는 카드와 30초 제한시간이 움직이지 않아요.</span>
+      </div>
+      <div class="oot-ready-countdown is-hidden" id="introCountdown" aria-live="assertive">3</div>
+      <p class="oot-intro-note" id="introNote">버튼을 누르면 3초 뒤 다람쥐가 첫 카드를 냅니다.</p>
+      <button class="oot-intro-start" id="introStartButton" type="button">게임 시작</button>
     </div>
   </section>
 
-  <script src="one-of-ten.js?v=1.3"></script>
+  <script src="one-of-ten.js?v=1.4"></script>
 </body>
 </html>

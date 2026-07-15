@@ -11,7 +11,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="one-of-ten-friend.css?v=1.1.2" />
+  <link rel="stylesheet" href="one-of-ten-friend.css?v=1.2.0" />
   <link rel="stylesheet" href="oot-notifications.css?v=oot-push-v0-5" />
 </head>
 <body>
@@ -207,13 +207,42 @@
     </div>
   </section>
 
+  <section class="ootf-overlay is-hidden" id="matchReadyOverlay" role="dialog" aria-modal="true" aria-labelledby="matchReadyTitle">
+    <div class="ootf-ready-room-card">
+      <p class="ootf-ready-kicker">MATCH ROOM</p>
+      <div class="ootf-ready-room-profile">
+        <span class="ootf-ready-room-avatar" id="readyOpponentAvatar"><b>친</b></span>
+        <div>
+          <h2 id="matchReadyTitle"><span id="readyOpponentName">친구</span>님과의 대기방</h2>
+          <span class="ootf-ready-room-mode" id="readyMatchMode">편한 대전</span>
+        </div>
+      </div>
+      <p class="ootf-ready-room-description">두 사람이 모두 준비해야 3초 카운트다운 뒤 경기가 시작돼요. 준비 전에는 30초 제한시간이 흐르지 않아요.</p>
+      <div class="ootf-ready-players">
+        <div id="readyMeCard">
+          <span>나</span>
+          <strong id="readyMeStatus">준비 중</strong>
+        </div>
+        <em>VS</em>
+        <div id="readyOpponentCard">
+          <span id="readyOpponentLabel">친구</span>
+          <strong id="readyOpponentStatus">준비 중</strong>
+        </div>
+      </div>
+      <div class="ootf-ready-countdown is-hidden" id="readyCountdown" aria-live="assertive">3</div>
+      <p class="ootf-ready-room-message" id="readyRoomMessage">준비되면 아래 버튼을 눌러 주세요.</p>
+      <button class="ootf-ready-primary" id="matchReadyButton" type="button">준비 완료</button>
+      <button class="ootf-ready-secondary" id="cancelWaitingMatchButton" type="button">대기방 나가기</button>
+    </div>
+  </section>
+
   <section class="ootf-overlay is-hidden" id="helpOverlay" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
     <div class="ootf-modal-card">
       <button class="ootf-modal-close" id="closeHelpButton" type="button" aria-label="안내 닫기">×</button>
       <p>FRIEND MATCH</p>
       <h2 id="helpTitle">친구 대전 안내</h2>
       <ol>
-        <li>친구에게 초대를 보내고 상대가 수락하면 경기가 시작돼요.</li>
+        <li>친구가 초대를 수락하면 대기방으로 이동하고, 두 사람이 모두 준비한 뒤 경기가 시작돼요.</li>
         <li>선공은 서버에서 무작위로 정해요.</li>
         <li>첫 숫자를 낸 뒤 상대는 수식과 숫자를 바로 내요.</li>
         <li>그다음부터 스톱하거나 카드 한 장을 받고 계산을 이어가요.</li>
@@ -257,6 +286,6 @@
 
   <div class="ootf-toast is-hidden" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="oot-notifications.js?v=oot-push-v0-5"></script>
-  <script type="module" src="one-of-ten-friend.js?v=1.1.2"></script>
+  <script type="module" src="one-of-ten-friend.js?v=1.2.0"></script>
 </body>
 </html>

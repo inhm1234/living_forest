@@ -693,3 +693,30 @@ body.oot-compact .oot-personality-intro p {
   body.oot-compact .oot-personality-intro { margin-left: 0; }
   body.oot-compact .oot-personality-intro p { display: none; }
 }
+
+/* v1.4 · 매 경기 시작 전 상대 소개와 준비 카운트다운 */
+.oot-ready-card { text-align: left; }
+.oot-ready-opponent { display: flex; align-items: center; gap: 13px; margin: 8px 0 12px; }
+.oot-ready-icon { width: 58px; height: 58px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 20px; background: #edf3e9; font-size: 30px; box-shadow: inset 0 0 0 1px rgba(82,111,91,.08); }
+.oot-ready-opponent h2 { margin: 0 0 5px; }
+.oot-ready-badge { display: inline-flex; min-height: 22px; align-items: center; padding: 3px 9px; border-radius: 999px; background: #e8f0e7; color: #5f7d68; font-size: 9px; font-weight: 950; }
+.oot-ready-badge[data-personality="greedy"] { background: #f5ead7; color: #94713d; }
+.oot-ready-badge[data-personality="genius"] { background: #e8edf6; color: #62759a; }
+.oot-ready-description { margin: 0 0 13px; padding: 12px 13px; border-radius: 16px; background: #f4f6f1; color: #617269; font-size: 11px; font-weight: 800; line-height: 1.55; }
+.oot-ready-difficulty { padding: 12px; border: 1px solid rgba(69,94,78,.10); border-radius: 16px; background: #fff; }
+.oot-ready-difficulty > span { display: block; margin-bottom: 8px; color: #7f8d85; font-size: 9px; font-weight: 950; }
+.oot-ready-difficulty > div { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.oot-ready-difficulty button { min-height: 38px; border: 1px solid rgba(71,96,80,.13); border-radius: 12px; background: #f5f7f3; color: #65766c; font-size: 10px; font-weight: 950; cursor: pointer; }
+.oot-ready-difficulty button.is-selected { border-color: #71927c; background: #e6efe7; color: #496654; box-shadow: 0 6px 14px rgba(64,91,72,.10); }
+.oot-ready-rule { display: grid; gap: 3px; margin-top: 10px; padding: 11px 12px; border-radius: 15px; background: #f8f1e3; }
+.oot-ready-rule b { color: #806c49; font-size: 10px; }
+.oot-ready-rule span { color: #8c806a; font-size: 9px; line-height: 1.45; }
+.oot-ready-countdown { min-height: 82px; display: grid; place-items: center; margin: 12px 0 2px; border-radius: 20px; background: linear-gradient(145deg, #edf4eb, #f8f4e8); color: #4e705a; font-size: 48px; font-weight: 950; animation: oot-countdown-pop .8s ease-in-out infinite; }
+.oot-intro-start:disabled { cursor: default; opacity: .72; }
+@keyframes oot-countdown-pop { 0%,100% { transform: scale(.96); } 50% { transform: scale(1.03); } }
+
+@media (max-width: 520px) {
+  .oot-ready-icon { width: 51px; height: 51px; border-radius: 17px; font-size: 27px; }
+  .oot-ready-opponent h2 { font-size: 19px; }
+  .oot-ready-countdown { min-height: 70px; font-size: 42px; }
+}
