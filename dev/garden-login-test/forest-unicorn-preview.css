@@ -138,12 +138,33 @@ body.forest-unicorn-preview-enabled .header-actions,
 body.forest-unicorn-live-enabled .header-actions {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-auto-rows: 36px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: 36px 36px;
   justify-content: end;
   align-items: stretch;
   gap: 8px;
-  width: 272px;
+  width: 354px;
+}
+
+body.forest-unicorn-preview-enabled .header-actions > .account-pill,
+body.forest-unicorn-live-enabled .header-actions > .account-pill {
+  grid-column: 1;
+  grid-row: 1;
+}
+body.forest-unicorn-preview-enabled .header-actions > .friend-pill,
+body.forest-unicorn-live-enabled .header-actions > .friend-pill {
+  grid-column: 2;
+  grid-row: 1;
+}
+body.forest-unicorn-preview-enabled .header-actions > .quiet-pill,
+body.forest-unicorn-live-enabled .header-actions > .quiet-pill {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+.forest-unicorn-header-slot {
+  position: relative;
+  grid-column: 3;
+  grid-row: 1;
 }
 
 body.forest-unicorn-preview-enabled .header-actions > .account-pill,
@@ -164,33 +185,43 @@ body.forest-unicorn-preview-enabled .header-actions > .quiet-pill,
 body.forest-unicorn-live-enabled .header-actions > .account-pill,
 body.forest-unicorn-live-enabled .header-actions > .friend-pill,
 body.forest-unicorn-live-enabled .header-actions > .quiet-pill {
-  justify-content: center;
   min-height: 36px;
   max-width: none;
-  padding: 6px 8px;
-  text-align: center;
+  padding: 6px 10px;
   overflow: hidden;
+}
+body.forest-unicorn-preview-enabled .header-actions > .account-pill,
+body.forest-unicorn-preview-enabled .header-actions > .friend-pill,
+body.forest-unicorn-live-enabled .header-actions > .account-pill,
+body.forest-unicorn-live-enabled .header-actions > .friend-pill {
+  justify-content: center;
+  text-align: center;
+}
+body.forest-unicorn-preview-enabled .header-actions > .quiet-pill,
+body.forest-unicorn-live-enabled .header-actions > .quiet-pill {
+  justify-content: center;
+  text-align: center;
 }
 
 body.forest-unicorn-preview-enabled .header-actions > .account-pill span:last-child,
 body.forest-unicorn-preview-enabled .header-actions > .friend-pill span:last-child,
-body.forest-unicorn-preview-enabled .header-actions > .quiet-pill span:last-child,
 body.forest-unicorn-live-enabled .header-actions > .account-pill span:last-child,
-body.forest-unicorn-live-enabled .header-actions > .friend-pill span:last-child,
-body.forest-unicorn-live-enabled .header-actions > .quiet-pill span:last-child {
+body.forest-unicorn-live-enabled .header-actions > .friend-pill span:last-child {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-.forest-unicorn-header-slot {
-  position: relative;
+body.forest-unicorn-preview-enabled .header-actions > .quiet-pill span:last-child,
+body.forest-unicorn-live-enabled .header-actions > .quiet-pill span:last-child {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
 }
 
 .forest-unicorn-header-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   width: 100%;
   min-height: 36px;
   justify-content: center;
@@ -209,13 +240,18 @@ body.forest-unicorn-live-enabled .header-actions > .quiet-pill span:last-child {
 .forest-unicorn-header-chip-icon {
   display: grid;
   place-items: center;
-  width: 20px;
-  height: 20px;
+  width: 19px;
+  height: 19px;
   border-radius: 8px;
   background: rgba(250, 241, 255, 0.92);
-  font-size: 12px;
+  font-size: 11px;
 }
-.forest-unicorn-header-chip-text { white-space: nowrap; }
+.forest-unicorn-header-chip-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .forest-unicorn-memory-popover {
   position: absolute;
@@ -329,9 +365,9 @@ body.forest-unicorn-live-enabled .header-actions > .quiet-pill span:last-child {
 @media (max-width: 470px) {
   body.forest-unicorn-preview-enabled .header-actions,
   body.forest-unicorn-live-enabled .header-actions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-rows: 34px;
-    width: min(250px, 58vw);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: 34px 34px;
+    width: min(306px, 68vw);
     gap: 6px;
   }
   .forest-unicorn-header-chip,
