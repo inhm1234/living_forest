@@ -34,6 +34,8 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
   let statusNode = null;
   let imgNode = null;
   let deliveryCard = null;
+  let memoryChipButton = null;
+  let memoryPopover = null;
   let composerWatchTimer = null;
   let currentZone = 0;
   let currentRouteIndex = 0;
@@ -78,8 +80,18 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
   }
 
   function updateMemoryCard() {
-    if (metDateNode) metDateNode.textContent = `${formatFirstMetDate(getFirstMetAt())} · 숲 유니콘과 처음 만났어요`;
+    const metDateText = `${formatFirstMetDate(getFirstMetAt())} · 숲 유니콘과 처음 만났어요`;
+    if (metDateNode) metDateNode.textContent = metDateText;
+    if (memoryChipButton) memoryChipButton.setAttribute("aria-label", `숲 유니콘 추억 보기 · ${metDateText}`);
     if (replayButton) replayButton.disabled = !cinematicReady && typeof window.__todayForestReplayFriendCinematic !== "function";
+  }
+
+  function toggleMemoryPopover(force) {
+    if (!memoryPopover || !memoryChipButton) return;
+    const shouldOpen = typeof force === "boolean" ? force : memoryPopover.hidden;
+    memoryPopover.hidden = !shouldOpen;
+    memoryPopover.classList.toggle("is-open", shouldOpen);
+    memoryChipButton.setAttribute("aria-expanded", String(shouldOpen));
   }
 
   function replayFirstMeeting() {
@@ -163,31 +175,64 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     `;
     stage.appendChild(deliveryCard);
 
-    const panel = document.createElement("section");
-    panel.className = "forest-unicorn-preview-panel";
-    panel.setAttribute("aria-label", "숲 유니콘 생활 테스트 제어");
-    panel.innerHTML = `
-      <div class="forest-unicorn-preview-panel-head">
-        <div><p class="kicker">${forestFriendPreviewEnabled ? "FOREST FRIEND PREVIEW v3.0" : "MY SPECIAL FOREST FRIEND"}</p><strong>숲 유니콘과 함께하는 정원</strong></div>
-      </div>
-      <div class="forest-unicorn-memory-card">
-        <span class="forest-unicorn-memory-icon" aria-hidden="true">✨</span>
-        <div class="forest-unicorn-memory-copy">
-          <p class="forest-unicorn-memory-kicker">OUR FIRST DAY</p>
-          <strong>우리가 처음 만난 날</strong>
-          <p class="forest-unicorn-memory-date" data-unicorn-met-date></p>
-        </div>
-        <button type="button" class="forest-unicorn-memory-replay" data-unicorn-replay>다시 보기</button>
-      </div>
-      <p class="forest-unicorn-preview-status">${forestFriendPreviewEnabled ? "유니콘을 눌러 마음을 맡기면 30분 뒤 도착하고, 유니콘은 30분 더 숲길을 지나 돌아와요." : "숲 유니콘이 나무 곁에서 당신과 함께 지내고 있어요."}</p>
-    `;
-    stage.insertAdjacentElement("afterend", panel);
-    statusNode = panel.querySelector(".forest-unicorn-preview-status");
-    replayButton = panel.querySelector("[data-unicorn-replay]");
-    metDateNode = panel.querySelector("[data-unicorn-met-date]");
-    replayButton?.addEventListener("click", replayFirstMeeting);
-    cinematicReady = typeof window.__todayForestReplayFriendCinematic === "function";
-    updateMemoryCard();
+    const headerActions = document.querySelector(".header-actions");
+    if (headerActions) {
+      const memorySlot = document.createElement("div");
+      memorySlot.className = "forest-unicorn-header-slot";
+      memorySlot.innerHTML = `
+        <button type="button" class="forest-unicorn-header-chip" data-unicorn-memory-toggle aria-haspopup="dialog" aria-expanded="false">
+          <span class="forest-unicorn-header-chip-icon" aria-hidden="true">🦄</span>
+          <span class="forest-unicorn-header-chip-text">숲 유니콘 ♥</span>
+        </button>
+        <section class="forest-unicorn-memory-popover" aria-label="숲 유니콘 추억" hidden>
+          <div class="forest-unicorn-memory-popover-head">
+            <div>
+              <p class="kicker">${forestFriendPreviewEnabled ? "FOREST FRIEND PREVIEW v3.1" : "MY SPECIAL FOREST FRIEND"}</p>
+              <strong>숲 유니콘과 함께하는 정원</strong>
+            </div>
+            <button type="button" class="forest-unicorn-memory-close" data-unicorn-memory-close aria-label="추억 창 닫기">✕</button>
+          </div>
+          <div class="forest-unicorn-memory-card compact">
+            <span class="forest-unicorn-memory-icon" aria-hidden="true">✨</span>
+            <div class="forest-unicorn-memory-copy">
+              <p class="forest-unicorn-memory-kicker">OUR FIRST DAY</p>
+              <strong>우리가 처음 만난 날</strong>
+              <p class="forest-unicorn-memory-date" data-unicorn-met-date></p>
+            </div>
+          </div>
+          <p class="forest-unicorn-preview-status">${forestFriendPreviewEnabled ? "유니콘을 눌러 마음을 맡기면 30분 뒤 도착하고, 유니콘은 30분 더 숲길을 지나 돌아와요." : "숲 유니콘이 나무 곁에서 당신과 함께 지내고 있어요."}</p>
+          <div class="forest-unicorn-memory-popover-actions">
+            <button type="button" class="forest-unicorn-memory-replay" data-unicorn-replay>다시 보기</button>
+          </div>
+        </section>
+      `;
+      headerActions.appendChild(memorySlot);
+      memoryChipButton = memorySlot.querySelector("[data-unicorn-memory-toggle]");
+      memoryPopover = memorySlot.querySelector(".forest-unicorn-memory-popover");
+      statusNode = memorySlot.querySelector(".forest-unicorn-preview-status");
+      replayButton = memorySlot.querySelector("[data-unicorn-replay]");
+      metDateNode = memorySlot.querySelector("[data-unicorn-met-date]");
+      memoryChipButton?.addEventListener("click", (event) => {
+        event.stopPropagation();
+        toggleMemoryPopover();
+      });
+      memorySlot.querySelector("[data-unicorn-memory-close]")?.addEventListener("click", (event) => {
+        event.stopPropagation();
+        toggleMemoryPopover(false);
+      });
+      replayButton?.addEventListener("click", () => {
+        toggleMemoryPopover(false);
+        replayFirstMeeting();
+      });
+      document.addEventListener("click", (event) => {
+        if (!memorySlot.contains(event.target)) toggleMemoryPopover(false);
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") toggleMemoryPopover(false);
+      });
+      cinematicReady = typeof window.__todayForestReplayFriendCinematic === "function";
+      updateMemoryCard();
+    }
 
     setAbsolutePosition(0, { visible: false });
     installSpecialFriendDeliveryBridge();

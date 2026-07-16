@@ -1,0 +1,10 @@
+업로드할 파일
+- dev/garden-login-test/index.html
+- dev/garden-login-test/forest-unicorn-preview.css
+- dev/garden-login-test/forest-unicorn-preview.js
+
+변경 내용
+- 하단의 큰 특별친구 카드 제거
+- 상단 오른쪽 상태 영역에 '숲 유니콘 ♥' 칩 추가
+- 상단 상태 버튼들을 2열 배치로 정리
+- 숲 유니콘 칩 클릭 시 작은 팝오버에서 첫 만남 정보/다시 보기 제공
