@@ -30,6 +30,10 @@ if (!isSpecialFriendPreview) {
   let flowTimer = null;
   let flowKey = "";
   let deferredThisVisit = false;
+  let syncRetryTimer = null;
+  let syncRetryAttempt = 0;
+  let lastSyncError = null;
+  const SYNC_RETRY_DELAYS = [500, 1200, 2500, 5000, 9000, 15000];
 
   function getSupabase() {
     return window.__todayForestSupabase || null;
@@ -323,6 +327,29 @@ if (!isSpecialFriendPreview) {
     });
   }
 
+  function clearSyncRetry() {
+    window.clearTimeout(syncRetryTimer);
+    syncRetryTimer = null;
+  }
+
+  function scheduleSyncRetry(origin = "retry") {
+    if (isStatePreviewMode || specialFriendState?.isMet) return;
+    clearSyncRetry();
+    const index = Math.min(syncRetryAttempt, SYNC_RETRY_DELAYS.length - 1);
+    const delay = SYNC_RETRY_DELAYS[index];
+    syncRetryAttempt += 1;
+    syncRetryTimer = window.setTimeout(() => {
+      syncRetryTimer = null;
+      void syncSpecialFriendState({ origin: `${origin}-${syncRetryAttempt}` });
+    }, delay);
+  }
+
+  function markSyncSucceeded() {
+    syncRetryAttempt = 0;
+    lastSyncError = null;
+    clearSyncRetry();
+  }
+
   async function currentSession() {
     const supabase = getSupabase();
     if (!supabase) return null;
@@ -337,24 +364,45 @@ if (!isSpecialFriendPreview) {
     try {
       if (isStatePreviewMode) {
         const next = previewState();
+        markSyncSucceeded();
         applyState(next, { origin: statePreviewMode === "after-save" ? "record" : origin });
         return next;
       }
+
       const supabase = getSupabase();
-      if (!supabase) return null;
+      if (!supabase) {
+        lastSyncError = new Error("SUPABASE_CLIENT_NOT_READY");
+        scheduleSyncRetry("client");
+        return null;
+      }
+
       const session = await currentSession();
       if (!session?.user) {
         specialFriendState = null;
+        lastSyncError = new Error("AUTH_SESSION_NOT_READY");
+        scheduleSyncRetry("session");
         return null;
       }
+
       const { data, error } = await supabase.rpc("sync_my_garden_special_friend_state");
       if (error) throw error;
       const next = normalizeState(data);
+      if (!next) {
+        lastSyncError = new Error("SPECIAL_FRIEND_STATE_EMPTY");
+        scheduleSyncRetry("empty");
+        return null;
+      }
+
+      markSyncSucceeded();
       applyState(next, { origin });
       return next;
     } catch (error) {
-      console.warn("TodayForest special-friend state sync skipped:", error);
-      if (!silent) toast("특별친구의 마음빛을 불러오지 못했어요. 잠시 뒤 다시 확인해 주세요.");
+      lastSyncError = error;
+      console.warn("TodayForest special-friend state sync retry scheduled:", error);
+      scheduleSyncRetry("error");
+      if (!silent && syncRetryAttempt >= 3) {
+        toast("특별친구의 마음빛을 불러오는 중이에요. 잠시만 기다려 주세요.");
+      }
       return null;
     } finally {
       syncInProgress = false;
@@ -467,6 +515,19 @@ if (!isSpecialFriendPreview) {
         void syncSpecialFriendState({ silent: false, origin: "record" });
       }, 420);
     });
+    window.addEventListener("todayforest:garden-session-ready", () => {
+      window.setTimeout(() => {
+        void syncSpecialFriendState({ origin: "garden-session-ready" });
+      }, 120);
+    });
+    window.addEventListener("pageshow", () => {
+      if (!deferredThisVisit) void syncSpecialFriendState({ origin: "pageshow" });
+    });
+    window.addEventListener("load", () => {
+      window.setTimeout(() => {
+        if (!deferredThisVisit) void syncSpecialFriendState({ origin: "window-load" });
+      }, 300);
+    }, { once: true });
     window.addEventListener("focus", () => {
       if (!deferredThisVisit) void syncSpecialFriendState({ origin: "focus" });
     });
@@ -479,6 +540,9 @@ if (!isSpecialFriendPreview) {
       const result = supabase.auth.onAuthStateChange((_event, session) => {
         if (session?.user) {
           window.setTimeout(() => { void syncSpecialFriendState({ origin: "auth" }); }, 180);
+        } else {
+          specialFriendState = null;
+          scheduleSyncRetry("auth-empty");
         }
       });
       authSubscription = result?.data?.subscription || null;
@@ -490,17 +554,16 @@ if (!isSpecialFriendPreview) {
     ensureArrivalUI();
 
     let attempts = 0;
-    while (!getSupabase() && attempts < 30) {
+    while (!getSupabase() && attempts < 150) {
       await new Promise((resolve) => window.setTimeout(resolve, 100));
       attempts += 1;
     }
-    if (!getSupabase() && !isStatePreviewMode) {
-      console.warn("TodayForest special-friend live: Supabase client not ready.");
-      return;
-    }
 
     installListeners();
-    await syncSpecialFriendState({ origin: "init" });
+    const initialState = await syncSpecialFriendState({ origin: "init" });
+    if (!initialState && !isStatePreviewMode) {
+      scheduleSyncRetry("startup");
+    }
   }
 
   if (document.readyState === "loading") {
@@ -509,5 +572,15 @@ if (!isSpecialFriendPreview) {
     void init();
   }
 
-  window.addEventListener("beforeunload", () => authSubscription?.unsubscribe?.(), { once: true });
+  window.__todayForestRefreshSpecialFriendState = () => syncSpecialFriendState({ silent: false, origin: "manual-refresh" });
+  window.__todayForestSpecialFriendSyncDebug = () => ({
+    state: specialFriendState ? { ...specialFriendState } : null,
+    retryAttempt: syncRetryAttempt,
+    lastError: lastSyncError ? String(lastSyncError.message || lastSyncError) : null,
+  });
+
+  window.addEventListener("beforeunload", () => {
+    clearSyncRetry();
+    authSubscription?.unsubscribe?.();
+  }, { once: true });
 }

@@ -15,6 +15,15 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 window.__todayForestSupabase = supabase;
 window.__todayForestShowToast = (...args) => showToast(...args);
 
+function publishGardenSessionReady(origin = "garden") {
+  window.dispatchEvent(new CustomEvent("todayforest:garden-session-ready", {
+    detail: {
+      origin,
+      userId: currentUser?.id || null,
+    },
+  }));
+}
+
 
 // GA4에는 닉네임·편지 제목·본문·계정 ID처럼 개인을 식별할 수 있는 값은 보내지 않습니다.
 // DEV에서는 ?analyticsDebug=1 일 때 콘솔에만 이벤트를 보여주고, 실제 GA4 전송은 하지 않습니다.
@@ -5920,6 +5929,7 @@ async function syncSession() {
     renderAuthUI();
     renderAll();
     await hydrateGardenForCurrentUser();
+    publishGardenSessionReady("sync-session-hydrated");
     return;
   }
 
@@ -5931,6 +5941,7 @@ async function syncSession() {
   renderAuthUI();
   if (currentUser) {
     renderAll();
+    publishGardenSessionReady("sync-session-rendered");
     // syncSession()에서 공유나무를 먼저 복원한 뒤에도 INITIAL_SESSION 이벤트가 한 번 더 올 수 있습니다.
     // 이때 내 정원이 다시 보이는 것을 막기 위해 주소의 공유나무 화면을 마지막으로 다시 복원합니다.
     restoreSharedTreeFromUrl();
@@ -6726,6 +6737,7 @@ async function init() {
       renderAuthUI();
       renderAll();
       await hydrateGardenForCurrentUser();
+      publishGardenSessionReady("auth-state-hydrated");
       return;
     }
 
@@ -6737,6 +6749,7 @@ async function init() {
     renderAuthUI();
     if (currentUser) {
       renderAll();
+      publishGardenSessionReady("auth-state-rendered");
       // INITIAL_SESSION 이벤트가 마지막에 내 정원을 다시 보이게 할 수 있습니다.
       // 주소에 공유나무가 있으면 렌더링 뒤 공유나무 화면을 최종 화면으로 복원합니다.
       restoreSharedTreeFromUrl();
