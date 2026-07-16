@@ -1,6 +1,6 @@
 /* -------------------------------------------------------------------------
-   SPECIAL FOREST FRIEND CINEMATIC PREVIEW v0.2
-   ?forestFriendCinematic=1 을 붙였을 때만 실행됩니다.
+   SPECIAL FOREST FRIEND CINEMATIC PREVIEW v0.3
+   ?forestFriendCinematic=1 또는 ?forestFriendPreview=1 에서 준비됩니다.
    검수 전용이며 DB/로그인/특별친구 보유 상태를 변경하지 않습니다.
 
    v0.2
@@ -10,7 +10,10 @@
    - 유니콘은 처음부터 멀리 보이며, 투명해졌다가 갑자기 나타나지 않습니다.
    ------------------------------------------------------------------------- */
 const ffCinematicParams = new URLSearchParams(window.location.search);
-const ffCinematicEnabled = ffCinematicParams.get("forestFriendCinematic") === "1";
+const ffStandalonePreview = ffCinematicParams.get("forestFriendCinematic") === "1";
+const ffFriendPreview = ffCinematicParams.get("forestFriendPreview") === "1";
+const ffFirstMeetingPreview = ffCinematicParams.get("firstMeeting") === "1";
+const ffCinematicEnabled = ffStandalonePreview || ffFriendPreview;
 
 if (ffCinematicEnabled) {
   const COPY = [
@@ -40,6 +43,8 @@ if (ffCinematicEnabled) {
   let completeTimer = null;
   let walkInterval = null;
   let walkFrameIndex = 0;
+  let currentMode = "preview";
+  let lastFocusedElement = null;
 
   function makeParticles(count = 30) {
     return Array.from({ length: count }, () => {
@@ -125,7 +130,7 @@ if (ffCinematicEnabled) {
     copyKicker = root.querySelector(".ff-cinematic-kicker");
     unicornImage = root.querySelector(".ff-cinematic-unicorn");
     root.querySelector(".ff-cinematic-skip")?.addEventListener("click", finishCinematic);
-    root.querySelector("[data-ff-replay]")?.addEventListener("click", playCinematic);
+    root.querySelector("[data-ff-replay]")?.addEventListener("click", () => playCinematic({ mode: "replay" }));
     root.querySelector("[data-ff-close]")?.addEventListener("click", closeCinematic);
     root.addEventListener("keydown", (event) => {
       if (event.key === "Escape") closeCinematic();
@@ -171,8 +176,10 @@ if (ffCinematicEnabled) {
     if (unicornImage) unicornImage.src = IDLE_FRAME;
   }
 
-  function playCinematic() {
+  function playCinematic(options = {}) {
     createCinematic();
+    currentMode = options.mode === "first-meeting" ? "first-meeting" : (options.mode === "replay" ? "replay" : "preview");
+    lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     clearTimers();
     document.body.classList.add("ff-cinematic-lock");
     root.classList.remove("is-running", "is-complete");
@@ -180,6 +187,7 @@ if (ffCinematicEnabled) {
     if (copyLine) copyLine.classList.remove("is-visible");
     if (unicornImage) unicornImage.src = WALK_FRAMES[0];
     void root.offsetWidth;
+    root.dataset.mode = currentMode;
     root.classList.add("is-running");
     COPY.forEach((item) => timers.push(window.setTimeout(() => setCopy(item), item.at)));
     timers.push(window.setTimeout(startWalkingFrames, 5150));
@@ -198,14 +206,27 @@ if (ffCinematicEnabled) {
   function closeCinematic() {
     if (!root) return;
     clearTimers();
+    const mode = currentMode;
     root.classList.remove("is-open", "is-running", "is-complete");
+    root.removeAttribute("data-mode");
     document.body.classList.remove("ff-cinematic-lock");
+    window.dispatchEvent(new CustomEvent("todayforest:friend-cinematic-closed", {
+      detail: { key: "forest_unicorn", mode },
+    }));
+    window.setTimeout(() => lastFocusedElement?.focus?.(), 80);
   }
 
   function init() {
     createCinematic();
-    window.setTimeout(playCinematic, 220);
-    window.__todayForestReplayFriendCinematic = playCinematic;
+    window.__todayForestReplayFriendCinematic = (options = {}) => playCinematic({ mode: options.mode || "replay" });
+    if (ffStandalonePreview) {
+      window.setTimeout(() => playCinematic({ mode: "preview" }), 220);
+    } else if (ffFriendPreview && ffFirstMeetingPreview) {
+      window.setTimeout(() => playCinematic({ mode: "first-meeting" }), 850);
+    }
+    window.dispatchEvent(new CustomEvent("todayforest:friend-cinematic-ready", {
+      detail: { key: "forest_unicorn" },
+    }));
   }
 
   if (document.readyState === "loading") {

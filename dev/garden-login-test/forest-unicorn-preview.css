@@ -296,3 +296,73 @@ body.forest-unicorn-preview-enabled .forest-unicorn-preview-panel { display: blo
 .forest-unicorn-letter-choice.is-selected .forest-unicorn-letter-choice-button {
   background: linear-gradient(135deg, #73b987, #78b9b0);
 }
+
+
+/* v2.9: 특별친구의 첫 만남을 추억처럼 다시 보는 카드 */
+.forest-unicorn-memory-card {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  margin-top: 9px;
+  padding: 10px;
+  border: 1px solid rgba(220, 205, 245, .92);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 247, 190, .44), transparent 34%),
+    linear-gradient(135deg, rgba(255,255,255,.98), rgba(248,241,255,.96));
+  box-shadow: 0 8px 17px rgba(103, 87, 138, .08);
+}
+.forest-unicorn-memory-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 13px;
+  background: linear-gradient(145deg, #fff9d8, #f5eaff);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.85);
+  font-size: 18px;
+}
+.forest-unicorn-memory-copy { min-width: 0; }
+.forest-unicorn-memory-copy p { margin: 0; }
+.forest-unicorn-memory-kicker {
+  color: #b29ac7;
+  font-size: 7.5px;
+  font-weight: 950;
+  letter-spacing: .1em;
+}
+.forest-unicorn-memory-copy strong {
+  display: block;
+  margin-top: 1px;
+  color: #6e627a;
+  font-size: 11px;
+  line-height: 1.35;
+}
+.forest-unicorn-memory-date {
+  margin-top: 2px !important;
+  color: #9b91a3;
+  font-size: 8.3px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+.forest-unicorn-memory-replay {
+  min-height: 31px;
+  padding: 6px 10px;
+  border: 1px solid rgba(190, 169, 218, .82);
+  border-radius: 999px;
+  background: rgba(255,255,255,.9);
+  color: #8c72a3;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 900;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.forest-unicorn-memory-replay:disabled { opacity: .48; cursor: wait; }
+.forest-unicorn-memory-replay:focus-visible { outline: 3px solid rgba(205,184,232,.8); outline-offset: 2px; }
+
+@media (max-width: 430px) {
+  .forest-unicorn-memory-card { grid-template-columns: 34px minmax(0, 1fr) auto; gap: 7px; padding: 9px; }
+  .forest-unicorn-memory-icon { width: 34px; height: 34px; border-radius: 12px; font-size: 16px; }
+  .forest-unicorn-memory-replay { padding-inline: 8px; }
+}

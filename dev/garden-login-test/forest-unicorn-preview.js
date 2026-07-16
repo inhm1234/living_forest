@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------
-   FOREST UNICORN PREVIEW v2
+   FOREST UNICORN PREVIEW v2.9
    ?forestFriendPreview=1 를 붙였을 때만 실행됩니다.
    목적: 프레임 기반 생활 루틴 검수 + 유니콘 전용 실제 배송 상태 검수.
    ?forestFriendPreview=1 에서만 유니콘 UI가 나타납니다.
@@ -47,10 +47,49 @@ if (forestFriendPreviewEnabled) {
   let isTravelling = false;
   let isInteracting = false;
   let currentFacing = "left";
+  let replayButton = null;
+  let metDateNode = null;
+  let cinematicReady = false;
+  const FIRST_MET_AT_KEY = "todayforest.dev.forest_unicorn.first_met_at";
 
   function getWorld() { return document.getElementById("gardenWorld"); }
   function getStage() { return document.getElementById("gardenStage"); }
   function asset(name) { return `${CONFIG.assetBase}/forest-unicorn-${name}.png`; }
+
+  function getFirstMetAt() {
+    const saved = window.localStorage.getItem(FIRST_MET_AT_KEY);
+    if (saved && Number.isFinite(new Date(saved).getTime())) return saved;
+    const now = new Date().toISOString();
+    window.localStorage.setItem(FIRST_MET_AT_KEY, now);
+    return now;
+  }
+
+  function formatFirstMetDate(value) {
+    const date = new Date(value);
+    if (!Number.isFinite(date.getTime())) return "오늘";
+    return new Intl.DateTimeFormat("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }).format(date);
+  }
+
+  function updateMemoryCard() {
+    if (metDateNode) metDateNode.textContent = `${formatFirstMetDate(getFirstMetAt())} · 숲 유니콘과 처음 만났어요`;
+    if (replayButton) replayButton.disabled = !cinematicReady && typeof window.__todayForestReplayFriendCinematic !== "function";
+  }
+
+  function replayFirstMeeting() {
+    const play = window.__todayForestReplayFriendCinematic;
+    if (typeof play !== "function") {
+      setStatus("첫 만남 장면을 준비하고 있어요. 잠시 뒤 다시 눌러주세요.");
+      return;
+    }
+    stopCharacterMotion();
+    clearTimeout(roamTimer);
+    clearTimeout(stateTimer);
+    play({ mode: "replay" });
+  }
 
   function createScene() {
     const world = getWorld();
@@ -125,22 +164,35 @@ if (forestFriendPreviewEnabled) {
     panel.setAttribute("aria-label", "숲 유니콘 생활 테스트 제어");
     panel.innerHTML = `
       <div class="forest-unicorn-preview-panel-head">
-        <div><p class="kicker">FOREST FRIEND PREVIEW v2.8</p><strong>숲 유니콘 생활 테스트</strong></div>
+        <div><p class="kicker">FOREST FRIEND PREVIEW v2.9</p><strong>숲 유니콘과 함께하는 정원</strong></div>
       </div>
-      <div class="forest-unicorn-preview-actions">
-        <button type="button" data-unicorn-replay>첫 만남 다시 보기</button>
+      <div class="forest-unicorn-memory-card">
+        <span class="forest-unicorn-memory-icon" aria-hidden="true">✨</span>
+        <div class="forest-unicorn-memory-copy">
+          <p class="forest-unicorn-memory-kicker">OUR FIRST DAY</p>
+          <strong>우리가 처음 만난 날</strong>
+          <p class="forest-unicorn-memory-date" data-unicorn-met-date></p>
+        </div>
+        <button type="button" class="forest-unicorn-memory-replay" data-unicorn-replay>다시 보기</button>
       </div>
       <p class="forest-unicorn-preview-status">유니콘을 눌러 마음을 맡기면 30분 뒤 도착하고, 유니콘은 30분 더 숲길을 지나 돌아와요.</p>
     `;
     stage.insertAdjacentElement("afterend", panel);
     statusNode = panel.querySelector(".forest-unicorn-preview-status");
-    panel.querySelector("[data-unicorn-replay]").addEventListener("click", playFirstArrival);
+    replayButton = panel.querySelector("[data-unicorn-replay]");
+    metDateNode = panel.querySelector("[data-unicorn-met-date]");
+    replayButton?.addEventListener("click", replayFirstMeeting);
+    cinematicReady = typeof window.__todayForestReplayFriendCinematic === "function";
+    updateMemoryCard();
 
     setAbsolutePosition(0, { visible: false });
     installSpecialFriendDeliveryBridge();
     const activeJourney = findActiveJourney(window.__todayForestSpecialFriendJourneys);
     if (activeJourney) {
       restoreServerJourney(activeJourney);
+    } else if (previewParams.get("firstMeeting") === "1") {
+      // 전체 시네마틱이 끝나고 사용자가 인사하기를 누르면 정원 속 생활을 시작합니다.
+      setStatus("첫 만남을 준비하고 있어요.");
     } else {
       window.setTimeout(playFirstArrival, 700);
     }
@@ -538,6 +590,54 @@ if (forestFriendPreviewEnabled) {
       if (detail.key !== "forest_unicorn" || !isInteracting || isTravelling) return;
       resumeRoamingAfterInteraction();
     });
+
+    window.addEventListener("todayforest:friend-cinematic-ready", (event) => {
+      if (event?.detail?.key !== "forest_unicorn") return;
+      cinematicReady = true;
+      updateMemoryCard();
+    });
+
+    window.addEventListener("todayforest:friend-cinematic-closed", (event) => {
+      const detail = event?.detail || {};
+      if (detail.key !== "forest_unicorn") return;
+      if (detail.mode === "first-meeting") {
+        window.localStorage.setItem(FIRST_MET_AT_KEY, new Date().toISOString());
+        updateMemoryCard();
+        settleAfterFirstMeeting();
+        return;
+      }
+      if (!isTravelling && !isInteracting) {
+        setStatus("첫 만남의 기억을 다시 보고 왔어요. 유니콘이 나무 곁에서 기다리고 있어요.");
+        playIdleLoop();
+        roamTimer = window.setTimeout(continueRoaming, 6000);
+      }
+    });
+  }
+
+  function settleAfterFirstMeeting() {
+    if (!unicorn) return;
+    clearAllTimers();
+    isTravelling = false;
+    isInteracting = false;
+    unicorn.removeAttribute("data-interacting");
+    unicorn.removeAttribute("data-has-letter");
+    interactionHit?.removeAttribute("data-interacting");
+    interactionHit?.classList.remove("is-hidden");
+    setDeliveryCard("", "", false);
+    closeBubble();
+    setFacing("left");
+    setAbsolutePosition(1, { visible: false });
+    setSprite("look");
+    unicorn.classList.remove("is-departed");
+    window.requestAnimationFrame(() => {
+      unicorn?.classList.add("is-visible");
+      setStatus("숲 유니콘이 나무 곁에 자리를 잡았어요. 이제 이 정원에서 함께 지내요.");
+    });
+    stateTimer = window.setTimeout(() => {
+      playIdleLoop();
+      currentRouteIndex = 0;
+      roamTimer = window.setTimeout(continueRoaming, 7000);
+    }, 1500);
   }
 
   function playFirstArrival() {
