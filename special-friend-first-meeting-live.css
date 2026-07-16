@@ -1,0 +1,255 @@
+/* 오늘의숲 · 특별친구 첫 만남 실제 계정 연결 v1.1 */
+.special-friend-call-layer {
+  position: absolute;
+  z-index: 1;
+  inset: 8% 10% 7%;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .7s ease;
+}
+.special-friend-call-glow {
+  position: absolute;
+  inset: 12% 10% 9%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, rgba(255,252,204,.64), rgba(230,213,255,.27) 37%, transparent 70%);
+  filter: blur(9px);
+  transform: scale(.76);
+  opacity: 0;
+}
+.special-friend-call-bud {
+  position: absolute;
+  z-index: 4;
+  left: 49%;
+  top: 18%;
+  width: 15px;
+  height: 18px;
+  border-radius: 70% 35% 65% 38%;
+  background: linear-gradient(145deg, #fff3b9, #f5c9ee 56%, #c8b7f0);
+  box-shadow: 0 0 13px rgba(255,238,174,.85), inset 0 0 0 1px rgba(255,255,255,.7);
+  transform: translate(-50%, 5px) rotate(18deg) scale(.2);
+  opacity: 0;
+}
+.special-friend-call-motes { position: absolute; inset: 0; }
+.special-friend-call-motes i {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255,249,180,.96);
+  box-shadow: 0 0 12px rgba(255,240,158,.94);
+  opacity: 0;
+}
+.special-friend-call-motes i:nth-child(1){left:26%;top:42%}
+.special-friend-call-motes i:nth-child(2){left:68%;top:31%}
+.special-friend-call-motes i:nth-child(3){left:75%;top:57%}
+.special-friend-call-motes i:nth-child(4){left:36%;top:24%}
+.special-friend-call-motes i:nth-child(5){left:55%;top:12%}
+.special-friend-call-motes i:nth-child(6){left:20%;top:63%}
+.special-friend-call-motes i:nth-child(7){left:61%;top:70%}
+
+.tree-wrap.special-friend-progress-1 .special-friend-call-layer,
+.tree-wrap.special-friend-progress-2 .special-friend-call-layer,
+.tree-wrap.special-friend-ready .special-friend-call-layer { opacity: 1; }
+.tree-wrap.special-friend-progress-1 .special-friend-call-motes i:nth-child(-n+2),
+.tree-wrap.special-friend-progress-2 .special-friend-call-motes i,
+.tree-wrap.special-friend-ready .special-friend-call-motes i { animation: specialFriendMote 3.1s ease-in-out infinite; }
+.tree-wrap.special-friend-progress-1 .special-friend-call-glow { opacity: .28; transform: scale(.82); }
+.tree-wrap.special-friend-progress-2 .special-friend-call-glow { opacity: .58; transform: scale(.94); }
+.tree-wrap.special-friend-progress-2 .special-friend-call-bud {
+  opacity: .9;
+  transform: translate(-50%,0) rotate(18deg) scale(.78);
+  transition: opacity .8s ease, transform .9s cubic-bezier(.2,.85,.28,1.18);
+}
+.tree-wrap.special-friend-ready .special-friend-call-glow {
+  opacity: .9;
+  animation: specialFriendTreeGlow 2.25s ease-in-out infinite;
+}
+.tree-wrap.special-friend-ready .special-friend-call-bud {
+  opacity: 1;
+  transform: translate(-50%,-2px) rotate(18deg) scale(1);
+  animation: specialFriendBud 2.1s ease-in-out infinite;
+}
+.tree-wrap.special-friend-ready .tree-image {
+  filter: drop-shadow(0 25px 18px rgba(73,112,83,.18)) drop-shadow(0 0 16px rgba(255,240,166,.44));
+}
+.tree-wrap.special-friend-beginning { animation: specialFriendTreeAnswer .9s ease both; }
+
+.special-friend-arrival-notice {
+  position: fixed;
+  z-index: 19000;
+  left: 50%;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: auto minmax(0,1fr);
+  gap: 12px 13px;
+  width: min(510px, calc(100% - 28px));
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,.94);
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(255,255,255,.96), rgba(251,244,255,.95));
+  color: #6f647d;
+  box-shadow: 0 22px 55px rgba(89,72,125,.23), inset 0 1px 0 rgba(255,255,255,.96);
+  backdrop-filter: blur(18px);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 18px) scale(.98);
+  transition: opacity .42s ease, transform .42s cubic-bezier(.2,.8,.25,1), visibility 0s linear .42s;
+}
+.special-friend-arrival-notice.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%,0) scale(1);
+  transition-delay: 0s;
+}
+.special-friend-arrival-sparkle {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(240,220,255,.88);
+  border-radius: 16px;
+  background: radial-gradient(circle, #fffce7, #f7e9ff 74%);
+  font-size: 22px;
+  box-shadow: 0 9px 18px rgba(148,116,184,.13);
+  animation: specialFriendArrivalSparkle 2.2s ease-in-out infinite;
+}
+.special-friend-arrival-copy { min-width: 0; }
+.special-friend-arrival-copy p,
+.special-friend-arrival-copy strong,
+.special-friend-arrival-copy span,
+.special-friend-arrival-copy small { display: block; margin: 0; }
+.special-friend-arrival-kicker {
+  color: #b59bc6;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .13em;
+}
+.special-friend-arrival-copy strong {
+  margin-top: 3px;
+  color: #665873;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.35;
+}
+.special-friend-arrival-copy span {
+  margin-top: 4px;
+  color: #84778e;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+.special-friend-arrival-copy small {
+  margin-top: 5px;
+  color: #a294ac;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.special-friend-arrival-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+}
+.special-friend-arrival-actions button {
+  min-height: 40px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.special-friend-arrival-actions button:first-child {
+  flex: .8;
+  border: 1px solid rgba(203,190,213,.68);
+  background: rgba(255,255,255,.72);
+  color: #92859c;
+}
+.special-friend-arrival-actions button:last-child {
+  flex: 1.2;
+  border: 1px solid rgba(237,206,246,.9);
+  background: linear-gradient(135deg, #ffeebc, #f2d8ff);
+  color: #775f88;
+  box-shadow: 0 9px 19px rgba(181,137,205,.18);
+}
+.special-friend-arrival-actions button:focus-visible,
+.special-friend-arrival-chip:focus-visible {
+  outline: 3px solid rgba(209,181,238,.9);
+  outline-offset: 3px;
+}
+
+.special-friend-arrival-chip {
+  position: fixed;
+  z-index: 18500;
+  left: 50%;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 42px;
+  padding: 8px 14px;
+  border: 1px solid rgba(255,255,255,.94);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255,252,232,.96), rgba(245,229,255,.96));
+  color: #78668a;
+  box-shadow: 0 13px 30px rgba(93,72,130,.19);
+  font: inherit;
+  font-size: 10.5px;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%,12px);
+  transition: opacity .35s ease, transform .35s ease, visibility 0s linear .35s;
+}
+.special-friend-arrival-chip.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%,0);
+  transition-delay: 0s;
+}
+.special-friend-arrival-chip b { font-weight: 900; }
+
+body.forest-unicorn-live-enabled .forest-unicorn-preview-panel {
+  background: linear-gradient(135deg, rgba(249,255,249,.94), rgba(251,246,255,.94));
+  border-color: rgba(209,220,203,.82);
+}
+body.forest-unicorn-live-enabled .forest-unicorn-preview-panel .kicker { color: #aa93bd; }
+body.forest-unicorn-live-enabled .forest-unicorn-preview-status { color: #839488; }
+
+@keyframes specialFriendMote {
+  0%,100% { opacity:.12; transform:translateY(5px) scale(.55); }
+  45% { opacity:.95; transform:translateY(-8px) scale(1); }
+  72% { opacity:.28; transform:translateY(-15px) scale(.68); }
+}
+.special-friend-call-motes i:nth-child(2){animation-delay:.42s!important}
+.special-friend-call-motes i:nth-child(3){animation-delay:.85s!important}
+.special-friend-call-motes i:nth-child(4){animation-delay:1.2s!important}
+.special-friend-call-motes i:nth-child(5){animation-delay:1.55s!important}
+.special-friend-call-motes i:nth-child(6){animation-delay:1.9s!important}
+.special-friend-call-motes i:nth-child(7){animation-delay:2.25s!important}
+@keyframes specialFriendTreeGlow { 0%,100%{transform:scale(.92);filter:blur(9px)} 50%{transform:scale(1.08);filter:blur(12px)} }
+@keyframes specialFriendBud { 0%,100%{filter:brightness(1);box-shadow:0 0 13px rgba(255,238,174,.8)} 50%{filter:brightness(1.12);box-shadow:0 0 23px rgba(255,224,168,.98)} }
+@keyframes specialFriendTreeAnswer { 0%,100%{transform:translateX(-50%) scale(1)} 45%{transform:translateX(-50%) scale(1.035)} }
+@keyframes specialFriendArrivalSparkle { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-3px) rotate(3deg)} }
+
+@media (max-width: 430px) {
+  .special-friend-arrival-notice {
+    bottom: max(15px, env(safe-area-inset-bottom));
+    gap: 10px;
+    padding: 14px;
+    border-radius: 21px;
+  }
+  .special-friend-arrival-sparkle { width: 40px; height: 40px; border-radius: 14px; font-size: 20px; }
+  .special-friend-arrival-copy strong { font-size: 14px; }
+  .special-friend-arrival-copy span { font-size: 10.5px; }
+  .special-friend-arrival-actions button { min-height: 38px; font-size: 10.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .special-friend-call-layer *,
+  .tree-wrap.special-friend-beginning,
+  .special-friend-arrival-sparkle { animation: none !important; }
+  .special-friend-arrival-notice,
+  .special-friend-arrival-chip { transition-duration: .01ms !important; }
+}

@@ -1,0 +1,735 @@
+/* -------------------------------------------------------------------------
+   FOREST UNICORN PREVIEW v2
+   걷기 프레임 기반 검수용 스타일.
+   ------------------------------------------------------------------------- */
+.forest-unicorn-preview,
+.forest-unicorn-arrival { display: none; }
+
+body.forest-unicorn-preview-enabled .forest-unicorn-preview,
+body.forest-unicorn-preview-enabled .forest-unicorn-arrival { display: block; }
+
+.forest-unicorn-preview {
+  position: absolute;
+  /* tree(z-index:2)와 decoration(z-index:3)의 사이에서 시작합니다.
+     앞쪽 산책길에서는 data-depth=front로만 위에 올라옵니다. */
+  z-index: 2;
+  width: 104px;
+  height: 104px;
+  margin-left: -52px;
+  margin-top: -95px;
+  opacity: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: left 2.2s cubic-bezier(.22,.72,.27,1), top 2.2s cubic-bezier(.22,.72,.27,1), opacity .45s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.forest-unicorn-preview.is-visible { opacity: 1; }
+.forest-unicorn-preview[data-depth="front"] { z-index: 4; }
+.forest-unicorn-preview[data-depth="middle"],
+.forest-unicorn-preview[data-depth="back"] { z-index: 2; }
+.forest-unicorn-preview.is-departed { opacity: 0; pointer-events: none; }
+.forest-unicorn-preview:focus-visible { outline: 3px solid rgba(255,255,255,.95); outline-offset: 5px; border-radius: 50%; }
+
+.forest-unicorn-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  width: 53px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(77,95,84,.24), rgba(77,95,84,.06) 60%, transparent 72%);
+  transform: translateX(-50%);
+  transition: width .2s ease, opacity .2s ease, transform .2s ease;
+}
+.forest-unicorn-preview.is-moving .forest-unicorn-shadow {
+  width: 64px;
+  opacity: .88;
+}
+
+.forest-unicorn-visual {
+  position: absolute;
+  inset: 0;
+}
+.forest-unicorn-image-wrap {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 84%;
+  transition: transform .18s ease;
+  filter: drop-shadow(0 5px 5px rgba(79,100,87,.10));
+}
+.forest-unicorn-preview[data-facing="right"] .forest-unicorn-image-wrap {
+  transform: scaleX(-1);
+}
+.forest-unicorn-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.forest-unicorn-bubble {
+  position: absolute;
+  z-index: 11;
+  left: 50%;
+  bottom: 102px;
+  width: 162px;
+  padding: 9px 10px 8px;
+  border: 1px solid rgba(255,255,255,.94);
+  border-radius: 16px;
+  background: rgba(255,255,255,.92);
+  color: #637b6f;
+  text-align: center;
+  box-shadow: 0 10px 18px rgba(78,98,89,.13);
+  transform: translateX(-50%) translateY(7px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
+  backdrop-filter: blur(8px);
+}
+.forest-unicorn-bubble.is-open { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+.forest-unicorn-bubble::after { content:""; position:absolute; left:50%; bottom:-5px; width:10px; height:10px; background:rgba(255,255,255,.92); transform:translateX(-50%) rotate(45deg); }
+.forest-unicorn-bubble p { margin: 0; font-size: 10px; font-weight: 850; line-height: 1.45; }
+
+/* 클릭했을 때만 짧게 고개를 든 듯한 반응. 떠오르거나 이동하지 않습니다. */
+.forest-unicorn-preview[data-interacting="true"] .forest-unicorn-visual {
+  transform-origin: 50% 86%;
+  animation: unicornGreeting .72s ease both;
+}
+
+.forest-unicorn-arrival {
+  position: absolute;
+  z-index: 12;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .5s ease;
+}
+.forest-unicorn-arrival.is-open { opacity: 1; }
+.forest-unicorn-arrival::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  background: radial-gradient(circle at 67% 67%, rgba(255,250,202,.30), rgba(255,255,255,.02) 40%, rgba(89,110,116,.08) 100%);
+}
+.forest-unicorn-arrival-copy {
+  position:absolute;
+  left:50%;
+  bottom:68px;
+  width:min(258px, calc(100% - 40px));
+  padding:10px 14px;
+  border:1px solid rgba(255,255,255,.9);
+  border-radius:18px;
+  background:rgba(255,255,255,.86);
+  color:#647b70;
+  text-align:center;
+  transform:translateX(-50%) translateY(8px);
+  box-shadow:0 10px 20px rgba(78,98,89,.12);
+}
+.forest-unicorn-arrival.is-open .forest-unicorn-arrival-copy { animation: unicornCopyRise .58s .28s ease both; }
+.forest-unicorn-arrival-kicker { margin:0 0 2px; color:#9bba8a; font-size:9px; font-weight:900; letter-spacing:.08em; }
+.forest-unicorn-arrival-copy p:last-child { margin:0; font-size:11px; font-weight:850; line-height:1.45; }
+.forest-unicorn-arrival-lights { position:absolute; inset:0; overflow:hidden; }
+.forest-unicorn-arrival-lights i { position:absolute; width:7px; height:7px; border-radius:50%; background:#fff5a9; box-shadow:0 0 14px rgba(255,244,151,.98); opacity:0; animation:unicornArrivalLight 2.9s ease-in-out infinite; }
+.forest-unicorn-arrival-lights i:nth-child(1){left:59%;top:67%;animation-delay:.1s}.forest-unicorn-arrival-lights i:nth-child(2){left:68%;top:57%;animation-delay:.65s}.forest-unicorn-arrival-lights i:nth-child(3){left:75%;top:71%;animation-delay:1.1s}.forest-unicorn-arrival-lights i:nth-child(4){left:64%;top:79%;animation-delay:1.65s}.forest-unicorn-arrival-lights i:nth-child(5){left:79%;top:63%;animation-delay:2.2s}
+
+body.forest-unicorn-preview-enabled .header-actions,
+body.forest-unicorn-live-enabled .header-actions {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: 36px 36px;
+  justify-content: end;
+  align-items: stretch;
+  gap: 8px;
+  width: 354px;
+}
+
+body.forest-unicorn-preview-enabled .header-actions > .account-pill,
+body.forest-unicorn-live-enabled .header-actions > .account-pill {
+  grid-column: 1;
+  grid-row: 1;
+}
+body.forest-unicorn-preview-enabled .header-actions > .friend-pill,
+body.forest-unicorn-live-enabled .header-actions > .friend-pill {
+  grid-column: 2;
+  grid-row: 1;
+}
+body.forest-unicorn-preview-enabled .header-actions > .quiet-pill,
+body.forest-unicorn-live-enabled .header-actions > .quiet-pill {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+.forest-unicorn-header-slot {
+  position: relative;
+  grid-column: 3;
+  grid-row: 1;
+}
+
+body.forest-unicorn-preview-enabled .header-actions > .account-pill,
+body.forest-unicorn-preview-enabled .header-actions > .friend-pill,
+body.forest-unicorn-preview-enabled .header-actions > .quiet-pill,
+body.forest-unicorn-live-enabled .header-actions > .account-pill,
+body.forest-unicorn-live-enabled .header-actions > .friend-pill,
+body.forest-unicorn-live-enabled .header-actions > .quiet-pill,
+.forest-unicorn-header-slot {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+body.forest-unicorn-preview-enabled .header-actions > .account-pill,
+body.forest-unicorn-preview-enabled .header-actions > .friend-pill,
+body.forest-unicorn-preview-enabled .header-actions > .quiet-pill,
+body.forest-unicorn-live-enabled .header-actions > .account-pill,
+body.forest-unicorn-live-enabled .header-actions > .friend-pill,
+body.forest-unicorn-live-enabled .header-actions > .quiet-pill {
+  min-height: 36px;
+  max-width: none;
+  padding: 6px 10px;
+  overflow: hidden;
+}
+body.forest-unicorn-preview-enabled .header-actions > .account-pill,
+body.forest-unicorn-preview-enabled .header-actions > .friend-pill,
+body.forest-unicorn-live-enabled .header-actions > .account-pill,
+body.forest-unicorn-live-enabled .header-actions > .friend-pill {
+  justify-content: center;
+  text-align: center;
+}
+body.forest-unicorn-preview-enabled .header-actions > .quiet-pill,
+body.forest-unicorn-live-enabled .header-actions > .quiet-pill {
+  justify-content: center;
+  text-align: center;
+}
+
+body.forest-unicorn-preview-enabled .header-actions > .account-pill span:last-child,
+body.forest-unicorn-preview-enabled .header-actions > .friend-pill span:last-child,
+body.forest-unicorn-live-enabled .header-actions > .account-pill span:last-child,
+body.forest-unicorn-live-enabled .header-actions > .friend-pill span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.forest-unicorn-preview-enabled .header-actions > .quiet-pill span:last-child,
+body.forest-unicorn-live-enabled .header-actions > .quiet-pill span:last-child {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+.forest-unicorn-header-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  min-height: 36px;
+  justify-content: center;
+  padding: 6px 8px;
+  border: 1px solid rgba(208, 188, 232, 0.48);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.74);
+  color: #7f6c95;
+  font-size: 11px;
+  font-weight: 900;
+  box-shadow: 0 8px 16px rgba(134, 119, 171, 0.10);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+.forest-unicorn-header-chip:hover { transform: translateY(-1px); }
+.forest-unicorn-header-chip-icon {
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 8px;
+  background: rgba(250, 241, 255, 0.92);
+  font-size: 11px;
+}
+.forest-unicorn-header-chip-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.forest-unicorn-memory-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  width: min(344px, calc(100vw - 44px));
+  padding: 12px;
+  border: 1px solid rgba(210, 195, 231, 0.85);
+  border-radius: 18px;
+  background: rgba(255,255,255,0.95);
+  color: #607568;
+  box-shadow: 0 18px 30px rgba(106, 94, 145, 0.14);
+  backdrop-filter: blur(12px);
+}
+.forest-unicorn-memory-popover.is-open { display: block; }
+.forest-unicorn-memory-popover-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.forest-unicorn-memory-popover-head .kicker {
+  margin: 0;
+  color: #b092c8;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+.forest-unicorn-memory-popover-head strong {
+  display: block;
+  margin-top: 3px;
+  color: #647683;
+  font-size: 12px;
+}
+.forest-unicorn-memory-close {
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(218, 209, 235, 0.9);
+  border-radius: 10px;
+  background: rgba(248,245,255,0.95);
+  color: #8d7aa5;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.forest-unicorn-memory-card {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid rgba(219, 207, 239, 0.72);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255,252,254,.95), rgba(248,244,255,.96));
+}
+.forest-unicorn-memory-card.compact { grid-template-columns: 38px minmax(0, 1fr); }
+.forest-unicorn-memory-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  background: rgba(247, 236, 255, 0.95);
+  font-size: 17px;
+}
+.forest-unicorn-memory-copy { min-width: 0; }
+.forest-unicorn-memory-copy p { margin: 0; }
+.forest-unicorn-memory-kicker {
+  color: #b092c8;
+  font-size: 8.5px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+.forest-unicorn-memory-copy strong {
+  display: block;
+  margin-top: 2px;
+  color: #6b7d74;
+  font-size: 13px;
+}
+.forest-unicorn-memory-date {
+  margin-top: 4px !important;
+  color: #95a0a3;
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+.forest-unicorn-memory-popover-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+.forest-unicorn-memory-replay {
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1px solid rgba(207, 189, 234, 0.84);
+  border-radius: 12px;
+  background: rgba(247, 242, 255, 0.95);
+  color: #846fa2;
+  font-size: 10.5px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.forest-unicorn-memory-replay:disabled { opacity: .48; cursor: wait; }
+.forest-unicorn-memory-replay:focus-visible,
+.forest-unicorn-header-chip:focus-visible,
+.forest-unicorn-memory-close:focus-visible { outline: 3px solid rgba(205,184,232,.8); outline-offset: 2px; }
+.forest-unicorn-preview-status { margin-top: 8px !important; color: #81998a; font-size: 10px; line-height: 1.45; }
+
+@media (max-width: 470px) {
+  body.forest-unicorn-preview-enabled .header-actions,
+  body.forest-unicorn-live-enabled .header-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: 34px 34px;
+    width: min(306px, 68vw);
+    gap: 6px;
+  }
+  .forest-unicorn-header-chip,
+  .account-pill,
+  .friend-pill,
+  .quiet-pill {
+    min-height: 34px;
+    max-width: none;
+    font-size: 10px;
+  }
+  .forest-unicorn-memory-popover { width: min(300px, calc(100vw - 32px)); }
+  .forest-unicorn-memory-card { grid-template-columns: 34px minmax(0, 1fr); }
+  .forest-unicorn-memory-icon { width: 34px; height: 34px; border-radius: 12px; font-size: 15px; }
+}
+
+
+/* v3.3 · 특별친구 통합 정보창 */
+.forest-unicorn-profile-card {
+  display: grid;
+  grid-template-columns: 66px minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+  position: relative;
+  margin-top: 11px;
+  padding: 11px;
+  border: 1px solid rgba(204, 224, 208, 0.78);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(246,255,247,.96), rgba(252,248,255,.96));
+}
+.forest-unicorn-profile-portrait {
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 66px;
+  overflow: hidden;
+  border-radius: 22px;
+  background: radial-gradient(circle at 50% 35%, #fff 0 28%, #edf8ee 70%, #e6f2ed 100%);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.9);
+}
+.forest-unicorn-profile-portrait img {
+  display: block;
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  transform: translateY(3px);
+}
+.forest-unicorn-profile-copy { min-width: 0; padding-right: 2px; }
+.forest-unicorn-profile-kicker {
+  margin: 0;
+  color: #9abea0;
+  font-size: 8.5px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+.forest-unicorn-profile-copy strong {
+  display: block;
+  margin-top: 2px;
+  color: #557362;
+  font-size: 15px;
+}
+.forest-unicorn-profile-copy span {
+  display: block;
+  margin-top: 4px;
+  color: #8a9a91;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.forest-unicorn-profile-badge {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  padding: 4px 7px;
+  border: 1px solid rgba(171,210,179,.7);
+  border-radius: 999px;
+  background: rgba(247,255,248,.94);
+  color: #74a17e;
+  font-size: 8.5px;
+  font-weight: 900;
+}
+.forest-unicorn-status-card {
+  margin-top: 9px;
+  padding: 9px 10px;
+  border: 1px solid rgba(224, 216, 237, .72);
+  border-radius: 15px;
+  background: rgba(250,248,255,.78);
+}
+.forest-unicorn-status-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.forest-unicorn-status-head strong {
+  color: #7d718e;
+  font-size: 10px;
+}
+.forest-unicorn-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #80bc8c;
+  box-shadow: 0 0 0 3px rgba(128,188,140,.15);
+}
+.forest-unicorn-status-card .forest-unicorn-preview-status {
+  margin: 5px 0 0 !important;
+  color: #7d8d85;
+  font-size: 10px;
+  line-height: 1.45;
+}
+.forest-unicorn-memory-popover-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 10px;
+}
+.forest-unicorn-memory-replay,
+.forest-unicorn-future-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 38px;
+  padding: 8px 9px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 900;
+}
+.forest-unicorn-memory-replay {
+  border: 1px solid rgba(207, 189, 234, 0.84);
+  background: rgba(247, 242, 255, 0.95);
+  color: #846fa2;
+  cursor: pointer;
+}
+.forest-unicorn-future-action {
+  border: 1px dashed rgba(181, 204, 187, .9);
+  background: rgba(247,252,248,.86);
+  color: #8aa092;
+}
+.forest-unicorn-future-action:disabled { opacity: .72; cursor: default; }
+.forest-unicorn-future-note {
+  margin: 8px 2px 0;
+  color: #9aa4a0;
+  font-size: 9px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+@media (max-width: 470px) {
+  .forest-unicorn-memory-popover { width: min(330px, calc(100vw - 30px)); }
+  .forest-unicorn-profile-card { grid-template-columns: 58px minmax(0, 1fr); }
+  .forest-unicorn-profile-portrait { width: 58px; height: 58px; border-radius: 19px; }
+  .forest-unicorn-profile-portrait img { width: 64px; height: 64px; }
+  .forest-unicorn-profile-badge { position: static; justify-self: start; grid-column: 2; margin-top: -5px; }
+}
+
+@keyframes unicornCopyRise { from{opacity:0;transform:translateX(-50%) translateY(12px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+@keyframes unicornArrivalLight { 0%,100%{opacity:0;transform:translate(0,8px) scale(.4)} 35%{opacity:.95;transform:translate(-8px,-12px) scale(1)} 65%{opacity:.2;transform:translate(-14px,-28px) scale(.5)} }
+@keyframes unicornGreeting {
+  0%, 100% { transform: translateY(0) rotate(0deg) scaleY(1); }
+  36% { transform: translateY(1px) rotate(-.8deg) scaleY(.975); }
+  64% { transform: translateY(-1px) rotate(.45deg) scaleY(1.012); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .forest-unicorn-preview, .forest-unicorn-arrival-lights i { animation: none !important; }
+  .forest-unicorn-preview { transition-duration: .01ms !important; }
+}
+
+/* v2.4: 보이지 않는 클릭 영역은 장식보다 위에서 유니콘과 함께 이동합니다.
+   시각 요소는 기존 깊이를 유지하고, 클릭 영역만 앞에 둡니다. */
+.forest-unicorn-hit {
+  position: absolute;
+  z-index: 7;
+  width: 94px;
+  height: 94px;
+  margin-left: -47px;
+  margin-top: -90px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  transition: left 2.2s cubic-bezier(.22,.72,.27,1), top 2.2s cubic-bezier(.22,.72,.27,1);
+}
+.forest-unicorn-hit:focus-visible { outline: 3px solid rgba(255,255,255,.95); outline-offset: 4px; }
+
+/* 말풍선은 반응 중에만 장식보다 위로 올려, 클릭 피드백이 묻히지 않게 합니다. */
+.forest-unicorn-preview[data-interacting="true"] { z-index: 10; }
+.forest-unicorn-preview[data-interacting="true"] .forest-unicorn-shadow { width: 56px; opacity: .92; }
+.forest-unicorn-preview[data-interacting="true"] .forest-unicorn-bubble { z-index: 12; }
+
+
+/* v2.5: 실제 편지 저장 없이 흐름만 확인하는 유니콘 배송 체험 */
+.forest-unicorn-letter {
+  position: absolute;
+  z-index: 5;
+  right: 7px;
+  top: 15px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(255,255,255,.9);
+  border-radius: 9px;
+  background: rgba(255,255,255,.92);
+  color: #d07f99;
+  font-size: 13px;
+  box-shadow: 0 5px 12px rgba(78,98,89,.15);
+  opacity: 0;
+  transform: scale(.75) rotate(-8deg);
+  transition: opacity .22s ease, transform .22s ease;
+}
+.forest-unicorn-preview[data-has-letter="true"] .forest-unicorn-letter { opacity: 1; transform: scale(1) rotate(0deg); }
+.forest-unicorn-hit.is-hidden { opacity: 0; pointer-events: none; }
+
+.forest-unicorn-delivery-card {
+  position: absolute;
+  z-index: 16;
+  left: 50%;
+  bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: min(310px, calc(100% - 30px));
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,.92);
+  border-radius: 17px;
+  background: rgba(255,255,255,.93);
+  color: #5f796a;
+  box-shadow: 0 12px 22px rgba(78,98,89,.16);
+  transform: translate(-50%, 12px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
+  backdrop-filter: blur(7px);
+}
+.forest-unicorn-delivery-card.is-open { opacity: 1; transform: translate(-50%, 0); }
+.forest-unicorn-delivery-icon { display: grid; flex: 0 0 auto; place-items: center; width: 31px; height: 31px; border-radius: 11px; background: #fff0f2; color: #d97c99; font-size: 16px; }
+.forest-unicorn-delivery-card p { margin: 0; }
+.forest-unicorn-delivery-kicker { color: #a4ba98; font-size: 8px; font-weight: 950; letter-spacing: .075em; }
+.forest-unicorn-delivery-card strong { display: block; margin-top: 2px; color: #5f796a; font-size: 10.5px; line-height: 1.35; }
+.forest-unicorn-delivery-note { margin-top: 2px !important; color: #91a091; font-size: 8.8px; font-weight: 750; line-height: 1.35; }
+
+.forest-unicorn-letter-choice {
+  margin: 12px 0 4px;
+  padding: 12px;
+  border: 1px solid rgba(183,220,186,.92);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(248,255,246,.96), rgba(250,247,255,.96));
+  box-shadow: 0 8px 16px rgba(90,125,98,.06);
+}
+.forest-unicorn-letter-choice-copy { display: flex; align-items: flex-start; gap: 9px; }
+.forest-unicorn-letter-choice-icon { display: grid; flex: 0 0 auto; place-items: center; width: 34px; height: 34px; border-radius: 12px; background: #edf9ec; font-size: 18px; }
+.forest-unicorn-letter-choice p { margin: 0; }
+.forest-unicorn-letter-choice-kicker { color: #9ebc9d; font-size: 8px; font-weight: 950; letter-spacing: .07em; }
+.forest-unicorn-letter-choice strong { display: block; margin-top: 2px; color: #5e8069; font-size: 12px; }
+.forest-unicorn-letter-choice-copy div > p:last-child { margin-top: 3px; color: #839388; font-size: 10px; font-weight: 700; line-height: 1.4; }
+.forest-unicorn-letter-choice-button { width: 100%; margin-top: 10px; padding: 11px; border: 0; border-radius: 13px; background: linear-gradient(135deg, #9acfa7, #84c4bd); color: #fff; font-size: 12px; font-weight: 950; cursor: pointer; box-shadow: 0 9px 16px rgba(92,161,119,.17); }
+.forest-unicorn-letter-choice-error { min-height: 0; margin-top: 7px !important; color: #c8758e; font-size: 10px; font-weight: 800; line-height: 1.35; }
+.forest-unicorn-letter-choice-error:empty { display: none; }
+.forest-unicorn-letter-choice-note { margin-top: 7px !important; color: #a5a3aa; font-size: 8.7px; font-weight: 750; line-height: 1.35; }
+
+/* 평소 클릭은 대사 없이 멈춤/미세 반응만 남깁니다. */
+.forest-unicorn-preview .forest-unicorn-bubble { display: none !important; }
+
+
+/* v2.6: 개발 버튼이 아니라 실제 하단 편지 작성 흐름 안에서 전달 친구를 고릅니다. */
+.forest-unicorn-preview-actions { display:block; }
+.forest-unicorn-preview-actions button { width:100%; }
+.forest-unicorn-letter-choice {
+  position: relative;
+  border-color: rgba(183,220,186,.72);
+  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.forest-unicorn-letter-choice.is-selected {
+  border-color: rgba(130,196,145,.98);
+  background: linear-gradient(135deg, rgba(239,253,239,.98), rgba(247,244,255,.98));
+  box-shadow: 0 10px 20px rgba(86,151,107,.14);
+}
+.forest-unicorn-letter-choice.is-selected::after {
+  content: "선택됨";
+  position: absolute;
+  right: 11px;
+  top: 10px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: rgba(131,194,143,.18);
+  color: #63956d;
+  font-size: 8.5px;
+  font-weight: 950;
+}
+.forest-unicorn-letter-choice.is-selected .forest-unicorn-letter-choice-button {
+  background: linear-gradient(135deg, #73b987, #78b9b0);
+}
+
+
+/* v2.9: 특별친구의 첫 만남을 추억처럼 다시 보는 카드 */
+.forest-unicorn-memory-card {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  margin-top: 9px;
+  padding: 10px;
+  border: 1px solid rgba(220, 205, 245, .92);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 247, 190, .44), transparent 34%),
+    linear-gradient(135deg, rgba(255,255,255,.98), rgba(248,241,255,.96));
+  box-shadow: 0 8px 17px rgba(103, 87, 138, .08);
+}
+.forest-unicorn-memory-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 13px;
+  background: linear-gradient(145deg, #fff9d8, #f5eaff);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.85);
+  font-size: 18px;
+}
+.forest-unicorn-memory-copy { min-width: 0; }
+.forest-unicorn-memory-copy p { margin: 0; }
+.forest-unicorn-memory-kicker {
+  color: #b29ac7;
+  font-size: 7.5px;
+  font-weight: 950;
+  letter-spacing: .1em;
+}
+.forest-unicorn-memory-copy strong {
+  display: block;
+  margin-top: 1px;
+  color: #6e627a;
+  font-size: 11px;
+  line-height: 1.35;
+}
+.forest-unicorn-memory-date {
+  margin-top: 2px !important;
+  color: #9b91a3;
+  font-size: 8.3px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+.forest-unicorn-memory-replay {
+  min-height: 31px;
+  padding: 6px 10px;
+  border: 1px solid rgba(190, 169, 218, .82);
+  border-radius: 999px;
+  background: rgba(255,255,255,.9);
+  color: #8c72a3;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 900;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.forest-unicorn-memory-replay:disabled { opacity: .48; cursor: wait; }
+.forest-unicorn-memory-replay:focus-visible { outline: 3px solid rgba(205,184,232,.8); outline-offset: 2px; }
+
+@media (max-width: 430px) {
+  .forest-unicorn-memory-card { grid-template-columns: 34px minmax(0, 1fr) auto; gap: 7px; padding: 9px; }
+  .forest-unicorn-memory-icon { width: 34px; height: 34px; border-radius: 12px; font-size: 16px; }
+  .forest-unicorn-memory-replay { padding-inline: 8px; }
+}

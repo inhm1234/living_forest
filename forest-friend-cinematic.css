@@ -1,0 +1,638 @@
+/* -------------------------------------------------------------------------
+   TODAYFOREST · FOREST FRIEND CINEMATIC v1.1
+   현재 정원/현재 성장 단계 나무를 그대로 복제해 사용하는 첫 만남 연출
+   ------------------------------------------------------------------------- */
+body.ff-cinematic-lock { overflow: hidden !important; }
+
+.ff-cinematic {
+  --ff-safe-bottom: max(22px, env(safe-area-inset-bottom));
+  --ff-tree-x: 50vw;
+  --ff-tree-heart-y: 52vh;
+  --ff-tree-mid-y: 50vh;
+  --ff-tree-aura-w: min(72vw, 690px);
+  --ff-tree-aura-h: min(58vh, 520px);
+  --ff-unicorn-x: 70vw;
+  --ff-unicorn-y: 75vh;
+  --ff-unicorn-start-dx: 180px;
+  --ff-unicorn-start-dy: -180px;
+  --ff-moonbeam-height: 88vh;
+  position: fixed;
+  z-index: 20000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: linear-gradient(180deg, #cfd7ff 0%, #e7dcff 52%, #f6e4f2 100%);
+  color: #fff;
+  font-family: inherit;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .5s ease, visibility 0s linear .5s;
+  isolation: isolate;
+}
+.ff-cinematic.is-open {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.ff-cinematic-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(255,255,255,.74), transparent 54%),
+    linear-gradient(180deg, rgba(179,192,255,.66), rgba(245,222,255,.66));
+}
+.ff-cinematic-garden-mount {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(1.015);
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+.ff-cinematic.is-running .ff-cinematic-garden-mount {
+  animation: ffCameraDrift 12.4s cubic-bezier(.2,.72,.25,1) both;
+}
+.ff-cinematic.is-complete .ff-cinematic-garden-mount {
+  animation: none !important;
+  transform: translate(-50%, -50%) scale(1.095);
+}
+.ff-cinematic-garden-clone {
+  position: relative !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+  border-radius: clamp(0px, 4vw, 34px) !important;
+  border-color: rgba(255,255,255,.82) !important;
+  box-shadow: 0 22px 70px rgba(69,58,116,.24), inset 0 1px 0 rgba(255,255,255,.92) !important;
+  filter: saturate(.98) brightness(1.06) contrast(.95);
+}
+.ff-cinematic-garden-clone .garden-world-viewport,
+.ff-cinematic-garden-clone .garden-world,
+.ff-cinematic-garden-clone .found-items-layer,
+.ff-cinematic-garden-clone .rain-layer,
+.ff-cinematic-garden-clone .sparkle-layer { pointer-events: none !important; }
+.ff-cinematic-garden-clone .ff-cinematic-tree-target .tree-image {
+  will-change: filter;
+}
+.ff-cinematic.is-running .ff-cinematic-garden-clone .ff-cinematic-tree-target .tree-image {
+  animation: ffActualTreeGlow 4.4s .25s cubic-bezier(.18,.78,.24,1) both;
+}
+.ff-cinematic.is-complete .ff-cinematic-garden-clone .ff-cinematic-tree-target .tree-image {
+  animation: none !important;
+  filter: brightness(1.08) saturate(1.03) drop-shadow(0 24px 25px rgba(255,211,244,.30));
+}
+.ff-cinematic.uses-fallback-garden .ff-cinematic-scene {
+  background:
+    linear-gradient(180deg, rgba(151,167,255,.15), rgba(250,222,255,.24)),
+    url("assets/garden/garden-inner-night-v3.png") center/cover no-repeat;
+}
+
+.ff-cinematic-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 48%, transparent 26%, rgba(86,76,151,.05) 62%, rgba(64,54,118,.18) 100%),
+    linear-gradient(180deg, rgba(29,34,96,.04), transparent 31%, transparent 73%, rgba(79,62,114,.12));
+}
+
+.ff-cinematic-haze,
+.ff-cinematic-haze::before,
+.ff-cinematic-haze::after {
+  position: absolute;
+  z-index: 2;
+  content: "";
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(34px);
+  opacity: 0;
+}
+.ff-cinematic-haze {
+  left: 5%;
+  bottom: 7%;
+  width: 48%;
+  height: 20%;
+  background: rgba(245,206,255,.28);
+}
+.ff-cinematic-haze::before {
+  left: 80%;
+  bottom: 25%;
+  width: 105%;
+  height: 95%;
+  background: rgba(202,235,255,.33);
+}
+.ff-cinematic-haze::after {
+  left: 20%;
+  bottom: 120%;
+  width: 135%;
+  height: 130%;
+  background: rgba(255,243,199,.16);
+}
+.ff-cinematic.is-running .ff-cinematic-haze {
+  animation: ffHazeIn 3.2s .35s ease forwards, ffHazeFloat 7s 3.2s ease-in-out infinite alternate;
+}
+.ff-cinematic.is-complete .ff-cinematic-haze {
+  animation: none !important;
+  opacity: .72;
+  transform: translate3d(3%,-1%,0);
+}
+
+.ff-cinematic-moonbeam {
+  position: absolute;
+  z-index: 3;
+  left: var(--ff-tree-x);
+  top: -14%;
+  width: clamp(230px, 38vw, 540px);
+  height: var(--ff-moonbeam-height);
+  transform: translateX(-50%) scaleX(.45);
+  transform-origin: 50% 0;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,.62) 0%,
+    rgba(255,247,213,.34) 36%,
+    rgba(255,229,247,.13) 76%,
+    transparent 100%);
+  clip-path: polygon(43% 0,57% 0,100% 100%,0 100%);
+  mix-blend-mode: screen;
+}
+.ff-cinematic.is-running .ff-cinematic-moonbeam {
+  animation: ffMoonbeam 2.25s 1.05s cubic-bezier(.2,.72,.22,1) forwards;
+}
+.ff-cinematic.is-complete .ff-cinematic-moonbeam {
+  animation: none !important;
+  opacity: .44;
+  transform: translateX(-50%) scaleX(1);
+}
+
+.ff-cinematic-tree-aura {
+  position: absolute;
+  z-index: 4;
+  left: var(--ff-tree-x);
+  top: var(--ff-tree-mid-y);
+  width: var(--ff-tree-aura-w);
+  height: var(--ff-tree-aura-h);
+  transform: translate(-50%,-50%) scale(.68);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(255,248,200,.40), rgba(255,215,245,.18) 35%, rgba(194,211,255,.09) 58%, transparent 72%);
+  filter: blur(16px);
+  mix-blend-mode: screen;
+}
+.ff-cinematic.is-running .ff-cinematic-tree-aura {
+  animation: ffTreeAura 3.2s 1.55s ease forwards, ffTreeAuraPulse 2.8s 4.8s ease-in-out infinite;
+}
+.ff-cinematic.is-complete .ff-cinematic-tree-aura {
+  animation: none !important;
+  opacity: .66;
+  transform: translate(-50%,-50%) scale(1);
+}
+
+.ff-cinematic-tree-heart {
+  position: absolute;
+  z-index: 7;
+  left: var(--ff-tree-x);
+  top: var(--ff-tree-heart-y);
+  width: clamp(28px, 4.6vw, 56px);
+  aspect-ratio: 1;
+  transform: translate(-50%,-50%) scale(.3);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(circle, #fff 0 13%, #fff5b3 14% 27%, rgba(255,190,225,.66) 42%, transparent 72%);
+  box-shadow: 0 0 35px 14px rgba(255,229,165,.52);
+  mix-blend-mode: screen;
+}
+.ff-cinematic.is-running .ff-cinematic-tree-heart {
+  animation: ffTreeHeart 2.4s 2.15s ease forwards, ffHeartBreathe 1.65s 4.55s ease-in-out infinite;
+}
+.ff-cinematic.is-complete .ff-cinematic-tree-heart {
+  animation: none !important;
+  opacity: .78;
+  transform: translate(-50%,-50%) scale(1);
+}
+
+.ff-cinematic-trail {
+  position: absolute;
+  z-index: 7;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.ff-cinematic-trail-mote {
+  position: absolute;
+  width: var(--s);
+  aspect-ratio: 1.56;
+  border-radius: 50%;
+  opacity: 0;
+  transform: translate(-50%,-50%) scale(.35);
+  background: radial-gradient(ellipse,
+    rgba(255,255,255,.96) 0 18%,
+    rgba(255,244,194,.82) 32%,
+    rgba(255,210,239,.46) 57%,
+    transparent 76%);
+  box-shadow: 0 0 10px rgba(255,243,188,.66), 0 0 22px rgba(255,205,238,.30);
+}
+.ff-cinematic-trail-mote::before,
+.ff-cinematic-trail-mote::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 50%;
+  transform: translate(-50%,-50%);
+}
+.ff-cinematic-trail-mote::before {
+  width: 190%;
+  height: 210%;
+  background: radial-gradient(circle, rgba(255,239,198,.22), transparent 68%);
+  filter: blur(5px);
+}
+.ff-cinematic-trail-mote.is-flower::after {
+  width: 5px;
+  height: 5px;
+  background: rgba(255,224,240,.9);
+  box-shadow: 4px 0 0 rgba(255,241,202,.78), -4px 0 0 rgba(255,241,202,.78), 0 4px 0 rgba(255,218,239,.82), 0 -4px 0 rgba(255,218,239,.82);
+}
+.ff-cinematic.is-running .ff-cinematic-trail-mote {
+  animation: ffTrailMoteBloom 1.45s var(--delay) cubic-bezier(.2,.78,.24,1) forwards,
+             ffTrailMoteBreathe 2.8s calc(var(--delay) + 1.45s) ease-in-out infinite;
+}
+.ff-cinematic.is-complete .ff-cinematic-trail-mote {
+  animation: none !important;
+  opacity: .66;
+  transform: translate(-50%,-50%) scale(1);
+}
+
+.ff-cinematic-particles,
+.ff-cinematic-petals {
+  position: absolute;
+  z-index: 8;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.ff-cinematic-particle {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 24%, #fff0a3 34%, rgba(255,194,236,.84) 60%, transparent 72%);
+  box-shadow: 0 0 9px rgba(255,241,184,.85);
+  opacity: 0;
+}
+.ff-cinematic.is-running .ff-cinematic-particle { animation: ffParticleRise var(--d) var(--delay) ease-in-out infinite; }
+.ff-cinematic.is-complete .ff-cinematic-particle { animation: none !important; opacity: .34; }
+.ff-cinematic-petal {
+  position: absolute;
+  left: var(--x);
+  top: -8%;
+  width: var(--w);
+  aspect-ratio: 1.56;
+  border-radius: 75% 25% 70% 30%;
+  background: linear-gradient(135deg, rgba(255,255,255,.95), rgba(255,187,230,.90));
+  filter: drop-shadow(0 0 4px rgba(255,207,240,.65));
+  opacity: 0;
+}
+.ff-cinematic.is-running .ff-cinematic-petal { animation: ffPetalFall var(--d) var(--delay) linear infinite; }
+.ff-cinematic.is-complete .ff-cinematic-petal { animation: none !important; opacity: 0; }
+
+.ff-cinematic-unicorn-wrap {
+  position: absolute;
+  z-index: 10;
+  left: var(--ff-unicorn-x);
+  top: var(--ff-unicorn-y);
+  width: clamp(150px, 24vw, 265px);
+  transform: translate(calc(-50% + var(--ff-unicorn-start-dx)), calc(-100% + var(--ff-unicorn-start-dy))) scale(.18);
+  transform-origin: 50% 92%;
+  opacity: .38;
+  filter: brightness(.58) saturate(.76) drop-shadow(0 8px 15px rgba(71,43,108,.16));
+  pointer-events: none;
+  will-change: transform, filter, opacity;
+}
+.ff-cinematic.is-running .ff-cinematic-unicorn-wrap {
+  animation: ffUnicornApproach 4.45s 4.95s cubic-bezier(.2,.74,.24,1) forwards;
+}
+.ff-cinematic.is-complete .ff-cinematic-unicorn-wrap {
+  animation: none !important;
+  opacity: 1;
+  transform: translate(-50%,-100%) scale(1);
+  filter: brightness(1.04) saturate(1.02) drop-shadow(0 16px 25px rgba(71,43,108,.20));
+}
+.ff-cinematic-unicorn {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform-origin: 50% 91%;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.ff-cinematic.is-running .ff-cinematic-unicorn {
+  animation: ffUnicornBodyWalk .49s 5.15s ease-in-out 8, ffUnicornGreet 1.25s 9.32s ease-in-out both;
+}
+.ff-cinematic.is-complete .ff-cinematic-unicorn { animation: none !important; transform: none; }
+.ff-cinematic-unicorn-glow {
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 49%;
+  width: 132%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%,-50%) scale(.72);
+  opacity: .18;
+  background: radial-gradient(circle, rgba(255,255,255,.62), rgba(255,230,248,.27) 38%, rgba(205,238,255,.13) 58%, transparent 74%);
+  filter: blur(14px);
+  mix-blend-mode: screen;
+}
+.ff-cinematic.is-running .ff-cinematic-unicorn-glow {
+  animation: ffUnicornGlowSoft 4.2s 5.15s ease forwards, ffAuraPulse 2.7s 9.4s ease-in-out infinite;
+}
+.ff-cinematic.is-complete .ff-cinematic-unicorn-glow {
+  animation: none !important;
+  opacity: .64;
+  transform: translate(-50%,-50%) scale(1);
+}
+.ff-cinematic-unicorn-shadow {
+  position: absolute;
+  z-index: -2;
+  left: 50%;
+  bottom: 2%;
+  width: 72%;
+  height: 9%;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(77,64,114,.24), transparent 70%);
+  filter: blur(4px);
+  opacity: .58;
+}
+
+.ff-cinematic-petal-veil {
+  position: absolute;
+  z-index: 14;
+  left: var(--ff-unicorn-x);
+  top: var(--ff-unicorn-y);
+  width: 210px;
+  height: 210px;
+  transform: translate(-50%,-72%);
+  overflow: visible;
+  pointer-events: none;
+  opacity: 0;
+}
+.ff-cinematic-petal-veil i {
+  position: absolute;
+  left: calc(50% + var(--offset,0px));
+  top: calc(50% + var(--top,0px));
+  width: 20px;
+  height: 12px;
+  border-radius: 78% 22% 72% 28%;
+  background: linear-gradient(135deg, rgba(255,255,255,.92), rgba(255,190,228,.84));
+  filter: drop-shadow(0 0 6px rgba(255,220,242,.5));
+}
+.ff-cinematic-petal-veil i:nth-child(1){--offset:-48px;--top:-34px;transform:scale(.75) rotate(18deg)}
+.ff-cinematic-petal-veil i:nth-child(2){--offset:16px;--top:-15px;transform:scale(1.05) rotate(-24deg)}
+.ff-cinematic-petal-veil i:nth-child(3){--offset:55px;--top:24px;transform:scale(.82) rotate(38deg)}
+.ff-cinematic-petal-veil i:nth-child(4){--offset:-12px;--top:52px;transform:scale(1.15) rotate(-8deg)}
+.ff-cinematic-petal-veil i:nth-child(5){--offset:76px;--top:-52px;transform:scale(.68) rotate(55deg)}
+.ff-cinematic-petal-veil i:nth-child(6){--offset:34px;--top:70px;transform:scale(.9) rotate(-42deg)}
+.ff-cinematic.is-running .ff-cinematic-petal-veil { animation: ffPetalVeil 1.2s 7.18s ease-in-out both; }
+.ff-cinematic.is-complete .ff-cinematic-petal-veil { animation: none !important; opacity: 0; }
+
+.ff-cinematic-copy {
+  position: absolute;
+  z-index: 30;
+  left: 50%;
+  bottom: calc(var(--ff-safe-bottom) + 68px);
+  width: min(620px, calc(100% - 42px));
+  text-align: center;
+  transform: translateX(-50%);
+  text-shadow: 0 2px 16px rgba(67,50,107,.44);
+  pointer-events: none;
+}
+.ff-cinematic-kicker {
+  margin: 0 0 9px;
+  color: rgba(255,248,221,.94);
+  font-size: clamp(9px,1.4vw,12px);
+  font-weight: 900;
+  letter-spacing: .20em;
+}
+.ff-cinematic-line {
+  margin: 0;
+  min-height: 2.9em;
+  color: #fff;
+  font-size: clamp(17px,3.2vw,29px);
+  font-weight: 900;
+  line-height: 1.45;
+  word-break: keep-all;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .6s ease, transform .6s ease;
+}
+.ff-cinematic-line.is-visible { opacity: 1; transform: translateY(0); }
+
+.ff-cinematic-actions {
+  position: absolute;
+  z-index: 40;
+  left: 50%;
+  bottom: var(--ff-safe-bottom);
+  display: flex;
+  gap: 9px;
+  width: min(420px, calc(100% - 34px));
+  transform: translateX(-50%) translateY(14px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .45s ease, transform .45s ease;
+}
+.ff-cinematic.is-complete .ff-cinematic-actions {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+.ff-cinematic-action {
+  min-height: 48px;
+  border: 1px solid rgba(255,255,255,.84);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(77,53,122,.18);
+  backdrop-filter: blur(11px);
+  -webkit-tap-highlight-color: transparent;
+}
+.ff-cinematic-action-primary {
+  flex: 1.2;
+  color: #77588c;
+  background: linear-gradient(135deg, rgba(255,248,218,.96), rgba(255,220,244,.96));
+}
+.ff-cinematic-action-secondary {
+  flex: .8;
+  color: #fff;
+  background: rgba(109,97,172,.50);
+}
+.ff-cinematic-action:focus-visible,
+.ff-cinematic-skip:focus-visible { outline: 3px solid rgba(255,255,255,.96); outline-offset: 3px; }
+.ff-cinematic-action:disabled { opacity: .62; cursor: wait; }
+
+.ff-cinematic-skip {
+  position: absolute;
+  z-index: 50;
+  top: max(15px, env(safe-area-inset-top));
+  right: 15px;
+  min-width: 56px;
+  min-height: 35px;
+  padding: 7px 12px;
+  border: 1px solid rgba(255,255,255,.58);
+  border-radius: 999px;
+  color: rgba(255,255,255,.92);
+  background: rgba(79,71,139,.24);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 850;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity .35s .5s ease, transform .35s .5s ease;
+  backdrop-filter: blur(9px);
+}
+.ff-cinematic.is-open:not(.is-complete) .ff-cinematic-skip { opacity: 1; transform: translateY(0); }
+.ff-cinematic.is-complete .ff-cinematic-skip { opacity: 0; pointer-events: none; transition-delay: 0s; }
+
+.ff-cinematic-preview-note {
+  position: absolute;
+  z-index: 45;
+  left: 15px;
+  top: max(15px, env(safe-area-inset-top));
+  margin: 0;
+  padding: 8px 11px;
+  border: 1px solid rgba(255,255,255,.48);
+  border-radius: 999px;
+  color: rgba(255,255,255,.90);
+  background: rgba(101,89,164,.22);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .06em;
+  backdrop-filter: blur(8px);
+}
+.ff-cinematic[data-preview="false"] .ff-cinematic-preview-note { display: none; }
+
+.ff-cinematic.is-skipped *,
+.ff-cinematic.is-skipped *::before,
+.ff-cinematic.is-skipped *::after {
+  animation-play-state: paused !important;
+}
+
+@keyframes ffCameraDrift {
+  0% { transform: translate(-50%,-50%) scale(1.015); }
+  42% { transform: translate(-50.4%,-50.5%) scale(1.052); }
+  72% { transform: translate(-49.7%,-50.9%) scale(1.078); }
+  100% { transform: translate(-50%,-51.1%) scale(1.095); }
+}
+@keyframes ffActualTreeGlow {
+  0% { filter: brightness(.92) saturate(.94) drop-shadow(0 22px 20px rgba(67,47,111,.14)); }
+  62% { filter: brightness(1.18) saturate(1.08) drop-shadow(0 24px 28px rgba(255,211,244,.34)); }
+  100% { filter: brightness(1.08) saturate(1.03) drop-shadow(0 24px 25px rgba(255,211,244,.30)); }
+}
+@keyframes ffHazeIn { to { opacity: .82; } }
+@keyframes ffHazeFloat { from { transform: translate3d(-2%,1%,0); } to { transform: translate3d(5%,-3%,0); } }
+@keyframes ffMoonbeam {
+  0% { opacity: 0; transform: translateX(-50%) scaleX(.38); }
+  55% { opacity: .68; }
+  100% { opacity: .44; transform: translateX(-50%) scaleX(1); }
+}
+@keyframes ffTreeAura {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(.68); }
+  70% { opacity: .9; }
+  100% { opacity: .66; transform: translate(-50%,-50%) scale(1); }
+}
+@keyframes ffTreeAuraPulse { 0%,100%{opacity:.46;transform:translate(-50%,-50%) scale(.96)} 50%{opacity:.76;transform:translate(-50%,-50%) scale(1.06)} }
+@keyframes ffAuraPulse { 0%,100%{opacity:.46;transform:translate(-50%,-50%) scale(.96)} 50%{opacity:.76;transform:translate(-50%,-50%) scale(1.06)} }
+@keyframes ffTreeHeart {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(.25); }
+  55% { opacity: 1; transform: translate(-50%,-50%) scale(1.28); }
+  100% { opacity: .74; transform: translate(-50%,-50%) scale(1); }
+}
+@keyframes ffHeartBreathe { 0%,100%{opacity:.58;transform:translate(-50%,-50%) scale(.94)} 50%{opacity:1;transform:translate(-50%,-50%) scale(1.13)} }
+@keyframes ffTrailMoteBloom {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(.3); }
+  64% { opacity: .95; transform: translate(-50%,-50%) scale(1.12); }
+  100% { opacity: .72; transform: translate(-50%,-50%) scale(1); }
+}
+@keyframes ffTrailMoteBreathe { 0%,100%{opacity:.54;transform:translate(-50%,-50%) scale(.94)} 50%{opacity:.82;transform:translate(-50%,-50%) scale(1.08)} }
+@keyframes ffParticleRise {
+  0%,100% { opacity: 0; transform: translate3d(0,18px,0) scale(.3); }
+  24% { opacity: .85; }
+  70% { opacity: .46; }
+  86% { opacity: 0; transform: translate3d(var(--dx),-54px,0) scale(1.12); }
+}
+@keyframes ffPetalFall {
+  0% { opacity: 0; transform: translate3d(0,-2vh,0) rotate(0deg); }
+  12% { opacity: .72; }
+  85% { opacity: .48; }
+  100% { opacity: 0; transform: translate3d(var(--dx),112vh,0) rotate(var(--r)); }
+}
+@keyframes ffUnicornApproach {
+  0% {
+    opacity: .38;
+    transform: translate(calc(-50% + var(--ff-unicorn-start-dx)), calc(-100% + var(--ff-unicorn-start-dy))) scale(.18);
+    filter: brightness(.58) saturate(.76) drop-shadow(0 8px 15px rgba(71,43,108,.16));
+  }
+  28% {
+    opacity: .82;
+    transform: translate(calc(-50% + var(--ff-unicorn-dx-78)), calc(-100% + var(--ff-unicorn-dy-74))) scale(.34);
+    filter: brightness(.66) saturate(.83) drop-shadow(0 9px 16px rgba(71,43,108,.17));
+  }
+  52% {
+    opacity: .9;
+    transform: translate(calc(-50% + var(--ff-unicorn-dx-50)), calc(-100% + var(--ff-unicorn-dy-44))) scale(.54);
+    filter: brightness(.77) saturate(.9) drop-shadow(0 11px 18px rgba(71,43,108,.18));
+  }
+  76% {
+    opacity: .96;
+    transform: translate(calc(-50% + var(--ff-unicorn-dx-23)), calc(-100% + var(--ff-unicorn-dy-18))) scale(.78);
+    filter: brightness(.91) saturate(.98) drop-shadow(0 13px 21px rgba(71,43,108,.19));
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%,-100%) scale(1);
+    filter: brightness(1.04) saturate(1.02) drop-shadow(0 16px 25px rgba(71,43,108,.20));
+  }
+}
+@keyframes ffUnicornBodyWalk { 0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-3px) rotate(-.28deg)} }
+@keyframes ffUnicornGreet { 0%,100%{transform:translateY(0) rotate(0) scale(1)} 42%{transform:translateY(2px) rotate(-1deg) scaleY(.978)} 72%{transform:translateY(-2px) rotate(.55deg) scaleY(1.012)} }
+@keyframes ffUnicornGlowSoft { 0%{opacity:.18;transform:translate(-50%,-50%) scale(.72)} 68%{opacity:.38} 100%{opacity:.66;transform:translate(-50%,-50%) scale(1)} }
+@keyframes ffPetalVeil { 0%{opacity:0;transform:translate(-35%,-66%) scale(.9)} 22%{opacity:.88} 72%{opacity:.7} 100%{opacity:0;transform:translate(-74%,-80%) scale(1.18)} }
+
+@media (max-width: 640px) {
+  .ff-cinematic-garden-clone { border-radius: 0 !important; }
+  .ff-cinematic-unicorn-wrap { width: clamp(155px,52vw,225px); }
+  .ff-cinematic-copy { bottom: calc(var(--ff-safe-bottom) + 62px); }
+  .ff-cinematic-line { min-height: 3.4em; font-size: clamp(16px,5vw,22px); }
+  .ff-cinematic-preview-note { max-width: 155px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ff-cinematic *, .ff-cinematic *::before, .ff-cinematic *::after {
+    animation-duration: .01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+  .ff-cinematic-moonbeam,
+  .ff-cinematic-tree-aura,
+  .ff-cinematic-tree-heart,
+  .ff-cinematic-unicorn-wrap,
+  .ff-cinematic-unicorn-glow,
+  .ff-cinematic-haze { opacity: 1; }
+  .ff-cinematic-unicorn-wrap { transform: translate(-50%,-100%) scale(1); filter: none; }
+}

@@ -14,6 +14,17 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 
 // 나무 상호작용 모듈은 기존 인증 세션과 같은 Supabase 클라이언트를 공유합니다.
 window.__todayForestSupabase = supabase;
+window.__todayForestShowToast = (...args) => showToast(...args);
+
+// 특별친구 모듈이 로그인한 정원의 데이터 준비 완료 시점을 안전하게 알 수 있도록 합니다.
+function publishGardenSessionReady(origin = "garden") {
+  window.dispatchEvent(new CustomEvent("todayforest:garden-session-ready", {
+    detail: {
+      origin,
+      userId: currentUser?.id || null,
+    },
+  }));
+}
 
 
 // GA4에는 닉네임·편지 제목·본문·계정 ID처럼 개인을 식별할 수 있는 값은 보내지 않습니다.
@@ -5075,6 +5086,8 @@ async function saveRecord(event) {
     return;
   }
 
+  window.dispatchEvent(new CustomEvent("todayforest:garden-record-saved"));
+
   trackTodayForestOperationalEvent("garden_mood_saved", {
     mood: selectedMood,
     detail_added: detail ? "yes" : "no",
@@ -5250,11 +5263,11 @@ async function removeFriend(friendId, name, isDevTest = false) {
   showToast(isDevTest ? "테스트 새싹과 테스트 편지를 정리했어요." : `${name || "친구"}님과의 친구 관계를 정리했어요.`);
 }
 
-function showToast(message) {
+function showToast(message, duration = 3200) {
   clearTimeout(toastTimer);
   els.toast.textContent = message;
   els.toast.classList.remove("hidden");
-  toastTimer = window.setTimeout(() => els.toast.classList.add("hidden"), 3200);
+  toastTimer = window.setTimeout(() => els.toast.classList.add("hidden"), duration);
 }
 
 function escapeHTML(value) {
@@ -5672,6 +5685,7 @@ async function syncSession() {
     renderAuthUI();
     renderAll();
     await hydrateGardenForCurrentUser();
+    publishGardenSessionReady("sync-session-hydrated");
     return;
   }
 
@@ -5683,6 +5697,7 @@ async function syncSession() {
   renderAuthUI();
   if (currentUser) {
     renderAll();
+    publishGardenSessionReady("sync-session-rendered");
     // syncSession()에서 공유나무를 먼저 복원한 뒤에도 INITIAL_SESSION 이벤트가 한 번 더 올 수 있습니다.
     // 이때 내 정원이 다시 보이는 것을 막기 위해 주소의 공유나무 화면을 마지막으로 다시 복원합니다.
     restoreSharedTreeFromUrl();
@@ -6431,6 +6446,8 @@ async function saveWelcomeOnboardingFirstRecord() {
     if (error) throw error;
 
     await loadGardenState();
+    window.dispatchEvent(new CustomEvent("todayforest:garden-record-saved"));
+
     trackTodayForestOperationalEvent("garden_mood_saved", {
       mood: welcomeMoodToRecordMood(welcomeSelectedMood),
       detail_added: "no",
@@ -6607,6 +6624,7 @@ async function init() {
       renderAuthUI();
       renderAll();
       await hydrateGardenForCurrentUser();
+      publishGardenSessionReady("auth-state-hydrated");
       return;
     }
 
@@ -6620,6 +6638,7 @@ async function init() {
     renderAuthUI();
     if (currentUser) {
       renderAll();
+      publishGardenSessionReady("auth-state-rendered");
       // INITIAL_SESSION 이벤트가 마지막에 내 정원을 다시 보이게 할 수 있습니다.
       // 주소에 공유나무가 있으면 렌더링 뒤 공유나무 화면을 최종 화면으로 복원합니다.
       restoreSharedTreeFromUrl();
