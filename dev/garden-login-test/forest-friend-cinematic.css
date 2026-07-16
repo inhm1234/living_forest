@@ -1,7 +1,8 @@
 /* -------------------------------------------------------------------------
-   SPECIAL FOREST FRIEND CINEMATIC PREVIEW v0.1
+   SPECIAL FOREST FRIEND CINEMATIC PREVIEW v0.2
    ?forestFriendCinematic=1 에서만 JS가 장면을 생성합니다.
    실제 계정/DB/특별친구 소유 상태를 읽거나 변경하지 않는 검수 전용 연출입니다.
+   v0.2: 부드러운 달빛 길 + 실제 걷기 프레임 적용
    ------------------------------------------------------------------------- */
 body.ff-cinematic-lock {
   overflow: hidden !important;
@@ -177,41 +178,61 @@ body.ff-cinematic-lock {
   animation: ffTreeHeart 2.4s 2.15s ease forwards, ffHeartBreathe 1.65s 4.55s ease-in-out infinite;
 }
 
-.ff-cinematic-path {
+
+.ff-cinematic-trail {
   position: absolute;
-  z-index: 5;
-  left: 0;
-  right: 0;
-  bottom: 3%;
-  width: 100%;
-  height: 58%;
+  z-index: 7;
+  inset: 0;
+  overflow: hidden;
   pointer-events: none;
+}
+.ff-cinematic-trail-mote {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--s);
+  height: calc(var(--s) * .64);
+  border-radius: 50%;
   opacity: 0;
-  filter: drop-shadow(0 0 8px rgba(255,225,160,.75)) drop-shadow(0 0 18px rgba(255,192,236,.52));
+  transform: translate(-50%, -50%) scale(.35);
+  background: radial-gradient(ellipse,
+    rgba(255,255,255,.96) 0 18%,
+    rgba(255,244,194,.82) 32%,
+    rgba(255,210,239,.46) 57%,
+    transparent 76%);
+  box-shadow:
+    0 0 10px rgba(255,243,188,.66),
+    0 0 22px rgba(255,205,238,.30);
+  filter: blur(.15px);
 }
-.ff-cinematic.is-running .ff-cinematic-path {
-  animation: ffPathShow .45s 3.15s ease forwards;
+.ff-cinematic-trail-mote::before,
+.ff-cinematic-trail-mote::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
 }
-.ff-cinematic-path-main,
-.ff-cinematic-path-soft {
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 1100;
-  stroke-dashoffset: 1100;
+.ff-cinematic-trail-mote::before {
+  width: 190%;
+  height: 210%;
+  background: radial-gradient(circle, rgba(255,239,198,.22), transparent 68%);
+  filter: blur(5px);
 }
-.ff-cinematic-path-main {
-  stroke: url(#ffPathGradient);
-  stroke-width: 10;
+.ff-cinematic-trail-mote.is-flower::after {
+  width: 5px;
+  height: 5px;
+  background: rgba(255,224,240,.9);
+  box-shadow:
+    4px 0 0 rgba(255,241,202,.78),
+    -4px 0 0 rgba(255,241,202,.78),
+    0 4px 0 rgba(255,218,239,.82),
+    0 -4px 0 rgba(255,218,239,.82);
 }
-.ff-cinematic-path-soft {
-  stroke: rgba(255, 245, 200, .40);
-  stroke-width: 26;
-  filter: blur(7px);
-}
-.ff-cinematic.is-running .ff-cinematic-path-main,
-.ff-cinematic.is-running .ff-cinematic-path-soft {
-  animation: ffDrawPath 2.4s 3.25s cubic-bezier(.22,.75,.25,1) forwards;
+.ff-cinematic.is-running .ff-cinematic-trail-mote {
+  animation: ffTrailMoteBloom 1.45s var(--delay) cubic-bezier(.2,.78,.24,1) forwards,
+             ffTrailMoteBreathe 2.8s calc(var(--delay) + 1.45s) ease-in-out infinite;
 }
 
 .ff-cinematic-particles,
@@ -251,20 +272,22 @@ body.ff-cinematic-lock {
   animation: ffPetalFall var(--d) var(--delay) linear infinite;
 }
 
+
 .ff-cinematic-unicorn-wrap {
   position: absolute;
   z-index: 10;
   left: 50%;
-  bottom: 10.5%;
-  width: clamp(132px, 22vw, 235px);
-  transform: translate(-50%, 28%) scale(.18);
-  transform-origin: 50% 94%;
+  bottom: 11.5%;
+  width: clamp(160px, 25vw, 270px);
+  transform: translate(calc(-50% + min(34vw, 380px)), -25vh) scale(.18);
+  transform-origin: 50% 92%;
   opacity: 0;
-  filter: brightness(.12) saturate(.3) drop-shadow(0 10px 17px rgba(71, 43, 108, .18));
+  filter: brightness(.58) saturate(.76) drop-shadow(0 8px 15px rgba(71, 43, 108, .16));
   pointer-events: none;
+  will-change: transform, filter;
 }
 .ff-cinematic.is-running .ff-cinematic-unicorn-wrap {
-  animation: ffUnicornArrive 4.1s 5.25s cubic-bezier(.19,.75,.22,1) forwards;
+  animation: ffUnicornApproach 4.45s 4.95s cubic-bezier(.2,.74,.24,1) forwards;
 }
 .ff-cinematic-unicorn {
   display: block;
@@ -275,24 +298,24 @@ body.ff-cinematic-lock {
   -webkit-user-drag: none;
 }
 .ff-cinematic.is-running .ff-cinematic-unicorn {
-  animation: ffUnicornStep .88s 5.4s ease-in-out 4, ffUnicornGreet 1.25s 9.1s ease-in-out both;
+  animation: ffUnicornBodyWalk .49s 5.15s ease-in-out 8, ffUnicornGreet 1.25s 9.32s ease-in-out both;
 }
 .ff-cinematic-unicorn-glow {
   position: absolute;
   z-index: -1;
   left: 50%;
-  top: 48%;
-  width: 135%;
+  top: 49%;
+  width: 132%;
   aspect-ratio: 1;
   border-radius: 50%;
-  transform: translate(-50%, -50%);
-  opacity: 0;
-  background: radial-gradient(circle, rgba(255,255,255,.68), rgba(255,224,247,.30) 38%, rgba(205,238,255,.17) 58%, transparent 73%);
-  filter: blur(13px);
+  transform: translate(-50%, -50%) scale(.72);
+  opacity: .18;
+  background: radial-gradient(circle, rgba(255,255,255,.62), rgba(255,230,248,.27) 38%, rgba(205,238,255,.13) 58%, transparent 74%);
+  filter: blur(14px);
   mix-blend-mode: screen;
 }
 .ff-cinematic.is-running .ff-cinematic-unicorn-glow {
-  animation: ffUnicornGlow 2.2s 7.55s ease forwards, ffAuraPulse 2.5s 9.7s ease-in-out infinite;
+  animation: ffUnicornGlowSoft 4.2s 5.15s ease forwards, ffAuraPulse 2.7s 9.4s ease-in-out infinite;
 }
 .ff-cinematic-unicorn-shadow {
   position: absolute;
@@ -300,12 +323,40 @@ body.ff-cinematic-lock {
   left: 50%;
   bottom: 2%;
   width: 72%;
-  height: 10%;
+  height: 9%;
   border-radius: 50%;
   transform: translateX(-50%);
-  background: radial-gradient(ellipse, rgba(77, 64, 114, .28), transparent 70%);
+  background: radial-gradient(ellipse, rgba(77, 64, 114, .24), transparent 70%);
   filter: blur(4px);
-  opacity: .8;
+  opacity: .58;
+}
+
+.ff-cinematic-petal-veil {
+  position: absolute;
+  z-index: 14;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+}
+.ff-cinematic-petal-veil i {
+  position: absolute;
+  left: calc(72% + var(--offset, 0%));
+  top: calc(51% + var(--top, 0%));
+  width: 20px;
+  height: 12px;
+  border-radius: 78% 22% 72% 28%;
+  background: linear-gradient(135deg, rgba(255,255,255,.92), rgba(255,190,228,.84));
+  filter: blur(.2px) drop-shadow(0 0 6px rgba(255,220,242,.5));
+}
+.ff-cinematic-petal-veil i:nth-child(1) { --offset:-4%; --top:-9%; transform:scale(.75) rotate(18deg); }
+.ff-cinematic-petal-veil i:nth-child(2) { --offset:2%; --top:-3%; transform:scale(1.05) rotate(-24deg); }
+.ff-cinematic-petal-veil i:nth-child(3) { --offset:7%; --top:5%; transform:scale(.82) rotate(38deg); }
+.ff-cinematic-petal-veil i:nth-child(4) { --offset:-1%; --top:10%; transform:scale(1.15) rotate(-8deg); }
+.ff-cinematic-petal-veil i:nth-child(5) { --offset:10%; --top:-12%; transform:scale(.68) rotate(55deg); }
+.ff-cinematic-petal-veil i:nth-child(6) { --offset:4%; --top:15%; transform:scale(.9) rotate(-42deg); }
+.ff-cinematic.is-running .ff-cinematic-petal-veil {
+  animation: ffPetalVeil 1.2s 7.18s ease-in-out both;
 }
 
 .ff-cinematic-copy {
@@ -315,6 +366,7 @@ body.ff-cinematic-lock {
   bottom: calc(var(--ff-safe-bottom) + 68px);
   width: min(620px, calc(100% - 42px));
   text-align: center;
+  transform: translateX(-50%);
   text-shadow: 0 2px 16px rgba(67, 50, 107, .44);
   pointer-events: none;
 }
@@ -431,18 +483,6 @@ body.ff-cinematic-lock {
   backdrop-filter: blur(8px);
 }
 
-.ff-cinematic-flash {
-  position: absolute;
-  z-index: 20;
-  inset: 0;
-  background: radial-gradient(circle at 50% 64%, rgba(255,255,255,.92), rgba(255,241,203,.55) 25%, rgba(255,210,245,.20) 54%, transparent 76%);
-  opacity: 0;
-  pointer-events: none;
-  mix-blend-mode: screen;
-}
-.ff-cinematic.is-running .ff-cinematic-flash {
-  animation: ffFinalFlash 1.25s 8.25s ease both;
-}
 
 @keyframes ffCameraDrift {
   0% { transform: scale(1.025) translate3d(0,0,0); }
@@ -475,8 +515,15 @@ body.ff-cinematic-lock {
   100% { opacity: .74; transform: translate(-50%,-50%) scale(1); }
 }
 @keyframes ffHeartBreathe { 0%,100% { opacity:.58; transform:translate(-50%,-50%) scale(.94); } 50% { opacity:1; transform:translate(-50%,-50%) scale(1.13); } }
-@keyframes ffPathShow { to { opacity: 1; } }
-@keyframes ffDrawPath { to { stroke-dashoffset: 0; } }
+@keyframes ffTrailMoteBloom {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(.3); }
+  64% { opacity: .95; transform: translate(-50%,-50%) scale(1.12); }
+  100% { opacity: .72; transform: translate(-50%,-50%) scale(1); }
+}
+@keyframes ffTrailMoteBreathe {
+  0%,100% { opacity:.54; transform:translate(-50%,-50%) scale(.94); }
+  50% { opacity:.82; transform:translate(-50%,-50%) scale(1.08); }
+}
 @keyframes ffParticleRise {
   0%, 100% { opacity: 0; transform: translate3d(0,18px,0) scale(.3); }
   24% { opacity: .85; }
@@ -489,24 +536,68 @@ body.ff-cinematic-lock {
   85% { opacity: .48; }
   100% { opacity: 0; transform: translate3d(var(--dx), 112vh, 0) rotate(var(--r)); }
 }
-@keyframes ffUnicornArrive {
-  0% { opacity: 0; transform: translate(-50%, 28%) scale(.18); filter: brightness(.12) saturate(.3) blur(1.6px) drop-shadow(0 10px 17px rgba(71,43,108,.18)); }
-  20% { opacity: .48; }
-  58% { opacity: .94; filter: brightness(.42) saturate(.72) blur(.35px) drop-shadow(0 12px 18px rgba(71,43,108,.18)); }
-  82% { transform: translate(-50%, 5%) scale(.82); filter: brightness(.92) saturate(.95) blur(0) drop-shadow(0 14px 21px rgba(71,43,108,.20)); }
-  100% { opacity: 1; transform: translate(-50%, 0) scale(1); filter: brightness(1.05) saturate(1.02) drop-shadow(0 16px 25px rgba(71,43,108,.20)); }
+@keyframes ffUnicornApproach {
+  0% {
+    opacity: 0;
+    transform: translate(calc(-50% + min(34vw, 380px)), -25vh) scale(.18);
+    filter: brightness(.58) saturate(.76) drop-shadow(0 8px 15px rgba(71,43,108,.16));
+  }
+  12% {
+    opacity: .7;
+    transform: translate(calc(-50% + min(34vw, 380px)), -25vh) scale(.18);
+    filter: brightness(.58) saturate(.76) drop-shadow(0 8px 15px rgba(71,43,108,.16));
+  }
+  28% {
+    opacity: .84;
+    transform: translate(calc(-50% + min(31vw, 340px)), -20vh) scale(.31);
+    filter: brightness(.65) saturate(.82) drop-shadow(0 9px 16px rgba(71,43,108,.17));
+  }
+  52% {
+    opacity: .9;
+    transform: translate(calc(-50% + min(28vw, 300px)), -13vh) scale(.51);
+    filter: brightness(.76) saturate(.9) drop-shadow(0 11px 18px rgba(71,43,108,.18));
+  }
+  76% {
+    opacity: .96;
+    transform: translate(calc(-50% + min(25vw, 245px)), -6vh) scale(.76);
+    filter: brightness(.91) saturate(.98) drop-shadow(0 13px 21px rgba(71,43,108,.19));
+  }
+  100% {
+    opacity: 1;
+    transform: translate(calc(-50% + min(22vw, 190px)), 0) scale(1);
+    filter: brightness(1.04) saturate(1.02) drop-shadow(0 16px 25px rgba(71,43,108,.20));
+  }
 }
-@keyframes ffUnicornStep { 0%,100% { transform: translateY(0) rotate(0); } 48% { transform: translateY(-4px) rotate(-.35deg); } }
-@keyframes ffUnicornGreet { 0%,100% { transform: translateY(0) rotate(0) scale(1); } 42% { transform: translateY(2px) rotate(-1.1deg) scaleY(.974); } 72% { transform: translateY(-2px) rotate(.6deg) scaleY(1.015); } }
-@keyframes ffUnicornGlow { from { opacity: 0; transform: translate(-50%,-50%) scale(.54); } to { opacity: .78; transform: translate(-50%,-50%) scale(1); } }
-@keyframes ffFinalFlash { 0%,100% { opacity: 0; } 42% { opacity: .72; } }
+@keyframes ffUnicornBodyWalk {
+  0%,100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-3px) rotate(-.28deg); }
+}
+@keyframes ffUnicornGreet {
+  0%,100% { transform: translateY(0) rotate(0) scale(1); }
+  42% { transform: translateY(2px) rotate(-1deg) scaleY(.978); }
+  72% { transform: translateY(-2px) rotate(.55deg) scaleY(1.012); }
+}
+@keyframes ffUnicornGlowSoft {
+  0% { opacity:.18; transform:translate(-50%,-50%) scale(.72); }
+  68% { opacity:.38; }
+  100% { opacity:.66; transform:translate(-50%,-50%) scale(1); }
+}
+@keyframes ffPetalVeil {
+  0% { opacity:0; transform:translate3d(10%, 4%, 0) scale(.9); }
+  22% { opacity:.88; }
+  72% { opacity:.7; }
+  100% { opacity:0; transform:translate3d(-26%, -7%, 0) scale(1.18); }
+}
 
 @media (max-width: 640px) {
   .ff-cinematic-scene { inset: -5%; background-position: 52% center; }
   .ff-cinematic-tree { bottom: 18%; width: clamp(230px, 72vw, 350px); }
   .ff-cinematic-tree-aura { bottom: 18%; width: 106vw; }
-  .ff-cinematic-path { bottom: 9%; height: 51%; }
-  .ff-cinematic-unicorn-wrap { bottom: 17%; width: clamp(128px, 40vw, 190px); }
+  .ff-cinematic-unicorn-wrap {
+    bottom: 17%;
+    width: clamp(170px, 55vw, 230px);
+    transform: translate(calc(-50% + 34vw), -22vh) scale(.18);
+  }
   .ff-cinematic-copy { bottom: calc(var(--ff-safe-bottom) + 62px); }
   .ff-cinematic-line { min-height: 3.4em; font-size: clamp(16px, 5vw, 22px); }
   .ff-cinematic-preview-note { max-width: 155px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -525,5 +616,5 @@ body.ff-cinematic-lock {
   .ff-cinematic-unicorn-wrap,
   .ff-cinematic-unicorn-glow,
   .ff-cinematic-haze { opacity: 1; }
-  .ff-cinematic-unicorn-wrap { transform: translate(-50%, 0) scale(1); filter: none; }
+  .ff-cinematic-unicorn-wrap { transform: translate(calc(-50% + min(22vw, 190px)), 0) scale(1); filter: none; }
 }

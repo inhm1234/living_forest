@@ -1,7 +1,13 @@
 /* -------------------------------------------------------------------------
-   SPECIAL FOREST FRIEND CINEMATIC PREVIEW v0.1
+   SPECIAL FOREST FRIEND CINEMATIC PREVIEW v0.2
    ?forestFriendCinematic=1 을 붙였을 때만 실행됩니다.
    검수 전용이며 DB/로그인/특별친구 보유 상태를 변경하지 않습니다.
+
+   v0.2
+   - 전기처럼 보이던 SVG 빛줄기를 제거했습니다.
+   - 꽃잎과 둥근 빛방울이 차례로 피어나는 '달빛 길'로 교체했습니다.
+   - 기존 숲 유니콘 걷기 4프레임을 사용해 실제로 다가오는 느낌을 냈습니다.
+   - 유니콘은 처음부터 멀리 보이며, 투명해졌다가 갑자기 나타나지 않습니다.
    ------------------------------------------------------------------------- */
 const ffCinematicParams = new URLSearchParams(window.location.search);
 const ffCinematicEnabled = ffCinematicParams.get("forestFriendCinematic") === "1";
@@ -10,39 +16,67 @@ if (ffCinematicEnabled) {
   const COPY = [
     { at: 350, kicker: "A QUIET FOREST NIGHT", line: "숲이 잠시 고요해지고,\n나무가 조용히 빛나기 시작했어요." },
     { at: 1900, kicker: "THE TREE REMEMBERS", line: "나무가 기억한 따뜻한 마음들이\n하나둘 빛으로 모여요." },
-    { at: 3650, kicker: "A PATH OF HEARTS", line: "모인 빛이 숲길을 만들고,\n누군가를 이곳으로 이끌고 있어요." },
-    { at: 5550, kicker: "SOMEONE IS COMING", line: "저 멀리, 특별한 친구의 모습이\n조금씩 보이기 시작했어요." },
-    { at: 7600, kicker: "OUR FIRST MEETING", line: "네가 숲에 남긴 마음을 따라\n내가 여기까지 왔어." },
-    { at: 9550, kicker: "A NEW FOREST FRIEND", line: "오늘부터 숲 유니콘은\n당신과 함께할 특별한 친구예요." },
+    { at: 3650, kicker: "A SOFT MOONLIT PATH", line: "꽃잎과 작은 빛들이 이어져\n부드러운 숲길을 만들어요." },
+    { at: 5300, kicker: "SOMEONE IS COMING", line: "길 끝에서 작은 친구가\n천천히 이쪽으로 다가오고 있어요." },
+    { at: 7600, kicker: "OUR FIRST MEETING", line: "네가 숲에 남긴 마음을 따라\n한 걸음씩 여기까지 왔어." },
+    { at: 9800, kicker: "A NEW FOREST FRIEND", line: "오늘부터 숲 유니콘은\n당신과 함께할 특별한 친구예요." },
   ];
+
+  const WALK_FRAMES = [
+    "../../assets/friends/forest-unicorn/forest-unicorn-walk_1.png",
+    "../../assets/friends/forest-unicorn/forest-unicorn-walk_2.png",
+    "../../assets/friends/forest-unicorn/forest-unicorn-walk_3.png",
+    "../../assets/friends/forest-unicorn/forest-unicorn-walk_4.png",
+    "../../assets/friends/forest-unicorn/forest-unicorn-walk_3.png",
+    "../../assets/friends/forest-unicorn/forest-unicorn-walk_2.png",
+  ];
+  const IDLE_FRAME = "../../assets/friends/forest-unicorn/forest-unicorn-look.png";
 
   let root = null;
   let copyLine = null;
   let copyKicker = null;
+  let unicornImage = null;
   let timers = [];
   let completeTimer = null;
+  let walkInterval = null;
+  let walkFrameIndex = 0;
 
-  function makeParticles(count = 34) {
-    return Array.from({ length: count }, (_, index) => {
-      const x = 12 + Math.random() * 76;
-      const y = 35 + Math.random() * 54;
-      const size = 3 + Math.random() * 7;
-      const duration = 2.7 + Math.random() * 3.2;
-      const delay = 1.8 + Math.random() * 7.5;
-      const dx = `${-28 + Math.random() * 56}px`;
+  function makeParticles(count = 30) {
+    return Array.from({ length: count }, () => {
+      const x = 10 + Math.random() * 80;
+      const y = 34 + Math.random() * 56;
+      const size = 3 + Math.random() * 6;
+      const duration = 3.2 + Math.random() * 3.5;
+      const delay = 1.7 + Math.random() * 8;
+      const dx = `${-24 + Math.random() * 48}px`;
       return `<i class="ff-cinematic-particle" style="--x:${x.toFixed(2)}%;--y:${y.toFixed(2)}%;--s:${size.toFixed(1)}px;--d:${duration.toFixed(2)}s;--delay:${delay.toFixed(2)}s;--dx:${dx}"></i>`;
     }).join("");
   }
 
-  function makePetals(count = 18) {
+  function makePetals(count = 20) {
     return Array.from({ length: count }, () => {
       const x = Math.random() * 100;
       const width = 7 + Math.random() * 9;
-      const duration = 6.5 + Math.random() * 5.5;
-      const delay = 1.1 + Math.random() * 7.2;
+      const duration = 7 + Math.random() * 5.5;
+      const delay = 1 + Math.random() * 8;
       const dx = `${-70 + Math.random() * 140}px`;
       const rotation = `${180 + Math.random() * 650}deg`;
       return `<i class="ff-cinematic-petal" style="--x:${x.toFixed(2)}%;--w:${width.toFixed(1)}px;--d:${duration.toFixed(2)}s;--delay:${delay.toFixed(2)}s;--dx:${dx};--r:${rotation}"></i>`;
+    }).join("");
+  }
+
+  function makeMoonlitTrail() {
+    const points = [
+      [49, 80], [50, 77], [52, 74], [53, 71], [55, 68], [57, 65],
+      [59, 63], [62, 61], [65, 59], [68, 57], [71, 55], [74, 52],
+      [76, 49], [78, 46], [79, 43], [80, 40],
+    ];
+
+    return points.map(([x, y], index) => {
+      const size = 12 + (index % 4) * 2.2;
+      const delay = 3.05 + index * 0.095;
+      const flower = index % 3 === 1 ? " is-flower" : "";
+      return `<i class="ff-cinematic-trail-mote${flower}" style="--x:${x}%;--y:${y}%;--s:${size.toFixed(1)}px;--delay:${delay.toFixed(2)}s"></i>`;
     }).join("");
   }
 
@@ -64,26 +98,17 @@ if (ffCinematicEnabled) {
         <img src="../../assets/garden/tree_growth/tree_stage6_night.png" alt="" />
         <span class="ff-cinematic-tree-heart"></span>
       </div>
-      <svg class="ff-cinematic-path" viewBox="0 0 1000 520" preserveAspectRatio="none" aria-hidden="true">
-        <defs>
-          <linearGradient id="ffPathGradient" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="#d8d8ff" stop-opacity="0" />
-            <stop offset="22%" stop-color="#efc9ff" stop-opacity=".94" />
-            <stop offset="58%" stop-color="#fff0b5" stop-opacity="1" />
-            <stop offset="100%" stop-color="#fff8dd" stop-opacity=".98" />
-          </linearGradient>
-        </defs>
-        <path class="ff-cinematic-path-soft" d="M 930 92 C 820 145, 825 242, 720 278 S 620 337, 555 382 S 515 426, 500 478" />
-        <path class="ff-cinematic-path-main" d="M 930 92 C 820 145, 825 242, 720 278 S 620 337, 555 382 S 515 426, 500 478" />
-      </svg>
+      <div class="ff-cinematic-trail" aria-hidden="true">${makeMoonlitTrail()}</div>
       <div class="ff-cinematic-particles" aria-hidden="true">${makeParticles()}</div>
       <div class="ff-cinematic-petals" aria-hidden="true">${makePetals()}</div>
       <div class="ff-cinematic-unicorn-wrap" aria-hidden="true">
         <span class="ff-cinematic-unicorn-glow"></span>
         <span class="ff-cinematic-unicorn-shadow"></span>
-        <img class="ff-cinematic-unicorn" src="../../assets/friends/forest-unicorn-idle.png" alt="" />
+        <img class="ff-cinematic-unicorn" src="${WALK_FRAMES[0]}" alt="" />
       </div>
-      <div class="ff-cinematic-flash" aria-hidden="true"></div>
+      <div class="ff-cinematic-petal-veil" aria-hidden="true">
+        <i></i><i></i><i></i><i></i><i></i><i></i>
+      </div>
       <div class="ff-cinematic-copy" aria-live="polite">
         <p class="ff-cinematic-kicker"></p>
         <p class="ff-cinematic-line"></p>
@@ -98,6 +123,7 @@ if (ffCinematicEnabled) {
     document.body.appendChild(root);
     copyLine = root.querySelector(".ff-cinematic-line");
     copyKicker = root.querySelector(".ff-cinematic-kicker");
+    unicornImage = root.querySelector(".ff-cinematic-unicorn");
     root.querySelector(".ff-cinematic-skip")?.addEventListener("click", finishCinematic);
     root.querySelector("[data-ff-replay]")?.addEventListener("click", playCinematic);
     root.querySelector("[data-ff-close]")?.addEventListener("click", closeCinematic);
@@ -110,6 +136,10 @@ if (ffCinematicEnabled) {
     timers.forEach((timer) => window.clearTimeout(timer));
     timers = [];
     window.clearTimeout(completeTimer);
+    if (walkInterval) {
+      window.clearInterval(walkInterval);
+      walkInterval = null;
+    }
   }
 
   function setCopy(item) {
@@ -123,6 +153,24 @@ if (ffCinematicEnabled) {
     }, 210);
   }
 
+  function startWalkingFrames() {
+    if (!unicornImage) return;
+    walkFrameIndex = 0;
+    unicornImage.src = WALK_FRAMES[walkFrameIndex];
+    walkInterval = window.setInterval(() => {
+      walkFrameIndex = (walkFrameIndex + 1) % WALK_FRAMES.length;
+      unicornImage.src = WALK_FRAMES[walkFrameIndex];
+    }, 245);
+  }
+
+  function stopWalkingFrames() {
+    if (walkInterval) {
+      window.clearInterval(walkInterval);
+      walkInterval = null;
+    }
+    if (unicornImage) unicornImage.src = IDLE_FRAME;
+  }
+
   function playCinematic() {
     createCinematic();
     clearTimers();
@@ -130,15 +178,19 @@ if (ffCinematicEnabled) {
     root.classList.remove("is-running", "is-complete");
     root.classList.add("is-open");
     if (copyLine) copyLine.classList.remove("is-visible");
+    if (unicornImage) unicornImage.src = WALK_FRAMES[0];
     void root.offsetWidth;
     root.classList.add("is-running");
     COPY.forEach((item) => timers.push(window.setTimeout(() => setCopy(item), item.at)));
-    completeTimer = window.setTimeout(() => root?.classList.add("is-complete"), 10850);
+    timers.push(window.setTimeout(startWalkingFrames, 5150));
+    timers.push(window.setTimeout(stopWalkingFrames, 9250));
+    completeTimer = window.setTimeout(() => root?.classList.add("is-complete"), 11200);
   }
 
   function finishCinematic() {
     if (!root) return;
     clearTimers();
+    stopWalkingFrames();
     setCopy(COPY[COPY.length - 1]);
     root.classList.add("is-complete");
   }
