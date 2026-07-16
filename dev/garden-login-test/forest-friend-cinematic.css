@@ -618,3 +618,6 @@ body.ff-cinematic-lock {
   .ff-cinematic-haze { opacity: 1; }
   .ff-cinematic-unicorn-wrap { transform: translate(calc(-50% + min(22vw, 190px)), 0) scale(1); filter: none; }
 }
+
+.ff-cinematic[data-preview="false"] .ff-cinematic-preview-note { display: none; }
+.ff-cinematic-action:disabled { opacity: .62; cursor: wait; }

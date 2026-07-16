@@ -13,7 +13,7 @@ const ffCinematicParams = new URLSearchParams(window.location.search);
 const ffStandalonePreview = ffCinematicParams.get("forestFriendCinematic") === "1";
 const ffFriendPreview = ffCinematicParams.get("forestFriendPreview") === "1";
 const ffFirstMeetingPreview = ffCinematicParams.get("firstMeeting") === "1";
-const ffCinematicEnabled = ffStandalonePreview || ffFriendPreview;
+const ffCinematicEnabled = true;
 
 if (ffCinematicEnabled) {
   const COPY = [
@@ -45,6 +45,7 @@ if (ffCinematicEnabled) {
   let walkFrameIndex = 0;
   let currentMode = "preview";
   let lastFocusedElement = null;
+  let closeInProgress = false;
 
   function makeParticles(count = 30) {
     return Array.from({ length: count }, () => {
@@ -131,7 +132,7 @@ if (ffCinematicEnabled) {
     unicornImage = root.querySelector(".ff-cinematic-unicorn");
     root.querySelector(".ff-cinematic-skip")?.addEventListener("click", finishCinematic);
     root.querySelector("[data-ff-replay]")?.addEventListener("click", () => playCinematic({ mode: "replay" }));
-    root.querySelector("[data-ff-close]")?.addEventListener("click", closeCinematic);
+    root.querySelector("[data-ff-close]")?.addEventListener("click", () => { void closeCinematic(); });
     root.addEventListener("keydown", (event) => {
       if (event.key === "Escape") closeCinematic();
     });
@@ -188,6 +189,7 @@ if (ffCinematicEnabled) {
     if (unicornImage) unicornImage.src = WALK_FRAMES[0];
     void root.offsetWidth;
     root.dataset.mode = currentMode;
+    root.dataset.preview = (ffStandalonePreview || ffFriendPreview) ? "true" : "false";
     root.classList.add("is-running");
     COPY.forEach((item) => timers.push(window.setTimeout(() => setCopy(item), item.at)));
     timers.push(window.setTimeout(startWalkingFrames, 5150));
@@ -203,13 +205,53 @@ if (ffCinematicEnabled) {
     root.classList.add("is-complete");
   }
 
-  function closeCinematic() {
-    if (!root) return;
+  async function closeCinematic() {
+    if (!root || closeInProgress) return;
+    closeInProgress = true;
+    const primaryButton = root.querySelector("[data-ff-close]");
+    const secondaryButton = root.querySelector("[data-ff-replay]");
+    const previousLabel = primaryButton?.textContent || "인사하기 ♡";
+
+    if (currentMode === "first-meeting" && typeof window.__todayForestCompleteFirstMeeting === "function") {
+      if (primaryButton) {
+        primaryButton.disabled = true;
+        primaryButton.textContent = "인연을 기억하는 중…";
+      }
+      if (secondaryButton) secondaryButton.disabled = true;
+      try {
+        const completed = await window.__todayForestCompleteFirstMeeting();
+        if (completed === false) {
+          if (primaryButton) {
+            primaryButton.disabled = false;
+            primaryButton.textContent = previousLabel;
+          }
+          if (secondaryButton) secondaryButton.disabled = false;
+          closeInProgress = false;
+          return;
+        }
+      } catch (error) {
+        console.error("TodayForest first-meeting completion error:", error);
+        if (primaryButton) {
+          primaryButton.disabled = false;
+          primaryButton.textContent = previousLabel;
+        }
+        if (secondaryButton) secondaryButton.disabled = false;
+        closeInProgress = false;
+        return;
+      }
+    }
+
     clearTimers();
     const mode = currentMode;
     root.classList.remove("is-open", "is-running", "is-complete");
     root.removeAttribute("data-mode");
     document.body.classList.remove("ff-cinematic-lock");
+    if (primaryButton) {
+      primaryButton.disabled = false;
+      primaryButton.textContent = previousLabel;
+    }
+    if (secondaryButton) secondaryButton.disabled = false;
+    closeInProgress = false;
     window.dispatchEvent(new CustomEvent("todayforest:friend-cinematic-closed", {
       detail: { key: "forest_unicorn", mode },
     }));

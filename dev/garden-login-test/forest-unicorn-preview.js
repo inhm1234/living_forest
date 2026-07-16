@@ -7,8 +7,8 @@
    ------------------------------------------------------------------------- */
 const previewParams = new URLSearchParams(window.location.search);
 const forestFriendPreviewEnabled = previewParams.get("forestFriendPreview") === "1";
-
-if (forestFriendPreviewEnabled) {
+let forestFriendLiveEnabled = Boolean(window.__todayForestSpecialFriendLiveState?.isMet);
+let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt || null;
   const CONFIG = {
     assetBase: "../../assets/friends/forest-unicorn",
     zones: [
@@ -57,6 +57,9 @@ if (forestFriendPreviewEnabled) {
   function asset(name) { return `${CONFIG.assetBase}/forest-unicorn-${name}.png`; }
 
   function getFirstMetAt() {
+    if (forestFriendLiveEnabled && forestFriendLiveMetAt && Number.isFinite(new Date(forestFriendLiveMetAt).getTime())) {
+      return forestFriendLiveMetAt;
+    }
     const saved = window.localStorage.getItem(FIRST_MET_AT_KEY);
     if (saved && Number.isFinite(new Date(saved).getTime())) return saved;
     const now = new Date().toISOString();
@@ -97,6 +100,7 @@ if (forestFriendPreviewEnabled) {
     if (!world || !stage || unicorn) return;
 
     document.body.classList.add("forest-unicorn-preview-enabled");
+    document.body.classList.toggle("forest-unicorn-live-enabled", forestFriendLiveEnabled && !forestFriendPreviewEnabled);
 
     unicorn = document.createElement("div");
     unicorn.className = "forest-unicorn-preview";
@@ -164,7 +168,7 @@ if (forestFriendPreviewEnabled) {
     panel.setAttribute("aria-label", "숲 유니콘 생활 테스트 제어");
     panel.innerHTML = `
       <div class="forest-unicorn-preview-panel-head">
-        <div><p class="kicker">FOREST FRIEND PREVIEW v2.9</p><strong>숲 유니콘과 함께하는 정원</strong></div>
+        <div><p class="kicker">${forestFriendPreviewEnabled ? "FOREST FRIEND PREVIEW v3.0" : "MY SPECIAL FOREST FRIEND"}</p><strong>숲 유니콘과 함께하는 정원</strong></div>
       </div>
       <div class="forest-unicorn-memory-card">
         <span class="forest-unicorn-memory-icon" aria-hidden="true">✨</span>
@@ -175,7 +179,7 @@ if (forestFriendPreviewEnabled) {
         </div>
         <button type="button" class="forest-unicorn-memory-replay" data-unicorn-replay>다시 보기</button>
       </div>
-      <p class="forest-unicorn-preview-status">유니콘을 눌러 마음을 맡기면 30분 뒤 도착하고, 유니콘은 30분 더 숲길을 지나 돌아와요.</p>
+      <p class="forest-unicorn-preview-status">${forestFriendPreviewEnabled ? "유니콘을 눌러 마음을 맡기면 30분 뒤 도착하고, 유니콘은 30분 더 숲길을 지나 돌아와요." : "숲 유니콘이 나무 곁에서 당신과 함께 지내고 있어요."}</p>
     `;
     stage.insertAdjacentElement("afterend", panel);
     statusNode = panel.querySelector(".forest-unicorn-preview-status");
@@ -190,9 +194,11 @@ if (forestFriendPreviewEnabled) {
     const activeJourney = findActiveJourney(window.__todayForestSpecialFriendJourneys);
     if (activeJourney) {
       restoreServerJourney(activeJourney);
-    } else if (previewParams.get("firstMeeting") === "1") {
+    } else if (forestFriendPreviewEnabled && previewParams.get("firstMeeting") === "1") {
       // 전체 시네마틱이 끝나고 사용자가 인사하기를 누르면 정원 속 생활을 시작합니다.
       setStatus("첫 만남을 준비하고 있어요.");
+    } else if (forestFriendLiveEnabled) {
+      window.setTimeout(settleAfterFirstMeeting, 320);
     } else {
       window.setTimeout(playFirstArrival, 700);
     }
@@ -601,7 +607,7 @@ if (forestFriendPreviewEnabled) {
       const detail = event?.detail || {};
       if (detail.key !== "forest_unicorn") return;
       if (detail.mode === "first-meeting") {
-        window.localStorage.setItem(FIRST_MET_AT_KEY, new Date().toISOString());
+        if (!forestFriendLiveEnabled) window.localStorage.setItem(FIRST_MET_AT_KEY, new Date().toISOString());
         updateMemoryCard();
         settleAfterFirstMeeting();
         return;
@@ -688,12 +694,26 @@ if (forestFriendPreviewEnabled) {
     window.setTimeout(initWhenReady, 250);
   }
 
-  function bootPreview() { initWhenReady(); }
-  // 초기화 예약을 한 번만 둡니다. 이전에는 DOMContentLoaded·load·지연 타이머가
-  // 모두 남아 같은 검수 스크립트를 여러 번 깨우고 있었습니다.
+  function bootPreview() {
+    if (!forestFriendPreviewEnabled && !forestFriendLiveEnabled) return;
+    initWhenReady();
+  }
+
+  window.addEventListener("todayforest:special-friend-live-state", (event) => {
+    const detail = event?.detail || {};
+    if (detail.friendKey !== "forest_unicorn") return;
+    forestFriendLiveEnabled = Boolean(detail.isMet);
+    forestFriendLiveMetAt = detail.metAt || forestFriendLiveMetAt;
+    if (forestFriendLiveEnabled) {
+      document.body.classList.add("forest-unicorn-live-enabled");
+      bootPreview();
+      updateMemoryCard();
+    }
+  });
+
+  // 초기화 예약을 한 번만 둡니다. 미리보기 주소이거나 서버에서 실제 만남이 완료된 경우에만 나타납니다.
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", bootPreview, { once: true });
   } else {
     bootPreview();
   }
-}

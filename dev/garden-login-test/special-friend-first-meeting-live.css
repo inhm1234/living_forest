@@ -1,0 +1,113 @@
+/* 오늘의숲 · 특별친구 첫 만남 실제 계정 연결 v1 */
+.special-friend-call-layer {
+  position: absolute;
+  z-index: 1;
+  inset: 8% 10% 7%;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .7s ease;
+}
+.special-friend-call-glow {
+  position: absolute;
+  inset: 12% 10% 9%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, rgba(255,252,204,.64), rgba(230,213,255,.27) 37%, transparent 70%);
+  filter: blur(9px);
+  transform: scale(.76);
+  opacity: 0;
+}
+.special-friend-call-bud {
+  position: absolute;
+  z-index: 4;
+  left: 49%;
+  top: 18%;
+  width: 15px;
+  height: 18px;
+  border-radius: 70% 35% 65% 38%;
+  background: linear-gradient(145deg, #fff3b9, #f5c9ee 56%, #c8b7f0);
+  box-shadow: 0 0 13px rgba(255,238,174,.85), inset 0 0 0 1px rgba(255,255,255,.7);
+  transform: translate(-50%, 5px) rotate(18deg) scale(.2);
+  opacity: 0;
+}
+.special-friend-call-motes { position: absolute; inset: 0; }
+.special-friend-call-motes i {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255,249,180,.96);
+  box-shadow: 0 0 12px rgba(255,240,158,.94);
+  opacity: 0;
+}
+.special-friend-call-motes i:nth-child(1){left:26%;top:42%}.special-friend-call-motes i:nth-child(2){left:68%;top:31%}.special-friend-call-motes i:nth-child(3){left:75%;top:57%}.special-friend-call-motes i:nth-child(4){left:36%;top:24%}.special-friend-call-motes i:nth-child(5){left:55%;top:12%}.special-friend-call-motes i:nth-child(6){left:20%;top:63%}.special-friend-call-motes i:nth-child(7){left:61%;top:70%}
+
+.tree-wrap.special-friend-progress-1 .special-friend-call-layer,
+.tree-wrap.special-friend-progress-2 .special-friend-call-layer,
+.tree-wrap.special-friend-ready .special-friend-call-layer { opacity: 1; }
+.tree-wrap.special-friend-progress-1 .special-friend-call-motes i:nth-child(-n+2),
+.tree-wrap.special-friend-progress-2 .special-friend-call-motes i,
+.tree-wrap.special-friend-ready .special-friend-call-motes i { animation: specialFriendMote 3.1s ease-in-out infinite; }
+.tree-wrap.special-friend-progress-1 .special-friend-call-glow { opacity: .28; transform: scale(.82); }
+.tree-wrap.special-friend-progress-2 .special-friend-call-glow { opacity: .58; transform: scale(.94); }
+.tree-wrap.special-friend-progress-2 .special-friend-call-bud { opacity: .9; transform: translate(-50%,0) rotate(18deg) scale(.78); transition: opacity .8s ease, transform .9s cubic-bezier(.2,.85,.28,1.18); }
+.tree-wrap.special-friend-ready { cursor: pointer; }
+.tree-wrap.special-friend-ready .special-friend-call-glow { opacity: .95; animation: specialFriendTreeGlow 2.25s ease-in-out infinite; }
+.tree-wrap.special-friend-ready .special-friend-call-bud { opacity: 1; transform: translate(-50%,-2px) rotate(18deg) scale(1); animation: specialFriendBud 2.1s ease-in-out infinite; }
+.tree-wrap.special-friend-ready .tree-image { filter: drop-shadow(0 25px 18px rgba(73,112,83,.18)) drop-shadow(0 0 16px rgba(255,240,166,.44)); }
+.tree-wrap.special-friend-ready:focus-visible { outline: 3px solid rgba(255,239,181,.95); outline-offset: 4px; border-radius: 45%; }
+.tree-wrap.special-friend-beginning { animation: specialFriendTreeAnswer .9s ease both; }
+
+.special-friend-call-hint {
+  position: absolute;
+  z-index: 8;
+  left: 50%;
+  bottom: -11px;
+  width: max-content;
+  max-width: 236px;
+  min-height: 28px;
+  padding: 7px 12px;
+  border: 1px solid rgba(255,255,255,.92);
+  border-radius: 999px;
+  background: rgba(255,255,255,.87);
+  color: #82758f;
+  box-shadow: 0 8px 18px rgba(97,83,119,.12);
+  font: inherit;
+  font-size: 9.5px;
+  font-weight: 850;
+  line-height: 1.35;
+  text-align: center;
+  opacity: 0;
+  transform: translate(-50%, 6px);
+  pointer-events: none;
+  transition: opacity .4s ease, transform .4s ease;
+  backdrop-filter: blur(8px);
+}
+.special-friend-call-hint.is-visible { opacity: 1; transform: translate(-50%,0); }
+.tree-wrap.special-friend-ready .special-friend-call-hint { color: #79658f; pointer-events: auto; animation: specialFriendHint 2.4s ease-in-out infinite; }
+.special-friend-call-hint:disabled { cursor: default; }
+
+body.forest-unicorn-live-enabled .forest-unicorn-preview-panel {
+  background: linear-gradient(135deg, rgba(249,255,249,.94), rgba(251,246,255,.94));
+  border-color: rgba(209,220,203,.82);
+}
+body.forest-unicorn-live-enabled .forest-unicorn-preview-panel .kicker { color: #aa93bd; }
+body.forest-unicorn-live-enabled .forest-unicorn-preview-status { color: #839488; }
+
+@keyframes specialFriendMote {
+  0%,100% { opacity: .12; transform: translateY(5px) scale(.55); }
+  45% { opacity: .95; transform: translateY(-8px) scale(1); }
+  72% { opacity: .28; transform: translateY(-15px) scale(.68); }
+}
+.special-friend-call-motes i:nth-child(2){animation-delay:.42s!important}.special-friend-call-motes i:nth-child(3){animation-delay:.85s!important}.special-friend-call-motes i:nth-child(4){animation-delay:1.2s!important}.special-friend-call-motes i:nth-child(5){animation-delay:1.55s!important}.special-friend-call-motes i:nth-child(6){animation-delay:1.9s!important}.special-friend-call-motes i:nth-child(7){animation-delay:2.25s!important}
+@keyframes specialFriendTreeGlow { 0%,100%{transform:scale(.92);filter:blur(9px)} 50%{transform:scale(1.08);filter:blur(12px)} }
+@keyframes specialFriendBud { 0%,100%{filter:brightness(1);box-shadow:0 0 13px rgba(255,238,174,.8)} 50%{filter:brightness(1.12);box-shadow:0 0 23px rgba(255,224,168,.98)} }
+@keyframes specialFriendHint { 0%,100%{box-shadow:0 8px 18px rgba(97,83,119,.11)} 50%{box-shadow:0 8px 25px rgba(181,145,215,.21)} }
+@keyframes specialFriendTreeAnswer { 0%,100%{transform:translateX(-50%) scale(1)} 45%{transform:translateX(-50%) scale(1.035)} }
+
+@media (max-width: 430px) {
+  .special-friend-call-hint { max-width: 205px; padding: 6px 10px; font-size: 8.8px; bottom: -8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .special-friend-call-layer *, .special-friend-call-hint, .tree-wrap.special-friend-beginning { animation: none !important; }
+}
