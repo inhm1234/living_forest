@@ -258,7 +258,7 @@ body.forest-unicorn-live-enabled .header-actions > .quiet-pill span:last-child {
   top: calc(100% + 8px);
   right: 0;
   z-index: 30;
-  width: min(320px, calc(100vw - 44px));
+  width: min(344px, calc(100vw - 44px));
   padding: 12px;
   border: 1px solid rgba(210, 195, 231, 0.85);
   border-radius: 18px;
@@ -381,6 +381,145 @@ body.forest-unicorn-live-enabled .header-actions > .quiet-pill span:last-child {
   .forest-unicorn-memory-popover { width: min(300px, calc(100vw - 32px)); }
   .forest-unicorn-memory-card { grid-template-columns: 34px minmax(0, 1fr); }
   .forest-unicorn-memory-icon { width: 34px; height: 34px; border-radius: 12px; font-size: 15px; }
+}
+
+
+/* v3.3 · 특별친구 통합 정보창 */
+.forest-unicorn-profile-card {
+  display: grid;
+  grid-template-columns: 66px minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+  position: relative;
+  margin-top: 11px;
+  padding: 11px;
+  border: 1px solid rgba(204, 224, 208, 0.78);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(246,255,247,.96), rgba(252,248,255,.96));
+}
+.forest-unicorn-profile-portrait {
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 66px;
+  overflow: hidden;
+  border-radius: 22px;
+  background: radial-gradient(circle at 50% 35%, #fff 0 28%, #edf8ee 70%, #e6f2ed 100%);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.9);
+}
+.forest-unicorn-profile-portrait img {
+  display: block;
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  transform: translateY(3px);
+}
+.forest-unicorn-profile-copy { min-width: 0; padding-right: 2px; }
+.forest-unicorn-profile-kicker {
+  margin: 0;
+  color: #9abea0;
+  font-size: 8.5px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+.forest-unicorn-profile-copy strong {
+  display: block;
+  margin-top: 2px;
+  color: #557362;
+  font-size: 15px;
+}
+.forest-unicorn-profile-copy span {
+  display: block;
+  margin-top: 4px;
+  color: #8a9a91;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.forest-unicorn-profile-badge {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  padding: 4px 7px;
+  border: 1px solid rgba(171,210,179,.7);
+  border-radius: 999px;
+  background: rgba(247,255,248,.94);
+  color: #74a17e;
+  font-size: 8.5px;
+  font-weight: 900;
+}
+.forest-unicorn-status-card {
+  margin-top: 9px;
+  padding: 9px 10px;
+  border: 1px solid rgba(224, 216, 237, .72);
+  border-radius: 15px;
+  background: rgba(250,248,255,.78);
+}
+.forest-unicorn-status-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.forest-unicorn-status-head strong {
+  color: #7d718e;
+  font-size: 10px;
+}
+.forest-unicorn-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #80bc8c;
+  box-shadow: 0 0 0 3px rgba(128,188,140,.15);
+}
+.forest-unicorn-status-card .forest-unicorn-preview-status {
+  margin: 5px 0 0 !important;
+  color: #7d8d85;
+  font-size: 10px;
+  line-height: 1.45;
+}
+.forest-unicorn-memory-popover-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 10px;
+}
+.forest-unicorn-memory-replay,
+.forest-unicorn-future-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 38px;
+  padding: 8px 9px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 900;
+}
+.forest-unicorn-memory-replay {
+  border: 1px solid rgba(207, 189, 234, 0.84);
+  background: rgba(247, 242, 255, 0.95);
+  color: #846fa2;
+  cursor: pointer;
+}
+.forest-unicorn-future-action {
+  border: 1px dashed rgba(181, 204, 187, .9);
+  background: rgba(247,252,248,.86);
+  color: #8aa092;
+}
+.forest-unicorn-future-action:disabled { opacity: .72; cursor: default; }
+.forest-unicorn-future-note {
+  margin: 8px 2px 0;
+  color: #9aa4a0;
+  font-size: 9px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+@media (max-width: 470px) {
+  .forest-unicorn-memory-popover { width: min(330px, calc(100vw - 30px)); }
+  .forest-unicorn-profile-card { grid-template-columns: 58px minmax(0, 1fr); }
+  .forest-unicorn-profile-portrait { width: 58px; height: 58px; border-radius: 19px; }
+  .forest-unicorn-profile-portrait img { width: 64px; height: 64px; }
+  .forest-unicorn-profile-badge { position: static; justify-self: start; grid-column: 2; margin-top: -5px; }
 }
 
 @keyframes unicornCopyRise { from{opacity:0;transform:translateX(-50%) translateY(12px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }

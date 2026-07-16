@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------
-   FOREST UNICORN PREVIEW v3.2
+   FOREST UNICORN PREVIEW v3.3
    ?forestFriendPreview=1 를 붙였을 때만 실행됩니다.
    목적: 프레임 기반 생활 루틴 검수 + 유니콘 전용 실제 배송 상태 검수.
    ?forestFriendPreview=1 에서만 유니콘 UI가 나타납니다.
@@ -82,7 +82,7 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
   function updateMemoryCard() {
     const metDateText = `${formatFirstMetDate(getFirstMetAt())} · 숲 유니콘과 처음 만났어요`;
     if (metDateNode) metDateNode.textContent = metDateText;
-    if (memoryChipButton) memoryChipButton.setAttribute("aria-label", `숲 유니콘 추억 보기 · ${metDateText}`);
+    if (memoryChipButton) memoryChipButton.setAttribute("aria-label", `특별친구 정보 보기 · 숲 유니콘 · ${metDateText}`);
     if (replayButton) replayButton.disabled = !cinematicReady && typeof window.__todayForestReplayFriendCinematic !== "function";
   }
 
@@ -182,29 +182,56 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
       memorySlot.className = "forest-unicorn-header-slot";
       memorySlot.innerHTML = `
         <button type="button" class="forest-unicorn-header-chip" data-unicorn-memory-toggle aria-haspopup="dialog" aria-expanded="false">
-          <span class="forest-unicorn-header-chip-icon" aria-hidden="true">🦄</span>
-          <span class="forest-unicorn-header-chip-text">숲 유니콘 ♥</span>
+          <span class="forest-unicorn-header-chip-icon" aria-hidden="true">✨</span>
+          <span class="forest-unicorn-header-chip-text">특별친구</span>
         </button>
-        <section class="forest-unicorn-memory-popover" aria-label="숲 유니콘 추억" hidden>
+        <section class="forest-unicorn-memory-popover" aria-label="특별친구 정보" hidden>
           <div class="forest-unicorn-memory-popover-head">
             <div>
-              <p class="kicker">${forestFriendPreviewEnabled ? "FOREST FRIEND PREVIEW v3.1" : "MY SPECIAL FOREST FRIEND"}</p>
-              <strong>숲 유니콘과 함께하는 정원</strong>
+              <p class="kicker">${forestFriendPreviewEnabled ? "SPECIAL FRIEND PREVIEW v3.3" : "MY SPECIAL FRIEND"}</p>
+              <strong>나와 함께 지내는 특별친구</strong>
             </div>
-            <button type="button" class="forest-unicorn-memory-close" data-unicorn-memory-close aria-label="추억 창 닫기">✕</button>
+            <button type="button" class="forest-unicorn-memory-close" data-unicorn-memory-close aria-label="특별친구 정보창 닫기">✕</button>
           </div>
+
+          <article class="forest-unicorn-profile-card">
+            <div class="forest-unicorn-profile-portrait" aria-hidden="true">
+              <img src="../../assets/friends/forest-unicorn-idle.png" alt="" />
+            </div>
+            <div class="forest-unicorn-profile-copy">
+              <p class="forest-unicorn-profile-kicker">CURRENT FRIEND</p>
+              <strong>숲 유니콘</strong>
+              <span>마음을 따라 찾아온 첫 번째 특별친구</span>
+            </div>
+            <span class="forest-unicorn-profile-badge">함께 지내는 중</span>
+          </article>
+
+          <div class="forest-unicorn-status-card">
+            <div class="forest-unicorn-status-head">
+              <span class="forest-unicorn-status-dot" aria-hidden="true"></span>
+              <strong>현재 상태</strong>
+            </div>
+            <p class="forest-unicorn-preview-status">${forestFriendPreviewEnabled ? "유니콘을 눌러 마음을 맡기면 30분 뒤 도착하고, 유니콘은 30분 더 숲길을 지나 돌아와요." : "숲 유니콘이 나무 곁에서 당신과 함께 지내고 있어요."}</p>
+          </div>
+
           <div class="forest-unicorn-memory-card compact">
-            <span class="forest-unicorn-memory-icon" aria-hidden="true">✨</span>
+            <span class="forest-unicorn-memory-icon" aria-hidden="true">🌙</span>
             <div class="forest-unicorn-memory-copy">
               <p class="forest-unicorn-memory-kicker">OUR FIRST DAY</p>
               <strong>우리가 처음 만난 날</strong>
               <p class="forest-unicorn-memory-date" data-unicorn-met-date></p>
             </div>
           </div>
-          <p class="forest-unicorn-preview-status">${forestFriendPreviewEnabled ? "유니콘을 눌러 마음을 맡기면 30분 뒤 도착하고, 유니콘은 30분 더 숲길을 지나 돌아와요." : "숲 유니콘이 나무 곁에서 당신과 함께 지내고 있어요."}</p>
+
           <div class="forest-unicorn-memory-popover-actions">
-            <button type="button" class="forest-unicorn-memory-replay" data-unicorn-replay>다시 보기</button>
+            <button type="button" class="forest-unicorn-memory-replay" data-unicorn-replay>
+              <span aria-hidden="true">✨</span> 첫 만남 다시 보기
+            </button>
+            <button type="button" class="forest-unicorn-future-action" disabled>
+              <span aria-hidden="true">🏡</span> 친구 공간 준비 중
+            </button>
           </div>
+          <p class="forest-unicorn-future-note">앞으로 꾸미기·돌보기와 여러 특별친구 전환 기능이 이곳에 이어져요.</p>
         </section>
       `;
       headerActions.appendChild(memorySlot);
