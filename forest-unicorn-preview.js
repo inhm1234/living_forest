@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------
-   FOREST UNICORN PREVIEW v3.3
+   FOREST UNICORN OPERATION v1.2 · VISIT LIFECYCLE + TOP STATUS BAR
    ?forestFriendPreview=1 를 붙였을 때만 실행됩니다.
    목적: 프레임 기반 생활 루틴 검수 + 유니콘 전용 실제 배송 상태 검수.
    ?forestFriendPreview=1 에서만 유니콘 UI가 나타납니다.
@@ -7,6 +7,8 @@
    ------------------------------------------------------------------------- */
 const previewParams = new URLSearchParams(window.location.search);
 const forestFriendPreviewEnabled = previewParams.get("forestFriendPreview") === "1";
+const forestFriendVisitFastMode = false;
+const forestFriendForceNaturalVisit = false;
 let forestFriendLiveEnabled = Boolean(window.__todayForestSpecialFriendLiveState?.isMet);
 let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt || null;
   const CONFIG = {
@@ -20,7 +22,7 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
       // 가장 앞 산책길. 이 위치에서는 유니콘이 앞쪽 레이어로 올라옵니다.
       { id: "front-walk", x: 198, y: 466, depth: "front", label: "앞쪽 산책길" },
     ],
-    // 평소 루틴: 나무 곁 → 꽃 구경 → 앞쪽 산책길 → 나무 곁.
+    // 방문 중 루틴: 나무 곁 → 꽃 구경 → 앞쪽 산책길 → 나무 곁.
     // 오른쪽 숲길은 실제 편지 출발/귀환 때에만 사용합니다.
     roamRoute: [1, 2, 3, 1],
     idleFrames: ["idle_base", "idle_tall", "idle_base", "idle_down"],
@@ -34,6 +36,8 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
   let statusNode = null;
   let imgNode = null;
   let deliveryCard = null;
+  let deliveryCollapseTimer = null;
+  let deliveryStateKey = "";
   let memoryChipButton = null;
   let memoryPopover = null;
   let composerWatchTimer = null;
@@ -53,10 +57,106 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
   let metDateNode = null;
   let cinematicReady = false;
   const FIRST_MET_AT_KEY = "todayforest.dev.forest_unicorn.first_met_at";
+  const VISIT_STORAGE_PREFIX = "todayforest.operation.forest_unicorn.visit.v1";
+  const VISIT_DURATION_MS = {
+    first: 15 * 60 * 1000,
+    summoned: 10 * 60 * 1000,
+    natural: 5 * 60 * 1000,
+    returned: 5 * 60 * 1000,
+  };
+  const SUMMON_COOLDOWN_MS = 30 * 60 * 1000;
+  // 자연 방문은 계정 동기화 방식이 준비될 때까지 운영에서 비활성화합니다.
+  const NATURAL_VISITS_ENABLED = false;
+  const NATURAL_VISIT_CHANCE = 0.25;
+  const NATURAL_FORCE_AFTER_MISSES = 3;
+
+  let visitOwnerId = "guest";
+  let activeVisit = null;
+  let visitEndTimer = null;
+  let naturalVisitTimer = null;
+  let departurePending = false;
+  let presencePhase = "away";
+  let visitCooldownUntil = 0;
+  let presenceInitialized = false;
 
   function getWorld() { return document.getElementById("gardenWorld"); }
   function getStage() { return document.getElementById("gardenStage"); }
   function asset(name) { return `${CONFIG.assetBase}/forest-unicorn-${name}.png`; }
+  function hasSpecialFriend() { return forestFriendPreviewEnabled || forestFriendLiveEnabled; }
+  function visitStorageKey() { return `${VISIT_STORAGE_PREFIX}:${visitOwnerId}`; }
+  function localDayKey(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+  function readVisitMemory() {
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem(visitStorageKey()) || "{}");
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch (_error) {
+      return {};
+    }
+  }
+  function writeVisitMemory(memory) {
+    try {
+      window.localStorage.setItem(visitStorageKey(), JSON.stringify(memory || {}));
+    } catch (_error) {}
+  }
+  async function resolveVisitOwner() {
+    for (let index = 0; index < 50; index += 1) {
+      const client = window.__todayForestSupabase;
+      if (client?.auth?.getSession) {
+        try {
+          const { data } = await client.auth.getSession();
+          visitOwnerId = data?.session?.user?.id || "guest";
+          return;
+        } catch (_error) {
+          break;
+        }
+      }
+      await new Promise((resolve) => window.setTimeout(resolve, 50));
+    }
+  }
+  function getJourney() {
+    return findActiveJourney(window.__todayForestSpecialFriendJourneys);
+  }
+  function currentCooldownUntil() {
+    const value = Number(readVisitMemory().cooldownUntil || 0);
+    const stored = Number.isFinite(value) ? value : 0;
+    return Math.max(stored, visitCooldownUntil);
+  }
+  function publishPresence(extra = {}) {
+    const detail = {
+      key: "forest_unicorn",
+      met: hasSpecialFriend(),
+      phase: presencePhase,
+      present: ["arriving", "visiting", "departing"].includes(presencePhase),
+      travelling: ["delivering", "returning"].includes(presencePhase),
+      cooldownUntil: currentCooldownUntil(),
+      visitKind: activeVisit?.kind || null,
+      endsAt: activeVisit?.endsAt || null,
+      ...extra,
+    };
+    window.__todayForestSpecialFriendVisitState = detail;
+    window.dispatchEvent(new CustomEvent("todayforest:special-friend-presence-changed", { detail }));
+  }
+  function setPresencePhase(phase, extra = {}) {
+    presencePhase = phase;
+    publishPresence(extra);
+  }
+  function setAwayVisual(status = "숲 유니콘은 숲 어딘가를 산책하고 있어요. 나무에 손길을 세 번 건네면 찾아와요.") {
+    if (!unicorn) return;
+    stopCharacterMotion();
+    unicorn.classList.remove("is-visible");
+    unicorn.classList.add("is-departed");
+    unicorn.removeAttribute("data-interacting");
+    unicorn.removeAttribute("data-has-letter");
+    interactionHit?.classList.add("is-hidden");
+    interactionHit?.removeAttribute("data-interacting");
+    setStatus(status);
+    setPresencePhase("away");
+  }
 
   function getFirstMetAt() {
     if (forestFriendLiveEnabled && forestFriendLiveMetAt && Number.isFinite(new Date(forestFriendLiveMetAt).getTime())) {
@@ -162,17 +262,25 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     `;
     stage.appendChild(arrival);
 
-    deliveryCard = document.createElement("aside");
+    deliveryCard = document.createElement("button");
+    deliveryCard.type = "button";
     deliveryCard.className = "forest-unicorn-delivery-card";
     deliveryCard.setAttribute("aria-live", "polite");
+    deliveryCard.setAttribute("aria-expanded", "false");
+    deliveryCard.setAttribute("aria-label", "특별친구 편지 상태 자세히 보기");
     deliveryCard.innerHTML = `
-      <span class="forest-unicorn-delivery-icon" aria-hidden="true">✉</span>
-      <div>
-        <p class="forest-unicorn-delivery-kicker">FOREST FRIEND DELIVERY</p>
+      <span class="forest-unicorn-delivery-icon" aria-hidden="true">🦄</span>
+      <span class="forest-unicorn-delivery-copy">
         <strong></strong>
-        <p class="forest-unicorn-delivery-note"></p>
-      </div>
+        <span class="forest-unicorn-delivery-note"></span>
+      </span>
+      <span class="forest-unicorn-delivery-chevron" aria-hidden="true">⌄</span>
     `;
+    deliveryCard.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const expanded = !deliveryCard.classList.contains("is-expanded");
+      setDeliveryExpanded(expanded, { autoCollapse: false });
+    });
     stage.appendChild(deliveryCard);
 
     const headerActions = document.querySelector(".header-actions");
@@ -196,7 +304,7 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
 
           <article class="forest-unicorn-profile-card">
             <div class="forest-unicorn-profile-portrait" aria-hidden="true">
-              <img src="assets/friends/forest-unicorn-idle.png" alt="" />
+              <img src="../../assets/friends/forest-unicorn-idle.png" alt="" />
             </div>
             <div class="forest-unicorn-profile-copy">
               <p class="forest-unicorn-profile-kicker">CURRENT FRIEND</p>
@@ -234,9 +342,7 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
           <p class="forest-unicorn-future-note">앞으로 꾸미기·돌보기와 여러 특별친구 전환 기능이 이곳에 이어져요.</p>
         </section>
       `;
-      const weatherButton = headerActions.querySelector("#weatherButton");
-      if (weatherButton) headerActions.insertBefore(memorySlot, weatherButton);
-      else headerActions.appendChild(memorySlot);
+      headerActions.appendChild(memorySlot);
       memoryChipButton = memorySlot.querySelector("[data-unicorn-memory-toggle]");
       memoryPopover = memorySlot.querySelector(".forest-unicorn-memory-popover");
       statusNode = memorySlot.querySelector(".forest-unicorn-preview-status");
@@ -265,29 +371,50 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     }
 
     setAbsolutePosition(0, { visible: false });
+    unicorn.classList.add("is-departed");
+    interactionHit?.classList.add("is-hidden");
     installSpecialFriendDeliveryBridge();
-    const activeJourney = findActiveJourney(window.__todayForestSpecialFriendJourneys);
-    if (activeJourney) {
-      restoreServerJourney(activeJourney);
-    } else if (forestFriendPreviewEnabled && previewParams.get("firstMeeting") === "1") {
-      // 전체 시네마틱이 끝나고 사용자가 인사하기를 누르면 정원 속 생활을 시작합니다.
-      setStatus("첫 만남을 준비하고 있어요.");
-    } else if (forestFriendLiveEnabled) {
-      window.setTimeout(settleAfterFirstMeeting, 320);
-    } else {
-      window.setTimeout(playFirstArrival, 700);
-    }
+    void initializeVisitPresence();
   }
 
   function setStatus(text) { if (statusNode) statusNode.textContent = text; }
 
-  function setDeliveryCard(title = "", note = "", open = false) {
+  function setDeliveryExpanded(expanded, { autoCollapse = false } = {}) {
+    if (!deliveryCard) return;
+    clearTimeout(deliveryCollapseTimer);
+    deliveryCollapseTimer = null;
+    deliveryCard.classList.toggle("is-expanded", Boolean(expanded));
+    deliveryCard.setAttribute("aria-expanded", expanded ? "true" : "false");
+    getStage()?.classList.toggle("has-unicorn-delivery-expanded", Boolean(expanded));
+    if (expanded && autoCollapse) {
+      deliveryCollapseTimer = window.setTimeout(() => {
+        deliveryCollapseTimer = null;
+        setDeliveryExpanded(false);
+      }, 4200);
+    }
+  }
+
+  function setDeliveryCard(summary = "", detail = "", open = false, stateKey = "") {
     if (!deliveryCard) return;
     const titleNode = deliveryCard.querySelector("strong");
     const noteNode = deliveryCard.querySelector(".forest-unicorn-delivery-note");
-    if (titleNode) titleNode.textContent = title;
-    if (noteNode) noteNode.textContent = note;
-    deliveryCard.classList.toggle("is-open", Boolean(open));
+    if (titleNode) titleNode.textContent = summary;
+    if (noteNode) noteNode.textContent = detail;
+
+    const shouldOpen = Boolean(open);
+    deliveryCard.classList.toggle("is-open", shouldOpen);
+    getStage()?.classList.toggle("has-unicorn-delivery", shouldOpen);
+
+    if (!shouldOpen) {
+      deliveryStateKey = "";
+      setDeliveryExpanded(false);
+      return;
+    }
+
+    const nextStateKey = stateKey || summary;
+    const stateChanged = nextStateKey !== deliveryStateKey;
+    deliveryStateKey = nextStateKey;
+    if (stateChanged) setDeliveryExpanded(true, { autoCollapse: true });
   }
 
   function getArrivalLayer() { return getStage()?.querySelector(".forest-unicorn-arrival"); }
@@ -320,8 +447,18 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     clearTimeout(stateTimer);
     clearTimeout(interactionTimer);
     clearTimeout(returnTimer);
+    clearTimeout(visitEndTimer);
+    clearTimeout(naturalVisitTimer);
+    clearTimeout(deliveryCollapseTimer);
     clearInterval(walkTimer);
     clearInterval(idleTimer);
+    roamTimer = null;
+    stateTimer = null;
+    interactionTimer = null;
+    returnTimer = null;
+    visitEndTimer = null;
+    naturalVisitTimer = null;
+    deliveryCollapseTimer = null;
   }
 
   function getNearestZoneIndex(left, top) {
@@ -438,6 +575,11 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
 
   function resumeRoamingAfterInteraction() {
     if (!unicorn || isTravelling) return;
+    if (departurePending || !activeVisit || new Date(activeVisit.endsAt || 0).getTime() <= Date.now()) {
+      departurePending = false;
+      departAfterVisit();
+      return;
+    }
     isInteracting = false;
     unicorn.removeAttribute("data-interacting");
     interactionHit?.removeAttribute("data-interacting");
@@ -448,8 +590,7 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
   }
 
   function openInteraction() {
-    if (!unicorn || isTravelling || isInteracting) return;
-    // 특별친구 정보창이 열려 있어도 클릭을 가리지 않도록 먼저 닫고 만남 카드를 엽니다.
+    if (!unicorn || isTravelling || isInteracting || !activeVisit || presencePhase !== "visiting") return;
     toggleMemoryPopover(false);
     isInteracting = true;
     clearTimeout(roamTimer);
@@ -462,14 +603,14 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     setSprite("idle_tall");
     setStatus("유니콘이 편지를 기다리며 잠깐 멈춰 있어요.");
 
-    // 운영에서도 개발 서버와 동일하게 만남 카드를 거쳐 편지 작성 화면을 엽니다.
+    // garden.js가 이 이벤트를 받아 기존 편지 작성 화면을 유니콘 전용 상태로 엽니다.
     window.dispatchEvent(new CustomEvent("todayforest:open-special-friend-letter", {
       detail: { key: "forest_unicorn" },
     }));
   }
 
   function continueRoaming() {
-    if (isTravelling || isInteracting) return;
+    if (isTravelling || isInteracting || !activeVisit || presencePhase !== "visiting") return;
     clearTimeout(roamTimer);
     clearTimeout(stateTimer);
     currentRouteIndex = (currentRouteIndex + 1) % CONFIG.roamRoute.length;
@@ -498,8 +639,285 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
   }
 
   function scheduleRoaming() {
-    if (isTravelling || isInteracting) return;
+    if (isTravelling || isInteracting || !activeVisit || presencePhase !== "visiting") return;
     roamTimer = window.setTimeout(continueRoaming, 900);
+  }
+
+  function persistActiveVisit(visit) {
+    const memory = readVisitMemory();
+    memory.active = visit || null;
+    writeVisitMemory(memory);
+  }
+
+  function clearActiveVisit({ applyCooldown = true } = {}) {
+    const previous = activeVisit;
+    activeVisit = null;
+    clearTimeout(visitEndTimer);
+    visitEndTimer = null;
+    const memory = readVisitMemory();
+    memory.active = null;
+    if (applyCooldown && previous?.kind === "summoned") {
+      const cooldownUntil = Number(previous.cooldownUntilAfter || 0);
+      if (cooldownUntil > Date.now()) {
+        memory.cooldownUntil = cooldownUntil;
+        visitCooldownUntil = cooldownUntil;
+      }
+    }
+    writeVisitMemory(memory);
+  }
+
+  function scheduleVisitEnd() {
+    clearTimeout(visitEndTimer);
+    if (!activeVisit) return;
+    const remaining = new Date(activeVisit.endsAt || 0).getTime() - Date.now();
+    if (remaining <= 0) {
+      requestVisitDeparture();
+      return;
+    }
+    visitEndTimer = window.setTimeout(requestVisitDeparture, Math.max(120, remaining));
+  }
+
+  function requestVisitDeparture() {
+    if (!activeVisit || isTravelling) return;
+    if (isInteracting) {
+      departurePending = true;
+      setStatus("숲 유니콘이 편지를 기다린 뒤 숲길로 돌아가려나 봐요.");
+      return;
+    }
+    departAfterVisit();
+  }
+
+  function finishVisitDeparture() {
+    clearActiveVisit({ applyCooldown: true });
+    isTravelling = false;
+    isInteracting = false;
+    departurePending = false;
+    setAwayVisual("숲 유니콘이 다시 숲길로 돌아갔어요. 나무에 손길을 건네면 다시 찾아올 거예요.");
+  }
+
+  function departAfterVisit() {
+    if (!unicorn || !activeVisit || isTravelling) return;
+    isTravelling = true;
+    departurePending = false;
+    clearTimeout(roamTimer);
+    clearTimeout(stateTimer);
+    clearTimeout(visitEndTimer);
+    stopCharacterMotion();
+    closeBubble();
+    setPresencePhase("departing");
+    setStatus("숲 유니콘이 다시 숲길로 돌아갈 준비를 해요.");
+    setSprite("idle_tall");
+    stateTimer = window.setTimeout(() => {
+      if (currentZone === 0) {
+        setFacing("right");
+        setSprite("walk_3");
+        stateTimer = window.setTimeout(finishVisitDeparture, 900);
+        return;
+      }
+      moveTo(0, {
+        duration: 2400,
+        afterMove: () => {
+          setFacing("right");
+          setSprite("walk_3");
+          stateTimer = window.setTimeout(finishVisitDeparture, 700);
+        },
+      });
+    }, 6500);
+  }
+
+  function beginVisit(kind, durationMs, { restore = false } = {}) {
+    const now = Date.now();
+    const existingEndsAt = restore ? new Date(activeVisit?.endsAt || 0).getTime() : 0;
+    const endsAt = existingEndsAt > now ? existingEndsAt : now + durationMs;
+    activeVisit = {
+      kind,
+      startedAt: restore && activeVisit?.startedAt ? activeVisit.startedAt : new Date(now).toISOString(),
+      endsAt: new Date(endsAt).toISOString(),
+      cooldownUntilAfter: kind === "summoned" ? endsAt + SUMMON_COOLDOWN_MS : 0,
+    };
+    persistActiveVisit(activeVisit);
+    departurePending = false;
+    isTravelling = false;
+    isInteracting = false;
+    unicorn?.classList.remove("is-departed");
+    interactionHit?.classList.remove("is-hidden");
+    setPresencePhase("visiting");
+    scheduleVisitEnd();
+  }
+
+  function arrivalCopy(kind) {
+    if (kind === "natural") return { kicker: "A QUIET VISIT", text: "숲 유니콘이 산책하다 정원에 잠시 들렀어요." };
+    if (kind === "returned") return { kicker: "WELCOME HOME", text: "편지를 전한 숲 유니콘이 정원으로 돌아왔어요." };
+    return { kicker: "FOREST FRIEND VISIT", text: "나무의 기척을 따라 숲 유니콘이 찾아왔어요." };
+  }
+
+  function updateArrivalCopy(kind) {
+    const arrival = getArrivalLayer();
+    const copy = arrivalCopy(kind);
+    const kicker = arrival?.querySelector(".forest-unicorn-arrival-kicker");
+    const text = arrival?.querySelector(".forest-unicorn-arrival-copy p:last-child");
+    if (kicker) kicker.textContent = copy.kicker;
+    if (text) text.textContent = copy.text;
+  }
+
+  function playVisitArrival(kind = "summoned", durationMs = VISIT_DURATION_MS.summoned) {
+    if (!unicorn || getJourney()) return false;
+    clearAllTimers();
+    beginVisit(kind, durationMs);
+    setPresencePhase("arriving");
+    setDeliveryCard("", "", false);
+    closeBubble();
+    setFacing("left");
+    unicorn.classList.remove("is-visible", "is-departed");
+    interactionHit?.classList.add("is-hidden");
+    setAbsolutePosition(0, { visible: false });
+    setSprite("return");
+    updateArrivalCopy(kind);
+    const arrival = getArrivalLayer();
+    arrival?.classList.add("is-open");
+    setStatus(kind === "natural" ? "숲길에서 익숙한 발소리가 들려와요." : "나무의 빛이 숲길까지 이어지고 있어요.");
+    window.setTimeout(() => {
+      unicorn?.classList.remove("is-departed");
+      unicorn?.classList.add("is-visible");
+      setStatus(kind === "natural" ? "숲 유니콘이 산책하다 정원에 들렀어요." : "숲 유니콘이 나무의 부름을 따라 찾아왔어요.");
+    }, 950);
+    window.setTimeout(() => {
+      arrival?.classList.remove("is-open");
+      moveTo(1, {
+        duration: 2200,
+        afterMove: () => {
+          interactionHit?.classList.remove("is-hidden");
+          setPresencePhase("visiting");
+          setStatus(kind === "natural" ? "숲 유니콘이 잠시 나무 곁에서 쉬고 있어요." : "불러줘서 기쁜 듯 나무 곁에 머물고 있어요.");
+          playIdleLoop();
+          currentRouteIndex = 0;
+          scheduleRoaming();
+          scheduleVisitEnd();
+        },
+      });
+    }, 1800);
+    return true;
+  }
+
+  function restoreActiveVisit(visit) {
+    if (!visit || new Date(visit.endsAt || 0).getTime() <= Date.now()) return false;
+    activeVisit = visit;
+    beginVisit(visit.kind || "summoned", VISIT_DURATION_MS[visit.kind] || VISIT_DURATION_MS.summoned, { restore: true });
+    setFacing("left");
+    setAbsolutePosition(1, { visible: true });
+    unicorn.classList.remove("is-departed");
+    interactionHit?.classList.remove("is-hidden");
+    setSprite("idle_base");
+    setStatus("숲 유니콘이 아직 나무 곁에 머물고 있어요.");
+    playIdleLoop();
+    currentRouteIndex = 0;
+    scheduleRoaming();
+    scheduleVisitEnd();
+    return true;
+  }
+
+  function cancelPendingNaturalVisit() {
+    clearTimeout(naturalVisitTimer);
+    naturalVisitTimer = null;
+    const memory = readVisitMemory();
+    if (memory.pendingNaturalDate === localDayKey()) {
+      memory.pendingNaturalDate = null;
+      writeVisitMemory(memory);
+    }
+  }
+
+  function maybeScheduleNaturalVisit() {
+    if (!NATURAL_VISITS_ENABLED) return;
+    if (!forestFriendLiveEnabled || activeVisit || getJourney()) return;
+    const today = localDayKey();
+    const memory = readVisitMemory();
+    if (forestFriendForceNaturalVisit) {
+      memory.lastNaturalDecisionDate = today;
+      memory.pendingNaturalDate = today;
+      memory.naturalMissCount = 0;
+      writeVisitMemory(memory);
+    } else if (memory.lastNaturalDecisionDate !== today) {
+      const misses = Math.max(0, Number(memory.naturalMissCount || 0));
+      const shouldVisit = misses >= NATURAL_FORCE_AFTER_MISSES || Math.random() < NATURAL_VISIT_CHANCE;
+      memory.lastNaturalDecisionDate = today;
+      memory.pendingNaturalDate = shouldVisit ? today : null;
+      memory.naturalMissCount = shouldVisit ? 0 : misses + 1;
+      writeVisitMemory(memory);
+    }
+    if (memory.pendingNaturalDate !== today) return;
+    naturalVisitTimer = window.setTimeout(() => {
+      if (activeVisit || getJourney()) return;
+      const latest = readVisitMemory();
+      latest.pendingNaturalDate = null;
+      latest.lastNaturalVisitDate = today;
+      writeVisitMemory(latest);
+      playVisitArrival("natural", VISIT_DURATION_MS.natural);
+    }, 5000 + Math.round(Math.random() * 5000));
+  }
+
+  function treeSummonState() {
+    const journey = getJourney();
+    const cooldownUntil = currentCooldownUntil();
+    if (!hasSpecialFriend()) return { ok: false, reason: "not-met", cooldownUntil: 0 };
+    if (journey) return { ok: false, reason: "travelling", cooldownUntil: 0 };
+    if (["arriving", "visiting", "departing"].includes(presencePhase) || activeVisit) return { ok: false, reason: "present", cooldownUntil: 0 };
+    if (cooldownUntil > Date.now()) return { ok: false, reason: "cooldown", cooldownUntil };
+    return { ok: true, reason: "ready", cooldownUntil: 0 };
+  }
+
+  function requestTreeSummon() {
+    const state = treeSummonState();
+    if (!state.ok) return state;
+    cancelPendingNaturalVisit();
+    const started = playVisitArrival("summoned", VISIT_DURATION_MS.summoned);
+    return started ? { ok: true, reason: "summoned", cooldownUntil: 0 } : { ok: false, reason: "busy", cooldownUntil: 0 };
+  }
+
+  function installVisitApi() {
+    window.__todayForestSpecialFriendVisit = {
+      getState: treeSummonState,
+      requestTreeSummon,
+    };
+    publishPresence();
+  }
+
+  async function initializeVisitPresence() {
+    await resolveVisitOwner();
+    installVisitApi();
+    if (activeVisit || ["arriving", "visiting", "departing"].includes(presencePhase)) {
+      presenceInitialized = true;
+      return;
+    }
+    const journey = getJourney();
+    if (journey) {
+      restoreServerJourney(journey);
+      presenceInitialized = true;
+      return;
+    }
+    if (forestFriendPreviewEnabled && previewParams.get("firstMeeting") === "1") {
+      setAwayVisual("첫 만남을 준비하고 있어요.");
+      presenceInitialized = true;
+      return;
+    }
+    const memory = readVisitMemory();
+    visitCooldownUntil = Math.max(0, Number(memory.cooldownUntil || 0));
+    const stored = memory.active;
+    if (stored && new Date(stored.endsAt || 0).getTime() > Date.now()) {
+      restoreActiveVisit(stored);
+      presenceInitialized = true;
+      return;
+    }
+    if (stored) {
+      if (stored.kind === "summoned" && Number(stored.cooldownUntilAfter || 0) > Date.now()) {
+        memory.cooldownUntil = Number(stored.cooldownUntilAfter);
+        visitCooldownUntil = Number(stored.cooldownUntilAfter);
+      }
+      memory.active = null;
+      writeVisitMemory(memory);
+    }
+    setAwayVisual();
+    maybeScheduleNaturalVisit();
+    presenceInitialized = true;
   }
 
   function findActiveJourney(journeys) {
@@ -524,19 +942,23 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     const phase = deliveryPhase(journey);
     if (phase === "delivering") {
       setStatus("유니콘이 편지를 품고 숲길을 지나고 있어요.");
+      const remaining = compactRemaining(new Date(journey.availableAt).getTime() - Date.now());
       setDeliveryCard(
-        `유니콘이 ${journey.recipientName || "친구"}에게 마음을 전하러 가고 있어요.`,
-        `도착까지 ${compactRemaining(new Date(journey.availableAt).getTime() - Date.now())} · 도착한 뒤에도 유니콘은 숲길을 지나 돌아와요.`,
-        true
+        `${journey.recipientName || "친구"}에게 편지를 전하러 가고 있어요 · 약 ${remaining}`,
+        `유니콘이 마음을 품고 숲길을 지나고 있어요. 편지를 전한 뒤에는 다시 정원으로 돌아와요.`,
+        true,
+        "delivering"
       );
       return;
     }
     if (phase === "returning") {
       setStatus("편지는 도착했고, 유니콘은 숲길을 지나 돌아오고 있어요.");
+      const remaining = compactRemaining(new Date(journey.returnAt).getTime() - Date.now());
       setDeliveryCard(
-        "편지는 도착했어요.",
-        `유니콘이 숲을 지나 돌아오고 있어요 · 귀환까지 ${compactRemaining(new Date(journey.returnAt).getTime() - Date.now())}`,
-        true
+        `유니콘이 정원으로 돌아오고 있어요 · 약 ${remaining}`,
+        "편지는 도착했어요. 유니콘이 숲길을 지나 천천히 정원으로 돌아오고 있어요.",
+        true,
+        "returning"
       );
       return;
     }
@@ -549,6 +971,7 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     if (phase === "delivering") {
       const wait = Math.max(120, new Date(journey.availableAt).getTime() - Date.now() + 120);
       returnTimer = window.setTimeout(() => {
+        setPresencePhase("returning");
         updateServerDeliveryCard(journey);
         window.dispatchEvent(new CustomEvent("todayforest:special-friend-journey-phase", { detail: { key: "forest_unicorn", phase: "returning" } }));
         scheduleServerJourney(journey);
@@ -566,12 +989,14 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
   function restoreServerJourney(journey) {
     if (!unicorn || !journey) return;
     clearAllTimers();
+    clearActiveVisit({ applyCooldown: false });
     isTravelling = true;
     isInteracting = false;
     unicorn.removeAttribute("data-interacting");
     interactionHit?.removeAttribute("data-interacting");
     unicorn.classList.add("is-departed");
     interactionHit?.classList.add("is-hidden");
+    setPresencePhase(deliveryPhase(journey));
     setDeliveryCard("", "", false);
     updateServerDeliveryCard(journey);
     scheduleServerJourney(journey);
@@ -580,6 +1005,7 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
   function returnHomeAfterJourney() {
     if (!unicorn) return;
     clearAllTimers();
+    setPresencePhase("arriving");
     setAbsolutePosition(0, { visible: false });
     setFacing("left");
     unicorn.removeAttribute("data-has-letter");
@@ -588,17 +1014,19 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     setSprite("return");
     unicorn.classList.add("is-visible");
     setStatus("오른쪽 숲길에서 작은 빛과 함께 유니콘이 돌아왔어요.");
-    setDeliveryCard("유니콘이 정원으로 돌아왔어요.", "잠시 뒤 다시 나무 곁에서 쉬어요.", true);
+    setDeliveryCard("유니콘이 정원으로 돌아왔어요", "숲길을 무사히 지나왔어요. 잠시 뒤 나무 곁에서 쉬기 시작해요.", true, "returned");
     stateTimer = window.setTimeout(() => {
       moveTo(1, {
         duration: 2200,
         afterMove: () => {
           isTravelling = false;
+          beginVisit("returned", VISIT_DURATION_MS.returned);
           setDeliveryCard("", "", false);
-          setStatus("유니콘이 다시 정원을 천천히 둘러봐요.");
+          setStatus("편지를 전하고 돌아온 유니콘이 잠시 나무 곁에서 쉬어요.");
           playIdleLoop();
           currentRouteIndex = 0;
           scheduleRoaming();
+          scheduleVisitEnd();
           window.dispatchEvent(new CustomEvent("todayforest:special-friend-returned", { detail: { key: "forest_unicorn" } }));
         }
       });
@@ -625,7 +1053,10 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
 
   function beginServerDeparture(journey) {
     if (!unicorn || !journey) return;
+    clearActiveVisit({ applyCooldown: false });
+    cancelPendingNaturalVisit();
     isTravelling = true;
+    setPresencePhase(deliveryPhase(journey));
     isInteracting = false;
     unicorn.removeAttribute("data-interacting");
     interactionHit?.removeAttribute("data-interacting");
@@ -655,10 +1086,15 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     });
 
     window.addEventListener("todayforest:special-friend-state-ready", (event) => {
-      const journey = findActiveJourney(event?.detail?.journeys);
+      const journeys = Array.isArray(event?.detail?.journeys) ? event.detail.journeys : [];
+      window.__todayForestSpecialFriendJourneys = journeys;
+      const journey = findActiveJourney(journeys);
       // 방금 출발한 장면은 끝까지 보여주고, 새로고침/재접속일 때만 부재 상태를 복원합니다.
       if (journey && !isTravelling) {
         restoreServerJourney(journey);
+      } else if (!journey && presencePhase === "away") {
+        publishPresence();
+        maybeScheduleNaturalVisit();
       }
     });
 
@@ -686,20 +1122,25 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
       if (detail.mode === "first-meeting") {
         if (!forestFriendLiveEnabled) window.localStorage.setItem(FIRST_MET_AT_KEY, new Date().toISOString());
         updateMemoryCard();
-        settleAfterFirstMeeting();
+        void settleAfterFirstMeeting();
         return;
       }
-      if (!isTravelling && !isInteracting) {
-        setStatus("첫 만남의 기억을 다시 보고 왔어요. 유니콘이 나무 곁에서 기다리고 있어요.");
+      if (!isTravelling && !isInteracting && activeVisit) {
+        setStatus("첫 만남의 기억을 다시 보고 왔어요. 유니콘이 잠시 나무 곁에 머물러요.");
         playIdleLoop();
         roamTimer = window.setTimeout(continueRoaming, 6000);
+      } else if (!activeVisit && !isTravelling) {
+        setAwayVisual();
       }
     });
   }
 
-  function settleAfterFirstMeeting() {
+  async function settleAfterFirstMeeting() {
     if (!unicorn) return;
+    await resolveVisitOwner();
+    presenceInitialized = true;
     clearAllTimers();
+    beginVisit("first", VISIT_DURATION_MS.first);
     isTravelling = false;
     isInteracting = false;
     unicorn.removeAttribute("data-interacting");
@@ -714,12 +1155,14 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     unicorn.classList.remove("is-departed");
     window.requestAnimationFrame(() => {
       unicorn?.classList.add("is-visible");
-      setStatus("숲 유니콘이 나무 곁에 자리를 잡았어요. 이제 이 정원에서 함께 지내요.");
+      setPresencePhase("visiting");
+      setStatus("첫 만남을 마친 숲 유니콘이 잠시 나무 곁에 머물러요.");
     });
     stateTimer = window.setTimeout(() => {
       playIdleLoop();
       currentRouteIndex = 0;
       roamTimer = window.setTimeout(continueRoaming, 7000);
+      scheduleVisitEnd();
     }, 1500);
   }
 
@@ -785,6 +1228,7 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
       document.body.classList.add("forest-unicorn-live-enabled");
       bootPreview();
       updateMemoryCard();
+      publishPresence();
     }
   });
 

@@ -1,4 +1,4 @@
-// 오늘의숲 · 나무 손길로 숲친구 부르기 v1
+// 오늘의숲 · 나무 손길로 숲친구 부르기 운영 v1.2 · 특별친구 방문 연동
 // 기존 동물 방문/편지 기능은 그대로 사용하고, 이 파일은 나무의 입력·연출·쿨타임만 담당합니다.
 
 const TREE_CALL_RPC = "call_my_garden_animal_with_tree_v1";
@@ -27,6 +27,10 @@ let callBusy = false;
 let authenticated = false;
 let latestVisits = [];
 let serverHasActiveVisit = false;
+let specialFriendMet = Boolean(window.__todayForestSpecialFriendLiveState?.isMet);
+let specialFriendJourneyActive = Array.isArray(window.__todayForestSpecialFriendJourneys)
+  && window.__todayForestSpecialFriendJourneys.some((item) => item?.key === "forest_unicorn" && new Date(item.returnAt || 0).getTime() > Date.now());
+let specialFriendPresence = window.__todayForestSpecialFriendVisitState || { phase: "away", present: false, travelling: false, cooldownUntil: 0 };
 
 function wait(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
@@ -49,19 +53,50 @@ function visitState(value) {
   return String(value?.visit_state || value?.visitState || "");
 }
 
-function hasAnimalConflict() {
+function hasGeneralAnimalConflict() {
   if (serverHasActiveVisit || pendingArrivesAtMs > Date.now() || callBusy) return true;
   if (latestVisits.some((visit) => ["approaching", "visiting", "departing"].includes(visitState(visit)))) return true;
   const layer = document.querySelector("#animalV2Layer");
   return Boolean(layer?.querySelector(".animal-v2-approach, [data-animal-v2-visit]"));
 }
 
+function hasSpecialFriendConflict() {
+  const phase = String(specialFriendPresence?.phase || "");
+  return Boolean(specialFriendPresence?.present || ["arriving", "visiting", "departing"].includes(phase));
+}
+
+function hasAnimalConflict() {
+  return hasGeneralAnimalConflict() || hasSpecialFriendConflict();
+}
+
 function isInteractionBlocked() {
   return Boolean(document.querySelector(".garden-stage.is-garden-decorating"));
 }
 
+function shouldCallSpecialFriend() {
+  return specialFriendMet && !specialFriendJourneyActive;
+}
+
+function specialFriendApiState() {
+  const api = window.__todayForestSpecialFriendVisit;
+  if (api?.getState) {
+    try {
+      return api.getState() || specialFriendPresence || {};
+    } catch (_error) {}
+  }
+  return specialFriendPresence || {};
+}
+
+function targetCooldownUntil() {
+  if (shouldCallSpecialFriend()) {
+    const value = Number(specialFriendApiState()?.cooldownUntil || 0);
+    return Number.isFinite(value) ? value : 0;
+  }
+  return cooldownUntilMs;
+}
+
 function isCooldownActive() {
-  return cooldownUntilMs > Date.now();
+  return targetCooldownUntil() > Date.now();
 }
 
 function canCharge() {
@@ -133,6 +168,7 @@ function renderState() {
   if (!treeWrap || !hitbox) return;
   const conflict = hasAnimalConflict();
   const cooldown = isCooldownActive();
+  const specialTarget = shouldCallSpecialFriend();
   const ready = authenticated && !isInteractionBlocked() && !cooldown && !conflict;
   const arriving = pendingArrivesAtMs > Date.now() || callBusy;
 
@@ -143,10 +179,10 @@ function renderState() {
   treeWrap.dataset.treeCallCharge = String(charge);
   hitbox.disabled = !authenticated;
   hitbox.setAttribute("aria-label", cooldown
-    ? "나무의 빛이 다시 모이는 중"
+    ? specialTarget ? "숲 유니콘이 다시 산책을 마치길 기다리는 중" : "나무의 빛이 다시 모이는 중"
     : conflict
       ? "나무 흔들기"
-      : "나무에 손길 건네기");
+      : specialTarget ? "나무에 손길을 건네 숲 유니콘 부르기" : "나무에 손길 건네기");
   if (readyLight) readyLight.hidden = !ready || charge > 0;
 }
 
@@ -189,6 +225,51 @@ function rpcErrorCode(error) {
   return String(error?.message || error?.details || error?.hint || "").toUpperCase();
 }
 
+function specialFriendUnavailableMessage(result) {
+  const reason = String(result?.reason || "");
+  if (reason === "cooldown") {
+    const until = Number(result?.cooldownUntil || 0);
+    return until > Date.now()
+      ? `숲길을 조금 더 산책하고 있어요 · ${formatRemaining(until - Date.now())}`
+      : "숲길을 조금 더 산책하고 있어요";
+  }
+  if (reason === "present") return "숲 유니콘이 이미 정원에 머물고 있어요";
+  if (reason === "travelling") return "숲 유니콘은 지금 편지를 전하러 가고 있어요";
+  return "숲 유니콘이 숲길의 기척을 듣고 있어요";
+}
+
+function completeSpecialFriendTreeCall() {
+  const api = window.__todayForestSpecialFriendVisit;
+  if (!api?.requestTreeSummon) {
+    showStatus("특별친구가 숲길을 찾고 있어요. 잠시 뒤 다시 나무를 눌러주세요");
+    return false;
+  }
+  let result = null;
+  try {
+    result = api.requestTreeSummon();
+  } catch (error) {
+    console.warn("TodayForest special friend tree summon skipped:", error);
+    showStatus("나무의 부름이 잠시 숲길에 닿지 않았어요");
+    return false;
+  }
+  if (!result?.ok) {
+    showStatus(specialFriendUnavailableMessage(result));
+    specialFriendPresence = { ...specialFriendPresence, ...(window.__todayForestSpecialFriendVisitState || {}) };
+    return false;
+  }
+  callBusy = true;
+  resetCharge();
+  treeWrap?.classList.add("is-tree-call-sending");
+  showStatus("나무의 빛을 따라 숲 유니콘이 찾아오고 있어요");
+  renderState();
+  window.setTimeout(() => {
+    callBusy = false;
+    treeWrap?.classList.remove("is-tree-call-sending");
+    renderState();
+  }, ARRIVAL_EFFECT_MS + 700);
+  return true;
+}
+
 async function completeTreeCall() {
   if (!supabase || callBusy || !canCharge()) {
     resetCharge();
@@ -197,6 +278,10 @@ async function completeTreeCall() {
   }
 
   clearChargeResetTimer();
+  if (shouldCallSpecialFriend()) {
+    completeSpecialFriendTreeCall();
+    return;
+  }
   callBusy = true;
   pendingRequestId = makeRequestId();
   treeWrap?.classList.add("is-tree-call-sending");
@@ -262,7 +347,10 @@ function handleTreeTap(event) {
     return;
   }
   if (isCooldownActive()) {
-    showStatus(`다시 부르기 · ${formatRemaining(cooldownUntilMs - Date.now())}`);
+    const until = targetCooldownUntil();
+    showStatus(shouldCallSpecialFriend()
+      ? `숲길을 조금 더 산책하고 있어요 · ${formatRemaining(until - Date.now())}`
+      : `다시 부르기 · ${formatRemaining(until - Date.now())}`);
     renderState();
     return;
   }
@@ -343,7 +431,7 @@ function createTreeCallSurface() {
   readyLight = effect.querySelector(".tree-call-ready-light");
   pathLight = effect.querySelector(".tree-call-path-light");
   hitbox.addEventListener("click", handleTreeTap);
-  // 마음 열매 레이어처럼 나무 위에 놓이는 기능도 동일한 반응 경로를 사용합니다.
+  // 마음 열매 투명 레이어의 빈 부분도 기존 나무 손길로 전달합니다.
   window.addEventListener("todayforest:tree-tap-request", handleTreeTap);
   return true;
 }
@@ -382,6 +470,37 @@ async function initTreeAnimalCall() {
     }
     renderState();
     if (authenticated) void refreshStatus({ silent: true });
+  });
+
+  window.addEventListener("todayforest:special-friend-live-state", (event) => {
+    const detail = event?.detail || {};
+    if (detail.friendKey !== "forest_unicorn") return;
+    specialFriendMet = Boolean(detail.isMet);
+    resetCharge();
+    renderState();
+  });
+  window.addEventListener("todayforest:special-friend-presence-changed", (event) => {
+    const detail = event?.detail || {};
+    if (detail.key !== "forest_unicorn") return;
+    specialFriendPresence = detail;
+    resetCharge();
+    renderState();
+  });
+  window.addEventListener("todayforest:special-friend-state-ready", (event) => {
+    const journeys = Array.isArray(event?.detail?.journeys) ? event.detail.journeys : [];
+    specialFriendJourneyActive = journeys.some((item) => item?.key === "forest_unicorn" && new Date(item.returnAt || 0).getTime() > Date.now());
+    renderState();
+  });
+  window.addEventListener("todayforest:special-friend-letter-started", (event) => {
+    if (event?.detail?.key !== "forest_unicorn") return;
+    specialFriendJourneyActive = true;
+    resetCharge();
+    renderState();
+  });
+  window.addEventListener("todayforest:special-friend-returned", (event) => {
+    if (event?.detail?.key !== "forest_unicorn") return;
+    specialFriendJourneyActive = false;
+    renderState();
   });
 
   observeAnimalLayer();
