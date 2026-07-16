@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------
-   FOREST UNICORN PREVIEW v3.5 · VISIT LIFECYCLE
+   FOREST UNICORN PREVIEW v3.6 · TOP STATUS BAR
    ?forestFriendPreview=1 를 붙였을 때만 실행됩니다.
    목적: 프레임 기반 생활 루틴 검수 + 유니콘 전용 실제 배송 상태 검수.
    ?forestFriendPreview=1 에서만 유니콘 UI가 나타납니다.
@@ -36,6 +36,8 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
   let statusNode = null;
   let imgNode = null;
   let deliveryCard = null;
+  let deliveryCollapseTimer = null;
+  let deliveryStateKey = "";
   let memoryChipButton = null;
   let memoryPopover = null;
   let composerWatchTimer = null;
@@ -255,17 +257,25 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     `;
     stage.appendChild(arrival);
 
-    deliveryCard = document.createElement("aside");
+    deliveryCard = document.createElement("button");
+    deliveryCard.type = "button";
     deliveryCard.className = "forest-unicorn-delivery-card";
     deliveryCard.setAttribute("aria-live", "polite");
+    deliveryCard.setAttribute("aria-expanded", "false");
+    deliveryCard.setAttribute("aria-label", "특별친구 편지 상태 자세히 보기");
     deliveryCard.innerHTML = `
-      <span class="forest-unicorn-delivery-icon" aria-hidden="true">✉</span>
-      <div>
-        <p class="forest-unicorn-delivery-kicker">FOREST FRIEND DELIVERY · DEV</p>
+      <span class="forest-unicorn-delivery-icon" aria-hidden="true">🦄</span>
+      <span class="forest-unicorn-delivery-copy">
         <strong></strong>
-        <p class="forest-unicorn-delivery-note"></p>
-      </div>
+        <span class="forest-unicorn-delivery-note"></span>
+      </span>
+      <span class="forest-unicorn-delivery-chevron" aria-hidden="true">⌄</span>
     `;
+    deliveryCard.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const expanded = !deliveryCard.classList.contains("is-expanded");
+      setDeliveryExpanded(expanded, { autoCollapse: false });
+    });
     stage.appendChild(deliveryCard);
 
     const headerActions = document.querySelector(".header-actions");
@@ -364,13 +374,42 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
 
   function setStatus(text) { if (statusNode) statusNode.textContent = text; }
 
-  function setDeliveryCard(title = "", note = "", open = false) {
+  function setDeliveryExpanded(expanded, { autoCollapse = false } = {}) {
+    if (!deliveryCard) return;
+    clearTimeout(deliveryCollapseTimer);
+    deliveryCollapseTimer = null;
+    deliveryCard.classList.toggle("is-expanded", Boolean(expanded));
+    deliveryCard.setAttribute("aria-expanded", expanded ? "true" : "false");
+    getStage()?.classList.toggle("has-unicorn-delivery-expanded", Boolean(expanded));
+    if (expanded && autoCollapse) {
+      deliveryCollapseTimer = window.setTimeout(() => {
+        deliveryCollapseTimer = null;
+        setDeliveryExpanded(false);
+      }, 4200);
+    }
+  }
+
+  function setDeliveryCard(summary = "", detail = "", open = false, stateKey = "") {
     if (!deliveryCard) return;
     const titleNode = deliveryCard.querySelector("strong");
     const noteNode = deliveryCard.querySelector(".forest-unicorn-delivery-note");
-    if (titleNode) titleNode.textContent = title;
-    if (noteNode) noteNode.textContent = note;
-    deliveryCard.classList.toggle("is-open", Boolean(open));
+    if (titleNode) titleNode.textContent = summary;
+    if (noteNode) noteNode.textContent = detail;
+
+    const shouldOpen = Boolean(open);
+    deliveryCard.classList.toggle("is-open", shouldOpen);
+    getStage()?.classList.toggle("has-unicorn-delivery", shouldOpen);
+
+    if (!shouldOpen) {
+      deliveryStateKey = "";
+      setDeliveryExpanded(false);
+      return;
+    }
+
+    const nextStateKey = stateKey || summary;
+    const stateChanged = nextStateKey !== deliveryStateKey;
+    deliveryStateKey = nextStateKey;
+    if (stateChanged) setDeliveryExpanded(true, { autoCollapse: true });
   }
 
   function getArrivalLayer() { return getStage()?.querySelector(".forest-unicorn-arrival"); }
@@ -405,6 +444,7 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     clearTimeout(returnTimer);
     clearTimeout(visitEndTimer);
     clearTimeout(naturalVisitTimer);
+    clearTimeout(deliveryCollapseTimer);
     clearInterval(walkTimer);
     clearInterval(idleTimer);
     roamTimer = null;
@@ -413,6 +453,7 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     returnTimer = null;
     visitEndTimer = null;
     naturalVisitTimer = null;
+    deliveryCollapseTimer = null;
   }
 
   function getNearestZoneIndex(left, top) {
@@ -894,19 +935,23 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     const phase = deliveryPhase(journey);
     if (phase === "delivering") {
       setStatus("유니콘이 편지를 품고 숲길을 지나고 있어요.");
+      const remaining = compactRemaining(new Date(journey.availableAt).getTime() - Date.now());
       setDeliveryCard(
-        `유니콘이 ${journey.recipientName || "친구"}에게 마음을 전하러 가고 있어요.`,
-        `도착까지 ${compactRemaining(new Date(journey.availableAt).getTime() - Date.now())} · 도착한 뒤에도 유니콘은 숲길을 지나 돌아와요.`,
-        true
+        `${journey.recipientName || "친구"}에게 편지를 전하러 가고 있어요 · 약 ${remaining}`,
+        `유니콘이 마음을 품고 숲길을 지나고 있어요. 편지를 전한 뒤에는 다시 정원으로 돌아와요.`,
+        true,
+        "delivering"
       );
       return;
     }
     if (phase === "returning") {
       setStatus("편지는 도착했고, 유니콘은 숲길을 지나 돌아오고 있어요.");
+      const remaining = compactRemaining(new Date(journey.returnAt).getTime() - Date.now());
       setDeliveryCard(
-        "편지는 도착했어요.",
-        `유니콘이 숲을 지나 돌아오고 있어요 · 귀환까지 ${compactRemaining(new Date(journey.returnAt).getTime() - Date.now())}`,
-        true
+        `유니콘이 정원으로 돌아오고 있어요 · 약 ${remaining}`,
+        "편지는 도착했어요. 유니콘이 숲길을 지나 천천히 정원으로 돌아오고 있어요.",
+        true,
+        "returning"
       );
       return;
     }
@@ -962,7 +1007,7 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     setSprite("return");
     unicorn.classList.add("is-visible");
     setStatus("오른쪽 숲길에서 작은 빛과 함께 유니콘이 돌아왔어요.");
-    setDeliveryCard("유니콘이 정원으로 돌아왔어요.", "잠시 뒤 다시 나무 곁에서 쉬어요.", true);
+    setDeliveryCard("유니콘이 정원으로 돌아왔어요", "숲길을 무사히 지나왔어요. 잠시 뒤 나무 곁에서 쉬기 시작해요.", true, "returned");
     stateTimer = window.setTimeout(() => {
       moveTo(1, {
         duration: 2200,

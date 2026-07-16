@@ -587,30 +587,104 @@ body.forest-unicorn-live-enabled .header-actions > .quiet-pill span:last-child {
 .forest-unicorn-delivery-card {
   position: absolute;
   z-index: 16;
+  top: 61px;
   left: 50%;
-  bottom: 10px;
-  display: flex;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 16px;
   align-items: center;
-  gap: 9px;
-  width: min(310px, calc(100% - 30px));
-  padding: 10px 12px;
-  border: 1px solid rgba(255,255,255,.92);
-  border-radius: 17px;
-  background: rgba(255,255,255,.93);
-  color: #5f796a;
-  box-shadow: 0 12px 22px rgba(78,98,89,.16);
-  transform: translate(-50%, 12px);
+  gap: 7px;
+  width: min(304px, calc(100% - 34px));
+  min-height: 34px;
+  margin: 0;
+  padding: 6px 9px;
+  border: 1px solid rgba(255,255,255,.88);
+  border-radius: 999px;
+  background: rgba(255,255,255,.74);
+  color: #64766e;
+  box-shadow: 0 8px 18px rgba(78,98,89,.10);
+  font: inherit;
+  text-align: left;
+  transform: translate(-50%, -5px);
   opacity: 0;
   pointer-events: none;
-  transition: opacity .25s ease, transform .25s ease;
-  backdrop-filter: blur(7px);
+  cursor: pointer;
+  transition: opacity .22s ease, transform .22s ease, border-radius .22s ease, background .22s ease, padding .22s ease;
+  backdrop-filter: blur(9px);
+  -webkit-tap-highlight-color: transparent;
 }
-.forest-unicorn-delivery-card.is-open { opacity: 1; transform: translate(-50%, 0); }
-.forest-unicorn-delivery-icon { display: grid; flex: 0 0 auto; place-items: center; width: 31px; height: 31px; border-radius: 11px; background: #fff0f2; color: #d97c99; font-size: 16px; }
-.forest-unicorn-delivery-card p { margin: 0; }
-.forest-unicorn-delivery-kicker { color: #a4ba98; font-size: 8px; font-weight: 950; letter-spacing: .075em; }
-.forest-unicorn-delivery-card strong { display: block; margin-top: 2px; color: #5f796a; font-size: 10.5px; line-height: 1.35; }
-.forest-unicorn-delivery-note { margin-top: 2px !important; color: #91a091; font-size: 8.8px; font-weight: 750; line-height: 1.35; }
+.forest-unicorn-delivery-card.is-open {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+}
+.forest-unicorn-delivery-card:hover { background: rgba(255,255,255,.84); }
+.forest-unicorn-delivery-card:focus-visible { outline: 3px solid rgba(255,255,255,.95); outline-offset: 3px; }
+.forest-unicorn-delivery-card.is-expanded {
+  align-items: start;
+  min-height: 58px;
+  padding: 9px 11px;
+  border-radius: 17px;
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 12px 24px rgba(78,98,89,.15);
+}
+.forest-unicorn-delivery-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 9px;
+  background: rgba(247,241,255,.96);
+  font-size: 13px;
+  line-height: 1;
+}
+.forest-unicorn-delivery-copy { display: block; min-width: 0; }
+.forest-unicorn-delivery-card strong {
+  display: block;
+  overflow: hidden;
+  color: #64766e;
+  font-size: 9.8px;
+  font-weight: 900;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.forest-unicorn-delivery-note {
+  display: block;
+  max-height: 0;
+  margin-top: 0;
+  overflow: hidden;
+  color: #89978f;
+  font-size: 8.7px;
+  font-weight: 750;
+  line-height: 1.42;
+  opacity: 0;
+  transition: max-height .22s ease, margin-top .22s ease, opacity .2s ease;
+}
+.forest-unicorn-delivery-card.is-expanded strong { white-space: normal; }
+.forest-unicorn-delivery-card.is-expanded .forest-unicorn-delivery-note {
+  max-height: 42px;
+  margin-top: 3px;
+  opacity: 1;
+}
+.forest-unicorn-delivery-chevron {
+  align-self: center;
+  color: #879a91;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  transition: transform .2s ease;
+}
+.forest-unicorn-delivery-card.is-expanded .forest-unicorn-delivery-chevron { transform: rotate(180deg); }
+.garden-stage.has-unicorn-delivery .visitor-card { top: 104px; }
+.garden-stage.has-unicorn-delivery-expanded .visitor-card { top: 133px; }
+
+@media (max-width: 470px) {
+  .forest-unicorn-delivery-card { top: 60px; width: min(286px, calc(100% - 28px)); }
+  .forest-unicorn-delivery-card strong { font-size: 9.3px; }
+  .garden-stage.has-unicorn-delivery .visitor-card { top: 103px; }
+  .garden-stage.has-unicorn-delivery-expanded .visitor-card { top: 132px; }
+}
 
 .forest-unicorn-letter-choice {
   margin: 12px 0 4px;
