@@ -138,10 +138,49 @@ body.forest-unicorn-preview-enabled .header-actions,
 body.forest-unicorn-live-enabled .header-actions {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(2, max-content);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 36px;
   justify-content: end;
-  align-items: start;
+  align-items: stretch;
   gap: 8px;
+  width: 272px;
+}
+
+body.forest-unicorn-preview-enabled .header-actions > .account-pill,
+body.forest-unicorn-preview-enabled .header-actions > .friend-pill,
+body.forest-unicorn-preview-enabled .header-actions > .quiet-pill,
+body.forest-unicorn-live-enabled .header-actions > .account-pill,
+body.forest-unicorn-live-enabled .header-actions > .friend-pill,
+body.forest-unicorn-live-enabled .header-actions > .quiet-pill,
+.forest-unicorn-header-slot {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+body.forest-unicorn-preview-enabled .header-actions > .account-pill,
+body.forest-unicorn-preview-enabled .header-actions > .friend-pill,
+body.forest-unicorn-preview-enabled .header-actions > .quiet-pill,
+body.forest-unicorn-live-enabled .header-actions > .account-pill,
+body.forest-unicorn-live-enabled .header-actions > .friend-pill,
+body.forest-unicorn-live-enabled .header-actions > .quiet-pill {
+  justify-content: center;
+  min-height: 36px;
+  max-width: none;
+  padding: 6px 8px;
+  text-align: center;
+  overflow: hidden;
+}
+
+body.forest-unicorn-preview-enabled .header-actions > .account-pill span:last-child,
+body.forest-unicorn-preview-enabled .header-actions > .friend-pill span:last-child,
+body.forest-unicorn-preview-enabled .header-actions > .quiet-pill span:last-child,
+body.forest-unicorn-live-enabled .header-actions > .account-pill span:last-child,
+body.forest-unicorn-live-enabled .header-actions > .friend-pill span:last-child,
+body.forest-unicorn-live-enabled .header-actions > .quiet-pill span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .forest-unicorn-header-slot {
@@ -152,8 +191,10 @@ body.forest-unicorn-live-enabled .header-actions {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 35px;
-  padding: 6px 10px;
+  width: 100%;
+  min-height: 36px;
+  justify-content: center;
+  padding: 6px 8px;
   border: 1px solid rgba(208, 188, 232, 0.48);
   border-radius: 999px;
   background: rgba(255,255,255,0.74);
@@ -288,14 +329,17 @@ body.forest-unicorn-live-enabled .header-actions {
 @media (max-width: 470px) {
   body.forest-unicorn-preview-enabled .header-actions,
   body.forest-unicorn-live-enabled .header-actions {
-    grid-template-columns: repeat(2, minmax(0, max-content));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 34px;
+    width: min(250px, 58vw);
     gap: 6px;
   }
   .forest-unicorn-header-chip,
   .account-pill,
   .friend-pill,
   .quiet-pill {
-    max-width: 152px;
+    min-height: 34px;
+    max-width: none;
     font-size: 10px;
   }
   .forest-unicorn-memory-popover { width: min(300px, calc(100vw - 32px)); }

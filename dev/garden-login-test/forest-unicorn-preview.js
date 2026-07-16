@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------
-   FOREST UNICORN PREVIEW v2.9
+   FOREST UNICORN PREVIEW v3.2
    ?forestFriendPreview=1 를 붙였을 때만 실행됩니다.
    목적: 프레임 기반 생활 루틴 검수 + 유니콘 전용 실제 배송 상태 검수.
    ?forestFriendPreview=1 에서만 유니콘 UI가 나타납니다.
@@ -176,7 +176,8 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     stage.appendChild(deliveryCard);
 
     const headerActions = document.querySelector(".header-actions");
-    if (headerActions) {
+    const shouldShowFriendMemory = forestFriendPreviewEnabled || forestFriendLiveEnabled;
+    if (headerActions && shouldShowFriendMemory) {
       const memorySlot = document.createElement("div");
       memorySlot.className = "forest-unicorn-header-slot";
       memorySlot.innerHTML = `
