@@ -449,6 +449,8 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
 
   function openInteraction() {
     if (!unicorn || isTravelling || isInteracting) return;
+    // 특별친구 정보창이 열려 있어도 클릭을 가리지 않도록 먼저 닫고 만남 카드를 엽니다.
+    toggleMemoryPopover(false);
     isInteracting = true;
     clearTimeout(roamTimer);
     clearTimeout(stateTimer);
@@ -460,15 +462,7 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     setSprite("idle_tall");
     setStatus("유니콘이 편지를 기다리며 잠깐 멈춰 있어요.");
 
-    // 운영 1차 반영에서는 검수 완료된 첫 만남·생활·정보창까지만 사용합니다.
-    // 실제 편지 배송은 별도 운영 검수 뒤 연결하며, 지금은 친구 정보창을 자연스럽게 엽니다.
-    if (!forestFriendPreviewEnabled) {
-      setStatus("숲 유니콘이 당신을 바라보며 조용히 인사해요.");
-      toggleMemoryPopover(true);
-      interactionTimer = window.setTimeout(resumeRoamingAfterInteraction, 3000);
-      return;
-    }
-
+    // 운영에서도 개발 서버와 동일하게 만남 카드를 거쳐 편지 작성 화면을 엽니다.
     window.dispatchEvent(new CustomEvent("todayforest:open-special-friend-letter", {
       detail: { key: "forest_unicorn" },
     }));
