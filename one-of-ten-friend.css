@@ -492,3 +492,42 @@ body.ootf-random-waiting { overflow: hidden; }
   .ootf-random-card > button { width: 100%; min-height: 48px; }
   .ootf-random-wait-card { padding: 21px 15px 15px; }
 }
+
+
+/* Random candidate summary + finite search v1.5.1 */
+.ootf-random-copy #randomCandidateStatus {
+  color: #566c5c;
+  font-weight: 900;
+}
+.ootf-random-copy #randomCandidateHint {
+  min-height: 22px;
+}
+.ootf-random-card.has-candidate {
+  border-color: rgba(91, 123, 99, .28);
+  background: linear-gradient(145deg, #fbfdf8, #f3f8ef);
+}
+.ootf-random-card.has-one-candidate > button {
+  background: #687a6b;
+}
+.ootf-random-retry {
+  width: 100%;
+  min-height: 47px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 7px;
+  border: 0;
+  border-radius: 14px;
+  background: #53685a;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 950;
+  cursor: pointer;
+}
+#randomMatchOverlay.is-timeout .ootf-random-orbit {
+  opacity: .58;
+  filter: saturate(.65);
+}
+#randomMatchOverlay.is-timeout .ootf-random-wait-stats > div:first-child strong {
+  color: #8d7650;
+}

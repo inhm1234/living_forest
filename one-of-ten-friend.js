@@ -11,6 +11,8 @@ const EQUATION_REVEAL_MS = 700;
 const LOBBY_POLL_MS = 10000;
 const MATCH_POLL_MS = 2500;
 const RANDOM_MATCH_POLL_MS = 3000;
+const RANDOM_SEARCH_LIMIT_SECONDS = 20;
+const RANDOM_CANDIDATE_REFRESH_MS = 6000;
 const INVITE_ACK_STORAGE_KEY = "todayForestOotAcknowledgedInvites";
 const INVITE_TARGET_STORAGE_KEY = "todayForestOotPendingInvite";
 const OPERATIONS = [
@@ -74,7 +76,7 @@ const els = {
   incomingSection: $("#incomingSection"), incomingCount: $("#incomingCount"), incomingList: $("#incomingList"),
   outgoingSection: $("#outgoingSection"), outgoingCount: $("#outgoingCount"), outgoingList: $("#outgoingList"),
   friendsList: $("#friendsList"), noFriendsView: $("#noFriendsView"), refreshLobbyButton: $("#refreshLobbyButton"),
-  randomMatchCard: $("#randomMatchCard"), randomMatchButton: $("#randomMatchButton"), randomMatchOverlay: $("#randomMatchOverlay"), randomMatchMessage: $("#randomMatchMessage"), randomWaitTime: $("#randomWaitTime"), randomQueueSize: $("#randomQueueSize"), cancelRandomMatchButton: $("#cancelRandomMatchButton"), randomToSquirrelLink: $("#randomToSquirrelLink"),
+  randomMatchCard: $("#randomMatchCard"), randomMatchButton: $("#randomMatchButton"), randomCandidateStatus: $("#randomCandidateStatus"), randomCandidateHint: $("#randomCandidateHint"), randomMatchOverlay: $("#randomMatchOverlay"), randomMatchWaitingTitle: $("#randomMatchWaitingTitle"), randomMatchMessage: $("#randomMatchMessage"), randomWaitTime: $("#randomWaitTime"), randomQueueSize: $("#randomQueueSize"), randomWaitNote: $("#randomWaitNote"), randomRetryMatchButton: $("#randomRetryMatchButton"), cancelRandomMatchButton: $("#cancelRandomMatchButton"), randomToSquirrelLink: $("#randomToSquirrelLink"),
   inviteModeOverlay: $("#inviteModeOverlay"), closeInviteModeButton: $("#closeInviteModeButton"), inviteFriendName: $("#inviteFriendName"), inviteFriendAvatar: $("#inviteFriendAvatar"), inviteFriendStatus: $("#inviteFriendStatus"), casualInviteButton: $("#casualInviteButton"), ratedInviteButton: $("#ratedInviteButton"), ratedInviteStatus: $("#ratedInviteStatus"),
   opponentAvatar: $("#opponentAvatar"), opponentName: $("#opponentName"), opponentStatus: $("#opponentStatus"), opponentCardCount: $("#opponentCardCount"), opponentHand: $("#opponentHand"), matchModeBadge: $("#matchModeBadge"),
   matchReadyOverlay: $("#matchReadyOverlay"), readyRoomDescription: $("#readyRoomDescription"), readyOpponentAvatar: $("#readyOpponentAvatar"), readyOpponentName: $("#readyOpponentName"), readyMatchMode: $("#readyMatchMode"), readyMeCard: $("#readyMeCard"), readyMeStatus: $("#readyMeStatus"), readyOpponentCard: $("#readyOpponentCard"), readyOpponentLabel: $("#readyOpponentLabel"), readyOpponentStatus: $("#readyOpponentStatus"), readyCountdown: $("#readyCountdown"), readyRoomMessage: $("#readyRoomMessage"), matchReadyButton: $("#matchReadyButton"), cancelWaitingMatchButton: $("#cancelWaitingMatchButton"),
@@ -113,7 +115,9 @@ const state = {
   chatMessages: [], chatLoaded: false, chatOpen: false, chatBusy: false, chatAvailable: false,
   chatUnread: 0, chatMaxLength: 120,
   randomMatching: false, randomMatchBusy: false, randomMatchInterval: null, randomWaitTicker: null,
-  randomJoinedAt: "", randomQueueSize: 1, randomMatchNavigating: false, randomStatusRestored: false,
+  randomJoinedAt: "", randomQueueSize: 0, randomMatchNavigating: false, randomStatusRestored: false,
+  randomCandidateCount: 0, randomCandidateBucket: "none", randomCandidateLabel: "현재 가능한 상대가 없어요", randomCandidateStatus: "available", randomCandidateFetchedAt: 0,
+  randomTimedOut: false, randomTimeoutBusy: false,
 };
 let toastTimer = null;
 let actionTimer = null;
@@ -655,12 +659,13 @@ async function loadLobby({ silent = false } = {}) {
   if (!silent) els.refreshLobbyButton.disabled = true;
 
   try {
-    const [friendsResult, invitesResult, matchesResult, availabilityResult, profileResult] = await Promise.allSettled([
+    const [friendsResult, invitesResult, matchesResult, availabilityResult, profileResult, randomCandidateResult] = await Promise.allSettled([
       rpc("list_my_garden_friends"),
       rpc("oot_list_my_invites_v2"),
       rpc("oot_list_my_matches_v3", { p_limit: 30 }),
       rpc("oot_list_friend_availability"),
       rpc("oot_get_my_point_profile"),
+      rpc("oot_get_random_candidate_summary"),
     ]);
 
     if (friendsResult.status === "fulfilled") {
@@ -732,6 +737,12 @@ async function loadLobby({ silent = false } = {}) {
       state.pointProfile = null;
       state.lobbyWarnings.push("pointProfile");
       console.warn("OneOfTen point profile load error", profileResult.reason);
+    }
+
+    if (randomCandidateResult.status === "fulfilled") {
+      applyRandomCandidateSummary(randomCandidateResult.value);
+    } else {
+      console.warn("OneOfTen random candidate summary load error", randomCandidateResult.reason);
     }
 
     renderLobby();
@@ -816,6 +827,7 @@ function renderPointSummary() {
 }
 function renderLobby() {
   renderPointSummary();
+  renderRandomCandidateCard();
 
   const incoming = state.invites.filter((item) => item.direction === "incoming");
   const outgoing = state.invites.filter((item) => item.direction === "outgoing");
@@ -1093,41 +1105,155 @@ async function simpleInviteAction(rpcName, inviteId, message, button) {
 }
 
 
+function applyRandomCandidateSummary(summary) {
+  if (!summary || typeof summary !== "object") return;
+  if (summary.serverNow) state.serverOffset = Date.parse(summary.serverNow) - Date.now();
+  state.randomCandidateCount = Math.max(0, Number(summary.candidateCount || 0));
+  state.randomCandidateBucket = String(summary.candidateBucket || "none");
+  state.randomCandidateLabel = String(summary.candidateLabel || "현재 가능한 상대가 없어요");
+  state.randomCandidateStatus = String(summary.status || "available");
+  state.randomCandidateFetchedAt = Date.now();
+  renderRandomCandidateCard();
+  updateRandomWaitingUi();
+}
+
+async function refreshRandomCandidateSummary({ force = false, silent = true } = {}) {
+  if (!state.user || getMatchIdFromUrl()) return null;
+  if (!force && Date.now() - state.randomCandidateFetchedAt < RANDOM_CANDIDATE_REFRESH_MS) return null;
+  try {
+    const summary = await rpc("oot_get_random_candidate_summary");
+    applyRandomCandidateSummary(summary);
+    return summary;
+  } catch (error) {
+    if (!silent) showToast(friendlyError(error));
+    else console.warn("OneOfTen random candidate summary skipped", error);
+    return null;
+  }
+}
+
+function randomCandidateButtonText() {
+  if (state.randomCandidateStatus === "busy") return "진행 중인 경기 확인";
+  if (state.randomMatching) return "상대 찾는 중";
+  if (state.randomCandidateCount === 1) return "지금 있는 상대와 대전";
+  if (state.randomCandidateCount >= 2) return "상대 찾기";
+  return "20초 동안 상대 찾기";
+}
+
+function renderRandomCandidateCard() {
+  if (!els.randomMatchButton) return;
+  const count = Math.max(0, Number(state.randomCandidateCount || 0));
+  const isBusy = state.randomCandidateStatus === "busy";
+  if (els.randomCandidateStatus) {
+    els.randomCandidateStatus.textContent = isBusy
+      ? "이미 진행 중인 경기가 있어요."
+      : state.randomCandidateLabel;
+  }
+  if (els.randomCandidateHint) {
+    els.randomCandidateHint.textContent = isBusy
+      ? "진행 중인 경기를 먼저 마친 뒤 새로운 상대를 찾을 수 있어요."
+      : count === 0
+        ? "지금은 바로 연결할 상대가 없어 최대 20초 동안 확인해요."
+        : count === 1
+          ? "한 명뿐이라 무작위 추첨이 아닌 빠른 대전으로 연결돼요."
+          : "가능한 상대들 가운데 한 명과 연결해요. 같은 상대는 하루 3판까지만 점수가 반영돼요.";
+  }
+  els.randomMatchButton.classList.toggle("is-waiting", state.randomMatching);
+  els.randomMatchButton.disabled = state.randomMatchBusy || isBusy;
+  const label = els.randomMatchButton.querySelector("b");
+  if (label) label.textContent = randomCandidateButtonText();
+  els.randomMatchCard?.classList.toggle("has-candidate", count > 0 && !isBusy);
+  els.randomMatchCard?.classList.toggle("has-one-candidate", count === 1 && !isBusy);
+}
+
 function randomWaitSeconds() {
   const joined = Date.parse(state.randomJoinedAt || "");
-  if (!Number.isFinite(joined)) return 0;
+  if (!Number.isFinite(joined)) return state.randomTimedOut ? RANDOM_SEARCH_LIMIT_SECONDS : 0;
   return Math.max(0, Math.floor((Date.now() + state.serverOffset - joined) / 1000));
 }
 
 function updateRandomWaitingUi() {
   if (!els.randomMatchOverlay) return;
-  const seconds = randomWaitSeconds();
+  const seconds = Math.min(RANDOM_SEARCH_LIMIT_SECONDS, randomWaitSeconds());
   els.randomWaitTime.textContent = seconds < 60 ? `${seconds}초` : `${Math.floor(seconds / 60)}분 ${seconds % 60}초`;
-  els.randomQueueSize.textContent = `${Math.max(1, Number(state.randomQueueSize || 1))}명`;
-  els.randomMatchButton.classList.toggle("is-waiting", state.randomMatching);
-  els.randomMatchButton.disabled = state.randomMatchBusy;
-  els.randomMatchButton.querySelector("b").textContent = state.randomMatching ? "상대 찾는 중" : "랜덤 상대 찾기";
+  els.randomQueueSize.textContent = `${Math.max(0, Number(state.randomCandidateCount || 0))}명`;
+  els.randomRetryMatchButton?.classList.toggle("is-hidden", !state.randomTimedOut);
+  els.cancelRandomMatchButton.textContent = state.randomTimedOut ? "대전 목록으로 돌아가기" : "매칭 취소";
+  renderRandomCandidateCard();
+  if (state.randomMatching && !state.randomTimedOut && seconds >= RANDOM_SEARCH_LIMIT_SECONDS && !state.randomTimeoutBusy) {
+    void expireRandomMatchmakingSearch();
+  }
 }
 
 function showRandomMatchOverlay(message = "같은 시간에 기다리는 사용자를 확인하는 중이에요.") {
   state.randomMatching = true;
+  state.randomTimedOut = false;
+  els.randomMatchOverlay.classList.remove("is-timeout");
+  els.randomMatchWaitingTitle.textContent = "새로운 상대를 찾고 있어요";
   els.randomMatchMessage.textContent = message;
+  els.randomWaitNote.textContent = "최대 20초 동안 확인하고, 상대가 없으면 선택 화면으로 바뀌어요.";
   els.randomMatchOverlay.classList.remove("is-hidden");
   document.body.classList.add("ootf-random-waiting");
   updateRandomWaitingUi();
   if (!state.randomWaitTicker) state.randomWaitTicker = setInterval(updateRandomWaitingUi, 1000);
 }
 
+function showRandomMatchTimeout() {
+  state.randomMatching = false;
+  state.randomTimedOut = true;
+  state.randomJoinedAt = "";
+  stopRandomMatchPolling();
+  if (state.randomWaitTicker) clearInterval(state.randomWaitTicker);
+  state.randomWaitTicker = null;
+  els.randomMatchOverlay.classList.add("is-timeout");
+  els.randomMatchWaitingTitle.textContent = "지금은 만날 수 있는 상대가 없어요";
+  els.randomMatchMessage.textContent = "20초 동안 확인했지만 연결 가능한 상대를 찾지 못했어요.";
+  els.randomWaitNote.textContent = "조금 더 찾아보거나 다람쥐와 연습한 뒤 다시 확인할 수 있어요.";
+  updateRandomWaitingUi();
+}
+
 function hideRandomMatchOverlay({ keepState = false } = {}) {
   els.randomMatchOverlay.classList.add("is-hidden");
+  els.randomMatchOverlay.classList.remove("is-timeout");
   document.body.classList.remove("ootf-random-waiting");
   if (!keepState) {
     state.randomMatching = false;
+    state.randomTimedOut = false;
     state.randomJoinedAt = "";
-    state.randomQueueSize = 1;
+    state.randomQueueSize = 0;
     stopRandomMatchPolling();
   }
+  if (state.randomWaitTicker) clearInterval(state.randomWaitTicker);
+  state.randomWaitTicker = null;
   updateRandomWaitingUi();
+}
+
+async function expireRandomMatchmakingSearch() {
+  if (!state.user || state.randomTimeoutBusy || state.randomMatchNavigating || !state.randomMatching) return;
+  if (state.randomMatchBusy) {
+    window.setTimeout(() => void expireRandomMatchmakingSearch(), 250);
+    return;
+  }
+  state.randomTimeoutBusy = true;
+  try {
+    const status = await rpc("oot_cancel_random_matchmaking");
+    if (status?.status === "matched") {
+      await enterRandomMatchedGame(status);
+      return;
+    }
+    trackOneOfTen("oneoften_random_search_timeout", {
+      mode: "random_point",
+      waited_seconds: RANDOM_SEARCH_LIMIT_SECONDS,
+      candidate_bucket: state.randomCandidateBucket,
+    });
+    await refreshRandomCandidateSummary({ force: true });
+    showRandomMatchTimeout();
+  } catch (error) {
+    console.warn("OneOfTen random timeout cancel error", error);
+    els.randomMatchMessage.textContent = "대기 상태를 정리하지 못했어요. 매칭 취소를 눌러 다시 확인해 주세요.";
+  } finally {
+    state.randomTimeoutBusy = false;
+    updateRandomWaitingUi();
+  }
 }
 
 async function acknowledgeRandomMatch(matchId) {
@@ -1177,11 +1303,13 @@ async function handleRandomMatchStatus(status, { initial = false } = {}) {
     return false;
   }
   if (value === "waiting") {
+    if (state.randomTimeoutBusy || state.randomTimedOut) return false;
     state.randomJoinedAt = status.joinedAt || state.randomJoinedAt || new Date(Date.now() + state.serverOffset).toISOString();
-    state.randomQueueSize = Math.max(1, Number(status.queueSize || 1));
-    showRandomMatchOverlay(Number(state.randomQueueSize) > 1
-      ? "함께 기다리는 사용자가 있어요. 연결을 확인하고 있어요."
-      : "아직 같은 시간에 기다리는 상대가 없어요. 계속 찾아볼게요.");
+    state.randomQueueSize = Math.max(0, Number(status.queueSize || 0));
+    await refreshRandomCandidateSummary({ force: initial || Date.now() - state.randomCandidateFetchedAt >= RANDOM_CANDIDATE_REFRESH_MS });
+    showRandomMatchOverlay(state.randomCandidateCount > 0
+      ? "연결 가능한 상대가 있어요. 경기방 생성을 확인하고 있어요."
+      : "아직 같은 시간에 기다리는 상대가 없어요. 20초 동안 확인할게요.");
     if (!state.randomMatchInterval) {
       state.randomMatchInterval = setInterval(() => joinRandomMatchmaking({ heartbeat: true }), RANDOM_MATCH_POLL_MS);
     }
@@ -1192,14 +1320,19 @@ async function handleRandomMatchStatus(status, { initial = false } = {}) {
 }
 
 async function joinRandomMatchmaking({ heartbeat = false } = {}) {
-  if (!state.user || state.randomMatchBusy || state.randomMatchNavigating || getMatchIdFromUrl()) return;
+  if (!state.user || state.randomMatchBusy || state.randomTimeoutBusy || state.randomMatchNavigating || getMatchIdFromUrl()) return;
   state.randomMatchBusy = true;
   if (!heartbeat) {
     state.randomMatching = true;
-    state.randomJoinedAt ||= new Date(Date.now() + state.serverOffset).toISOString();
+    state.randomTimedOut = false;
+    state.randomJoinedAt = new Date(Date.now() + state.serverOffset).toISOString();
     showRandomMatchOverlay("매칭 대기열에 들어가고 있어요.");
     trackOneOfTen("oneoften_mode_selected", { mode: "random_point" });
-    trackOneOfTenOnce("oneoften_random_matchmaking_started", `random-start-${Date.now()}`, { mode: "random_point" });
+    trackOneOfTenOnce("oneoften_random_matchmaking_started", `random-start-${Date.now()}`, {
+      mode: "random_point",
+      candidate_bucket: state.randomCandidateBucket,
+      candidate_count: Number(state.randomCandidateCount || 0),
+    });
   }
   try {
     const status = await rpc("oot_join_random_matchmaking");
@@ -1222,6 +1355,11 @@ async function joinRandomMatchmaking({ heartbeat = false } = {}) {
 
 async function cancelRandomMatchmaking() {
   if (!state.user || state.randomMatchBusy || state.randomMatchNavigating) return;
+  if (state.randomTimedOut) {
+    hideRandomMatchOverlay();
+    await refreshRandomCandidateSummary({ force: true });
+    return true;
+  }
   state.randomMatchBusy = true;
   els.cancelRandomMatchButton.disabled = true;
   els.cancelRandomMatchButton.textContent = "취소 중…";
@@ -1236,6 +1374,7 @@ async function cancelRandomMatchmaking() {
       waited_seconds: randomWaitSeconds(),
     });
     hideRandomMatchOverlay();
+    await refreshRandomCandidateSummary({ force: true });
     showToast("랜덤 매칭을 취소했어요.");
     return true;
   } catch (error) {
@@ -1941,7 +2080,7 @@ function closeHelp() { els.helpOverlay.classList.add("is-hidden"); }
 function applyViewport() { if (state.match) renderHistory(state.match); }
 
 async function initialize() {
-  console.info("TodayForest OneOfTen Player v1.5.0 · Random matchmaking");
+  console.info("TodayForest OneOfTen Player v1.5.1 · Candidate summary + 20s search");
   showView("loading");
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error || !session?.user) {
@@ -1979,6 +2118,7 @@ els.inviteModeOverlay.addEventListener("click", (event) => { if (event.target ==
 els.casualInviteButton.addEventListener("click", () => createInvite("casual"));
 els.ratedInviteButton.addEventListener("click", () => createInvite("rated"));
 els.randomMatchButton.addEventListener("click", () => joinRandomMatchmaking());
+els.randomRetryMatchButton.addEventListener("click", () => joinRandomMatchmaking());
 els.cancelRandomMatchButton.addEventListener("click", cancelRandomMatchmaking);
 els.randomToSquirrelLink.addEventListener("click", async (event) => {
   if (!state.randomMatching) return;

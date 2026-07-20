@@ -12,7 +12,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="one-of-ten-friend.css?v=1.5.0-random" />
+  <link rel="stylesheet" href="one-of-ten-friend.css?v=1.5.1-candidates" />
   <link rel="stylesheet" href="oot-notifications.css?v=oot-push-v0-5" />
 </head>
 <body>
@@ -73,11 +73,11 @@
       <section class="ootf-random-card" id="randomMatchCard" aria-labelledby="randomMatchTitle">
         <div class="ootf-random-copy">
           <small>RANDOM ONE POINT</small>
-          <h2 id="randomMatchTitle">새로운 상대와 바로 대전</h2>
-          <p>지금 기다리는 모르는 사용자와 원포인트 대전으로 연결해요.</p>
-          <span>같은 상대와 점수가 반영되는 경기는 하루 3판까지예요.</span>
+          <h2 id="randomMatchTitle">새로운 상대와 대전</h2>
+          <p id="randomCandidateStatus" aria-live="polite">현재 가능한 상대를 확인하고 있어요.</p>
+          <span id="randomCandidateHint">본인을 제외하고 실제로 연결 가능한 상대만 표시해요.</span>
         </div>
-        <button id="randomMatchButton" type="button"><span aria-hidden="true">🎲</span><b>랜덤 상대 찾기</b></button>
+        <button id="randomMatchButton" type="button"><span aria-hidden="true">🎲</span><b>상대 확인 중</b></button>
       </section>
 
       <section class="oot-ready-card" aria-label="친구 대전 초대 상태">
@@ -197,9 +197,10 @@
       <p class="ootf-random-wait-message" id="randomMatchMessage">같은 시간에 기다리는 사용자를 확인하는 중이에요.</p>
       <div class="ootf-random-wait-stats">
         <div><small>기다린 시간</small><strong id="randomWaitTime">0초</strong></div>
-        <div><small>현재 대기</small><strong id="randomQueueSize">1명</strong></div>
+        <div><small>가능한 상대</small><strong id="randomQueueSize">0명</strong></div>
       </div>
-      <p class="ootf-random-wait-note">이 화면을 열어둔 동안 연결을 계속 확인해요. 상대가 없으면 다람쥐 대전으로 전환할 수 있어요.</p>
+      <p class="ootf-random-wait-note" id="randomWaitNote">최대 20초 동안 확인하고, 상대가 없으면 선택 화면으로 바뀌어요.</p>
+      <button class="ootf-random-retry is-hidden" id="randomRetryMatchButton" type="button">20초 더 찾아보기</button>
       <button class="ootf-random-cancel" id="cancelRandomMatchButton" type="button">매칭 취소</button>
       <a class="ootf-random-squirrel" id="randomToSquirrelLink" href="one-of-ten.html">🐿️ 다람쥐와 연습 대전하기</a>
     </div>
@@ -354,6 +355,6 @@
 
   <div class="ootf-toast is-hidden" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="oot-notifications.js?v=oot-push-v0-5"></script>
-  <script type="module" src="one-of-ten-friend.js?v=1.5.0-random"></script>
+  <script type="module" src="one-of-ten-friend.js?v=1.5.1-candidates"></script>
 </body>
 </html>
