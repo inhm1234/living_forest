@@ -6130,3 +6130,20 @@ html.shared-tree-start-moment-open body {
 .garden-nav-six { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 
 /* UI menu v3: decorate moved to bottom navigation */
+
+
+/* UI safe pass v1
+   - Keep existing DOM/event bindings.
+   - Only adjust layout; do not remove buttons.
+*/
+.garden-nav-four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* Mobile: allow the existing five menu items to wrap naturally */
+@media (max-width: 600px) {
+  .garden-nav-four {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+}
