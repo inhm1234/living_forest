@@ -6132,18 +6132,23 @@ html.shared-tree-start-moment-open body {
 /* UI menu v3: decorate moved to bottom navigation */
 
 
-/* UI safe pass v1
-   - Keep existing DOM/event bindings.
-   - Only adjust layout; do not remove buttons.
-*/
-.garden-nav-four {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+/* UI SAFE PASS v1 - bottom menu spacing only */
+.garden-nav {
+  gap: 8px;
 }
 
-/* Mobile: allow the existing five menu items to wrap naturally */
-@media (max-width: 600px) {
-  .garden-nav-four {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 8px;
+.garden-nav .nav-action {
+  min-height: 54px;
+}
+
+@media (max-width: 480px) {
+  .garden-nav {
+    gap: 6px;
+  }
+
+  .garden-nav .nav-action {
+    font-size: 12px;
+    padding-left: 4px;
+    padding-right: 4px;
   }
 }
