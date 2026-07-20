@@ -8,6 +8,7 @@ const BADGE_FALLBACK_INTERVAL_MS = 30000;
 const INVITE_ACK_STORAGE_KEY = "todayForestOotAcknowledgedInvites";
 const INVITE_TARGET_STORAGE_KEY = "todayForestOotPendingInvite";
 const INVITE_SUPPRESS_STORAGE_KEY = "todayForestOotSuppressedInvitePopups";
+const IS_PLAYER_MATCH_PAGE = location.pathname.toLowerCase().endsWith("one-of-ten-friend.html");
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: "pkce" },
@@ -500,7 +501,7 @@ function bindGameReadyButton() {
 }
 
 async function initialize() {
-  console.info("TodayForest OneOfTen Notifications v0.5 · Invite Loop Fix");
+  console.info("TodayForest OneOfTen Notifications v0.6 · Player page dedupe");
   bindInviteNavigation();
   bindNotificationButtons();
   bindGameReadyButton();
@@ -516,20 +517,26 @@ async function initialize() {
   await registerServiceWorker().catch((error) => console.warn("TodayForest service worker skipped", error));
   await syncExistingSubscription();
   startPresence();
-  await refreshInvites();
-  await subscribeInvites();
 
-  window.clearInterval(badgeTimer);
-  badgeTimer = window.setInterval(loadBadge, BADGE_FALLBACK_INTERVAL_MS);
+  // 사람 대전 페이지는 자체 로비 Realtime과 초대 UI를 사용하므로
+  // 전역 초대 구독·배지 폴링을 중복 실행하지 않습니다.
+  if (!IS_PLAYER_MATCH_PAGE) {
+    await refreshInvites();
+    await subscribeInvites();
+    window.clearInterval(badgeTimer);
+    badgeTimer = window.setInterval(loadBadge, BADGE_FALLBACK_INTERVAL_MS);
+  }
 
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
       void touchPresence();
-      void refreshInvites();
+      if (!IS_PLAYER_MATCH_PAGE) void refreshInvites();
     }
   });
 
-  window.addEventListener("focus", () => void refreshInvites());
+  if (!IS_PLAYER_MATCH_PAGE) {
+    window.addEventListener("focus", () => void refreshInvites());
+  }
 }
 
 initialize().catch((error) => console.warn("TodayForest notification module skipped", error));

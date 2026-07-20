@@ -8,8 +8,10 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 
 const TURN_LIMIT_MS = 30000;
 const EQUATION_REVEAL_MS = 700;
-const LOBBY_POLL_MS = 10000;
-const MATCH_POLL_MS = 2500;
+const LOBBY_POLL_MS = 15000;
+const MATCH_POLL_MS = 8000;
+const CHAT_POLL_MS = 15000;
+const REALTIME_REFRESH_DEBOUNCE_MS = 200;
 const RANDOM_MATCH_POLL_MS = 3000;
 const RANDOM_SEARCH_LIMIT_SECONDS = 20;
 const RANDOM_CANDIDATE_REFRESH_MS = 6000;
@@ -102,8 +104,10 @@ const state = {
   selectedOperation: null, selectedNumber: null,
   historyExpanded: false, busy: false,
   serverOffset: 0, timeoutResolving: false,
+  activeView: "loading",
   lobbyInterval: null, matchInterval: null, timerInterval: null,
   realtimeChannel: null, inviteRealtimeChannel: null, renderResultForMatchId: null,
+  realtimeRefreshTimer: null, inviteRefreshTimer: null,
   autoOpeningMatchId: null,
   processingInviteIds: new Set(),
   readyCountdownInterval: null,
@@ -117,7 +121,7 @@ const state = {
   randomMatching: false, randomMatchBusy: false, randomMatchInterval: null, randomWaitTicker: null,
   randomJoinedAt: "", randomQueueSize: 0, randomMatchNavigating: false, randomStatusRestored: false,
   randomCandidateCount: 0, randomCandidateBucket: "none", randomCandidateLabel: "현재 가능한 상대가 없어요", randomCandidateStatus: "available", randomCandidateFetchedAt: 0,
-  randomTimedOut: false, randomTimeoutBusy: false,
+  randomTimedOut: false, randomTimeoutBusy: false, randomTimeoutRetryTimer: null,
 };
 let toastTimer = null;
 let actionTimer = null;
@@ -356,8 +360,10 @@ function stopLobbyPolling() { if (state.lobbyInterval) clearInterval(state.lobby
 function stopRandomMatchPolling() {
   if (state.randomMatchInterval) clearInterval(state.randomMatchInterval);
   if (state.randomWaitTicker) clearInterval(state.randomWaitTicker);
+  if (state.randomTimeoutRetryTimer) clearTimeout(state.randomTimeoutRetryTimer);
   state.randomMatchInterval = null;
   state.randomWaitTicker = null;
+  state.randomTimeoutRetryTimer = null;
 }
 function stopMatchPolling() { if (state.matchInterval) clearInterval(state.matchInterval); state.matchInterval = null; }
 function stopTimer() { if (state.timerInterval) clearInterval(state.timerInterval); state.timerInterval = null; }
@@ -366,12 +372,34 @@ function stopReadyCountdown() {
   state.readyCountdownInterval = null;
 }
 async function stopRealtime() {
+  if (state.realtimeRefreshTimer) clearTimeout(state.realtimeRefreshTimer);
+  state.realtimeRefreshTimer = null;
   if (state.realtimeChannel) await supabase.removeChannel(state.realtimeChannel);
   state.realtimeChannel = null;
 }
 async function stopInviteRealtime() {
+  if (state.inviteRefreshTimer) clearTimeout(state.inviteRefreshTimer);
+  state.inviteRefreshTimer = null;
   if (state.inviteRealtimeChannel) await supabase.removeChannel(state.inviteRealtimeChannel);
   state.inviteRealtimeChannel = null;
+}
+
+function scheduleLobbyRefresh() {
+  if (document.hidden || state.activeView !== "lobby" || getMatchIdFromUrl() || state.randomMatching || state.randomTimedOut) return;
+  if (state.inviteRefreshTimer) clearTimeout(state.inviteRefreshTimer);
+  state.inviteRefreshTimer = window.setTimeout(() => {
+    state.inviteRefreshTimer = null;
+    void loadLobby({ silent: true });
+  }, REALTIME_REFRESH_DEBOUNCE_MS);
+}
+
+function scheduleMatchRefresh() {
+  if (document.hidden || state.activeView !== "match" || !getMatchIdFromUrl()) return;
+  if (state.realtimeRefreshTimer) clearTimeout(state.realtimeRefreshTimer);
+  state.realtimeRefreshTimer = window.setTimeout(() => {
+    state.realtimeRefreshTimer = null;
+    void loadMatch({ force: true });
+  }, REALTIME_REFRESH_DEBOUNCE_MS);
 }
 
 
@@ -464,9 +492,12 @@ function stopChatPolling() {
 
 function startChatPolling() {
   stopChatPolling();
+  if (document.hidden || state.activeView !== "match" || !state.chatAvailable || !state.match?.matchId) return;
   state.chatPollInterval = window.setInterval(() => {
-    if (state.chatAvailable && state.match?.matchId) loadMatchChat({ silent: true });
-  }, 5000);
+    if (!document.hidden && state.activeView === "match" && state.chatAvailable && state.match?.matchId) {
+      void loadMatchChat({ silent: true });
+    }
+  }, CHAT_POLL_MS);
 }
 
 async function stopChatRealtime() {
@@ -554,7 +585,12 @@ async function subscribeMatchChat(seriesId) {
 async function prepareMatchChat(match) {
   if (!match?.matchId || !state.user) return;
   if (match.matchSource === "random") {
-    await stopMatchChat({ reset: true });
+    const alreadyDisabled = !state.chatAvailable
+      && !state.chatChannel
+      && !state.chatPollInterval
+      && !state.chatSeriesId
+      && !state.chatCurrentMatchId;
+    if (!alreadyDisabled) await stopMatchChat({ reset: true });
     setChatAvailability(false, "랜덤 대전에서는 자유 채팅을 사용하지 않아요.");
     return;
   }
@@ -563,6 +599,7 @@ async function prepareMatchChat(match) {
   if (els.chatOpponentName) els.chatOpponentName.textContent = match.opponentNickname || "친구";
   if (state.chatSeriesId === seriesId) {
     setChatAvailability(true);
+    if (!state.chatPollInterval) startChatPolling();
     return;
   }
 
@@ -638,6 +675,7 @@ async function sendMatchChat(event) {
 function clearActionTimer() { if (actionTimer) clearTimeout(actionTimer); actionTimer = null; }
 
 function showView(name) {
+  state.activeView = name;
   els.loadingView.classList.toggle("is-hidden", name !== "loading");
   els.loginView.classList.toggle("is-hidden", name !== "login");
   els.lobbyView.classList.toggle("is-hidden", name !== "lobby");
@@ -1185,6 +1223,7 @@ function updateRandomWaitingUi() {
 }
 
 function showRandomMatchOverlay(message = "같은 시간에 기다리는 사용자를 확인하는 중이에요.") {
+  stopLobbyPolling();
   state.randomMatching = true;
   state.randomTimedOut = false;
   els.randomMatchOverlay.classList.remove("is-timeout");
@@ -1225,12 +1264,20 @@ function hideRandomMatchOverlay({ keepState = false } = {}) {
   if (state.randomWaitTicker) clearInterval(state.randomWaitTicker);
   state.randomWaitTicker = null;
   updateRandomWaitingUi();
+  if (!keepState && !document.hidden && state.activeView === "lobby" && !getMatchIdFromUrl()) {
+    startLobbyPolling();
+  }
 }
 
 async function expireRandomMatchmakingSearch() {
   if (!state.user || state.randomTimeoutBusy || state.randomMatchNavigating || !state.randomMatching) return;
   if (state.randomMatchBusy) {
-    window.setTimeout(() => void expireRandomMatchmakingSearch(), 250);
+    if (!state.randomTimeoutRetryTimer) {
+      state.randomTimeoutRetryTimer = window.setTimeout(() => {
+        state.randomTimeoutRetryTimer = null;
+        void expireRandomMatchmakingSearch();
+      }, 250);
+    }
     return;
   }
   state.randomTimeoutBusy = true;
@@ -1421,7 +1468,7 @@ async function openMatch(matchId) {
     return false;
   }
   startMatchPolling();
-  subscribeMatch(normalizedMatchId);
+  await subscribeMatch(normalizedMatchId);
   state.autoOpeningMatchId = null;
   state.rematchNavigating = false;
   return true;
@@ -1446,15 +1493,22 @@ async function loadMatch({ force = false } = {}) {
   matchLoading = true;
   try {
     const previousVersion = state.match?.version;
+    const previousMatchId = extractMatchId(state.match?.matchId);
     const view = await rpc("oot_get_match_view", { p_match_id: matchId });
     const versionChanged = previousVersion === undefined || previousVersion !== view.version;
+    const matchChanged = previousMatchId !== extractMatchId(view.matchId);
     state.match = view;
     if (view.serverNow) state.serverOffset = Date.parse(view.serverNow) - Date.now();
-    void prepareMatchChat(view);
+    if (force || versionChanged || matchChanged) void prepareMatchChat(view);
     if (view.status === "cancelled") {
       showToast(view.finishReason === "waiting_cancelled" ? "상대가 대기방을 나갔어요." : "경기가 취소됐어요.");
       await returnToLobby();
       return false;
+    }
+    if (!force && !versionChanged && !matchChanged) {
+      els.connectionStatus.textContent = "서버와 실시간 연결됨";
+      if (view.nextMatchId) window.setTimeout(() => enterRematchMatch(view), 0);
+      return true;
     }
     if (versionChanged || !["must_play", "opening"].includes(view.phase) || !view.isMyTurn) {
       state.selectedOperation = null;
@@ -1474,21 +1528,36 @@ async function loadMatch({ force = false } = {}) {
     return false;
   } finally { matchLoading = false; }
 }
-function startLobbyPolling() { stopLobbyPolling(); state.lobbyInterval = setInterval(() => loadLobby({ silent: true }), LOBBY_POLL_MS); }
-function startMatchPolling() { stopMatchPolling(); state.matchInterval = setInterval(() => loadMatch(), MATCH_POLL_MS); }
+function startLobbyPolling() {
+  stopLobbyPolling();
+  if (document.hidden || state.activeView !== "lobby" || getMatchIdFromUrl() || state.randomMatching || state.randomTimedOut) return;
+  state.lobbyInterval = setInterval(() => {
+    if (!document.hidden && state.activeView === "lobby" && !getMatchIdFromUrl() && !state.randomMatching && !state.randomTimedOut) {
+      void loadLobby({ silent: true });
+    }
+  }, LOBBY_POLL_MS);
+}
+function startMatchPolling() {
+  stopMatchPolling();
+  if (document.hidden || state.activeView !== "match" || !getMatchIdFromUrl()) return;
+  state.matchInterval = setInterval(() => {
+    if (!document.hidden && state.activeView === "match" && getMatchIdFromUrl()) void loadMatch();
+  }, MATCH_POLL_MS);
+}
 async function subscribeInvites() {
   await stopInviteRealtime();
   if (!state.user) return;
   state.inviteRealtimeChannel = supabase.channel(`oot-invites-${state.user.id}`)
-    .on("postgres_changes", { event: "*", schema: "public", table: "oot_invites" }, () => loadLobby({ silent: true }))
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "oot_matches" }, () => loadLobby({ silent: true }))
+    .on("postgres_changes", { event: "*", schema: "public", table: "oot_invites" }, scheduleLobbyRefresh)
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "oot_matches" }, scheduleLobbyRefresh)
     .subscribe();
 }
-function subscribeMatch(matchId) {
-  stopRealtime();
+async function subscribeMatch(matchId) {
+  await stopRealtime();
+  if (!matchId || !state.user) return;
   state.realtimeChannel = supabase.channel(`oot-friend-${matchId}-${state.user.id}`)
-    .on("postgres_changes", { event: "*", schema: "public", table: "oot_matches", filter: `id=eq.${matchId}` }, () => loadMatch({ force: true }))
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "oot_match_actions", filter: `match_id=eq.${matchId}` }, () => loadMatch({ force: true }))
+    .on("postgres_changes", { event: "*", schema: "public", table: "oot_matches", filter: `id=eq.${matchId}` }, scheduleMatchRefresh)
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "oot_match_actions", filter: `match_id=eq.${matchId}` }, scheduleMatchRefresh)
     .subscribe((status) => { els.connectionStatus.textContent = status === "SUBSCRIBED" ? "서버와 실시간 연결됨" : "연결 확인 중"; });
 }
 
@@ -2080,7 +2149,7 @@ function closeHelp() { els.helpOverlay.classList.add("is-hidden"); }
 function applyViewport() { if (state.match) renderHistory(state.match); }
 
 async function initialize() {
-  console.info("TodayForest OneOfTen Player v1.5.1 · Candidate summary + 20s search");
+  console.info("TodayForest OneOfTen Player v1.5.2 · Polling + realtime optimization");
   showView("loading");
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error || !session?.user) {
@@ -2099,7 +2168,7 @@ async function initialize() {
     await loadMatch({ force: true });
     if (state.match && getMatchIdFromUrl()) {
       startMatchPolling();
-      subscribeMatch(matchId);
+      await subscribeMatch(matchId);
     }
   } else {
     showView("lobby");
@@ -2134,9 +2203,30 @@ els.chatToggleButton.addEventListener("click", () => state.chatOpen ? closeMatch
 window.addEventListener("resize", applyViewport); window.addEventListener("popstate", () => getMatchIdFromUrl() ? openMatch(getMatchIdFromUrl()) : returnToLobby());
 window.addEventListener("oot-game-ready-changed", () => loadLobby({ silent: true }));
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) {
-    if (getMatchIdFromUrl()) { loadMatch({ force: true }); if (state.match?.matchSource !== "random") loadMatchChat({ silent: true }); }
-    else { loadLobby({ silent: true }); if (state.randomMatching) joinRandomMatchmaking({ heartbeat: true }); }
+  if (document.hidden) {
+    stopLobbyPolling();
+    stopMatchPolling();
+    stopChatPolling();
+    return;
+  }
+
+  if (getMatchIdFromUrl()) {
+    void loadMatch({ force: true });
+    startMatchPolling();
+    if (state.match?.matchSource !== "random") {
+      void loadMatchChat({ silent: true });
+      startChatPolling();
+    }
+    return;
+  }
+
+  if (state.randomMatching) {
+    void joinRandomMatchmaking({ heartbeat: true });
+  } else if (!state.randomTimedOut) {
+    void loadLobby({ silent: true });
+    startLobbyPolling();
+  } else {
+    void refreshRandomCandidateSummary({ force: true });
   }
 });
 window.addEventListener("pagehide", () => {
