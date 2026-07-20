@@ -73,6 +73,7 @@ const els = {
   leaveMatchButton: $("#leaveMatchButton"), connectionStatus: $("#connectionStatus"),
   resultOverlay: $("#resultOverlay"), resultSymbol: $("#resultSymbol"), resultTitle: $("#resultTitle"), resultDescription: $("#resultDescription"), resultHistory: $("#resultHistory"), resultValue: $("#resultValue"), myTarget: $("#myTarget"), myDistance: $("#myDistance"), opponentTargetLabel: $("#opponentTargetLabel"), opponentTarget: $("#opponentTarget"), opponentDistance: $("#opponentDistance"), resultRematchBox: $("#resultRematchBox"), resultSeriesStatus: $("#resultSeriesStatus"), resultRematchStatus: $("#resultRematchStatus"), resultRematchButton: $("#resultRematchButton"), resultLobbyButton: $("#resultLobbyButton"), resultGardenLink: $("#resultGardenLink"),
   resultPointPanel: $("#resultPointPanel"), resultPointMode: $("#resultPointMode"), resultPointDelta: $("#resultPointDelta"), resultPointBefore: $("#resultPointBefore"), resultPointAfter: $("#resultPointAfter"), resultPointMessage: $("#resultPointMessage"), resultTierMessage: $("#resultTierMessage"),
+  chatToggleButton: $("#matchChatToggle"), chatUnreadBadge: $("#matchChatUnread"), chatBackdrop: $("#matchChatBackdrop"), chatPanel: $("#matchChatPanel"), chatCloseButton: $("#matchChatClose"), chatOpponentName: $("#matchChatOpponent"), chatMessages: $("#matchChatMessages"), chatEmpty: $("#matchChatEmpty"), chatForm: $("#matchChatForm"), chatInput: $("#matchChatInput"), chatSendButton: $("#matchChatSend"), chatStatus: $("#matchChatStatus"), chatCounter: $("#matchChatCounter"),
   toast: $("#toast"),
 };
 
@@ -96,6 +97,9 @@ const state = {
   readyActionBusy: false,
   rematchBusy: false,
   rematchNavigating: false,
+  chatChannel: null, chatPollInterval: null, chatSeriesId: "", chatCurrentMatchId: "",
+  chatMessages: [], chatLoaded: false, chatOpen: false, chatBusy: false, chatAvailable: false,
+  chatUnread: 0, chatMaxLength: 120,
 };
 let toastTimer = null;
 let actionTimer = null;
@@ -293,6 +297,11 @@ function friendlyError(error) {
     ["OOT_WAITING_MATCH_CANCEL_LOCKED", "카운트다운이 시작되어 대기방을 취소할 수 없어요."],
     ["OOT_REMATCH_NOT_FINISHED", "경기가 끝난 뒤 다시 한 판을 선택할 수 있어요."],
     ["OOT_REMATCH_EXPIRED", "재대전 선택 시간이 지나 대전 목록으로 돌아가야 해요."],
+    ["OOT_CHAT_ROOM_CLOSED", "이 경기방의 채팅 시간이 끝났어요."],
+    ["OOT_CHAT_EMPTY", "메시지를 입력해 주세요."],
+    ["OOT_CHAT_TOO_LONG", "메시지는 120자까지 보낼 수 있어요."],
+    ["OOT_CHAT_TOO_FAST", "조금만 천천히 보내 주세요."],
+    ["OOT_CHAT_RATE_LIMIT", "메시지를 너무 빠르게 보냈어요. 잠시 뒤 다시 시도해 주세요."],
   ];
   return map.find(([key]) => message.includes(key))?.[1] || "잠시 연결이 어긋났어요. 다시 시도해 주세요.";
 }
@@ -337,6 +346,263 @@ async function stopRealtime() {
 async function stopInviteRealtime() {
   if (state.inviteRealtimeChannel) await supabase.removeChannel(state.inviteRealtimeChannel);
   state.inviteRealtimeChannel = null;
+}
+
+
+function normalizeChatMessage(value) {
+  if (!value || typeof value !== "object") return null;
+  const id = Number(value.id || 0);
+  if (!Number.isFinite(id) || id <= 0) return null;
+  return {
+    id,
+    matchId: String(value.matchId || value.match_id || ""),
+    senderId: String(value.senderId || value.sender_id || ""),
+    body: String(value.body || "").trim(),
+    createdAt: value.createdAt || value.created_at || new Date().toISOString(),
+    roundNumber: Math.max(1, Number(value.roundNumber || value.round_number || state.match?.roundNumber || 1)),
+  };
+}
+
+function setChatUnread(count) {
+  state.chatUnread = Math.max(0, Number(count || 0));
+  if (!els.chatUnreadBadge) return;
+  els.chatUnreadBadge.textContent = state.chatUnread > 99 ? "99+" : String(state.chatUnread);
+  els.chatUnreadBadge.classList.toggle("is-hidden", state.chatUnread < 1);
+  els.chatUnreadBadge.setAttribute("aria-label", `읽지 않은 메시지 ${state.chatUnread}개`);
+}
+
+function updateChatCounter() {
+  if (!els.chatInput || !els.chatCounter) return;
+  const length = Array.from(els.chatInput.value || "").length;
+  els.chatCounter.textContent = `${length}/${state.chatMaxLength}`;
+}
+
+function formatChatTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false }).format(date);
+}
+
+function scrollChatToBottom() {
+  if (!els.chatMessages) return;
+  window.requestAnimationFrame(() => { els.chatMessages.scrollTop = els.chatMessages.scrollHeight; });
+}
+
+function renderChatMessages({ scroll = false } = {}) {
+  if (!els.chatMessages || !els.chatEmpty) return;
+  els.chatMessages.replaceChildren();
+  const messages = [...state.chatMessages].sort((a, b) => a.id - b.id);
+  els.chatEmpty.classList.toggle("is-hidden", messages.length > 0);
+  els.chatMessages.classList.toggle("is-hidden", messages.length < 1);
+
+  let previousRound = null;
+  messages.forEach((message) => {
+    if (message.roundNumber !== previousRound) {
+      const divider = document.createElement("div");
+      divider.className = "ootf-chat-round";
+      divider.textContent = `${message.roundNumber}번째 판`;
+      els.chatMessages.append(divider);
+      previousRound = message.roundNumber;
+    }
+
+    const item = document.createElement("article");
+    item.className = `ootf-chat-message${message.senderId === String(state.user?.id || "") ? " is-mine" : ""}`;
+    item.dataset.messageId = String(message.id);
+    const bubble = document.createElement("p");
+    bubble.textContent = message.body;
+    const time = document.createElement("time");
+    time.dateTime = String(message.createdAt || "");
+    time.textContent = formatChatTime(message.createdAt);
+    item.append(bubble, time);
+    els.chatMessages.append(item);
+  });
+
+  if (scroll) scrollChatToBottom();
+}
+
+function setChatAvailability(available, statusText = "") {
+  state.chatAvailable = Boolean(available);
+  if (!els.chatToggleButton) return;
+  els.chatToggleButton.classList.toggle("is-hidden", !state.chatAvailable);
+  els.chatToggleButton.disabled = !state.chatAvailable;
+  els.chatInput.disabled = !state.chatAvailable || state.chatBusy;
+  els.chatSendButton.disabled = !state.chatAvailable || state.chatBusy;
+  if (statusText) els.chatStatus.textContent = statusText;
+  if (!state.chatAvailable) closeMatchChat();
+}
+
+function stopChatPolling() {
+  if (state.chatPollInterval) window.clearInterval(state.chatPollInterval);
+  state.chatPollInterval = null;
+}
+
+function startChatPolling() {
+  stopChatPolling();
+  state.chatPollInterval = window.setInterval(() => {
+    if (state.chatAvailable && state.match?.matchId) loadMatchChat({ silent: true });
+  }, 5000);
+}
+
+async function stopChatRealtime() {
+  if (state.chatChannel) await supabase.removeChannel(state.chatChannel);
+  state.chatChannel = null;
+}
+
+async function stopMatchChat({ reset = true } = {}) {
+  stopChatPolling();
+  await stopChatRealtime();
+  closeMatchChat();
+  setChatAvailability(false);
+  if (reset) {
+    state.chatSeriesId = "";
+    state.chatCurrentMatchId = "";
+    state.chatMessages = [];
+    state.chatLoaded = false;
+    setChatUnread(0);
+    renderChatMessages();
+  }
+}
+
+function appendChatMessage(raw, { countUnread = true, scroll = true } = {}) {
+  const message = normalizeChatMessage(raw);
+  if (!message || !message.body || state.chatMessages.some((item) => item.id === message.id)) return false;
+  state.chatMessages.push(message);
+  state.chatMessages.sort((a, b) => a.id - b.id);
+  if (state.chatMessages.length > 100) state.chatMessages = state.chatMessages.slice(-100);
+  const fromOpponent = message.senderId !== String(state.user?.id || "");
+  if (countUnread && fromOpponent && !state.chatOpen) setChatUnread(state.chatUnread + 1);
+  renderChatMessages({ scroll: scroll && (state.chatOpen || !fromOpponent) });
+  return true;
+}
+
+async function loadMatchChat({ silent = false } = {}) {
+  const matchId = String(state.match?.matchId || state.chatCurrentMatchId || "");
+  if (!matchId || !state.user) return false;
+  try {
+    const result = await rpc("oot_list_match_chat", { p_match_id: matchId, p_limit: 80 });
+    const messages = normalizeRows(result?.messages).map(normalizeChatMessage).filter(Boolean);
+    const existingIds = new Set(state.chatMessages.map((item) => item.id));
+    const wasLoaded = state.chatLoaded;
+    const newOpponentCount = wasLoaded && !state.chatOpen
+      ? messages.filter((item) => !existingIds.has(item.id) && item.senderId !== String(state.user.id)).length
+      : 0;
+    state.chatMessages = messages.sort((a, b) => a.id - b.id);
+    state.chatLoaded = true;
+    state.chatMaxLength = Math.max(1, Number(result?.maxLength || 120));
+    els.chatInput.maxLength = state.chatMaxLength;
+    if (newOpponentCount) setChatUnread(state.chatUnread + newOpponentCount);
+    setChatAvailability(true, state.chatChannel ? "실시간으로 연결되어 있어요." : "채팅 내용을 불러왔어요.");
+    renderChatMessages({ scroll: state.chatOpen });
+    updateChatCounter();
+    return true;
+  } catch (error) {
+    const message = String(error?.message || error || "");
+    if (message.includes("OOT_CHAT_ROOM_CLOSED") || message.includes("OOT_MATCH_NOT_FOUND")) {
+      setChatAvailability(false, "이 경기방의 채팅 시간이 끝났어요.");
+    } else if (!silent) {
+      showToast(friendlyError(error));
+      els.chatStatus.textContent = "채팅 연결을 다시 확인하고 있어요.";
+    }
+    return false;
+  }
+}
+
+async function subscribeMatchChat(seriesId) {
+  await stopChatRealtime();
+  if (!seriesId || !state.user) return;
+  state.chatChannel = supabase.channel(`oot-match-chat-${seriesId}-${state.user.id}`)
+    .on("postgres_changes", {
+      event: "INSERT",
+      schema: "public",
+      table: "oot_match_chat_messages",
+      filter: `series_id=eq.${seriesId}`,
+    }, (payload) => appendChatMessage(payload.new, { countUnread: true, scroll: true }))
+    .subscribe((status) => {
+      if (!els.chatStatus) return;
+      els.chatStatus.textContent = status === "SUBSCRIBED"
+        ? "실시간으로 연결되어 있어요."
+        : "실시간 연결을 확인하고 있어요.";
+    });
+}
+
+async function prepareMatchChat(match) {
+  if (!match?.matchId || !state.user) return;
+  const seriesId = String(match.seriesId || match.matchId);
+  state.chatCurrentMatchId = String(match.matchId);
+  if (els.chatOpponentName) els.chatOpponentName.textContent = match.opponentNickname || "친구";
+  if (state.chatSeriesId === seriesId) {
+    setChatAvailability(true);
+    return;
+  }
+
+  await stopMatchChat({ reset: true });
+  state.chatSeriesId = seriesId;
+  state.chatCurrentMatchId = String(match.matchId);
+  setChatAvailability(true, "채팅방을 연결하고 있어요.");
+  await subscribeMatchChat(seriesId);
+  await loadMatchChat({ silent: true });
+  startChatPolling();
+}
+
+async function openMatchChat() {
+  if (!state.chatAvailable) return;
+  state.chatOpen = true;
+  els.chatPanel.classList.remove("is-hidden");
+  els.chatBackdrop.classList.remove("is-hidden");
+  els.chatPanel.setAttribute("aria-hidden", "false");
+  els.chatBackdrop.setAttribute("aria-hidden", "false");
+  els.chatToggleButton.setAttribute("aria-expanded", "true");
+  document.body.classList.add("ootf-chat-open");
+  setChatUnread(0);
+  if (!state.chatLoaded) await loadMatchChat();
+  renderChatMessages({ scroll: true });
+  trackOneOfTenOnce("oneoften_chat_open", `chat-open-${state.chatSeriesId}-${state.match?.matchId || ""}`, {
+    mode: analyticsBattleMode(state.match?.battleMode),
+    round_number: Number(state.match?.roundNumber || 1),
+  });
+  window.setTimeout(() => els.chatInput?.focus(), 80);
+}
+
+function closeMatchChat() {
+  state.chatOpen = false;
+  els.chatPanel?.classList.add("is-hidden");
+  els.chatBackdrop?.classList.add("is-hidden");
+  els.chatPanel?.setAttribute("aria-hidden", "true");
+  els.chatBackdrop?.setAttribute("aria-hidden", "true");
+  els.chatToggleButton?.setAttribute("aria-expanded", "false");
+  document.body.classList.remove("ootf-chat-open");
+}
+
+async function sendMatchChat(event) {
+  event?.preventDefault();
+  const body = String(els.chatInput?.value || "").trim();
+  if (!body || !state.chatAvailable || state.chatBusy || !state.match?.matchId) return;
+  state.chatBusy = true;
+  els.chatInput.disabled = true;
+  els.chatSendButton.disabled = true;
+  els.chatSendButton.textContent = "전송 중";
+  try {
+    const message = await rpc("oot_send_match_chat", { p_match_id: state.match.matchId, p_body: body });
+    appendChatMessage(message, { countUnread: false, scroll: true });
+    els.chatInput.value = "";
+    updateChatCounter();
+    trackOneOfTen("oneoften_chat_message_sent", {
+      mode: analyticsBattleMode(state.match.battleMode),
+      round_number: Number(state.match.roundNumber || 1),
+      message_length: Array.from(body).length,
+    });
+  } catch (error) {
+    showToast(friendlyError(error));
+    if (String(error?.message || "").includes("OOT_CHAT_ROOM_CLOSED")) {
+      setChatAvailability(false, "이 경기방의 채팅 시간이 끝났어요.");
+    }
+  } finally {
+    state.chatBusy = false;
+    els.chatInput.disabled = !state.chatAvailable;
+    els.chatSendButton.disabled = !state.chatAvailable;
+    els.chatSendButton.textContent = "보내기";
+    if (state.chatAvailable) els.chatInput.focus();
+  }
 }
 function clearActionTimer() { if (actionTimer) clearTimeout(actionTimer); actionTimer = null; }
 
@@ -821,7 +1087,7 @@ async function openMatch(matchId) {
   return true;
 }
 async function returnToLobby() {
-  clearActionTimer(); stopTimer(); stopReadyCountdown(); stopMatchPolling(); await stopRealtime();
+  clearActionTimer(); stopTimer(); stopReadyCountdown(); stopMatchPolling(); await stopRealtime(); await stopMatchChat();
   state.match = null; state.selectedOperation = null; state.selectedNumber = null; state.renderResultForMatchId = null;
   state.readyStartRequested = false; state.readyActionBusy = false; state.rematchBusy = false; state.rematchNavigating = false;
   els.matchReadyOverlay.classList.add("is-hidden");
@@ -842,6 +1108,7 @@ async function loadMatch({ force = false } = {}) {
     const versionChanged = previousVersion === undefined || previousVersion !== view.version;
     state.match = view;
     if (view.serverNow) state.serverOffset = Date.parse(view.serverNow) - Date.now();
+    void prepareMatchChat(view);
     if (view.status === "cancelled") {
       showToast(view.finishReason === "waiting_cancelled" ? "상대가 대기방을 나갔어요." : "경기가 취소됐어요.");
       await returnToLobby();
@@ -915,6 +1182,7 @@ async function requestMatchStart() {
     const view = await rpc("oot_start_match_if_due", { p_match_id: match.matchId });
     state.match = view;
     if (view.serverNow) state.serverOffset = Date.parse(view.serverNow) - Date.now();
+    void prepareMatchChat(view);
     // 서버 시각상 아직 3초가 지나지 않았다면 다음 틱에서 다시 시도합니다.
     state.readyStartRequested = !isWaitingMatch(view);
     renderMatch();
@@ -997,6 +1265,7 @@ async function toggleMatchReady() {
     });
     state.match = view;
     if (view.serverNow) state.serverOffset = Date.parse(view.serverNow) - Date.now();
+    void prepareMatchChat(view);
     state.readyActionBusy = false;
     renderMatch();
   } catch (error) {
@@ -1382,6 +1651,7 @@ async function requestRematch() {
     });
     state.match = view;
     if (view.serverNow) state.serverOffset = Date.parse(view.serverNow) - Date.now();
+    void prepareMatchChat(view);
     renderRematchState(view);
     if (view.nextMatchId) await enterRematchMatch(view);
   } catch (error) {
@@ -1457,7 +1727,7 @@ function closeHelp() { els.helpOverlay.classList.add("is-hidden"); }
 function applyViewport() { if (state.match) renderHistory(state.match); }
 
 async function initialize() {
-  console.info("TodayForest OneOfTen Friend v1.3.0 · Same-room rematch");
+  console.info("TodayForest OneOfTen Friend v1.4.0 · Match-room chat");
   showView("loading");
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error || !session?.user) {
@@ -1497,9 +1767,10 @@ els.refreshLobbyButton.addEventListener("click", () => loadLobby()); els.history
 els.selectedOperation.addEventListener("click", cancelOperation); els.stopButton.addEventListener("click", stopMatch); els.drawButton.addEventListener("click", drawCard);
 els.matchReadyButton.addEventListener("click", toggleMatchReady); els.cancelWaitingMatchButton.addEventListener("click", cancelWaitingMatch);
 els.leaveMatchButton.addEventListener("click", leaveCurrentMatch); els.resultRematchButton.addEventListener("click", requestRematch); els.resultLobbyButton.addEventListener("click", leaveResultToLobby); els.resultGardenLink.addEventListener("click", leaveResultToGarden);
+els.chatToggleButton.addEventListener("click", () => state.chatOpen ? closeMatchChat() : openMatchChat()); els.chatCloseButton.addEventListener("click", closeMatchChat); els.chatBackdrop.addEventListener("click", closeMatchChat); els.chatForm.addEventListener("submit", sendMatchChat); els.chatInput.addEventListener("input", updateChatCounter);
 window.addEventListener("resize", applyViewport); window.addEventListener("popstate", () => getMatchIdFromUrl() ? openMatch(getMatchIdFromUrl()) : returnToLobby());
 window.addEventListener("oot-game-ready-changed", () => loadLobby({ silent: true }));
-document.addEventListener("visibilitychange", () => { if (!document.hidden) getMatchIdFromUrl() ? loadMatch({ force: true }) : loadLobby({ silent: true }); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { if (getMatchIdFromUrl()) { loadMatch({ force: true }); loadMatchChat({ silent: true }); } else loadLobby({ silent: true }); } });
 window.addEventListener("pagehide", () => {
   if (state.match && !currentMatchIsFinished()) {
     trackOneOfTen("oneoften_game_exit", {
@@ -1511,6 +1782,6 @@ window.addEventListener("pagehide", () => {
     });
   }
 });
-window.addEventListener("beforeunload", () => { stopLobbyPolling(); stopMatchPolling(); stopTimer(); stopReadyCountdown(); stopRealtime(); stopInviteRealtime(); });
+window.addEventListener("beforeunload", () => { stopLobbyPolling(); stopMatchPolling(); stopTimer(); stopReadyCountdown(); stopRealtime(); stopInviteRealtime(); stopMatchChat(); });
 
 initialize();

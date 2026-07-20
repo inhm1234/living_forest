@@ -12,7 +12,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="one-of-ten-friend.css?v=1.3.0-rematch" />
+  <link rel="stylesheet" href="one-of-ten-friend.css?v=1.4.0-chat" />
   <link rel="stylesheet" href="oot-notifications.css?v=oot-push-v0-5" />
 </head>
 <body>
@@ -252,6 +252,7 @@
         <li>화면을 나갔다 돌아와도 진행 중인 경기로 다시 들어갈 수 있어요.</li>
         <li>편한 대전은 점수 변화가 없고, 원포인트 대전은 같은 친구와 하루 3판까지 반영돼요.</li>
         <li>한 판이 끝난 뒤 두 사람이 모두 다시 한 판을 선택하면 초대와 로비 이동 없이 같은 방에서 이어져요.</li>
+        <li>경기 중 말풍선 버튼을 누르면 이 대전방의 친구와만 실시간으로 대화할 수 있어요.</li>
       </ol>
       <button class="ootf-modal-confirm" id="helpConfirmButton" type="button">알겠어요</button>
     </div>
@@ -291,8 +292,41 @@
     </div>
   </section>
 
+
+  <button class="ootf-chat-toggle is-hidden" id="matchChatToggle" type="button" aria-controls="matchChatPanel" aria-expanded="false">
+    <span aria-hidden="true">💬</span>
+    <b>대화</b>
+    <em class="is-hidden" id="matchChatUnread" aria-label="읽지 않은 메시지 0개">0</em>
+  </button>
+
+  <div class="ootf-chat-backdrop is-hidden" id="matchChatBackdrop" aria-hidden="true"></div>
+  <aside class="ootf-chat-panel is-hidden" id="matchChatPanel" aria-label="경기방 실시간 채팅" aria-hidden="true">
+    <header class="ootf-chat-head">
+      <div>
+        <small>MATCH ROOM CHAT</small>
+        <strong><span id="matchChatOpponent">친구</span>님과 대화</strong>
+      </div>
+      <button id="matchChatClose" type="button" aria-label="채팅 닫기">×</button>
+    </header>
+    <p class="ootf-chat-room-note">이 연속 대전방의 두 사람에게만 보여요. 다음 판으로 이어져도 대화가 유지돼요.</p>
+    <div class="ootf-chat-messages" id="matchChatMessages" role="log" aria-live="polite" aria-relevant="additions text"></div>
+    <div class="ootf-chat-empty" id="matchChatEmpty">
+      <span>🍃</span>
+      <strong>아직 대화가 없어요.</strong>
+      <p>가볍게 인사를 건네보세요.</p>
+    </div>
+    <form class="ootf-chat-form" id="matchChatForm">
+      <label for="matchChatInput">메시지</label>
+      <div>
+        <input id="matchChatInput" type="text" maxlength="120" autocomplete="off" enterkeyhint="send" placeholder="메시지를 입력해 주세요" />
+        <button id="matchChatSend" type="submit">보내기</button>
+      </div>
+      <p><span id="matchChatStatus">채팅방을 연결하고 있어요.</span><b id="matchChatCounter">0/120</b></p>
+    </form>
+  </aside>
+
   <div class="ootf-toast is-hidden" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="oot-notifications.js?v=oot-push-v0-5"></script>
-  <script type="module" src="one-of-ten-friend.js?v=1.3.0-rematch"></script>
+  <script type="module" src="one-of-ten-friend.js?v=1.4.0-chat"></script>
 </body>
 </html>
