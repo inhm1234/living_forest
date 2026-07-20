@@ -6128,3 +6128,5 @@ html.shared-tree-start-moment-open body {
 
 /* special friend menu layout v2 */
 .garden-nav-six { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+/* UI menu v3: decorate moved to bottom navigation */
