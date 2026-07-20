@@ -220,6 +220,28 @@
   let personalityIntroTimeout = null;
   let pregameCountdownInterval = null;
   let lastPersonalityKey = null;
+  let activeGameStarted = false;
+  let activeGameCompleted = false;
+  let gameRunNumber = 0;
+
+  function trackOneOfTen(eventName, params = {}) {
+    if (typeof window.trackTodayForestEvent === "function") {
+      window.trackTodayForestEvent(eventName, params);
+    }
+  }
+
+  function trackActiveGameExit(exitReason) {
+    if (!activeGameStarted || activeGameCompleted || !state) return;
+    trackOneOfTen("oneoften_game_exit", {
+      mode: "squirrel",
+      difficulty: state.difficulty || selectedDifficulty,
+      opponent_personality: state.aiPersonality || "unknown",
+      exit_reason: exitReason,
+      game_phase: state.phase || "unknown",
+      run_number: gameRunNumber,
+    });
+    activeGameStarted = false;
+  }
 
   function shuffle(values) {
     const result = [...values];
@@ -348,6 +370,9 @@
   }
 
   function resetGame({ deferOpening = false } = {}) {
+    trackActiveGameExit("restart");
+    activeGameStarted = false;
+    activeGameCompleted = false;
     clearHumanTimer();
     clearPendingTimeout();
     clearPersonalityIntroTimeout();
@@ -883,14 +908,17 @@
 
     let title = "무승부예요";
     let symbol = "🤝";
+    let result = "draw";
     let description = `${state.pendingShowdownReason} 두 카드가 최종 결과값 ${state.currentValue}에서 같은 거리였어요.`;
     let reaction = personality.result.draw;
     if (humanDistance < aiDistance) {
+      result = "win";
       title = "당신이 이겼어요";
       symbol = "🏆";
       description = `${state.pendingShowdownReason} 남은 카드를 펼쳐 보니 내 카드가 최종 결과값 ${state.currentValue}에 더 가까웠어요.`;
       reaction = personality.result.humanWin;
     } else if (humanDistance > aiDistance) {
+      result = "lose";
       title = `${personality.name}가 이겼어요`;
       symbol = "🐿️";
       description = `${state.pendingShowdownReason} 남은 카드를 펼쳐 보니 ${personality.name}의 카드가 최종 결과값 ${state.currentValue}에 더 가까웠어요.`;
@@ -910,6 +938,17 @@
     renderResultHistory();
     render();
     els.resultOverlay.classList.remove("is-hidden");
+
+    activeGameCompleted = true;
+    trackOneOfTen("oneoften_game_complete", {
+      mode: "squirrel",
+      difficulty: state.difficulty || selectedDifficulty,
+      result,
+      opponent_personality: state.aiPersonality || "unknown",
+      exact_hit: humanDistance === 0 || aiDistance === 0,
+      operations_used: state.history.filter((item) => item.type !== "opening").length,
+      run_number: gameRunNumber,
+    });
   }
 
   function toggleResultDifficulty() {
@@ -949,6 +988,17 @@
         state.humanHand.push(drawCard(), drawCard());
         state.aiHand.push(drawCard(), drawCard());
       }
+      if (!activeGameStarted) {
+        gameRunNumber += 1;
+        activeGameStarted = true;
+        activeGameCompleted = false;
+        trackOneOfTen("oneoften_game_start", {
+          mode: "squirrel",
+          difficulty: state.difficulty || selectedDifficulty,
+          opponent_personality: state.aiPersonality || "unknown",
+          run_number: gameRunNumber,
+        });
+      }
       els.introOverlay.classList.add("is-hidden");
       els.introDifficultyButtons.forEach((button) => { button.disabled = false; });
       render();
@@ -978,6 +1028,7 @@
 
 
   function enterComputerMode() {
+    trackOneOfTen("oneoften_mode_selected", { mode: "squirrel" });
     els.modeGate.classList.add("is-hidden");
     els.computerGameArea.classList.remove("is-hidden");
     els.modeBadge.textContent = "다람쥐 대전";
@@ -990,6 +1041,9 @@
   function closeRules() { els.rulesModal.classList.add("is-hidden"); }
 
   els.computerModeButton.addEventListener("click", enterComputerMode);
+  $$('a[href^="one-of-ten-friend.html"]').forEach((link) => {
+    link.addEventListener("click", () => trackOneOfTen("oneoften_mode_selected", { mode: "friend" }));
+  });
   els.difficultyButtons.forEach((button) => button.addEventListener("click", () => setDifficulty(button.dataset.difficulty)));
   els.introDifficultyButtons.forEach((button) => {
     button.addEventListener("click", () => setIntroDifficulty(button.dataset.introDifficulty));
@@ -1016,7 +1070,22 @@
     if (!document.hidden && isHumanTimedPhase()) updateHumanTimer();
   });
   window.addEventListener("resize", applyViewportMode);
+  window.addEventListener("pagehide", () => {
+    if (activeGameStarted && !activeGameCompleted && state) {
+      trackOneOfTen("oneoften_game_exit", {
+        mode: "squirrel",
+        difficulty: state.difficulty || selectedDifficulty,
+        opponent_personality: state.aiPersonality || "unknown",
+        exit_reason: "page_leave",
+        game_phase: state.phase || "unknown",
+        run_number: gameRunNumber,
+        transport_type: "beacon",
+      });
+      activeGameStarted = false;
+    }
+  });
 
+  trackOneOfTen("oneoften_lobby_open", { lobby_type: "mode_gate" });
   applyViewportMode();
   resetGame({ deferOpening: true });
   els.modeGate.classList.remove("is-hidden");

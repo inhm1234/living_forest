@@ -26,6 +26,24 @@ const TIER_LABELS = {
   one_of_ten_master: "원오브텐 장인",
   forest_keeper: "숫자의 숲지기",
 };
+function trackOneOfTen(eventName, params = {}) {
+  if (typeof window.trackTodayForestEvent === "function") {
+    window.trackTodayForestEvent(eventName, params);
+  }
+}
+
+function trackOneOfTenOnce(eventName, dedupeKey, params = {}) {
+  if (typeof window.trackTodayForestEventOnce === "function") {
+    return window.trackTodayForestEventOnce(eventName, dedupeKey, params);
+  }
+  trackOneOfTen(eventName, params);
+  return true;
+}
+
+function analyticsBattleMode(mode) {
+  return mode === "rated" ? "friend_point" : "friend_casual";
+}
+
 const TIER_START_POINTS = {
   number_seed: 0,
   calculation_sprout: 30,
@@ -657,6 +675,7 @@ async function createInvite(mode) {
   const friendId = state.inviteTargetFriendId;
   if (!friendId || !["casual", "rated"].includes(mode)) return;
 
+  trackOneOfTen("oneoften_mode_selected", { mode: analyticsBattleMode(mode) });
   els.casualInviteButton.disabled = true;
   els.ratedInviteButton.disabled = true;
   if (state.inviteTargetButton) state.inviteTargetButton.disabled = true;
@@ -671,6 +690,11 @@ async function createInvite(mode) {
       ? "휴대폰 알림도 함께 준비했어요."
       : "친구 화면에 바로 표시돼요.";
     closeInviteMode();
+    trackOneOfTen("oneoften_friend_invite_sent", {
+      mode: analyticsBattleMode(mode),
+      delivery: availability.has_push && ["away", "offline"].includes(availability.availability) ? "push" : "in_app",
+      friend_availability: availability.availability || "unknown",
+    });
     showToast(`${battleModeLabel(mode)} 초대를 보냈어요. ${deliveryMessage}`);
     await loadLobby({ silent: true });
   } catch (error) {
@@ -720,6 +744,9 @@ async function acceptInvite(inviteId, button, battleMode = "casual") {
     showToast(`${battleModeLabel(battleMode)}이 시작됐어요.`);
     const opened = await openMatch(matchId);
     if (!opened) throw new Error("OOT_MATCH_START_FAILED");
+    trackOneOfTenOnce("oneoften_friend_invite_accepted", `invite-${normalizedInviteId}`, {
+      mode: analyticsBattleMode(battleMode),
+    });
   } catch (error) {
     console.warn("OneOfTen accept invite error", error);
 
@@ -727,7 +754,12 @@ async function acceptInvite(inviteId, button, battleMode = "casual") {
       const activeMatch = await findActiveMatchWithRetry(opponentId, 2);
       const activeMatchId = extractMatchId(activeMatch);
       if (activeMatchId && await openMatch(activeMatchId)) {
-        showToast(`${battleModeLabel(activeMatch?.battle_mode || battleMode)}이 시작됐어요.`);
+        const recoveredMode = activeMatch?.battle_mode || battleMode;
+        trackOneOfTenOnce("oneoften_friend_invite_accepted", `invite-${normalizedInviteId}`, {
+          mode: analyticsBattleMode(recoveredMode),
+          recovered: true,
+        });
+        showToast(`${battleModeLabel(recoveredMode)}이 시작됐어요.`);
         return;
       }
     } catch (recoveryError) {
@@ -790,6 +822,7 @@ async function returnToLobby() {
   state.autoOpeningMatchId = null;
   els.resultOverlay.classList.add("is-hidden");
   setMatchUrl(""); showView("lobby");
+  trackOneOfTen("oneoften_lobby_open", { lobby_type: "friend", return_from_match: true });
   await loadLobby(); startLobbyPolling(); subscribeInvites();
 }
 
@@ -971,6 +1004,11 @@ async function cancelWaitingMatch() {
   renderReadyRoom(match);
   try {
     await rpc("oot_cancel_waiting_match", { p_match_id: match.matchId });
+    trackOneOfTen("oneoften_game_exit", {
+      mode: analyticsBattleMode(match.battleMode),
+      exit_reason: "waiting_cancel",
+      game_state: "waiting",
+    });
     showToast("대기방을 나왔어요.");
     await returnToLobby();
   } catch (error) {
@@ -985,12 +1023,26 @@ async function leaveCurrentMatch() {
     await cancelWaitingMatch();
     return;
   }
+  if (state.match && !currentMatchIsFinished()) {
+    trackOneOfTen("oneoften_game_exit", {
+      mode: analyticsBattleMode(state.match.battleMode),
+      exit_reason: "lobby_button",
+      game_state: isWaitingMatch(state.match) ? "waiting" : "active",
+      game_phase: state.match.phase || "unknown",
+    });
+  }
   await returnToLobby();
 }
 
 function renderMatch() {
   if (!state.match) return;
   const match = state.match;
+  if (match.status === "active" && !isWaitingMatch(match) && !currentMatchIsFinished()) {
+    trackOneOfTenOnce("oneoften_game_start", `friend-start-${match.matchId}`, {
+      mode: analyticsBattleMode(match.battleMode),
+      starting_role: match.isMyTurn && match.phase === "opening" ? "first" : "participant",
+    });
+  }
   renderReadyRoom(match);
   renderOpponent(match); renderHistory(match); renderArena(match); renderOperations(match); renderActions(match); renderHand(match); renderTimer(match);
   if (currentMatchIsFinished() && state.renderResultForMatchId !== match.matchId) { state.renderResultForMatchId = match.matchId; renderResult(match); }
@@ -1224,6 +1276,16 @@ function renderResult(match) {
   }).join("");
   renderPointResult(match);
   els.resultOverlay.classList.remove("is-hidden");
+
+  const result = draw ? "draw" : won ? "win" : "lose";
+  const pointResult = match.pointResult || null;
+  trackOneOfTenOnce("oneoften_game_complete", `friend-complete-${match.matchId}`, {
+    mode: analyticsBattleMode(match.battleMode),
+    result,
+    exact_hit: Number(match.myDistance) === 0 || Number(match.opponentDistance) === 0,
+    point_applied: Boolean(match.battleMode === "rated" && pointResult && pointResult.resultType !== "ineligible"),
+    finish_reason: match.finishReason || "normal",
+  });
 }
 
 function openHelp() { els.helpOverlay.classList.remove("is-hidden"); }
@@ -1234,7 +1296,11 @@ async function initialize() {
   console.info("TodayForest OneOfTen Friend v1.2.0 · Ready Room");
   showView("loading");
   const { data: { session }, error } = await supabase.auth.getSession();
-  if (error || !session?.user) { showView("login"); return; }
+  if (error || !session?.user) {
+    trackOneOfTen("oneoften_lobby_open", { lobby_type: "friend", login_state: "signed_out" });
+    showView("login");
+    return;
+  }
   state.user = session.user;
   const requestedInviteId = getInviteIdFromUrl();
   if (requestedInviteId) {
@@ -1250,6 +1316,7 @@ async function initialize() {
     }
   } else {
     showView("lobby");
+    trackOneOfTen("oneoften_lobby_open", { lobby_type: "friend", login_state: "signed_in" });
     await loadLobby();
     startLobbyPolling();
     subscribeInvites();
@@ -1269,6 +1336,17 @@ els.leaveMatchButton.addEventListener("click", leaveCurrentMatch); els.resultLob
 window.addEventListener("resize", applyViewport); window.addEventListener("popstate", () => getMatchIdFromUrl() ? openMatch(getMatchIdFromUrl()) : returnToLobby());
 window.addEventListener("oot-game-ready-changed", () => loadLobby({ silent: true }));
 document.addEventListener("visibilitychange", () => { if (!document.hidden) getMatchIdFromUrl() ? loadMatch({ force: true }) : loadLobby({ silent: true }); });
+window.addEventListener("pagehide", () => {
+  if (state.match && !currentMatchIsFinished()) {
+    trackOneOfTen("oneoften_game_exit", {
+      mode: analyticsBattleMode(state.match.battleMode),
+      exit_reason: "page_leave",
+      game_state: isWaitingMatch(state.match) ? "waiting" : "active",
+      game_phase: state.match.phase || "unknown",
+      transport_type: "beacon",
+    });
+  }
+});
 window.addEventListener("beforeunload", () => { stopLobbyPolling(); stopMatchPolling(); stopTimer(); stopReadyCountdown(); stopRealtime(); stopInviteRealtime(); });
 
 initialize();
