@@ -9,8 +9,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 const TURN_LIMIT_MS = 30000;
 const EQUATION_REVEAL_MS = 700;
 const LOBBY_POLL_MS = 15000;
-const MATCH_POLL_MS = 8000;
-const CHAT_POLL_MS = 15000;
+const MATCH_POLL_MS = 2500;
+const CHAT_POLL_MS = 5000;
 const REALTIME_REFRESH_DEBOUNCE_MS = 200;
 const RANDOM_MATCH_POLL_MS = 3000;
 const RANDOM_SEARCH_LIMIT_SECONDS = 20;
@@ -2149,7 +2149,7 @@ function closeHelp() { els.helpOverlay.classList.add("is-hidden"); }
 function applyViewport() { if (state.match) renderHistory(state.match); }
 
 async function initialize() {
-  console.info("TodayForest OneOfTen Player v1.5.2 · Polling + realtime optimization");
+  console.info("TodayForest OneOfTen Player v1.5.3 · Realtime-safe optimization");
   showView("loading");
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error || !session?.user) {
