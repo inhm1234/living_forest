@@ -7,12 +7,12 @@
   <meta name="color-scheme" content="light" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <title>원오브텐 친구 대전 | 오늘의숲</title>
+  <title>원오브텐 사람 대전 | 오늘의숲</title>
   <script src="todayforest-analytics.js?v=oot-analytics-v1"></script>
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="one-of-ten-friend.css?v=1.4.0-chat" />
+  <link rel="stylesheet" href="one-of-ten-friend.css?v=1.5.0-random" />
   <link rel="stylesheet" href="oot-notifications.css?v=oot-push-v0-5" />
 </head>
 <body>
@@ -21,35 +21,35 @@
       <a class="ootf-back" href="index.html" aria-label="내 정원으로 돌아가기">← <span>내 정원</span></a>
       <div class="ootf-title">
         <p>FOREST NUMBER GAME</p>
-        <h1>원오브텐 <span>친구 대전</span></h1>
+        <h1>원오브텐 <span>사람 대전</span></h1>
       </div>
       <button class="ootf-help" id="helpButton" type="button">안내</button>
     </header>
 
     <nav class="ootf-mode-nav" aria-label="원오브텐 대전 방식">
       <a href="one-of-ten.html">🐿️ 다람쥐와 하기</a>
-      <span class="is-active" aria-current="page">🌿 친구와 하기</span>
+      <span class="is-active" aria-current="page">🌿 사람과 하기</span>
     </nav>
 
     <section class="ootf-loading" id="loadingView" aria-live="polite">
       <span class="ootf-loading-leaf">🌿</span>
-      <strong>친구 대전을 준비하고 있어요.</strong>
+      <strong>사람 대전을 준비하고 있어요.</strong>
       <p>로그인과 경기 상태를 확인하는 중이에요.</p>
     </section>
 
     <section class="ootf-login is-hidden" id="loginView">
       <div class="ootf-empty-icon">🔐</div>
       <h2>로그인이 필요해요</h2>
-      <p>친구 대전은 오늘의숲 친구와 함께하는 기능이라 먼저 정원에 로그인해야 해요.</p>
+      <p>친구 또는 새로운 상대와 대전하려면 먼저 정원에 로그인해야 해요.</p>
       <a href="index.html">내 정원에서 로그인하기</a>
     </section>
 
     <section class="ootf-lobby is-hidden" id="lobbyView" aria-live="polite">
       <article class="ootf-hero">
         <div>
-          <p>FRIEND MATCH</p>
-          <h2>친구와 한 판 놀아볼까요?</h2>
-          <span>초대는 10분 동안 기다려요. 한 턴은 30초예요.</span>
+          <p>PLAYER MATCH</p>
+          <h2>친구와도, 새로운 상대와도</h2>
+          <span>친구를 초대하거나 기다리는 사람과 바로 연결해요. 한 턴은 30초예요.</span>
         </div>
         <div class="ootf-hero-cards" aria-hidden="true"><i>7</i><b>+</b><i>3</i></div>
       </article>
@@ -69,6 +69,16 @@
           <small id="pointProtection">첫걸음 보호 10판 남음</small>
         </div>
       </article>
+
+      <section class="ootf-random-card" id="randomMatchCard" aria-labelledby="randomMatchTitle">
+        <div class="ootf-random-copy">
+          <small>RANDOM ONE POINT</small>
+          <h2 id="randomMatchTitle">새로운 상대와 바로 대전</h2>
+          <p>지금 기다리는 모르는 사용자와 원포인트 대전으로 연결해요.</p>
+          <span>같은 상대와 점수가 반영되는 경기는 하루 3판까지예요.</span>
+        </div>
+        <button id="randomMatchButton" type="button"><span aria-hidden="true">🎲</span><b>랜덤 상대 찾기</b></button>
+      </section>
 
       <section class="oot-ready-card" aria-label="친구 대전 초대 상태">
         <div class="oot-ready-copy">
@@ -179,6 +189,22 @@
     </section>
   </main>
 
+  <section class="ootf-overlay is-hidden" id="randomMatchOverlay" role="dialog" aria-modal="true" aria-labelledby="randomMatchWaitingTitle">
+    <div class="ootf-random-wait-card">
+      <p class="ootf-random-wait-kicker">RANDOM MATCHING</p>
+      <div class="ootf-random-orbit" aria-hidden="true"><span>7</span><i>+</i><span>3</span></div>
+      <h2 id="randomMatchWaitingTitle">새로운 상대를 찾고 있어요</h2>
+      <p class="ootf-random-wait-message" id="randomMatchMessage">같은 시간에 기다리는 사용자를 확인하는 중이에요.</p>
+      <div class="ootf-random-wait-stats">
+        <div><small>기다린 시간</small><strong id="randomWaitTime">0초</strong></div>
+        <div><small>현재 대기</small><strong id="randomQueueSize">1명</strong></div>
+      </div>
+      <p class="ootf-random-wait-note">이 화면을 열어둔 동안 연결을 계속 확인해요. 상대가 없으면 다람쥐 대전으로 전환할 수 있어요.</p>
+      <button class="ootf-random-cancel" id="cancelRandomMatchButton" type="button">매칭 취소</button>
+      <a class="ootf-random-squirrel" id="randomToSquirrelLink" href="one-of-ten.html">🐿️ 다람쥐와 연습 대전하기</a>
+    </div>
+  </section>
+
   <section class="ootf-overlay is-hidden" id="inviteModeOverlay" role="dialog" aria-modal="true" aria-labelledby="inviteModeTitle">
     <div class="ootf-modal-card ootf-invite-mode-card">
       <button class="ootf-modal-close" id="closeInviteModeButton" type="button" aria-label="대전 방식 선택 닫기">×</button>
@@ -218,7 +244,7 @@
           <span class="ootf-ready-room-mode" id="readyMatchMode">편한 대전</span>
         </div>
       </div>
-      <p class="ootf-ready-room-description">두 사람이 모두 준비해야 3초 카운트다운 뒤 경기가 시작돼요. 준비 전에는 30초 제한시간이 흐르지 않아요.</p>
+      <p class="ootf-ready-room-description" id="readyRoomDescription">두 사람이 모두 준비해야 3초 카운트다운 뒤 경기가 시작돼요. 준비 전에는 30초 제한시간이 흐르지 않아요.</p>
       <div class="ootf-ready-players">
         <div id="readyMeCard">
           <span>나</span>
@@ -240,8 +266,8 @@
   <section class="ootf-overlay is-hidden" id="helpOverlay" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
     <div class="ootf-modal-card">
       <button class="ootf-modal-close" id="closeHelpButton" type="button" aria-label="안내 닫기">×</button>
-      <p>FRIEND MATCH</p>
-      <h2 id="helpTitle">친구 대전 안내</h2>
+      <p>PLAYER MATCH</p>
+      <h2 id="helpTitle">사람 대전 안내</h2>
       <ol>
         <li>친구가 초대를 수락하면 대기방으로 이동하고, 두 사람이 모두 준비한 뒤 경기가 시작돼요.</li>
         <li>선공은 서버에서 무작위로 정해요.</li>
@@ -250,9 +276,10 @@
         <li>한 턴은 30초이며, 시간이 끝나면 서버가 자동 스톱 또는 자동 제출해요.</li>
         <li>경기 중 상대의 숫자카드는 숨겨지고 경기 종료 후에만 공개돼요.</li>
         <li>화면을 나갔다 돌아와도 진행 중인 경기로 다시 들어갈 수 있어요.</li>
-        <li>편한 대전은 점수 변화가 없고, 원포인트 대전은 같은 친구와 하루 3판까지 반영돼요.</li>
+        <li>친구 대전은 편한 대전과 원포인트 대전을 선택할 수 있고, 같은 친구와 원포인트는 하루 3판까지 반영돼요.</li>
+        <li>랜덤 대전은 기다리는 모르는 사용자와 원포인트 대전으로 연결돼요. 같은 상대와 하루 3판까지 점수가 반영돼요.</li>
         <li>한 판이 끝난 뒤 두 사람이 모두 다시 한 판을 선택하면 초대와 로비 이동 없이 같은 방에서 이어져요.</li>
-        <li>경기 중 말풍선 버튼을 누르면 이 대전방의 친구와만 실시간으로 대화할 수 있어요.</li>
+        <li>자유 채팅은 친구 대전방에서만 이용할 수 있어요. 랜덤 대전의 빠른 말풍선은 다음 업데이트에서 추가돼요.</li>
       </ol>
       <button class="ootf-modal-confirm" id="helpConfirmButton" type="button">알겠어요</button>
     </div>
@@ -327,6 +354,6 @@
 
   <div class="ootf-toast is-hidden" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="oot-notifications.js?v=oot-push-v0-5"></script>
-  <script type="module" src="one-of-ten-friend.js?v=1.4.0-chat"></script>
+  <script type="module" src="one-of-ten-friend.js?v=1.5.0-random"></script>
 </body>
 </html>

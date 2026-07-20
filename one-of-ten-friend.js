@@ -10,6 +10,7 @@ const TURN_LIMIT_MS = 30000;
 const EQUATION_REVEAL_MS = 700;
 const LOBBY_POLL_MS = 10000;
 const MATCH_POLL_MS = 2500;
+const RANDOM_MATCH_POLL_MS = 3000;
 const INVITE_ACK_STORAGE_KEY = "todayForestOotAcknowledgedInvites";
 const INVITE_TARGET_STORAGE_KEY = "todayForestOotPendingInvite";
 const OPERATIONS = [
@@ -40,8 +41,18 @@ function trackOneOfTenOnce(eventName, dedupeKey, params = {}) {
   return true;
 }
 
-function analyticsBattleMode(mode) {
+function analyticsBattleMode(mode, matchSource = "friend") {
+  if (matchSource === "random") return mode === "rated" ? "random_point" : "random_casual";
   return mode === "rated" ? "friend_point" : "friend_casual";
+}
+
+function matchSourceLabel(source) {
+  return source === "random" ? "랜덤 상대" : "친구";
+}
+
+function matchModeText(mode, source = "friend") {
+  if (source === "random") return mode === "rated" ? "🎲 랜덤 원포인트" : "🎲 랜덤 편한 대전";
+  return battleModeText(mode);
 }
 
 const TIER_START_POINTS = {
@@ -63,9 +74,10 @@ const els = {
   incomingSection: $("#incomingSection"), incomingCount: $("#incomingCount"), incomingList: $("#incomingList"),
   outgoingSection: $("#outgoingSection"), outgoingCount: $("#outgoingCount"), outgoingList: $("#outgoingList"),
   friendsList: $("#friendsList"), noFriendsView: $("#noFriendsView"), refreshLobbyButton: $("#refreshLobbyButton"),
+  randomMatchCard: $("#randomMatchCard"), randomMatchButton: $("#randomMatchButton"), randomMatchOverlay: $("#randomMatchOverlay"), randomMatchMessage: $("#randomMatchMessage"), randomWaitTime: $("#randomWaitTime"), randomQueueSize: $("#randomQueueSize"), cancelRandomMatchButton: $("#cancelRandomMatchButton"), randomToSquirrelLink: $("#randomToSquirrelLink"),
   inviteModeOverlay: $("#inviteModeOverlay"), closeInviteModeButton: $("#closeInviteModeButton"), inviteFriendName: $("#inviteFriendName"), inviteFriendAvatar: $("#inviteFriendAvatar"), inviteFriendStatus: $("#inviteFriendStatus"), casualInviteButton: $("#casualInviteButton"), ratedInviteButton: $("#ratedInviteButton"), ratedInviteStatus: $("#ratedInviteStatus"),
   opponentAvatar: $("#opponentAvatar"), opponentName: $("#opponentName"), opponentStatus: $("#opponentStatus"), opponentCardCount: $("#opponentCardCount"), opponentHand: $("#opponentHand"), matchModeBadge: $("#matchModeBadge"),
-  matchReadyOverlay: $("#matchReadyOverlay"), readyOpponentAvatar: $("#readyOpponentAvatar"), readyOpponentName: $("#readyOpponentName"), readyMatchMode: $("#readyMatchMode"), readyMeCard: $("#readyMeCard"), readyMeStatus: $("#readyMeStatus"), readyOpponentCard: $("#readyOpponentCard"), readyOpponentLabel: $("#readyOpponentLabel"), readyOpponentStatus: $("#readyOpponentStatus"), readyCountdown: $("#readyCountdown"), readyRoomMessage: $("#readyRoomMessage"), matchReadyButton: $("#matchReadyButton"), cancelWaitingMatchButton: $("#cancelWaitingMatchButton"),
+  matchReadyOverlay: $("#matchReadyOverlay"), readyRoomDescription: $("#readyRoomDescription"), readyOpponentAvatar: $("#readyOpponentAvatar"), readyOpponentName: $("#readyOpponentName"), readyMatchMode: $("#readyMatchMode"), readyMeCard: $("#readyMeCard"), readyMeStatus: $("#readyMeStatus"), readyOpponentCard: $("#readyOpponentCard"), readyOpponentLabel: $("#readyOpponentLabel"), readyOpponentStatus: $("#readyOpponentStatus"), readyCountdown: $("#readyCountdown"), readyRoomMessage: $("#readyRoomMessage"), matchReadyButton: $("#matchReadyButton"), cancelWaitingMatchButton: $("#cancelWaitingMatchButton"),
   historyToggle: $("#historyToggle"), matchHistory: $("#matchHistory"), operationCount: $("#operationCount"),
   turnPill: $("#turnPill"), turnTimer: $("#turnTimer"), timerText: $("#timerText"), timerBar: $("#timerBar"), timeoutHint: $("#timeoutHint"),
   currentValue: $("#currentValue"), selectedOperation: $("#selectedOperation"), selectedNumber: $("#selectedNumber"), arenaMessage: $("#arenaMessage"), calculationNote: $("#calculationNote"), operationCards: $("#operationCards"),
@@ -100,6 +112,8 @@ const state = {
   chatChannel: null, chatPollInterval: null, chatSeriesId: "", chatCurrentMatchId: "",
   chatMessages: [], chatLoaded: false, chatOpen: false, chatBusy: false, chatAvailable: false,
   chatUnread: 0, chatMaxLength: 120,
+  randomMatching: false, randomMatchBusy: false, randomMatchInterval: null, randomWaitTicker: null,
+  randomJoinedAt: "", randomQueueSize: 1, randomMatchNavigating: false, randomStatusRestored: false,
 };
 let toastTimer = null;
 let actionTimer = null;
@@ -290,7 +304,7 @@ function friendlyError(error) {
     ["OOT_VERSION_MISMATCH", "상대의 행동이 먼저 반영됐어요. 최신 상태를 다시 불러왔어요."], ["OOT_TURN_EXPIRED", "턴 시간이 끝나 서버가 자동 진행하고 있어요."],
     ["OOT_NOT_MY_TURN", "지금은 친구의 차례예요."], ["OOT_INVALID_PHASE", "이미 다음 단계로 넘어갔어요."],
     ["OOT_CARD_NOT_IN_HAND", "그 숫자카드는 현재 손에 없어요."], ["OOT_OPERATION_NOT_AVAILABLE", "이미 사용한 수식카드예요."],
-    ["OOT_DAILY_RATED_LIMIT_REACHED", "오늘 이 친구와 반영할 수 있는 원포인트 대전 3판을 모두 했어요."],
+    ["OOT_DAILY_RATED_LIMIT_REACHED", "오늘 이 상대와 반영할 수 있는 원포인트 대전 3판을 모두 했어요."],
     ["OOT_INVALID_BATTLE_MODE", "대전 방식을 다시 선택해 주세요."],
     ["OOT_MATCH_NOT_WAITING", "이미 경기가 시작됐어요."],
     ["OOT_READY_COUNTDOWN_STARTED", "두 사람의 준비가 끝나 카운트다운이 시작됐어요."],
@@ -302,6 +316,8 @@ function friendlyError(error) {
     ["OOT_CHAT_TOO_LONG", "메시지는 120자까지 보낼 수 있어요."],
     ["OOT_CHAT_TOO_FAST", "조금만 천천히 보내 주세요."],
     ["OOT_CHAT_RATE_LIMIT", "메시지를 너무 빠르게 보냈어요. 잠시 뒤 다시 시도해 주세요."],
+    ["OOT_RANDOM_MATCH_CONFLICT", "다른 경기 상태와 겹쳤어요. 대전 목록을 다시 확인해 주세요."],
+    ["OOT_RANDOM_QUEUE_NOT_FOUND", "매칭 대기가 이미 끝났어요."],
   ];
   return map.find(([key]) => message.includes(key))?.[1] || "잠시 연결이 어긋났어요. 다시 시도해 주세요.";
 }
@@ -323,7 +339,7 @@ function phaseLabel(match) {
   if (match.status === "finished") return "경기 종료";
   if (match.status === "active" && !match.current_turn_id && !match.turn_deadline && match.phase === "opening") return "대기방";
   if (match.current_turn_id === state.user?.id) return "내 차례";
-  return "친구 차례";
+  return match.match_source === "random" ? "상대 차례" : "친구 차례";
 }
 
 async function rpc(name, params = {}) {
@@ -333,6 +349,12 @@ async function rpc(name, params = {}) {
 }
 
 function stopLobbyPolling() { if (state.lobbyInterval) clearInterval(state.lobbyInterval); state.lobbyInterval = null; }
+function stopRandomMatchPolling() {
+  if (state.randomMatchInterval) clearInterval(state.randomMatchInterval);
+  if (state.randomWaitTicker) clearInterval(state.randomWaitTicker);
+  state.randomMatchInterval = null;
+  state.randomWaitTicker = null;
+}
 function stopMatchPolling() { if (state.matchInterval) clearInterval(state.matchInterval); state.matchInterval = null; }
 function stopTimer() { if (state.timerInterval) clearInterval(state.timerInterval); state.timerInterval = null; }
 function stopReadyCountdown() {
@@ -527,6 +549,11 @@ async function subscribeMatchChat(seriesId) {
 
 async function prepareMatchChat(match) {
   if (!match?.matchId || !state.user) return;
+  if (match.matchSource === "random") {
+    await stopMatchChat({ reset: true });
+    setChatAvailability(false, "랜덤 대전에서는 자유 채팅을 사용하지 않아요.");
+    return;
+  }
   const seriesId = String(match.seriesId || match.matchId);
   state.chatCurrentMatchId = String(match.matchId);
   if (els.chatOpponentName) els.chatOpponentName.textContent = match.opponentNickname || "친구";
@@ -557,7 +584,7 @@ async function openMatchChat() {
   if (!state.chatLoaded) await loadMatchChat();
   renderChatMessages({ scroll: true });
   trackOneOfTenOnce("oneoften_chat_open", `chat-open-${state.chatSeriesId}-${state.match?.matchId || ""}`, {
-    mode: analyticsBattleMode(state.match?.battleMode),
+    mode: analyticsBattleMode(state.match?.battleMode, state.match?.matchSource),
     round_number: Number(state.match?.roundNumber || 1),
   });
   window.setTimeout(() => els.chatInput?.focus(), 80);
@@ -587,7 +614,7 @@ async function sendMatchChat(event) {
     els.chatInput.value = "";
     updateChatCounter();
     trackOneOfTen("oneoften_chat_message_sent", {
-      mode: analyticsBattleMode(state.match.battleMode),
+      mode: analyticsBattleMode(state.match.battleMode, state.match.matchSource),
       round_number: Number(state.match.roundNumber || 1),
       message_length: Array.from(body).length,
     });
@@ -631,7 +658,7 @@ async function loadLobby({ silent = false } = {}) {
     const [friendsResult, invitesResult, matchesResult, availabilityResult, profileResult] = await Promise.allSettled([
       rpc("list_my_garden_friends"),
       rpc("oot_list_my_invites_v2"),
-      rpc("oot_list_my_matches_v2", { p_limit: 30 }),
+      rpc("oot_list_my_matches_v3", { p_limit: 30 }),
       rpc("oot_list_friend_availability"),
       rpc("oot_get_my_point_profile"),
     ]);
@@ -800,7 +827,7 @@ function renderLobby() {
   els.activeMatchCount.textContent = String(active.length);
   els.activeMatchesList.innerHTML = active.map((item) => cardTemplate({
     avatarUrl: item.opponent_avatar_url, name: item.opponent_nickname,
-    subtitle: `${battleModeText(item.battle_mode)} · ${phaseLabel(item)} · ${item.turn_deadline ? formatRemaining(item.turn_deadline) : "결과 확인 중"}`,
+    subtitle: `${matchSourceLabel(item.match_source)} · ${matchModeText(item.battle_mode, item.match_source)} · ${phaseLabel(item)} · ${item.turn_deadline ? formatRemaining(item.turn_deadline) : "결과 확인 중"}`,
     actions: `<button class="ootf-primary" data-open-match="${item.match_id}">계속하기</button>`,
   })).join("");
 
@@ -1065,10 +1092,184 @@ async function simpleInviteAction(rpcName, inviteId, message, button) {
   }
 }
 
+
+function randomWaitSeconds() {
+  const joined = Date.parse(state.randomJoinedAt || "");
+  if (!Number.isFinite(joined)) return 0;
+  return Math.max(0, Math.floor((Date.now() + state.serverOffset - joined) / 1000));
+}
+
+function updateRandomWaitingUi() {
+  if (!els.randomMatchOverlay) return;
+  const seconds = randomWaitSeconds();
+  els.randomWaitTime.textContent = seconds < 60 ? `${seconds}초` : `${Math.floor(seconds / 60)}분 ${seconds % 60}초`;
+  els.randomQueueSize.textContent = `${Math.max(1, Number(state.randomQueueSize || 1))}명`;
+  els.randomMatchButton.classList.toggle("is-waiting", state.randomMatching);
+  els.randomMatchButton.disabled = state.randomMatchBusy;
+  els.randomMatchButton.querySelector("b").textContent = state.randomMatching ? "상대 찾는 중" : "랜덤 상대 찾기";
+}
+
+function showRandomMatchOverlay(message = "같은 시간에 기다리는 사용자를 확인하는 중이에요.") {
+  state.randomMatching = true;
+  els.randomMatchMessage.textContent = message;
+  els.randomMatchOverlay.classList.remove("is-hidden");
+  document.body.classList.add("ootf-random-waiting");
+  updateRandomWaitingUi();
+  if (!state.randomWaitTicker) state.randomWaitTicker = setInterval(updateRandomWaitingUi, 1000);
+}
+
+function hideRandomMatchOverlay({ keepState = false } = {}) {
+  els.randomMatchOverlay.classList.add("is-hidden");
+  document.body.classList.remove("ootf-random-waiting");
+  if (!keepState) {
+    state.randomMatching = false;
+    state.randomJoinedAt = "";
+    state.randomQueueSize = 1;
+    stopRandomMatchPolling();
+  }
+  updateRandomWaitingUi();
+}
+
+async function acknowledgeRandomMatch(matchId) {
+  try { await rpc("oot_ack_random_matchmaking", { p_match_id: matchId }); }
+  catch (error) { console.warn("OneOfTen random matchmaking acknowledge skipped", error); }
+}
+
+async function enterRandomMatchedGame(status) {
+  const matchId = extractMatchId(status?.matchId || status?.match_id);
+  if (!matchId || state.randomMatchNavigating) return false;
+  const source = status?.matchSource === "random" ? "random" : "friend";
+  state.randomMatchNavigating = true;
+  state.randomMatching = false;
+  stopRandomMatchPolling();
+  els.randomMatchMessage.textContent = source === "random"
+    ? "상대를 찾았어요. 대기방으로 이동할게요."
+    : "진행 중인 친구 경기로 이동할게요.";
+  els.cancelRandomMatchButton.disabled = true;
+  if (source === "random") {
+    trackOneOfTenOnce("oneoften_random_match_found", `random-found-${matchId}`, {
+      mode: analyticsBattleMode(status?.battleMode || "rated", source),
+      waited_seconds: randomWaitSeconds(),
+      queue_size: Number(state.randomQueueSize || 1),
+    });
+  }
+  const opened = await openMatch(matchId);
+  if (opened) {
+    await acknowledgeRandomMatch(matchId);
+    hideRandomMatchOverlay();
+    showToast(source === "random" ? "새로운 상대를 찾았어요. 두 사람이 준비하면 시작해요." : "진행 중인 친구 경기로 이동했어요.");
+    state.randomMatchNavigating = false;
+    return true;
+  }
+  state.randomMatchNavigating = false;
+  els.cancelRandomMatchButton.disabled = false;
+  showRandomMatchOverlay("경기방 연결을 다시 확인하고 있어요.");
+  return false;
+}
+
+async function handleRandomMatchStatus(status, { initial = false } = {}) {
+  if (status?.serverNow) state.serverOffset = Date.parse(status.serverNow) - Date.now();
+  const value = String(status?.status || "idle");
+  if (value === "matched") {
+    if (status.matchSource === "random" || state.randomMatching || initial) {
+      return enterRandomMatchedGame(status);
+    }
+    return false;
+  }
+  if (value === "waiting") {
+    state.randomJoinedAt = status.joinedAt || state.randomJoinedAt || new Date(Date.now() + state.serverOffset).toISOString();
+    state.randomQueueSize = Math.max(1, Number(status.queueSize || 1));
+    showRandomMatchOverlay(Number(state.randomQueueSize) > 1
+      ? "함께 기다리는 사용자가 있어요. 연결을 확인하고 있어요."
+      : "아직 같은 시간에 기다리는 상대가 없어요. 계속 찾아볼게요.");
+    if (!state.randomMatchInterval) {
+      state.randomMatchInterval = setInterval(() => joinRandomMatchmaking({ heartbeat: true }), RANDOM_MATCH_POLL_MS);
+    }
+    return true;
+  }
+  if (!initial) hideRandomMatchOverlay();
+  return false;
+}
+
+async function joinRandomMatchmaking({ heartbeat = false } = {}) {
+  if (!state.user || state.randomMatchBusy || state.randomMatchNavigating || getMatchIdFromUrl()) return;
+  state.randomMatchBusy = true;
+  if (!heartbeat) {
+    state.randomMatching = true;
+    state.randomJoinedAt ||= new Date(Date.now() + state.serverOffset).toISOString();
+    showRandomMatchOverlay("매칭 대기열에 들어가고 있어요.");
+    trackOneOfTen("oneoften_mode_selected", { mode: "random_point" });
+    trackOneOfTenOnce("oneoften_random_matchmaking_started", `random-start-${Date.now()}`, { mode: "random_point" });
+  }
+  try {
+    const status = await rpc("oot_join_random_matchmaking");
+    await handleRandomMatchStatus(status);
+  } catch (error) {
+    console.warn("OneOfTen random matchmaking error", error);
+    if (!heartbeat) {
+      hideRandomMatchOverlay();
+      showToast(friendlyError(error));
+      await loadLobby({ silent: true });
+    } else {
+      els.randomMatchMessage.textContent = "연결을 다시 확인하고 있어요. 잠시만 기다려 주세요.";
+    }
+  } finally {
+    state.randomMatchBusy = false;
+    els.cancelRandomMatchButton.disabled = false;
+    updateRandomWaitingUi();
+  }
+}
+
+async function cancelRandomMatchmaking() {
+  if (!state.user || state.randomMatchBusy || state.randomMatchNavigating) return;
+  state.randomMatchBusy = true;
+  els.cancelRandomMatchButton.disabled = true;
+  els.cancelRandomMatchButton.textContent = "취소 중…";
+  try {
+    const status = await rpc("oot_cancel_random_matchmaking");
+    if (status?.status === "matched") {
+      await enterRandomMatchedGame(status);
+      return false;
+    }
+    trackOneOfTen("oneoften_random_matchmaking_cancelled", {
+      mode: "random_point",
+      waited_seconds: randomWaitSeconds(),
+    });
+    hideRandomMatchOverlay();
+    showToast("랜덤 매칭을 취소했어요.");
+    return true;
+  } catch (error) {
+    showToast(friendlyError(error));
+    return false;
+  } finally {
+    state.randomMatchBusy = false;
+    els.cancelRandomMatchButton.disabled = false;
+    els.cancelRandomMatchButton.textContent = "매칭 취소";
+    updateRandomWaitingUi();
+  }
+}
+
+async function restoreRandomMatchmaking() {
+  if (!state.user || getMatchIdFromUrl() || state.randomStatusRestored) return;
+  state.randomStatusRestored = true;
+  try {
+    const status = await rpc("oot_get_random_matchmaking_status");
+    if (status?.status === "waiting") {
+      state.randomMatching = true;
+      await handleRandomMatchStatus(status, { initial: true });
+    } else if (status?.status === "matched" && status?.matchSource === "random") {
+      await handleRandomMatchStatus(status, { initial: true });
+    }
+  } catch (error) {
+    console.warn("OneOfTen random matchmaking restore skipped", error);
+  }
+}
+
 async function openMatch(matchId) {
   const normalizedMatchId = extractMatchId(matchId);
   if (!normalizedMatchId) return false;
   stopLobbyPolling();
+  stopRandomMatchPolling();
   await stopInviteRealtime();
   setMatchUrl(normalizedMatchId);
   state.selectedOperation = null; state.selectedNumber = null; state.historyExpanded = false; state.renderResultForMatchId = null;
@@ -1094,8 +1295,10 @@ async function returnToLobby() {
   state.autoOpeningMatchId = null;
   els.resultOverlay.classList.add("is-hidden");
   setMatchUrl(""); showView("lobby");
-  trackOneOfTen("oneoften_lobby_open", { lobby_type: "friend", return_from_match: true });
-  await loadLobby(); startLobbyPolling(); subscribeInvites();
+  hideRandomMatchOverlay();
+  state.randomStatusRestored = false;
+  trackOneOfTen("oneoften_lobby_open", { lobby_type: "player", return_from_match: true });
+  await loadLobby(); startLobbyPolling(); subscribeInvites(); void restoreRandomMatchmaking();
 }
 
 async function loadMatch({ force = false } = {}) {
@@ -1205,10 +1408,17 @@ function renderReadyRoom(match) {
 
   els.matchReadyOverlay.classList.remove("is-hidden");
   els.readyOpponentAvatar.innerHTML = avatarMarkup(match.opponentAvatarUrl, match.opponentNickname);
-  els.readyOpponentName.textContent = match.opponentNickname || "친구";
-  els.readyOpponentLabel.textContent = match.opponentNickname || "친구";
-  els.readyMatchMode.textContent = battleModeText(match.battleMode);
-  els.readyMatchMode.classList.toggle("is-rated", match.battleMode === "rated");
+  const opponentFallback = match.matchSource === "random" ? "숲의 여행자" : "친구";
+  els.readyOpponentName.textContent = match.opponentNickname || opponentFallback;
+  els.readyOpponentLabel.textContent = match.opponentNickname || opponentFallback;
+  els.readyMatchMode.textContent = matchModeText(match.battleMode, match.matchSource);
+  els.readyMatchMode.classList.toggle("is-rated", match.battleMode === "rated" && match.matchSource !== "random");
+  els.readyMatchMode.classList.toggle("is-random", match.matchSource === "random");
+  if (els.readyRoomDescription) {
+    els.readyRoomDescription.textContent = match.matchSource === "random"
+      ? "랜덤으로 연결된 두 사람이 모두 준비하면 3초 뒤 시작돼요. 랜덤 대전에서는 자유 채팅을 사용하지 않아요."
+      : "두 사람이 모두 준비해야 3초 카운트다운 뒤 경기가 시작돼요. 준비 전에는 30초 제한시간이 흐르지 않아요.";
+  }
 
   const myReady = Boolean(match.myReady);
   const opponentReady = Boolean(match.opponentReady);
@@ -1228,8 +1438,8 @@ function renderReadyRoom(match) {
     els.matchReadyButton.textContent = myReady ? "준비 취소" : "준비 완료";
     els.matchReadyButton.classList.toggle("is-cancel", myReady);
     els.readyRoomMessage.textContent = myReady
-      ? (opponentReady ? "두 사람의 준비가 끝났어요." : `${match.opponentNickname || "친구"}님의 준비를 기다리고 있어요.`)
-      : (opponentReady ? `${match.opponentNickname || "친구"}님이 먼저 준비했어요.` : "준비되면 아래 버튼을 눌러 주세요.");
+      ? (opponentReady ? "두 사람의 준비가 끝났어요." : `${match.opponentNickname || opponentFallback}님의 준비를 기다리고 있어요.`)
+      : (opponentReady ? `${match.opponentNickname || opponentFallback}님이 먼저 준비했어요.` : "준비되면 아래 버튼을 눌러 주세요.");
     return;
   }
 
@@ -1283,7 +1493,7 @@ async function cancelWaitingMatch() {
   try {
     await rpc("oot_cancel_waiting_match", { p_match_id: match.matchId });
     trackOneOfTen("oneoften_game_exit", {
-      mode: analyticsBattleMode(match.battleMode),
+      mode: analyticsBattleMode(match.battleMode, match.matchSource),
       exit_reason: "waiting_cancel",
       game_state: "waiting",
     });
@@ -1303,7 +1513,7 @@ async function leaveCurrentMatch() {
   }
   if (state.match && !currentMatchIsFinished()) {
     trackOneOfTen("oneoften_game_exit", {
-      mode: analyticsBattleMode(state.match.battleMode),
+      mode: analyticsBattleMode(state.match.battleMode, state.match.matchSource),
       exit_reason: "lobby_button",
       game_state: isWaitingMatch(state.match) ? "waiting" : "active",
       game_phase: state.match.phase || "unknown",
@@ -1316,8 +1526,8 @@ function renderMatch() {
   if (!state.match) return;
   const match = state.match;
   if (match.status === "active" && !isWaitingMatch(match) && !currentMatchIsFinished()) {
-    trackOneOfTenOnce("oneoften_game_start", `friend-start-${match.matchId}`, {
-      mode: analyticsBattleMode(match.battleMode),
+    trackOneOfTenOnce("oneoften_game_start", `${match.matchSource || "friend"}-start-${match.matchId}`, {
+      mode: analyticsBattleMode(match.battleMode, match.matchSource),
       starting_role: match.isMyTurn && match.phase === "opening" ? "first" : "participant",
       round_number: Number(match.roundNumber || 1),
     });
@@ -1334,8 +1544,9 @@ function renderMatch() {
   }
 }
 function renderOpponent(match) {
-  els.opponentName.textContent = match.opponentNickname || "친구";
-  els.opponentAvatar.innerHTML = avatarMarkup(match.opponentAvatarUrl, match.opponentNickname);
+  const opponentFallback = match.matchSource === "random" ? "숲의 여행자" : "친구";
+  els.opponentName.textContent = match.opponentNickname || opponentFallback;
+  els.opponentAvatar.innerHTML = avatarMarkup(match.opponentAvatarUrl, match.opponentNickname || opponentFallback);
   const status = currentMatchIsFinished()
     ? "경기가 끝났어요."
     : isWaitingMatch(match)
@@ -1343,8 +1554,9 @@ function renderOpponent(match) {
       : match.isMyTurn ? "당신의 차례를 기다리고 있어요." : "카드를 고르고 있어요.";
   els.opponentStatus.textContent = status;
   const hand = currentMatchIsFinished() && Array.isArray(match.opponentHand) ? match.opponentHand : Array(Number(match.opponentCardCount || 0)).fill(null);
-  els.matchModeBadge.textContent = battleModeText(match.battleMode);
-  els.matchModeBadge.classList.toggle("is-rated", match.battleMode === "rated");
+  els.matchModeBadge.textContent = matchModeText(match.battleMode, match.matchSource);
+  els.matchModeBadge.classList.toggle("is-rated", match.battleMode === "rated" && match.matchSource !== "random");
+  els.matchModeBadge.classList.toggle("is-random", match.matchSource === "random");
   els.opponentCardCount.textContent = `손패 ${hand.length}장`;
   els.opponentHand.innerHTML = hand.map((number) => `<span class="ootf-card-back${number !== null ? " is-revealed" : ""}">${number ?? ""}</span>`).join("");
 }
@@ -1369,10 +1581,11 @@ function renderArena(match) {
   els.selectedNumber.textContent = hasNumber ? String(state.selectedNumber) : "";
   els.selectedNumber.classList.toggle("is-hidden", !hasNumber);
 
-  let pill = "친구 대전"; let message = "경기 상태를 확인하고 있어요.";
+  const opponentFallback = match.matchSource === "random" ? "상대" : "친구";
+  let pill = match.matchSource === "random" ? "랜덤 대전" : "친구 대전"; let message = "경기 상태를 확인하고 있어요.";
   if (currentMatchIsFinished()) { pill = "승부 종료"; message = "결과 화면에서 이번 판의 기록을 확인해요."; }
   else if (isWaitingMatch(match)) { pill = "경기 준비"; message = "두 사람이 준비를 마치면 3초 뒤 경기가 시작돼요."; }
-  else if (!match.isMyTurn) { pill = `${match.opponentNickname || "친구"} 차례`; message = "친구가 카드를 고르는 동안 숲이 조용히 기다리고 있어요."; }
+  else if (!match.isMyTurn) { pill = `${match.opponentNickname || opponentFallback} 차례`; message = `${opponentFallback}가 카드를 고르는 동안 숲이 조용히 기다리고 있어요.`; }
   else if (match.phase === "opening") { pill = "내가 선공"; message = "첫 숫자카드 한 장을 내세요."; }
   else if (match.phase === "must_play") { pill = "내 차례"; message = hasOperation ? "이제 계산에 사용할 숫자카드를 내세요." : "수식카드와 숫자카드를 차례로 내세요."; }
   else if (match.phase === "decision") { pill = "내 차례"; message = "지금 스톱하거나 카드 한 장을 받고 계산을 이어가세요."; }
@@ -1407,7 +1620,7 @@ function renderHand(match) {
   }).join("");
   $$('[data-number]').forEach((button) => button.addEventListener("click", () => selectNumber(Number(button.dataset.number))));
   els.deckCount.textContent = `더미 ${inferredDeckCount()}장`;
-  let help = "친구의 차례예요.";
+  let help = match.matchSource === "random" ? "상대의 차례예요." : "친구의 차례예요.";
   if (currentMatchIsFinished()) help = "이번 판이 끝났어요.";
   else if (isWaitingMatch(match)) help = "대기방에서 준비를 마치면 카드가 배정돼요.";
   else if (match.isMyTurn && match.phase === "opening") help = "첫 숫자카드 한 장을 선택하세요.";
@@ -1432,7 +1645,7 @@ function updateTimer() {
   els.timerText.textContent = `${seconds}초`; els.timerBar.style.width = `${Math.min(100, remaining / TURN_LIMIT_MS * 100)}%`;
   els.turnTimer.classList.toggle("is-warning", seconds <= 10 && seconds > 5); els.turnTimer.classList.toggle("is-danger", seconds <= 5);
   if (seconds <= 5) {
-    let hint = match.isMyTurn ? (match.phase === "decision" ? "시간이 끝나면 자동으로 스톱해요." : "시간이 끝나면 가능한 카드가 자동으로 나가요.") : "친구의 시간이 끝나면 서버가 자동으로 진행해요.";
+    let hint = match.isMyTurn ? (match.phase === "decision" ? "시간이 끝나면 자동으로 스톱해요." : "시간이 끝나면 가능한 카드가 자동으로 나가요.") : `${match.matchSource === "random" ? "상대" : "친구"}의 시간이 끝나면 서버가 자동으로 진행해요.`;
     els.timeoutHint.textContent = hint; els.timeoutHint.classList.remove("is-hidden");
   } else els.timeoutHint.classList.add("is-hidden");
   if (remaining <= 0) resolveTimeout();
@@ -1492,7 +1705,7 @@ function renderPointResult(match) {
   if (!rated) return;
 
   els.resultPointPanel.classList.remove("is-positive", "is-negative", "is-protected", "is-ineligible");
-  els.resultPointMode.textContent = "🌰 원포인트 대전";
+  els.resultPointMode.textContent = match.matchSource === "random" ? "🎲 랜덤 원포인트" : "🌰 원포인트 대전";
 
   if (!pointResult) {
     els.resultPointDelta.textContent = "정산 확인";
@@ -1515,7 +1728,7 @@ function renderPointResult(match) {
 
   if (ineligible) {
     els.resultPointPanel.classList.add("is-ineligible");
-    els.resultPointMessage.textContent = "오늘 이 친구와 반영되는 3판을 모두 마쳐 이번 경기는 점수에 포함되지 않았어요.";
+    els.resultPointMessage.textContent = "오늘 이 상대와 반영되는 3판을 모두 마쳐 이번 경기는 점수에 포함되지 않았어요.";
   } else if (pointResult.beginnerProtectionApplied) {
     els.resultPointPanel.classList.add("is-protected");
     els.resultPointMessage.textContent = `첫걸음 보호가 적용되어 패배 ${baseDelta}점이 차감되지 않았어요.`;
@@ -1567,7 +1780,7 @@ function renderRematchState(match) {
   els.resultRematchButton.disabled = false;
 
   if (match.battleMode === "rated" && targetMode === "rated") {
-    els.resultSeriesStatus.textContent = `오늘 이 친구와 원포인트 ${played}/3판 완료`;
+    els.resultSeriesStatus.textContent = `오늘 이 상대와 원포인트 ${played}/3판 완료`;
     els.resultRematchButton.textContent = "원포인트로 다시 한 판";
   } else if (match.battleMode === "rated" && targetMode === "casual") {
     els.resultSeriesStatus.textContent = "오늘 점수가 반영되는 3판을 모두 마쳤어요.";
@@ -1587,7 +1800,7 @@ function renderRematchState(match) {
 
   if (opponentStatus === "declined") {
     els.resultRematchBox.classList.add("is-ended");
-    els.resultRematchStatus.textContent = `${match.opponentNickname || "친구"}님이 이번 대전을 마쳤어요.`;
+    els.resultRematchStatus.textContent = `${match.opponentNickname || (match.matchSource === "random" ? "상대" : "친구")}님이 이번 대전을 마쳤어요.`;
     els.resultRematchButton.textContent = "재대전이 종료됐어요";
     els.resultRematchButton.disabled = true;
     return;
@@ -1603,7 +1816,7 @@ function renderRematchState(match) {
 
   if (myStatus === "accepted") {
     els.resultRematchBox.classList.add("is-waiting");
-    els.resultRematchStatus.textContent = `${match.opponentNickname || "친구"}님의 선택을 기다리는 중…`;
+    els.resultRematchStatus.textContent = `${match.opponentNickname || (match.matchSource === "random" ? "상대" : "친구")}님의 선택을 기다리는 중…`;
     els.resultRematchButton.textContent = "상대의 선택을 기다리는 중…";
     els.resultRematchButton.disabled = true;
     return;
@@ -1611,7 +1824,7 @@ function renderRematchState(match) {
 
   if (opponentStatus === "accepted") {
     els.resultRematchBox.classList.add("is-waiting");
-    els.resultRematchStatus.textContent = `${match.opponentNickname || "친구"}님이 다시 한 판을 기다리고 있어요.`;
+    els.resultRematchStatus.textContent = `${match.opponentNickname || (match.matchSource === "random" ? "상대" : "친구")}님이 다시 한 판을 기다리고 있어요.`;
     return;
   }
 
@@ -1625,8 +1838,8 @@ async function enterRematchMatch(sourceMatch) {
 
   state.rematchNavigating = true;
   trackOneOfTenOnce("oneoften_rematch_started", `rematch-start-${sourceMatch.matchId}-${nextMatchId}`, {
-    mode: sourceMatch.rematchTargetMode === "rated" ? "friend_point" : "friend_casual",
-    previous_mode: analyticsBattleMode(sourceMatch.battleMode),
+    mode: analyticsBattleMode(sourceMatch.rematchTargetMode, sourceMatch.matchSource),
+    previous_mode: analyticsBattleMode(sourceMatch.battleMode, sourceMatch.matchSource),
     round_number: Number(sourceMatch.roundNumber || 1) + 1,
   });
   showToast("같은 방에서 다음 판을 준비해요.");
@@ -1645,8 +1858,8 @@ async function requestRematch() {
   try {
     const view = await rpc("oot_request_rematch", { p_match_id: match.matchId });
     trackOneOfTenOnce("oneoften_rematch_requested", `rematch-request-${match.matchId}`, {
-      mode: match.rematchTargetMode === "rated" ? "friend_point" : "friend_casual",
-      previous_mode: analyticsBattleMode(match.battleMode),
+      mode: analyticsBattleMode(match.rematchTargetMode, match.matchSource),
+      previous_mode: analyticsBattleMode(match.battleMode, match.matchSource),
       round_number: Number(match.roundNumber || 1) + 1,
     });
     state.match = view;
@@ -1670,7 +1883,7 @@ async function leaveResultToLobby() {
     try {
       const view = await rpc("oot_decline_rematch", { p_match_id: match.matchId });
       trackOneOfTenOnce("oneoften_rematch_declined", `rematch-decline-${match.matchId}`, {
-        mode: analyticsBattleMode(match.battleMode),
+        mode: analyticsBattleMode(match.battleMode, match.matchSource),
         round_number: Number(match.roundNumber || 1),
       });
       if (view?.nextMatchId) {
@@ -1697,10 +1910,11 @@ function renderResult(match) {
   const won = winnerId === state.user.id;
   const draw = !winnerId;
   els.resultSymbol.textContent = draw ? "🤝" : won ? "🏆" : "🌿";
-  els.resultTitle.textContent = draw ? "무승부예요" : won ? "당신이 이겼어요" : `${match.opponentNickname || "친구"}님이 이겼어요`;
-  els.resultDescription.textContent = draw ? `두 카드가 최종 결과값 ${match.currentValue}에서 같은 거리였어요.` : won ? `내 남은 카드가 최종 결과값 ${match.currentValue}에 더 가까웠어요.` : `친구의 남은 카드가 최종 결과값 ${match.currentValue}에 더 가까웠어요.`;
+  const opponentName = match.opponentNickname || (match.matchSource === "random" ? "상대" : "친구");
+  els.resultTitle.textContent = draw ? "무승부예요" : won ? "당신이 이겼어요" : `${opponentName}님이 이겼어요`;
+  els.resultDescription.textContent = draw ? `두 카드가 최종 결과값 ${match.currentValue}에서 같은 거리였어요.` : won ? `내 남은 카드가 최종 결과값 ${match.currentValue}에 더 가까웠어요.` : `${opponentName}님의 남은 카드가 최종 결과값 ${match.currentValue}에 더 가까웠어요.`;
   els.myTarget.textContent = match.myTargetCard ?? "-"; els.myDistance.textContent = `거리 ${match.myDistance ?? "-"}`;
-  els.opponentTargetLabel.textContent = `${match.opponentNickname || "친구"}의 가까운 카드`; els.opponentTarget.textContent = match.opponentTargetCard ?? "-"; els.opponentDistance.textContent = `거리 ${match.opponentDistance ?? "-"}`;
+  els.opponentTargetLabel.textContent = `${opponentName}의 가까운 카드`; els.opponentTarget.textContent = match.opponentTargetCard ?? "-"; els.opponentDistance.textContent = `거리 ${match.opponentDistance ?? "-"}`;
   els.resultValue.textContent = `최종 결과값: ${match.currentValue}`;
   els.resultHistory.innerHTML = getActions().map((action) => {
     const line = actionLabel(action); if (!line) return "";
@@ -1712,8 +1926,8 @@ function renderResult(match) {
 
   const result = draw ? "draw" : won ? "win" : "lose";
   const pointResult = match.pointResult || null;
-  trackOneOfTenOnce("oneoften_game_complete", `friend-complete-${match.matchId}`, {
-    mode: analyticsBattleMode(match.battleMode),
+  trackOneOfTenOnce("oneoften_game_complete", `${match.matchSource || "friend"}-complete-${match.matchId}`, {
+    mode: analyticsBattleMode(match.battleMode, match.matchSource),
     result,
     exact_hit: Number(match.myDistance) === 0 || Number(match.opponentDistance) === 0,
     point_applied: Boolean(match.battleMode === "rated" && pointResult && pointResult.resultType !== "ineligible"),
@@ -1727,11 +1941,11 @@ function closeHelp() { els.helpOverlay.classList.add("is-hidden"); }
 function applyViewport() { if (state.match) renderHistory(state.match); }
 
 async function initialize() {
-  console.info("TodayForest OneOfTen Friend v1.4.0 · Match-room chat");
+  console.info("TodayForest OneOfTen Player v1.5.0 · Random matchmaking");
   showView("loading");
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error || !session?.user) {
-    trackOneOfTen("oneoften_lobby_open", { lobby_type: "friend", login_state: "signed_out" });
+    trackOneOfTen("oneoften_lobby_open", { lobby_type: "player", login_state: "signed_out" });
     showView("login");
     return;
   }
@@ -1750,10 +1964,11 @@ async function initialize() {
     }
   } else {
     showView("lobby");
-    trackOneOfTen("oneoften_lobby_open", { lobby_type: "friend", login_state: "signed_in" });
+    trackOneOfTen("oneoften_lobby_open", { lobby_type: "player", login_state: "signed_in" });
     await loadLobby();
     startLobbyPolling();
     subscribeInvites();
+    void restoreRandomMatchmaking();
   }
 }
 
@@ -1763,6 +1978,14 @@ els.closeInviteModeButton.addEventListener("click", closeInviteMode);
 els.inviteModeOverlay.addEventListener("click", (event) => { if (event.target === els.inviteModeOverlay) closeInviteMode(); });
 els.casualInviteButton.addEventListener("click", () => createInvite("casual"));
 els.ratedInviteButton.addEventListener("click", () => createInvite("rated"));
+els.randomMatchButton.addEventListener("click", () => joinRandomMatchmaking());
+els.cancelRandomMatchButton.addEventListener("click", cancelRandomMatchmaking);
+els.randomToSquirrelLink.addEventListener("click", async (event) => {
+  if (!state.randomMatching) return;
+  event.preventDefault();
+  const cancelled = await cancelRandomMatchmaking();
+  if (cancelled && !getMatchIdFromUrl()) location.href = "one-of-ten.html";
+});
 els.refreshLobbyButton.addEventListener("click", () => loadLobby()); els.historyToggle.addEventListener("click", () => { state.historyExpanded = !state.historyExpanded; renderHistory(state.match); });
 els.selectedOperation.addEventListener("click", cancelOperation); els.stopButton.addEventListener("click", stopMatch); els.drawButton.addEventListener("click", drawCard);
 els.matchReadyButton.addEventListener("click", toggleMatchReady); els.cancelWaitingMatchButton.addEventListener("click", cancelWaitingMatch);
@@ -1770,11 +1993,16 @@ els.leaveMatchButton.addEventListener("click", leaveCurrentMatch); els.resultRem
 els.chatToggleButton.addEventListener("click", () => state.chatOpen ? closeMatchChat() : openMatchChat()); els.chatCloseButton.addEventListener("click", closeMatchChat); els.chatBackdrop.addEventListener("click", closeMatchChat); els.chatForm.addEventListener("submit", sendMatchChat); els.chatInput.addEventListener("input", updateChatCounter);
 window.addEventListener("resize", applyViewport); window.addEventListener("popstate", () => getMatchIdFromUrl() ? openMatch(getMatchIdFromUrl()) : returnToLobby());
 window.addEventListener("oot-game-ready-changed", () => loadLobby({ silent: true }));
-document.addEventListener("visibilitychange", () => { if (!document.hidden) { if (getMatchIdFromUrl()) { loadMatch({ force: true }); loadMatchChat({ silent: true }); } else loadLobby({ silent: true }); } });
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) {
+    if (getMatchIdFromUrl()) { loadMatch({ force: true }); if (state.match?.matchSource !== "random") loadMatchChat({ silent: true }); }
+    else { loadLobby({ silent: true }); if (state.randomMatching) joinRandomMatchmaking({ heartbeat: true }); }
+  }
+});
 window.addEventListener("pagehide", () => {
   if (state.match && !currentMatchIsFinished()) {
     trackOneOfTen("oneoften_game_exit", {
-      mode: analyticsBattleMode(state.match.battleMode),
+      mode: analyticsBattleMode(state.match.battleMode, state.match.matchSource),
       exit_reason: "page_leave",
       game_state: isWaitingMatch(state.match) ? "waiting" : "active",
       game_phase: state.match.phase || "unknown",
@@ -1782,6 +2010,6 @@ window.addEventListener("pagehide", () => {
     });
   }
 });
-window.addEventListener("beforeunload", () => { stopLobbyPolling(); stopMatchPolling(); stopTimer(); stopReadyCountdown(); stopRealtime(); stopInviteRealtime(); stopMatchChat(); });
+window.addEventListener("beforeunload", () => { stopLobbyPolling(); stopRandomMatchPolling(); stopMatchPolling(); stopTimer(); stopReadyCountdown(); stopRealtime(); stopInviteRealtime(); stopMatchChat(); });
 
 initialize();

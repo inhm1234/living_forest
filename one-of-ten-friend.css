@@ -422,3 +422,73 @@ body.ootf-chat-open .ootf-chat-toggle { z-index: 72; }
   .ootf-chat-head strong { font-size: 15px; }
 }
 
+
+
+/* Random opponent matchmaking v1 */
+.ootf-random-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid rgba(160, 125, 65, .20);
+  border-radius: 21px;
+  background: linear-gradient(140deg, rgba(255,253,247,.98), rgba(242,234,211,.94));
+  box-shadow: var(--f-shadow);
+}
+.ootf-random-copy small { display: block; color: #a08a65; font-size: 8px; font-weight: 950; letter-spacing: .11em; }
+.ootf-random-copy h2 { margin: 4px 0 5px; color: var(--f-ink); font-size: 16px; letter-spacing: -.03em; }
+.ootf-random-copy p { margin: 0; color: #6f786f; font-size: 10px; line-height: 1.5; }
+.ootf-random-copy span { display: block; margin-top: 4px; color: #917a55; font-size: 8px; font-weight: 850; line-height: 1.4; }
+.ootf-random-card > button {
+  min-width: 128px;
+  min-height: 58px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 13px;
+  border: 0;
+  border-radius: 16px;
+  background: #7d6741;
+  color: #fff;
+  box-shadow: 0 9px 20px rgba(103, 78, 39, .18);
+  cursor: pointer;
+}
+.ootf-random-card > button span { font-size: 20px; }
+.ootf-random-card > button b { font-size: 10px; font-weight: 950; white-space: nowrap; }
+.ootf-random-card > button.is-waiting { background: #6c766e; }
+.ootf-random-wait-card {
+  width: min(100%, 430px);
+  padding: 24px 18px 18px;
+  border: 1px solid rgba(255,255,255,.85);
+  border-radius: 27px;
+  background: #fffdf8;
+  box-shadow: 0 28px 80px rgba(34,50,40,.28);
+  text-align: center;
+}
+.ootf-random-wait-kicker { margin: 0; color: #a18e6e; font-size: 8px; font-weight: 950; letter-spacing: .13em; }
+.ootf-random-orbit { min-height: 92px; display: flex; align-items: center; justify-content: center; gap: 7px; margin: 6px 0 2px; }
+.ootf-random-orbit span { width: 48px; height: 66px; display: grid; place-items: center; border: 2px solid rgba(126,104,65,.15); border-radius: 15px; background: #fff; color: #4a584f; font-size: 24px; font-weight: 950; box-shadow: 0 9px 22px rgba(75,59,36,.10); animation: ootf-random-card-float 1.7s ease-in-out infinite; }
+.ootf-random-orbit span:last-child { animation-delay: -.7s; }
+.ootf-random-orbit i { color: #8c774f; font-size: 23px; font-style: normal; font-weight: 950; animation: ootf-random-pulse 1.2s ease-in-out infinite; }
+.ootf-random-wait-card h2 { margin: 2px 0 6px; color: var(--f-ink); font-size: 21px; }
+.ootf-random-wait-message { min-height: 35px; margin: 0; color: var(--f-muted); font-size: 10px; line-height: 1.55; }
+.ootf-random-wait-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 13px 0 10px; }
+.ootf-random-wait-stats > div { padding: 11px 8px; border: 1px solid var(--f-line); border-radius: 15px; background: #f6f7f2; }
+.ootf-random-wait-stats small { display: block; color: #8e9992; font-size: 8px; font-weight: 900; }
+.ootf-random-wait-stats strong { display: block; margin-top: 4px; color: #5b705f; font-size: 17px; }
+.ootf-random-wait-note { margin: 0 2px 12px; color: #929c95; font-size: 8px; line-height: 1.5; }
+.ootf-random-cancel, .ootf-random-squirrel { width: 100%; min-height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 14px; font-size: 10px; font-weight: 950; }
+.ootf-random-cancel { border: 1px solid var(--f-line); background: #f1f3ef; color: #6d7b73; cursor: pointer; }
+.ootf-random-squirrel { margin-top: 7px; border: 1px solid rgba(126,104,65,.18); background: #fff9eb; color: #80683e; text-decoration: none; }
+body.ootf-random-waiting { overflow: hidden; }
+.ootf-match-mode.is-random { background: #f5ecd8; color: #826737; }
+.ootf-ready-room-mode.is-random { background: #f5ecd8; color: #826737; }
+@keyframes ootf-random-card-float { 0%,100% { transform: translateY(2px) rotate(-2deg); } 50% { transform: translateY(-5px) rotate(2deg); } }
+@keyframes ootf-random-pulse { 0%,100% { opacity: .55; transform: scale(.9); } 50% { opacity: 1; transform: scale(1.08); } }
+@media (max-width: 520px) {
+  .ootf-random-card { grid-template-columns: 1fr; }
+  .ootf-random-card > button { width: 100%; min-height: 48px; }
+  .ootf-random-wait-card { padding: 21px 15px 15px; }
+}
