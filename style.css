@@ -6125,3 +6125,6 @@ html.shared-tree-start-moment-open body {
   .public-values-light { animation: none; }
   .public-primary-button { transition: none; }
 }
+
+/* special friend menu layout v2 */
+.garden-nav-six { grid-template-columns: repeat(4, minmax(0, 1fr)); }
