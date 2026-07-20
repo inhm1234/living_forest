@@ -6125,3 +6125,11 @@ html.shared-tree-start-moment-open body {
   .public-values-light { animation: none; }
   .public-primary-button { transition: none; }
 }
+
+/* HOME UI REWORK v1 - menu layout */
+.garden-nav-eight {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.legacy-info-card {
+  opacity: .9;
+}
