@@ -71,7 +71,7 @@ const els = {
   currentValue: $("#currentValue"), selectedOperation: $("#selectedOperation"), selectedNumber: $("#selectedNumber"), arenaMessage: $("#arenaMessage"), calculationNote: $("#calculationNote"), operationCards: $("#operationCards"),
   actionPanel: $("#actionPanel"), stopButton: $("#stopButton"), drawButton: $("#drawButton"), myHand: $("#myHand"), deckCount: $("#deckCount"), handHelp: $("#handHelp"),
   leaveMatchButton: $("#leaveMatchButton"), connectionStatus: $("#connectionStatus"),
-  resultOverlay: $("#resultOverlay"), resultSymbol: $("#resultSymbol"), resultTitle: $("#resultTitle"), resultDescription: $("#resultDescription"), resultHistory: $("#resultHistory"), resultValue: $("#resultValue"), myTarget: $("#myTarget"), myDistance: $("#myDistance"), opponentTargetLabel: $("#opponentTargetLabel"), opponentTarget: $("#opponentTarget"), opponentDistance: $("#opponentDistance"), resultLobbyButton: $("#resultLobbyButton"),
+  resultOverlay: $("#resultOverlay"), resultSymbol: $("#resultSymbol"), resultTitle: $("#resultTitle"), resultDescription: $("#resultDescription"), resultHistory: $("#resultHistory"), resultValue: $("#resultValue"), myTarget: $("#myTarget"), myDistance: $("#myDistance"), opponentTargetLabel: $("#opponentTargetLabel"), opponentTarget: $("#opponentTarget"), opponentDistance: $("#opponentDistance"), resultRematchBox: $("#resultRematchBox"), resultSeriesStatus: $("#resultSeriesStatus"), resultRematchStatus: $("#resultRematchStatus"), resultRematchButton: $("#resultRematchButton"), resultLobbyButton: $("#resultLobbyButton"), resultGardenLink: $("#resultGardenLink"),
   resultPointPanel: $("#resultPointPanel"), resultPointMode: $("#resultPointMode"), resultPointDelta: $("#resultPointDelta"), resultPointBefore: $("#resultPointBefore"), resultPointAfter: $("#resultPointAfter"), resultPointMessage: $("#resultPointMessage"), resultTierMessage: $("#resultTierMessage"),
   toast: $("#toast"),
 };
@@ -94,6 +94,8 @@ const state = {
   readyCountdownInterval: null,
   readyStartRequested: false,
   readyActionBusy: false,
+  rematchBusy: false,
+  rematchNavigating: false,
 };
 let toastTimer = null;
 let actionTimer = null;
@@ -289,6 +291,8 @@ function friendlyError(error) {
     ["OOT_MATCH_NOT_WAITING", "이미 경기가 시작됐어요."],
     ["OOT_READY_COUNTDOWN_STARTED", "두 사람의 준비가 끝나 카운트다운이 시작됐어요."],
     ["OOT_WAITING_MATCH_CANCEL_LOCKED", "카운트다운이 시작되어 대기방을 취소할 수 없어요."],
+    ["OOT_REMATCH_NOT_FINISHED", "경기가 끝난 뒤 다시 한 판을 선택할 수 있어요."],
+    ["OOT_REMATCH_EXPIRED", "재대전 선택 시간이 지나 대전 목록으로 돌아가야 해요."],
   ];
   return map.find(([key]) => message.includes(key))?.[1] || "잠시 연결이 어긋났어요. 다시 시도해 주세요.";
 }
@@ -802,7 +806,8 @@ async function openMatch(matchId) {
   await stopInviteRealtime();
   setMatchUrl(normalizedMatchId);
   state.selectedOperation = null; state.selectedNumber = null; state.historyExpanded = false; state.renderResultForMatchId = null;
-  state.readyStartRequested = false; state.readyActionBusy = false; stopReadyCountdown();
+  state.readyStartRequested = false; state.readyActionBusy = false; state.rematchBusy = false; stopReadyCountdown();
+  els.resultOverlay.classList.add("is-hidden");
   showView("match");
   const loaded = await loadMatch({ force: true });
   if (!loaded || !state.match || extractMatchId(state.match.matchId) !== normalizedMatchId || getMatchIdFromUrl() !== normalizedMatchId) {
@@ -812,12 +817,13 @@ async function openMatch(matchId) {
   startMatchPolling();
   subscribeMatch(normalizedMatchId);
   state.autoOpeningMatchId = null;
+  state.rematchNavigating = false;
   return true;
 }
 async function returnToLobby() {
   clearActionTimer(); stopTimer(); stopReadyCountdown(); stopMatchPolling(); await stopRealtime();
   state.match = null; state.selectedOperation = null; state.selectedNumber = null; state.renderResultForMatchId = null;
-  state.readyStartRequested = false; state.readyActionBusy = false;
+  state.readyStartRequested = false; state.readyActionBusy = false; state.rematchBusy = false; state.rematchNavigating = false;
   els.matchReadyOverlay.classList.add("is-hidden");
   state.autoOpeningMatchId = null;
   els.resultOverlay.classList.add("is-hidden");
@@ -848,6 +854,9 @@ async function loadMatch({ force = false } = {}) {
     }
     renderMatch();
     els.connectionStatus.textContent = "서버와 실시간 연결됨";
+    if (view.nextMatchId) {
+      window.setTimeout(() => enterRematchMatch(view), 0);
+    }
     return true;
   } catch (error) {
     console.warn("OneOfTen match load error", error);
@@ -1041,11 +1050,19 @@ function renderMatch() {
     trackOneOfTenOnce("oneoften_game_start", `friend-start-${match.matchId}`, {
       mode: analyticsBattleMode(match.battleMode),
       starting_role: match.isMyTurn && match.phase === "opening" ? "first" : "participant",
+      round_number: Number(match.roundNumber || 1),
     });
   }
   renderReadyRoom(match);
   renderOpponent(match); renderHistory(match); renderArena(match); renderOperations(match); renderActions(match); renderHand(match); renderTimer(match);
-  if (currentMatchIsFinished() && state.renderResultForMatchId !== match.matchId) { state.renderResultForMatchId = match.matchId; renderResult(match); }
+  if (currentMatchIsFinished()) {
+    if (state.renderResultForMatchId !== match.matchId) {
+      state.renderResultForMatchId = match.matchId;
+      renderResult(match);
+    } else {
+      renderRematchState(match);
+    }
+  }
 }
 function renderOpponent(match) {
   els.opponentName.textContent = match.opponentNickname || "친구";
@@ -1260,6 +1277,151 @@ function renderPointResult(match) {
     els.resultPointAfter.textContent = String(after);
   }
 }
+function rematchTimeLabel(iso) {
+  const ms = Date.parse(iso) - (Date.now() + state.serverOffset);
+  if (!Number.isFinite(ms) || ms <= 0) return "";
+  const minutes = Math.max(1, Math.ceil(ms / 60000));
+  return `${minutes}분 안에 선택할 수 있어요.`;
+}
+
+function renderRematchState(match) {
+  if (!els.resultRematchButton || !els.resultRematchStatus || !els.resultSeriesStatus) return;
+
+  const targetMode = match.rematchTargetMode === "rated" ? "rated" : "casual";
+  const played = Math.max(0, Number(match.ratedPlayedToday || 0));
+  const myStatus = match.myRematchStatus || "";
+  const opponentStatus = match.opponentRematchStatus || "";
+  const expired = Boolean(match.rematchExpired);
+  const hasNext = Boolean(match.nextMatchId);
+
+  els.resultRematchBox.classList.remove("is-waiting", "is-ended");
+  els.resultRematchButton.disabled = false;
+
+  if (match.battleMode === "rated" && targetMode === "rated") {
+    els.resultSeriesStatus.textContent = `오늘 이 친구와 원포인트 ${played}/3판 완료`;
+    els.resultRematchButton.textContent = "원포인트로 다시 한 판";
+  } else if (match.battleMode === "rated" && targetMode === "casual") {
+    els.resultSeriesStatus.textContent = "오늘 점수가 반영되는 3판을 모두 마쳤어요.";
+    els.resultRematchButton.textContent = "편한 대전으로 계속하기";
+  } else {
+    els.resultSeriesStatus.textContent = `같은 방에서 ${Number(match.roundNumber || 1) + 1}번째 판을 이어갈 수 있어요.`;
+    els.resultRematchButton.textContent = "다시 한 판";
+  }
+
+  if (hasNext) {
+    els.resultRematchBox.classList.add("is-waiting");
+    els.resultRematchStatus.textContent = "두 사람의 선택이 같아 다음 판 대기방으로 이동하고 있어요.";
+    els.resultRematchButton.textContent = "다음 판으로 이동 중…";
+    els.resultRematchButton.disabled = true;
+    return;
+  }
+
+  if (opponentStatus === "declined") {
+    els.resultRematchBox.classList.add("is-ended");
+    els.resultRematchStatus.textContent = `${match.opponentNickname || "친구"}님이 이번 대전을 마쳤어요.`;
+    els.resultRematchButton.textContent = "재대전이 종료됐어요";
+    els.resultRematchButton.disabled = true;
+    return;
+  }
+
+  if (expired) {
+    els.resultRematchBox.classList.add("is-ended");
+    els.resultRematchStatus.textContent = "재대전 선택 시간이 지나 대전 목록으로 돌아갈 수 있어요.";
+    els.resultRematchButton.textContent = "재대전 시간이 끝났어요";
+    els.resultRematchButton.disabled = true;
+    return;
+  }
+
+  if (myStatus === "accepted") {
+    els.resultRematchBox.classList.add("is-waiting");
+    els.resultRematchStatus.textContent = `${match.opponentNickname || "친구"}님의 선택을 기다리는 중…`;
+    els.resultRematchButton.textContent = "상대의 선택을 기다리는 중…";
+    els.resultRematchButton.disabled = true;
+    return;
+  }
+
+  if (opponentStatus === "accepted") {
+    els.resultRematchBox.classList.add("is-waiting");
+    els.resultRematchStatus.textContent = `${match.opponentNickname || "친구"}님이 다시 한 판을 기다리고 있어요.`;
+    return;
+  }
+
+  const timeLabel = rematchTimeLabel(match.rematchExpiresAt);
+  els.resultRematchStatus.textContent = `두 사람 모두 선택하면 초대 없이 바로 이어져요.${timeLabel ? ` ${timeLabel}` : ""}`;
+}
+
+async function enterRematchMatch(sourceMatch) {
+  const nextMatchId = extractMatchId(sourceMatch?.nextMatchId);
+  if (!nextMatchId || state.rematchNavigating) return;
+
+  state.rematchNavigating = true;
+  trackOneOfTenOnce("oneoften_rematch_started", `rematch-start-${sourceMatch.matchId}-${nextMatchId}`, {
+    mode: sourceMatch.rematchTargetMode === "rated" ? "friend_point" : "friend_casual",
+    previous_mode: analyticsBattleMode(sourceMatch.battleMode),
+    round_number: Number(sourceMatch.roundNumber || 1) + 1,
+  });
+  showToast("같은 방에서 다음 판을 준비해요.");
+  const opened = await openMatch(nextMatchId);
+  if (!opened) state.rematchNavigating = false;
+}
+
+async function requestRematch() {
+  const match = state.match;
+  if (!match || !currentMatchIsFinished() || state.rematchBusy || match.nextMatchId) return;
+
+  state.rematchBusy = true;
+  els.resultRematchButton.disabled = true;
+  els.resultRematchButton.textContent = "재대전을 요청하고 있어요…";
+
+  try {
+    const view = await rpc("oot_request_rematch", { p_match_id: match.matchId });
+    trackOneOfTenOnce("oneoften_rematch_requested", `rematch-request-${match.matchId}`, {
+      mode: match.rematchTargetMode === "rated" ? "friend_point" : "friend_casual",
+      previous_mode: analyticsBattleMode(match.battleMode),
+      round_number: Number(match.roundNumber || 1) + 1,
+    });
+    state.match = view;
+    if (view.serverNow) state.serverOffset = Date.parse(view.serverNow) - Date.now();
+    renderRematchState(view);
+    if (view.nextMatchId) await enterRematchMatch(view);
+  } catch (error) {
+    console.warn("OneOfTen rematch request error", error);
+    showToast(friendlyError(error));
+    await loadMatch({ force: true });
+  } finally {
+    state.rematchBusy = false;
+    if (state.match && !state.match.nextMatchId) renderRematchState(state.match);
+  }
+}
+
+async function leaveResultToLobby() {
+  const match = state.match;
+  if (match && currentMatchIsFinished()) {
+    try {
+      const view = await rpc("oot_decline_rematch", { p_match_id: match.matchId });
+      trackOneOfTenOnce("oneoften_rematch_declined", `rematch-decline-${match.matchId}`, {
+        mode: analyticsBattleMode(match.battleMode),
+        round_number: Number(match.roundNumber || 1),
+      });
+      if (view?.nextMatchId) {
+        try { await rpc("oot_cancel_waiting_match", { p_match_id: view.nextMatchId }); } catch { /* already started or cancelled */ }
+      }
+    } catch (error) {
+      console.warn("OneOfTen rematch decline skipped", error);
+    }
+  }
+  await returnToLobby();
+}
+
+async function leaveResultToGarden(event) {
+  event?.preventDefault();
+  const match = state.match;
+  if (match && currentMatchIsFinished()) {
+    try { await rpc("oot_decline_rematch", { p_match_id: match.matchId }); } catch { /* page navigation continues */ }
+  }
+  location.href = "index.html";
+}
+
 function renderResult(match) {
   const winnerId = match.winnerId;
   const won = winnerId === state.user.id;
@@ -1275,6 +1437,7 @@ function renderResult(match) {
     return `<span class="ootf-result-step"><b>${escapeHtml(line)}</b>${action.isTimeout ? "<small>시간 종료로 서버가 자동 진행했어요.</small>" : ""}</span>`;
   }).join("");
   renderPointResult(match);
+  renderRematchState(match);
   els.resultOverlay.classList.remove("is-hidden");
 
   const result = draw ? "draw" : won ? "win" : "lose";
@@ -1285,6 +1448,7 @@ function renderResult(match) {
     exact_hit: Number(match.myDistance) === 0 || Number(match.opponentDistance) === 0,
     point_applied: Boolean(match.battleMode === "rated" && pointResult && pointResult.resultType !== "ineligible"),
     finish_reason: match.finishReason || "normal",
+    round_number: Number(match.roundNumber || 1),
   });
 }
 
@@ -1293,7 +1457,7 @@ function closeHelp() { els.helpOverlay.classList.add("is-hidden"); }
 function applyViewport() { if (state.match) renderHistory(state.match); }
 
 async function initialize() {
-  console.info("TodayForest OneOfTen Friend v1.2.0 · Ready Room");
+  console.info("TodayForest OneOfTen Friend v1.3.0 · Same-room rematch");
   showView("loading");
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error || !session?.user) {
@@ -1332,7 +1496,7 @@ els.ratedInviteButton.addEventListener("click", () => createInvite("rated"));
 els.refreshLobbyButton.addEventListener("click", () => loadLobby()); els.historyToggle.addEventListener("click", () => { state.historyExpanded = !state.historyExpanded; renderHistory(state.match); });
 els.selectedOperation.addEventListener("click", cancelOperation); els.stopButton.addEventListener("click", stopMatch); els.drawButton.addEventListener("click", drawCard);
 els.matchReadyButton.addEventListener("click", toggleMatchReady); els.cancelWaitingMatchButton.addEventListener("click", cancelWaitingMatch);
-els.leaveMatchButton.addEventListener("click", leaveCurrentMatch); els.resultLobbyButton.addEventListener("click", returnToLobby);
+els.leaveMatchButton.addEventListener("click", leaveCurrentMatch); els.resultRematchButton.addEventListener("click", requestRematch); els.resultLobbyButton.addEventListener("click", leaveResultToLobby); els.resultGardenLink.addEventListener("click", leaveResultToGarden);
 window.addEventListener("resize", applyViewport); window.addEventListener("popstate", () => getMatchIdFromUrl() ? openMatch(getMatchIdFromUrl()) : returnToLobby());
 window.addEventListener("oot-game-ready-changed", () => loadLobby({ silent: true }));
 document.addEventListener("visibilitychange", () => { if (!document.hidden) getMatchIdFromUrl() ? loadMatch({ force: true }) : loadLobby({ silent: true }); });

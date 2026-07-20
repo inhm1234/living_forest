@@ -301,3 +301,13 @@ button:disabled { opacity: .45; cursor: default; }
   .ootf-ready-room-profile h2 { font-size: 18px; }
   .ootf-ready-countdown { min-height: 70px; font-size: 42px; }
 }
+
+
+/* Same-room rematch v1 */
+.ootf-rematch-box { margin-top: 14px; padding: 12px 13px; border: 1px solid #dfe7de; border-radius: 15px; background: #f7faf5; text-align: left; }
+.ootf-rematch-box strong { display: block; color: var(--f-green-dark); font-size: 11px; line-height: 1.45; }
+.ootf-rematch-box p { margin: 4px 0 0; color: var(--f-muted); font-size: 9px; line-height: 1.55; }
+.ootf-result-primary:disabled { cursor: default; opacity: .66; }
+.ootf-result-button { width: 100%; border: 1px solid var(--f-line); cursor: pointer; }
+.ootf-rematch-box.is-waiting { background: #f8f6ec; border-color: #e9dfbb; }
+.ootf-rematch-box.is-ended { background: #f7f4f2; border-color: #eaded8; }
