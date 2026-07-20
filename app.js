@@ -6354,12 +6354,12 @@ function bindEvents() {
   document.addEventListener("keydown", blockHeartFruitCeremonyInput, true);
   $$("[data-public-login]").forEach((button) => button.addEventListener("click", openPublicLogin));
   els.backToPublicHome?.addEventListener("click", returnToPublicHome);
-  els.signInKakao.addEventListener("click", beginKakaoLogin);
-  els.installAppButton.addEventListener("click", () => { void requestAppInstall(); });
-  els.dismissInstallCard.addEventListener("click", dismissInstallCardForAWhile);
-  els.foundItemSparkle.addEventListener("click", () => { void claimFoundItem(); });
-  els.openGardenDecorate.addEventListener("click", startGardenDecorateMode);
-  els.cancelGardenDecorate.addEventListener("click", cancelGardenDecorateMode);
+  els.signInKakao?.addEventListener("click", beginKakaoLogin);
+  els.installAppButton?.addEventListener("click", () => { void requestAppInstall(); });
+  els.dismissInstallCard?.addEventListener("click", dismissInstallCardForAWhile);
+  els.foundItemSparkle?.addEventListener("click", () => { void claimFoundItem(); });
+  els.openGardenDecorate?.addEventListener("click", startGardenDecorateMode);
+  els.cancelGardenDecorate?.addEventListener("click", cancelGardenDecorateMode);
   els.saveGardenDecorate.addEventListener("click", () => { void saveGardenDecorateMode(); });
   els.foundItemsLayer.addEventListener("pointerdown", beginFoundItemDrag, { passive: false });
   // 드래그 시작 뒤에는 장식 밖으로 손가락·마우스가 벗어나도 끊기지 않도록
