@@ -6438,6 +6438,10 @@ function bindEvents() {
   });
   $("#openLetters").addEventListener("click", () => { void openLettersSheet(); });
   els.openFeedback.addEventListener("click", openFeedbackSheet);
+  $("#openSpecialFriendShortcut")?.addEventListener("click", () => {
+    window.dispatchEvent(new CustomEvent("todayforest:open-special-friend-letter"));
+  });
+  $("#openMoreMenu")?.addEventListener("click", openFeedbackSheet);
   els.openSupport.addEventListener("click", openSupportSheet);
   els.feedbackForm.addEventListener("submit", submitGardenFeedback);
   $$("[data-feedback-tab]").forEach((button) => button.addEventListener("click", () => { void selectFeedbackTab(button.dataset.feedbackTab); }));
