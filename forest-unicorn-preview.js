@@ -195,16 +195,22 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     memoryChipButton.setAttribute("aria-expanded", String(shouldOpen));
   }
   window.openTodayForestSpecialFriendInfo = () => {
-    if (!memoryPopover) {
-      const trigger = document.querySelector("[data-unicorn-memory-toggle]");
-      if (trigger) {
-        trigger.click();
-      } else {
-        pendingSpecialFriendInfoOpen = true;
-      }
+    if (memoryPopover) {
+      toggleMemoryPopover(true);
       return;
     }
-    toggleMemoryPopover(true);
+
+    const trigger = document.querySelector("[data-unicorn-memory-toggle]");
+    if (trigger) {
+      trigger.click();
+      setTimeout(() => {
+        if (memoryPopover) toggleMemoryPopover(true);
+      }, 50);
+      return;
+    }
+
+    pendingSpecialFriendInfoOpen = true;
+    window.dispatchEvent(new CustomEvent("todayforest:request-special-friend-info"));
   };
 
 
