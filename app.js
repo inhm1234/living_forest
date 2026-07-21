@@ -6439,6 +6439,10 @@ function bindEvents() {
   $("#openLetters").addEventListener("click", () => { void openLettersSheet(); });
   els.openFeedback.addEventListener("click", openFeedbackSheet);
   $("#openSpecialFriendShortcut")?.addEventListener("click", () => {
+    if (typeof window.openTodayForestSpecialFriendInfo === "function") {
+      window.openTodayForestSpecialFriendInfo();
+      return;
+    }
     window.dispatchEvent(new CustomEvent("todayforest:open-special-friend-letter"));
   });
   $("#openMoreMenu")?.addEventListener("click", openFeedbackSheet);
