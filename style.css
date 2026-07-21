@@ -6166,3 +6166,43 @@ html.shared-tree-start-moment-open body {
   opacity: 0.85;
   cursor: default;
 }
+
+
+/* UI rework v2-3: secondary action cards */
+.garden-extra-nav {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.garden-extra-nav .secondary-action {
+  min-height: 64px;
+  border-radius: 18px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid rgba(120, 120, 120, 0.12);
+  background: rgba(255,255,255,0.75);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+}
+
+.garden-extra-nav .secondary-action span[aria-hidden="true"] {
+  font-size: 20px;
+}
+
+@media (max-width: 600px) {
+  .garden-extra-nav {
+    gap: 8px;
+  }
+
+  .garden-extra-nav .secondary-action {
+    min-height: 58px;
+    font-size: 12px;
+  }
+}
