@@ -193,7 +193,16 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     memoryPopover.classList.toggle("is-open", shouldOpen);
     memoryChipButton.setAttribute("aria-expanded", String(shouldOpen));
   }
-  window.openTodayForestSpecialFriendInfo = () => toggleMemoryPopover(true);
+  window.openTodayForestSpecialFriendInfo = () => {
+    if (!memoryPopover) {
+      const trigger = document.querySelector("[data-unicorn-memory-toggle]");
+      if (trigger) {
+        trigger.click();
+      }
+      return;
+    }
+    toggleMemoryPopover(true);
+  };
 
 
   function replayFirstMeeting() {
