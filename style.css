@@ -6206,3 +6206,7 @@ html.shared-tree-start-moment-open body {
     font-size: 12px;
   }
 }
+
+.more-menu-panel { position: relative; margin: 8px auto; max-width: 320px; display: grid; gap: 8px; }
+.more-menu-panel.hidden { display: none; }
+.more-menu-panel button { border-radius: 16px; padding: 12px; border: 0; background: rgba(255,255,255,.9); }

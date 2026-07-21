@@ -6445,7 +6445,22 @@ function bindEvents() {
     }
     window.dispatchEvent(new CustomEvent("todayforest:open-special-friend-letter"));
   });
-  $("#openMoreMenu")?.addEventListener("click", openFeedbackSheet);
+  $("#openMoreMenu")?.addEventListener("click", () => {
+    const panel = $("#moreMenuPanel");
+    panel?.classList.toggle("hidden");
+  });
+  $$('[data-more-action="feedback"]').forEach((button) => button.addEventListener("click", () => {
+    $("#moreMenuPanel")?.classList.add("hidden");
+    openFeedbackSheet();
+  }));
+  $$('[data-more-action="support"]').forEach((button) => button.addEventListener("click", () => {
+    $("#moreMenuPanel")?.classList.add("hidden");
+    openSupportSheet();
+  }));
+  $$('[data-more-action="settings"]').forEach((button) => button.addEventListener("click", () => {
+    $("#moreMenuPanel")?.classList.add("hidden");
+    showToast("설정 메뉴는 준비 중이에요.");
+  }));
   els.openSupport.addEventListener("click", openSupportSheet);
   els.feedbackForm.addEventListener("submit", submitGardenFeedback);
   $$("[data-feedback-tab]").forEach((button) => button.addEventListener("click", () => { void selectFeedbackTab(button.dataset.feedbackTab); }));
