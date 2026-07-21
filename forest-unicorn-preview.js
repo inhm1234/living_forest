@@ -40,6 +40,7 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
   let deliveryStateKey = "";
   let memoryChipButton = null;
   let memoryPopover = null;
+  let pendingSpecialFriendInfoOpen = false;
   let composerWatchTimer = null;
   let currentZone = 0;
   let currentRouteIndex = 0;
@@ -198,6 +199,8 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
       const trigger = document.querySelector("[data-unicorn-memory-toggle]");
       if (trigger) {
         trigger.click();
+      } else {
+        pendingSpecialFriendInfoOpen = true;
       }
       return;
     }
@@ -356,6 +359,10 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
       headerActions.appendChild(memorySlot);
       memoryChipButton = memorySlot.querySelector("[data-unicorn-memory-toggle]");
       memoryPopover = memorySlot.querySelector(".forest-unicorn-memory-popover");
+      if (pendingSpecialFriendInfoOpen) {
+        pendingSpecialFriendInfoOpen = false;
+        setTimeout(() => toggleMemoryPopover(true), 0);
+      }
       statusNode = memorySlot.querySelector(".forest-unicorn-preview-status");
       replayButton = memorySlot.querySelector("[data-unicorn-replay]");
       metDateNode = memorySlot.querySelector("[data-unicorn-met-date]");
