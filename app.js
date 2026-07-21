@@ -6439,7 +6439,9 @@ function bindEvents() {
   $("#openLetters").addEventListener("click", () => { void openLettersSheet(); });
   els.openFeedback.addEventListener("click", openFeedbackSheet);
   $("#openSpecialFriendShortcut")?.addEventListener("click", () => {
+    console.log("[TodayForest] special friend shortcut clicked");
     if (typeof window.openTodayForestSpecialFriendInfo === "function") {
+      console.log("[TodayForest] opening special friend info");
       window.openTodayForestSpecialFriendInfo();
       return;
     }

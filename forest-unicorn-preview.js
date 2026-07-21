@@ -195,6 +195,7 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     memoryChipButton.setAttribute("aria-expanded", String(shouldOpen));
   }
   window.openTodayForestSpecialFriendInfo = () => {
+    console.log("[TodayForest] special friend info requested");
     if (memoryPopover) {
       toggleMemoryPopover(true);
       return;
