@@ -6152,3 +6152,17 @@ html.shared-tree-start-moment-open body {
     padding-right: 4px;
   }
 }
+
+
+/* UI REWORK v2-1: secondary menu grouping */
+.garden-extra-nav {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.garden-extra-nav .secondary-placeholder {
+  opacity: 0.85;
+  cursor: default;
+}
