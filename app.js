@@ -6454,7 +6454,8 @@ function bindEvents() {
   });
   els.letterForm.addEventListener("submit", sendGardenLetter);
   window.addEventListener("todayforest:open-special-friend-letter", (event) => {
-    openSpecialForestFriendEncounter(event?.detail?.key || "");
+    const requestedKey = event?.detail?.key || Object.keys(specialForestFriendPreviewCatalog)[0] || "";
+    openSpecialForestFriendEncounter(requestedKey);
   });
   window.addEventListener("todayforest:special-friend-journey-phase", () => {
     renderSentLetters();
