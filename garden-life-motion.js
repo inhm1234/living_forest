@@ -1,5 +1,6 @@
-/* 오늘의숲 · 살아 있는 정원 모션 v0.1
-   CSS 상시 모션에 더해, 드문 잎/빛 사건만 가볍게 생성합니다. */
+/* 오늘의숲 · 살아 있는 정원 모션 v0.1.1
+   CSS 상시 모션에 더해, 드문 잎/빛 사건만 가볍게 생성합니다.
+   v0.1.1: 낙엽이 하늘이 아니라 실제 나무 수관에서 시작하도록 좌표를 보정합니다. */
 
 const LIFE_LAYER_ID = "gardenAmbientLayer";
 const MAX_AMBIENT_PARTICLES = 2;
@@ -53,11 +54,32 @@ function createParticle(kind) {
   particle.className = `garden-ambient-particle is-${kind}`;
 
   if (kind === "leaf") {
-    particle.style.left = `${randomBetween(18, 82).toFixed(1)}%`;
-    particle.style.setProperty("--life-duration", `${randomBetween(5.6, 7.5).toFixed(2)}s`);
-    particle.style.setProperty("--life-drift-mid", `${randomBetween(-22, 25).toFixed(1)}px`);
-    particle.style.setProperty("--life-drift-end", `${randomBetween(-38, 42).toFixed(1)}px`);
-    particle.style.scale = randomBetween(.72, 1.08).toFixed(2);
+    const world = document.querySelector("#gardenWorld");
+    const tree = document.querySelector("#treeWrap");
+    if (!world || !tree) return;
+
+    // 화면 전체의 맨 위가 아니라, 실제 나무 수관 안에서 잎이 떨어지기 시작합니다.
+    // gardenWorld에는 scale 변환이 있으므로 화면 좌표를 로컬 좌표로 되돌립니다.
+    const worldRect = world.getBoundingClientRect();
+    const treeRect = tree.getBoundingClientRect();
+    const scaleX = world.offsetWidth ? worldRect.width / world.offsetWidth : 1;
+    const scaleY = world.offsetHeight ? worldRect.height / world.offsetHeight : 1;
+    if (!scaleX || !scaleY) return;
+
+    const treeLeft = (treeRect.left - worldRect.left) / scaleX;
+    const treeTop = (treeRect.top - worldRect.top) / scaleY;
+    const treeWidth = treeRect.width / scaleX;
+    const treeHeight = treeRect.height / scaleY;
+    const fallEnd = randomBetween(185, 245);
+
+    particle.style.left = `${treeLeft + treeWidth * randomBetween(.22, .78)}px`;
+    particle.style.top = `${treeTop + treeHeight * randomBetween(.10, .34)}px`;
+    particle.style.setProperty("--life-duration", `${randomBetween(4.9, 6.5).toFixed(2)}s`);
+    particle.style.setProperty("--life-drift-mid", `${randomBetween(-18, 20).toFixed(1)}px`);
+    particle.style.setProperty("--life-drift-end", `${randomBetween(-30, 34).toFixed(1)}px`);
+    particle.style.setProperty("--life-fall-mid", `${(fallEnd * .43).toFixed(1)}px`);
+    particle.style.setProperty("--life-fall-end", `${fallEnd.toFixed(1)}px`);
+    particle.style.scale = randomBetween(.72, 1.02).toFixed(2);
   } else {
     particle.style.left = `${randomBetween(24, 76).toFixed(1)}%`;
     particle.style.top = `${randomBetween(30, 68).toFixed(1)}%`;
