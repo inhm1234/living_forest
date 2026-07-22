@@ -1,140 +1,127 @@
-/* 오늘의숲 · 살아 있는 정원 모션 v0.2
-   목적: 성장 단계마다 다른 생명감을 주되, 정원의 차분함과 기존 기능 모션을 침범하지 않습니다.
-   낙엽은 계절·날씨 맥락이 생기기 전까지 기본 효과에서 제외합니다. */
+/* 오늘의숲 · 살아 있는 정원 모션 v0.3
+   핵심 수정: 나무 전체를 위아래로 띄우는 상시 호흡을 제거합니다.
+   나무는 땅에 고정하고, 성장 단계별로 가끔 옆바람에 반응하게 합니다. */
 
 .garden-stage.garden-life-enabled {
   --garden-life-ease: cubic-bezier(.37, .02, .25, 1);
 }
 
-/* 배경은 성장 단계와 무관하게 아주 천천히 흐릅니다. */
+/* 하늘은 멈춘 사진처럼 보이지 않도록 이전보다 조금 더 분명하게, 그러나 느리게 흐릅니다. */
 .garden-stage.garden-life-enabled .cloud-one {
-  animation: gardenLifeCloudOne 34s var(--garden-life-ease) infinite alternate;
+  animation: gardenLifeCloudOne 36s var(--garden-life-ease) infinite alternate;
 }
 .garden-stage.garden-life-enabled .cloud-two {
-  animation: gardenLifeCloudTwo 41s var(--garden-life-ease) infinite alternate;
+  animation: gardenLifeCloudTwo 44s var(--garden-life-ease) infinite alternate;
 }
 .garden-stage.garden-life-enabled .glow-one {
-  animation: gardenLifeGlowOne 14s ease-in-out infinite;
+  animation: gardenLifeGlowOne 16s ease-in-out infinite;
 }
 .garden-stage.garden-life-enabled .glow-two {
-  animation: gardenLifeGlowTwo 17s ease-in-out infinite reverse;
+  animation: gardenLifeGlowTwo 19s ease-in-out infinite reverse;
 }
 
-/* 기존 바람·클릭·성장·열매 연출이 실행될 때는 상시 호흡이 양보합니다. */
+/* 나무는 평소 정지합니다. JS가 불규칙하게 garden-life-breeze를 붙일 때만 바람에 반응합니다. */
 .garden-app:not(.welcome-sandbox-garden):not(.is-heart-fruit-ceremony)
 .garden-stage.garden-life-enabled
-.tree-wrap:not(.wind-active):not(.tree-pulse):not(.is-tree-call-tapped):not(.is-tree-call-sending):not(.is-heart-fruit-revealing) {
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
+.tree-wrap.garden-life-breeze:not(.wind-active):not(.tree-pulse):not(.is-tree-call-tapped):not(.is-tree-call-sending):not(.is-heart-fruit-revealing) {
+  transform-origin: 50% 94%;
+  animation-timing-function: cubic-bezier(.22, .72, .25, 1);
+  animation-iteration-count: 1;
 }
 
-/* 1단계: 막 깨어난 떡잎. 뿌리가 흔들리지 않도록 거의 느껴지지 않는 짧은 호흡만 둡니다. */
 .garden-app:not(.welcome-sandbox-garden):not(.is-heart-fruit-ceremony)
-.garden-stage.garden-life-enabled[data-tree-stage="1"]
-.tree-wrap:not(.wind-active):not(.tree-pulse):not(.is-tree-call-tapped):not(.is-tree-call-sending):not(.is-heart-fruit-revealing) {
-  animation-name: gardenLifeStageOne;
-  animation-duration: 8.8s;
+.garden-stage.garden-life-enabled
+.tree-wrap.garden-life-breeze[data-tree-stage="1"] {
+  animation-name: gardenLifeBreezeStageOne;
+  animation-duration: 2.05s;
+}
+.garden-app:not(.welcome-sandbox-garden):not(.is-heart-fruit-ceremony)
+.garden-stage.garden-life-enabled
+.tree-wrap.garden-life-breeze[data-tree-stage="2"] {
+  animation-name: gardenLifeBreezeStageTwo;
+  animation-duration: 2.15s;
+}
+.garden-app:not(.welcome-sandbox-garden):not(.is-heart-fruit-ceremony)
+.garden-stage.garden-life-enabled
+.tree-wrap.garden-life-breeze[data-tree-stage="3"] {
+  animation-name: gardenLifeBreezeStageThree;
+  animation-duration: 2.25s;
+}
+.garden-app:not(.welcome-sandbox-garden):not(.is-heart-fruit-ceremony)
+.garden-stage.garden-life-enabled
+.tree-wrap.garden-life-breeze[data-tree-stage="4"] {
+  animation-name: gardenLifeBreezeStageFour;
+  animation-duration: 2.35s;
+}
+.garden-app:not(.welcome-sandbox-garden):not(.is-heart-fruit-ceremony)
+.garden-stage.garden-life-enabled
+.tree-wrap.garden-life-breeze[data-tree-stage="5"] {
+  animation-name: gardenLifeBreezeStageFive;
+  animation-duration: 2.55s;
+}
+.garden-app:not(.welcome-sandbox-garden):not(.is-heart-fruit-ceremony)
+.garden-stage.garden-life-enabled
+.tree-wrap.garden-life-breeze[data-tree-stage="6"] {
+  animation-name: gardenLifeBreezeStageSix;
+  animation-duration: 2.7s;
 }
 
-/* 2단계: 새싹. 작은 잎이 바람을 받는 정도로만 반응합니다. */
-.garden-app:not(.welcome-sandbox-garden):not(.is-heart-fruit-ceremony)
-.garden-stage.garden-life-enabled[data-tree-stage="2"]
-.tree-wrap:not(.wind-active):not(.tree-pulse):not(.is-tree-call-tapped):not(.is-tree-call-sending):not(.is-heart-fruit-revealing) {
-  animation-name: gardenLifeStageTwo;
-  animation-duration: 8.2s;
-}
-
-/* 3단계: 어린 나무. 줄기가 생겼으므로 움직임을 줄이고 긴 호흡으로 바꿉니다. */
-.garden-app:not(.welcome-sandbox-garden):not(.is-heart-fruit-ceremony)
-.garden-stage.garden-life-enabled[data-tree-stage="3"]
-.tree-wrap:not(.wind-active):not(.tree-pulse):not(.is-tree-call-tapped):not(.is-tree-call-sending):not(.is-heart-fruit-revealing) {
-  animation-name: gardenLifeStageThree;
-  animation-duration: 9.1s;
-}
-
-/* 4단계: 꽃이 피는 작은 나무. 흔들기보다 조용한 상하 호흡을 중심으로 합니다. */
-.garden-app:not(.welcome-sandbox-garden):not(.is-heart-fruit-ceremony)
-.garden-stage.garden-life-enabled[data-tree-stage="4"]
-.tree-wrap:not(.wind-active):not(.tree-pulse):not(.is-tree-call-tapped):not(.is-tree-call-sending):not(.is-heart-fruit-revealing) {
-  animation-name: gardenLifeStageFour;
-  animation-duration: 9.5s;
-}
-
-/* 5~6단계: 큰 나무는 줄기 전체가 흔들리면 가벼워 보이므로 1px 이내의 호흡만 사용합니다. */
-.garden-app:not(.welcome-sandbox-garden):not(.is-heart-fruit-ceremony)
-.garden-stage.garden-life-enabled[data-tree-stage="5"]
-.tree-wrap:not(.wind-active):not(.tree-pulse):not(.is-tree-call-tapped):not(.is-tree-call-sending):not(.is-heart-fruit-revealing),
-.garden-app:not(.welcome-sandbox-garden):not(.is-heart-fruit-ceremony)
-.garden-stage.garden-life-enabled[data-tree-stage="6"]
-.tree-wrap:not(.wind-active):not(.tree-pulse):not(.is-tree-call-tapped):not(.is-tree-call-sending):not(.is-heart-fruit-revealing) {
-  animation-name: gardenLifeMatureTree;
-  animation-duration: 10.2s;
-}
-
-/* 나무 빛도 성장에 맞춰 강도를 달리합니다. */
+/* 나무 주변의 빛은 위치를 옮기지 않고 밝기만 천천히 호흡합니다. */
 .garden-stage.garden-life-enabled .tree-wrap:not(.is-tree-call-tapped):not(.is-tree-call-sending):not(.is-heart-fruit-revealing) .tree-aura {
-  animation: gardenLifeAuraBreathe 8.4s ease-in-out infinite;
+  animation: gardenLifeAuraBreathe 8.8s ease-in-out infinite;
 }
-.garden-stage.garden-life-enabled[data-tree-stage="1"] .tree-aura { opacity: .43; }
-.garden-stage.garden-life-enabled[data-tree-stage="2"] .tree-aura { opacity: .50; }
-.garden-stage.garden-life-enabled[data-tree-stage="3"] .tree-aura { opacity: .58; }
-.garden-stage.garden-life-enabled[data-tree-stage="4"] .tree-aura { opacity: .66; }
+.garden-stage.garden-life-enabled[data-tree-stage="1"] .tree-aura { opacity: .42; }
+.garden-stage.garden-life-enabled[data-tree-stage="2"] .tree-aura { opacity: .49; }
+.garden-stage.garden-life-enabled[data-tree-stage="3"] .tree-aura { opacity: .57; }
+.garden-stage.garden-life-enabled[data-tree-stage="4"] .tree-aura { opacity: .65; }
 .garden-stage.garden-life-enabled[data-tree-stage="5"] .tree-aura,
-.garden-stage.garden-life-enabled[data-tree-stage="6"] .tree-aura { opacity: .74; }
+.garden-stage.garden-life-enabled[data-tree-stage="6"] .tree-aura { opacity: .73; }
 
-/* 반짝임은 성장 초기에 적고, 나무가 자랄수록 조금씩 풍성해집니다. */
+/* 반짝임은 나무를 흔드는 대신 정원에 생명감을 보태는 보조 모션입니다. */
 .garden-stage.garden-life-enabled .sparkle-layer i {
-  opacity: .18;
+  opacity: .2;
   animation-name: gardenLifeMote;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
 }
-.garden-stage.garden-life-enabled .sparkle-layer i:nth-child(1) { animation-duration: 7.4s; animation-delay: -1.3s; }
-.garden-stage.garden-life-enabled .sparkle-layer i:nth-child(2) { animation-duration: 9.1s; animation-delay: -5.2s; }
-.garden-stage.garden-life-enabled .sparkle-layer i:nth-child(3) { animation-duration: 8.3s; animation-delay: -2.8s; }
-.garden-stage.garden-life-enabled .sparkle-layer i:nth-child(4) { animation-duration: 10.2s; animation-delay: -7.1s; }
-.garden-stage.garden-life-enabled .sparkle-layer i:nth-child(5) { animation-duration: 8.8s; animation-delay: -4.4s; }
+.garden-stage.garden-life-enabled .sparkle-layer i:nth-child(1) { animation-duration: 7.2s; animation-delay: -1.3s; }
+.garden-stage.garden-life-enabled .sparkle-layer i:nth-child(2) { animation-duration: 9s; animation-delay: -5.2s; }
+.garden-stage.garden-life-enabled .sparkle-layer i:nth-child(3) { animation-duration: 8.1s; animation-delay: -2.8s; }
+.garden-stage.garden-life-enabled .sparkle-layer i:nth-child(4) { animation-duration: 10s; animation-delay: -7.1s; }
+.garden-stage.garden-life-enabled .sparkle-layer i:nth-child(5) { animation-duration: 8.6s; animation-delay: -4.4s; }
 .garden-stage.garden-life-enabled[data-tree-stage="1"] .sparkle-layer i:nth-child(n+3),
 .garden-stage.garden-life-enabled[data-tree-stage="2"] .sparkle-layer i:nth-child(n+4) {
   visibility: hidden;
 }
 
-/* 실제 방문 동물은 오래 쉬다가 한 번씩 반응합니다. */
+/* 방문 동물은 긴 정지 뒤 짧게 반응합니다. */
 .garden-stage.garden-life-enabled .animal-v2-visitor:not(.is-arriving):not(.is-departing) {
-  animation: gardenLifeAnimalIdle 7.8s ease-in-out infinite;
+  animation: gardenLifeAnimalIdle 7.4s ease-in-out infinite;
 }
 .garden-stage.garden-life-enabled .animal-v2-squirrel { animation-delay: -2.1s; }
 .garden-stage.garden-life-enabled .animal-v2-rabbit { animation-delay: -4.7s; }
 .garden-stage.garden-life-enabled .animal-v2-hedgehog { animation-delay: -6.2s; }
 
-/* 수집 장식은 생물·매달린 물건·꽃처럼 움직임에 이유가 있는 항목만 적용합니다. */
+/* 움직일 이유가 있는 장식만 바람에 반응합니다. */
 .garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="tiny_squirrel"] img,
 .garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="tiny_hedgehog"] img {
   transform-origin: 50% 94%;
-  animation: gardenLifeTinyAnimal 8.6s ease-in-out infinite;
+  animation: gardenLifeTinyAnimal 8.2s ease-in-out infinite;
 }
-.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="tiny_hedgehog"] img {
-  animation-delay: -4.1s;
-}
+.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="tiny_hedgehog"] img { animation-delay: -4.1s; }
 .garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="forest_ribbon"] img,
 .garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="branch_letter"] img {
   transform-origin: 50% 10%;
-  animation: gardenLifeHangingItem 6.8s ease-in-out infinite;
+  animation: gardenLifeHangingItem 6.4s ease-in-out infinite;
 }
-.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="branch_letter"] img {
-  animation-delay: -3.5s;
-}
+.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="branch_letter"] img { animation-delay: -3.5s; }
 .garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="pink_wildflower"] img,
 .garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="white_daisies"] img {
   transform-origin: 50% 96%;
-  animation: gardenLifeFlowers 9.4s ease-in-out infinite;
+  animation: gardenLifeFlowers 8.8s ease-in-out infinite;
 }
-.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="white_daisies"] img {
-  animation-delay: -5.2s;
-}
-.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="firefly_jar"] {
-  isolation: isolate;
-}
+.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="white_daisies"] img { animation-delay: -5.2s; }
+.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="firefly_jar"] { isolation: isolate; }
 .garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="firefly_jar"] img {
   animation: gardenLifeJarGlow 6.2s ease-in-out infinite;
 }
@@ -154,7 +141,6 @@
   pointer-events: none;
 }
 
-/* 성장 단계별 위치에서 아주 드물게 떠오르는 빛만 생성합니다. */
 .garden-ambient-layer {
   position: absolute;
   z-index: 6;
@@ -184,83 +170,103 @@
 }
 
 @keyframes gardenLifeCloudOne {
-  0% { translate: -8px 0; }
-  48% { translate: 13px -2px; }
-  100% { translate: 39px 1px; }
+  0% { translate: -18px 0; }
+  46% { translate: 23px -3px; }
+  100% { translate: 68px 2px; }
 }
 @keyframes gardenLifeCloudTwo {
-  0% { translate: 14px 0; }
-  52% { translate: -8px 2px; }
-  100% { translate: -37px -1px; }
+  0% { translate: 22px 0; }
+  54% { translate: -18px 3px; }
+  100% { translate: -72px -1px; }
 }
 @keyframes gardenLifeGlowOne {
-  0%, 100% { opacity: .73; scale: 1; }
-  50% { opacity: .92; scale: 1.045; }
+  0%, 100% { opacity: .69; scale: .99; translate: -5px 1px; }
+  50% { opacity: .92; scale: 1.055; translate: 7px -3px; }
 }
 @keyframes gardenLifeGlowTwo {
-  0%, 100% { opacity: .62; scale: .98; }
-  50% { opacity: .83; scale: 1.035; }
+  0%, 100% { opacity: .58; scale: .98; translate: 5px -1px; }
+  50% { opacity: .84; scale: 1.045; translate: -8px 3px; }
 }
-@keyframes gardenLifeStageOne {
-  0%, 100% { transform: translateX(-50%) translateY(0) rotate(-.03deg); }
-  52% { transform: translateX(-50%) translateY(-.35px) rotate(.10deg); }
-  76% { transform: translateX(-50%) translateY(0) rotate(.02deg); }
+
+/* 위아래 이동 없이, 바닥을 축으로 좌우 바람에만 반응합니다. */
+@keyframes gardenLifeBreezeStageOne {
+  0%, 100% { transform: translateX(-50%) rotate(0deg); }
+  20% { transform: translateX(-50%) rotate(-1.05deg); }
+  43% { transform: translateX(-50%) rotate(.78deg); }
+  64% { transform: translateX(-50%) rotate(-.38deg); }
+  82% { transform: translateX(-50%) rotate(.14deg); }
 }
-@keyframes gardenLifeStageTwo {
-  0%, 100% { transform: translateX(-50%) translateY(0) rotate(-.08deg); }
-  48% { transform: translateX(-50%) translateY(-.55px) rotate(.18deg); }
-  76% { transform: translateX(-50%) translateY(0) rotate(.03deg); }
+@keyframes gardenLifeBreezeStageTwo {
+  0%, 100% { transform: translateX(-50%) rotate(0deg); }
+  20% { transform: translateX(-50%) rotate(-.86deg); }
+  43% { transform: translateX(-50%) rotate(.65deg); }
+  64% { transform: translateX(-50%) rotate(-.31deg); }
+  82% { transform: translateX(-50%) rotate(.12deg); }
 }
-@keyframes gardenLifeStageThree {
-  0%, 100% { transform: translateX(-50%) translateY(0) rotate(-.07deg); }
-  47% { transform: translateX(-50%) translateY(-.7px) rotate(.14deg); }
-  73% { transform: translateX(-50%) translateY(0) rotate(.02deg); }
+@keyframes gardenLifeBreezeStageThree {
+  0%, 100% { transform: translateX(-50%) rotate(0deg); }
+  20% { transform: translateX(-50%) rotate(-.62deg); }
+  43% { transform: translateX(-50%) rotate(.47deg); }
+  64% { transform: translateX(-50%) rotate(-.22deg); }
+  82% { transform: translateX(-50%) rotate(.09deg); }
 }
-@keyframes gardenLifeStageFour {
-  0%, 100% { transform: translateX(-50%) translateY(0) rotate(-.06deg); }
-  48% { transform: translateX(-50%) translateY(-.85px) rotate(.11deg); }
-  74% { transform: translateX(-50%) translateY(0) rotate(.02deg); }
+@keyframes gardenLifeBreezeStageFour {
+  0%, 100% { transform: translateX(-50%) rotate(0deg); }
+  20% { transform: translateX(-50%) rotate(-.5deg); }
+  43% { transform: translateX(-50%) rotate(.38deg); }
+  64% { transform: translateX(-50%) rotate(-.18deg); }
+  82% { transform: translateX(-50%) rotate(.07deg); }
 }
-@keyframes gardenLifeMatureTree {
-  0%, 100% { transform: translateX(-50%) translateY(0) rotate(-.04deg); }
-  46% { transform: translateX(-50%) translateY(-1px) rotate(.08deg); }
-  72% { transform: translateX(-50%) translateY(0) rotate(.01deg); }
+@keyframes gardenLifeBreezeStageFive {
+  0%, 100% { transform: translateX(-50%) rotate(0deg); }
+  20% { transform: translateX(-50%) rotate(-.42deg); }
+  43% { transform: translateX(-50%) rotate(.31deg); }
+  64% { transform: translateX(-50%) rotate(-.14deg); }
+  82% { transform: translateX(-50%) rotate(.055deg); }
 }
+@keyframes gardenLifeBreezeStageSix {
+  0%, 100% { transform: translateX(-50%) rotate(0deg); }
+  20% { transform: translateX(-50%) rotate(-.36deg); }
+  43% { transform: translateX(-50%) rotate(.27deg); }
+  64% { transform: translateX(-50%) rotate(-.12deg); }
+  82% { transform: translateX(-50%) rotate(.045deg); }
+}
+
 @keyframes gardenLifeAuraBreathe {
-  0%, 100% { transform: scale(.99); filter: blur(6px); }
-  52% { transform: scale(1.022); filter: blur(6.4px); }
+  0%, 100% { transform: scale(.985); filter: blur(6px); }
+  52% { transform: scale(1.03); filter: blur(6.5px); }
 }
 @keyframes gardenLifeMote {
-  0%, 18%, 72%, 100% { transform: translate3d(0, 3px, 0) scale(.55); opacity: .08; }
-  30% { opacity: .35; }
-  42% { transform: translate3d(2px, -2px, 0) scale(1.15); opacity: .9; }
-  53% { transform: translate3d(-1px, -5px, 0) scale(.72); opacity: .24; }
+  0%, 16%, 74%, 100% { transform: translate3d(0, 4px, 0) scale(.5); opacity: .07; }
+  29% { opacity: .38; }
+  43% { transform: translate3d(4px, -5px, 0) scale(1.2); opacity: .95; }
+  56% { transform: translate3d(-2px, -10px, 0) scale(.72); opacity: .22; }
 }
 @keyframes gardenLifeAnimalIdle {
-  0%, 68%, 100% { transform: translateY(0) rotate(0deg); }
-  74% { transform: translateY(-2px) rotate(-1.2deg); }
-  80% { transform: translateY(-3px) rotate(1deg); }
-  87% { transform: translateY(0) rotate(-.35deg); }
-  92% { transform: translateY(-1px) rotate(.2deg); }
+  0%, 65%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  73% { transform: translateY(-2px) rotate(-1.3deg) scale(1.01); }
+  80% { transform: translateY(-4px) rotate(1.1deg) scale(1.015); }
+  87% { transform: translateY(0) rotate(-.35deg) scale(1); }
+  92% { transform: translateY(-1px) rotate(.2deg) scale(1.004); }
 }
 @keyframes gardenLifeTinyAnimal {
-  0%, 67%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
-  74% { transform: translateY(-1px) rotate(-.7deg) scale(1.005); }
-  80% { transform: translateY(-2px) rotate(.65deg) scale(1.01); }
-  87% { transform: translateY(0) rotate(0deg) scale(1); }
+  0%, 66%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  74% { transform: translateY(-1px) rotate(-.9deg) scale(1.008); }
+  81% { transform: translateY(-3px) rotate(.8deg) scale(1.015); }
+  88% { transform: translateY(0) rotate(0deg) scale(1); }
 }
 @keyframes gardenLifeHangingItem {
-  0%, 100% { transform: rotate(-.8deg) translateY(0); }
-  50% { transform: rotate(1.1deg) translateY(1px); }
+  0%, 100% { transform: rotate(-1.3deg); }
+  50% { transform: rotate(1.7deg); }
 }
 @keyframes gardenLifeFlowers {
-  0%, 100% { transform: rotate(-.35deg) scaleY(1); }
-  48% { transform: rotate(.45deg) scaleY(1.006); }
-  73% { transform: rotate(.1deg) scaleY(.998); }
+  0%, 100% { transform: rotate(-.7deg); }
+  48% { transform: rotate(.9deg); }
+  73% { transform: rotate(.2deg); }
 }
 @keyframes gardenLifeJarGlow {
   0%, 100% { filter: brightness(.97) saturate(.98); }
-  45% { filter: brightness(1.07) saturate(1.05); }
+  45% { filter: brightness(1.08) saturate(1.06); }
   62% { filter: brightness(1.01) saturate(1.02); }
 }
 @keyframes gardenLifeJarLight {

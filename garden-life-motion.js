@@ -1,20 +1,30 @@
-/* 오늘의숲 · 살아 있는 정원 모션 v0.2
-   성장 단계에 따라 정원의 호흡을 다르게 적용합니다.
-   원칙: 낙엽은 기본 상시 효과에서 제거하고, 나무의 현재 성장 단계에 맞는 미세 모션만 사용합니다. */
+/* 오늘의숲 · 살아 있는 정원 모션 v0.3
+   나무를 계속 위아래로 흔들지 않습니다.
+   성장 단계별로 가끔 옆바람에 반응하고, 나머지 생명감은 하늘·빛·동물·장식이 나눠 가집니다. */
 
 const LIFE_LAYER_ID = "gardenAmbientLayer";
 const MAX_AMBIENT_PARTICLES = 1;
 
 const STAGE_PROFILES = {
-  1: { lightMinDelay: 13000, lightMaxDelay: 21000, xMin: .30, xMax: .72, yMin: .50, yMax: .82 },
-  2: { lightMinDelay: 12000, lightMaxDelay: 19000, xMin: .27, xMax: .75, yMin: .34, yMax: .74 },
-  3: { lightMinDelay: 10000, lightMaxDelay: 17000, xMin: .29, xMax: .74, yMin: .22, yMax: .72 },
-  4: { lightMinDelay: 9000, lightMaxDelay: 15500, xMin: .22, xMax: .80, yMin: .16, yMax: .68 },
-  5: { lightMinDelay: 8000, lightMaxDelay: 14000, xMin: .18, xMax: .84, yMin: .13, yMax: .65 },
-  6: { lightMinDelay: 7500, lightMaxDelay: 13500, xMin: .18, xMax: .84, yMin: .12, yMax: .64 },
+  1: { lightMinDelay: 13000, lightMaxDelay: 21000, breezeMinDelay: 6500, breezeMaxDelay: 10500, breezeDuration: 2050, xMin: .30, xMax: .72, yMin: .50, yMax: .82 },
+  2: { lightMinDelay: 12000, lightMaxDelay: 19000, breezeMinDelay: 7000, breezeMaxDelay: 11500, breezeDuration: 2150, xMin: .27, xMax: .75, yMin: .34, yMax: .74 },
+  3: { lightMinDelay: 10000, lightMaxDelay: 17000, breezeMinDelay: 7600, breezeMaxDelay: 12500, breezeDuration: 2250, xMin: .29, xMax: .74, yMin: .22, yMax: .72 },
+  4: { lightMinDelay: 9000, lightMaxDelay: 15500, breezeMinDelay: 8200, breezeMaxDelay: 13500, breezeDuration: 2350, xMin: .22, xMax: .80, yMin: .16, yMax: .68 },
+  5: { lightMinDelay: 8000, lightMaxDelay: 14000, breezeMinDelay: 9000, breezeMaxDelay: 14500, breezeDuration: 2550, xMin: .18, xMax: .84, yMin: .13, yMax: .65 },
+  6: { lightMinDelay: 7500, lightMaxDelay: 13500, breezeMinDelay: 9500, breezeMaxDelay: 15500, breezeDuration: 2700, xMin: .18, xMax: .84, yMin: .12, yMax: .64 },
 };
 
+const TREE_CONFLICT_CLASSES = [
+  "wind-active",
+  "tree-pulse",
+  "is-tree-call-tapped",
+  "is-tree-call-sending",
+  "is-heart-fruit-revealing",
+];
+
 let lightTimer = null;
+let breezeTimer = null;
+let breezeCleanupTimer = null;
 let reducedMotionQuery = null;
 let treeObserver = null;
 let activeStage = 1;
@@ -38,6 +48,11 @@ function gardenIsVisible(stage) {
   if (!stage || document.hidden) return false;
   const app = stage.closest("#gardenApp");
   return Boolean(app && !app.classList.contains("hidden"));
+}
+
+function treeCanTakeAmbientMotion(tree) {
+  if (!tree) return false;
+  return !TREE_CONFLICT_CLASSES.some((className) => tree.classList.contains(className));
 }
 
 function ensureAmbientLayer() {
@@ -71,7 +86,7 @@ function syncTreeStage() {
   stage.dataset.treeStage = String(nextStage);
   treeWrap.dataset.treeStage = String(nextStage);
 
-  if (changed) restartAmbientTimer();
+  if (changed) restartAmbientMotion();
 }
 
 function createTreeLight() {
@@ -109,6 +124,23 @@ function createTreeLight() {
   layer.appendChild(particle);
 }
 
+function triggerTreeBreeze() {
+  const stage = document.querySelector("#gardenStage");
+  const tree = document.querySelector("#treeWrap");
+  if (!stage || !tree || !gardenIsVisible(stage)) return;
+  if (reducedMotionQuery?.matches || !treeCanTakeAmbientMotion(tree)) return;
+
+  const profile = STAGE_PROFILES[activeStage] || STAGE_PROFILES[1];
+  tree.classList.remove("garden-life-breeze");
+  void tree.offsetWidth;
+  tree.classList.add("garden-life-breeze");
+
+  window.clearTimeout(breezeCleanupTimer);
+  breezeCleanupTimer = window.setTimeout(() => {
+    tree.classList.remove("garden-life-breeze");
+  }, profile.breezeDuration + 120);
+}
+
 function scheduleTreeLight() {
   window.clearTimeout(lightTimer);
   const profile = STAGE_PROFILES[activeStage] || STAGE_PROFILES[1];
@@ -118,16 +150,31 @@ function scheduleTreeLight() {
   }, randomBetween(profile.lightMinDelay, profile.lightMaxDelay));
 }
 
-function stopAmbientTimer() {
-  window.clearTimeout(lightTimer);
-  lightTimer = null;
+function scheduleTreeBreeze() {
+  window.clearTimeout(breezeTimer);
+  const profile = STAGE_PROFILES[activeStage] || STAGE_PROFILES[1];
+  breezeTimer = window.setTimeout(() => {
+    triggerTreeBreeze();
+    scheduleTreeBreeze();
+  }, randomBetween(profile.breezeMinDelay, profile.breezeMaxDelay));
 }
 
-function restartAmbientTimer() {
-  stopAmbientTimer();
+function stopAmbientMotion() {
+  window.clearTimeout(lightTimer);
+  window.clearTimeout(breezeTimer);
+  window.clearTimeout(breezeCleanupTimer);
+  lightTimer = null;
+  breezeTimer = null;
+  breezeCleanupTimer = null;
+  document.querySelector("#treeWrap")?.classList.remove("garden-life-breeze");
+}
+
+function restartAmbientMotion() {
+  stopAmbientMotion();
   document.querySelectorAll(".garden-ambient-particle").forEach((particle) => particle.remove());
   if (document.hidden || reducedMotionQuery?.matches) return;
   scheduleTreeLight();
+  scheduleTreeBreeze();
 }
 
 function initGardenLifeMotion() {
@@ -143,15 +190,15 @@ function initGardenLifeMotion() {
   treeObserver.observe(treeImage, { attributes: true, attributeFilter: ["src"] });
 
   reducedMotionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)") || null;
-  reducedMotionQuery?.addEventListener?.("change", restartAmbientTimer);
-  document.addEventListener("visibilitychange", restartAmbientTimer);
+  reducedMotionQuery?.addEventListener?.("change", restartAmbientMotion);
+  document.addEventListener("visibilitychange", restartAmbientMotion);
   window.addEventListener("pageshow", () => {
     syncTreeStage();
-    restartAmbientTimer();
+    restartAmbientMotion();
   });
-  window.addEventListener("pagehide", stopAmbientTimer);
+  window.addEventListener("pagehide", stopAmbientMotion);
 
-  restartAmbientTimer();
+  restartAmbientMotion();
 }
 
 if (document.readyState === "loading") {
