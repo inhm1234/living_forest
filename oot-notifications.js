@@ -171,8 +171,13 @@ function showLocalMessage(message) {
   const toast = document.querySelector("#toast");
   if (toast) {
     toast.textContent = message;
-    toast.classList.remove("is-hidden");
-    window.setTimeout(() => toast.classList.add("is-hidden"), 3000);
+    toast.classList.remove("hidden", "is-hidden");
+    window.clearTimeout(Number(toast.dataset.hideTimer || 0));
+    const hideTimer = window.setTimeout(() => {
+      toast.classList.add("hidden");
+      delete toast.dataset.hideTimer;
+    }, 3000);
+    toast.dataset.hideTimer = String(hideTimer);
   }
 }
 
@@ -192,8 +197,25 @@ async function registerServiceWorker() {
   return serviceWorkerRegistration;
 }
 
-function notificationSupportMessage() {
-  if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+function pushNotificationSupported() {
+  return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+}
+
+async function getCurrentPushSubscription({ register = false } = {}) {
+  if (!pushNotificationSupported()) return null;
+  try {
+    const registration = register
+      ? await registerServiceWorker()
+      : serviceWorkerRegistration || await navigator.serviceWorker.getRegistration("./");
+    return await registration?.pushManager.getSubscription() || null;
+  } catch (error) {
+    console.warn("TodayForest push state check skipped", error);
+    return null;
+  }
+}
+
+function notificationSupportMessage(active = false) {
+  if (!pushNotificationSupported()) {
     return "이 브라우저에서는 웹 푸시 알림을 지원하지 않아요.";
   }
   if (isIos() && !isStandalone()) {
@@ -202,47 +224,83 @@ function notificationSupportMessage() {
   if (Notification.permission === "denied") {
     return "브라우저 설정에서 오늘의숲 알림을 허용해 주세요.";
   }
-  if (Notification.permission === "granted") return "원오브텐 초대 알림을 받을 수 있어요.";
+  if (active) return "원오브텐 초대 알림을 받고 있어요. 버튼을 누르면 끌 수 있어요.";
+  if (Notification.permission === "granted") return "초대 알림은 현재 꺼져 있어요. 버튼을 누르면 다시 켤 수 있어요.";
   return "사이트를 닫아둬도 원오브텐 초대를 알려드려요.";
 }
 
-function refreshNotificationControls() {
-  const supported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+async function refreshNotificationControls() {
+  const supported = pushNotificationSupported();
   const iosNeedsInstall = isIos() && !isStandalone();
-  const granted = supported && Notification.permission === "granted";
+  const permissionDenied = supported && Notification.permission === "denied";
+  const subscription = supported && !iosNeedsInstall && Notification.permission === "granted"
+    ? await getCurrentPushSubscription()
+    : null;
+  const active = Boolean(subscription);
 
   document.querySelectorAll("[data-oot-enable-push]").forEach((button) => {
-    button.disabled = notificationBusy || !supported || Notification.permission === "denied";
-    button.textContent = granted ? "초대 알림 켜짐" : iosNeedsInstall ? "홈 화면에 추가 필요" : "초대 알림 받기";
-    button.classList.toggle("is-enabled", granted);
+    button.disabled = notificationBusy || !currentUser || !supported || permissionDenied;
+    button.textContent = !currentUser
+      ? "로그인 후 알림 설정"
+      : permissionDenied
+        ? "브라우저에서 알림 차단됨"
+        : iosNeedsInstall
+          ? "홈 화면에 추가 필요"
+          : active
+            ? "알림 켜짐 · 끄기"
+            : Notification.permission === "granted"
+              ? "알림 꺼짐 · 켜기"
+              : "초대 알림 켜기";
+    button.classList.toggle("is-enabled", active);
+    button.setAttribute("aria-pressed", String(active));
+    button.setAttribute("aria-label", active ? "원오브텐 초대 알림 끄기" : "원오브텐 초대 알림 켜기");
   });
 
   document.querySelectorAll("[data-oot-notification-status]").forEach((element) => {
-    element.textContent = notificationSupportMessage();
+    element.textContent = notificationSupportMessage(active);
   });
 }
 
-async function enablePushNotifications() {
-  if (notificationBusy || !currentUser) return;
+async function togglePushNotifications() {
+  if (notificationBusy) return;
+  if (!currentUser) {
+    showLocalMessage("로그인한 뒤 초대 알림을 설정할 수 있어요.");
+    return;
+  }
 
-  if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+  if (!pushNotificationSupported()) {
     showLocalMessage("이 브라우저에서는 웹 푸시 알림을 지원하지 않아요.");
     return;
   }
 
   if (isIos() && !isStandalone()) {
     showLocalMessage("Safari 공유 메뉴에서 ‘홈 화면에 추가’한 뒤 오늘의숲 아이콘으로 다시 열어 주세요.");
-    refreshNotificationControls();
+    void refreshNotificationControls();
     return;
   }
 
   notificationBusy = true;
-  refreshNotificationControls();
+  void refreshNotificationControls();
 
   try {
-    const permission = await Notification.requestPermission();
+    const existingSubscription = Notification.permission === "granted"
+      ? await getCurrentPushSubscription()
+      : null;
+
+    if (existingSubscription) {
+      const unsubscribed = await existingSubscription.unsubscribe();
+      if (!unsubscribed) throw new Error("PUSH_UNSUBSCRIBE_FAILED");
+      showLocalMessage("원오브텐 초대 알림을 껐어요.");
+      return;
+    }
+
+    const permission = Notification.permission === "granted"
+      ? "granted"
+      : await Notification.requestPermission();
     if (permission !== "granted") {
-      showLocalMessage(permission === "denied" ? "알림이 차단됐어요. 브라우저 설정에서 허용할 수 있어요." : "알림 허용을 다음에 다시 선택할 수 있어요.");
+      showLocalMessage(permission === "denied"
+        ? "알림이 차단됐어요. 브라우저 설정에서 허용할 수 있어요."
+        : "알림 허용을 다음에 다시 선택할 수 있어요.");
       return;
     }
 
@@ -267,11 +325,11 @@ async function enablePushNotifications() {
 
     showLocalMessage("원오브텐 초대 알림을 켰어요.");
   } catch (error) {
-    console.warn("TodayForest push subscription error", error);
-    showLocalMessage("알림 연결이 어긋났어요. 잠시 후 다시 눌러 주세요.");
+    console.warn("TodayForest push toggle error", error);
+    showLocalMessage("알림 설정이 어긋났어요. 잠시 후 다시 눌러 주세요.");
   } finally {
     notificationBusy = false;
-    refreshNotificationControls();
+    void refreshNotificationControls();
   }
 }
 
@@ -298,7 +356,7 @@ function bindNotificationButtons() {
   document.querySelectorAll("[data-oot-enable-push]").forEach((button) => {
     if (button.dataset.ootBound === "true") return;
     button.dataset.ootBound = "true";
-    button.addEventListener("click", enablePushNotifications);
+    button.addEventListener("click", togglePushNotifications);
   });
   refreshNotificationControls();
 }
@@ -501,7 +559,7 @@ function bindGameReadyButton() {
 }
 
 async function initialize() {
-  console.info("TodayForest OneOfTen Notifications v0.6 · Player page dedupe");
+  console.info("TodayForest OneOfTen Notifications v0.7 · Push toggle");
   bindInviteNavigation();
   bindNotificationButtons();
   bindGameReadyButton();
@@ -516,6 +574,7 @@ async function initialize() {
 
   await registerServiceWorker().catch((error) => console.warn("TodayForest service worker skipped", error));
   await syncExistingSubscription();
+  await refreshNotificationControls();
   startPresence();
 
   // 사람 대전 페이지는 자체 로비 Realtime과 초대 UI를 사용하므로
