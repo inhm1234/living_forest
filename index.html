@@ -32,7 +32,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=garden-install-status-v1" />
+  <link rel="stylesheet" href="style.css?v=garden-status-navigation-v2" />
   <link rel="stylesheet" href="oot-notifications.css?v=oot-push-v0-5" />
   <link rel="stylesheet" href="tree-animal-call.css?v=tree-animal-call-v4-status-hotfix" />
   <link rel="stylesheet" href="forest-unicorn-preview.css?v=operation-special-friend-visit-v1-2" />
@@ -462,12 +462,17 @@
         <span id="treeStageLabel">처음 깨어난 새싹</span>
       </div>
 
-      <!-- GARDEN STATUS BAR v1: 날씨·방문·편지·특별친구·다음 방문자 소식을 한 줄에서 보여줍니다. -->
-      <button class="garden-status-bar" id="gardenStatusBar" type="button" aria-live="polite" aria-label="정원 소식 보기">
-        <span class="garden-status-icon" id="gardenStatusIcon" aria-hidden="true">☀️</span>
-        <span class="garden-status-text" id="gardenStatusText">햇살이 포근하게 내려와요</span>
-        <span class="garden-status-more" id="gardenStatusMore" aria-hidden="true">›</span>
-      </button>
+      <!-- GARDEN STATUS BAR v2: 본문은 상세 열기, 오른쪽 번호·화살표는 다음 소식 넘기기입니다. -->
+      <div class="garden-status-bar" id="gardenStatusBar" role="group" aria-live="polite" aria-label="정원 소식">
+        <button class="garden-status-main" id="gardenStatusMain" type="button" aria-label="정원 소식 보기">
+          <span class="garden-status-icon" id="gardenStatusIcon" aria-hidden="true">☀️</span>
+          <span class="garden-status-text" id="gardenStatusText">햇살이 포근하게 내려와요</span>
+        </button>
+        <button class="garden-status-next" id="gardenStatusNext" type="button" aria-label="다음 정원 소식 보기">
+          <span class="garden-status-count" id="gardenStatusCount" aria-hidden="true">1/1</span>
+          <span class="garden-status-more" id="gardenStatusMore" aria-hidden="true">›</span>
+        </button>
+      </div>
 
       <button class="heart-fruit-open hidden" id="openHeartFruits" type="button" aria-label="내 마음 열매 보기">
         <span aria-hidden="true">●</span>
@@ -1234,7 +1239,7 @@
   <div class="heart-fruit-ceremony-lock hidden" id="heartFruitCeremonyLock" aria-hidden="true"></div>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="app.js?v=garden-install-status-v1"></script>
+  <script type="module" src="app.js?v=garden-status-navigation-v2"></script>
   <script type="module" src="tree-animal-call.js?v=operation-special-friend-visit-v1-2"></script>
   <script type="module" src="forest-unicorn-preview.js?v=operation-special-friend-visit-v1-2"></script>
   <script type="module" src="forest-friend-cinematic.js?v=operation-special-friend-v1"></script>

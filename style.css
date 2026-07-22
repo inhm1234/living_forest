@@ -6157,8 +6157,8 @@ html.shared-tree-start-moment-open body {
 
 
 /* ==========================================================================
-   GARDEN STATUS BAR v1
-   날씨·방문자·편지·특별친구·다음 방문자 안내를 정원 상단 한 줄로 통합합니다.
+   GARDEN STATUS BAR v2
+   본문은 상세 열기, 오른쪽 번호·화살표는 다음 소식 넘기기입니다.
    기존 요소는 JS 호환을 위해 DOM에 남겨 두되 화면에서는 중복 노출하지 않습니다.
    ========================================================================== */
 #weatherButton,
@@ -6180,37 +6180,57 @@ body.forest-unicorn-live-enabled .header-actions {
   top: 61px;
   left: 50%;
   display: grid;
-  grid-template-columns: 25px minmax(0, 1fr) 15px;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 7px;
+  gap: 3px;
   width: min(360px, calc(100% - 34px));
   min-height: 36px;
   margin: 0;
-  padding: 6px 10px;
+  padding: 4px 5px 4px 8px;
   border: 1px solid rgba(255,255,255,.84);
   border-radius: 999px;
   background: rgba(255,255,255,.68);
   color: #64788a;
-  font: inherit;
-  text-align: left;
   box-shadow: 0 8px 18px rgba(91, 112, 137, .09);
   transform: translateX(-50%);
-  cursor: default;
   backdrop-filter: blur(9px);
   -webkit-tap-highlight-color: transparent;
-  transition: background .18s ease, transform .18s ease, box-shadow .18s ease;
+  transition: background .18s ease, box-shadow .18s ease;
 }
 
-.garden-status-bar.is-actionable { cursor: pointer; }
-.garden-status-bar.is-actionable:hover {
-  background: rgba(255,255,255,.82);
-  box-shadow: 0 10px 20px rgba(91, 112, 137, .12);
+.garden-status-bar:hover {
+  background: rgba(255,255,255,.78);
+  box-shadow: 0 10px 20px rgba(91, 112, 137, .11);
 }
-.garden-status-bar.is-actionable:active { transform: translateX(-50%) scale(.992); }
-.garden-status-bar:focus-visible {
-  outline: 3px solid rgba(255,255,255,.94);
-  outline-offset: 3px;
+
+.garden-status-main {
+  display: grid;
+  grid-template-columns: 25px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 28px;
+  margin: 0;
+  padding: 1px 3px 1px 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
 }
+
+.garden-status-main.is-actionable { cursor: pointer; }
+.garden-status-main.is-actionable:hover { background: rgba(255,255,255,.34); }
+.garden-status-main.is-actionable:active { transform: scale(.994); }
+.garden-status-main:focus-visible,
+.garden-status-next:focus-visible {
+  outline: 2px solid rgba(128, 164, 186, .56);
+  outline-offset: 1px;
+}
+.garden-status-main:disabled { opacity: 1; }
 
 .garden-status-icon {
   display: grid;
@@ -6233,6 +6253,37 @@ body.forest-unicorn-live-enabled .header-actions {
   white-space: nowrap;
 }
 
+.garden-status-next {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 48px;
+  height: 28px;
+  margin: 0;
+  padding: 0 7px 0 8px;
+  border: 0;
+  border-left: 1px solid rgba(129, 151, 169, .18);
+  border-radius: 0 999px 999px 0;
+  background: transparent;
+  color: #8799a8;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.garden-status-next:hover { background: rgba(255,255,255,.42); }
+.garden-status-next:active { transform: scale(.97); }
+.garden-status-next[hidden] { display: none; }
+
+.garden-status-count {
+  min-width: 22px;
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1;
+  text-align: right;
+  letter-spacing: -.2px;
+}
+
 .garden-status-more {
   color: #91a0ad;
   font-size: 15px;
@@ -6240,7 +6291,6 @@ body.forest-unicorn-live-enabled .header-actions {
   line-height: 1;
   text-align: center;
 }
-.garden-status-more[hidden] { display: block; visibility: hidden; }
 
 .garden-stage.weather-rain .garden-status-bar {
   background: rgba(248, 250, 255, .64);
@@ -6260,7 +6310,8 @@ body.forest-unicorn-live-enabled .header-actions {
     top: 60px;
     width: min(330px, calc(100% - 28px));
     min-height: 35px;
-    padding-inline: 9px;
+    padding-left: 7px;
   }
   .garden-status-text { font-size: 10px; }
+  .garden-status-next { min-width: 45px; padding-inline: 6px; }
 }

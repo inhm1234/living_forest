@@ -411,14 +411,17 @@ let retentionWindTimer = null;
 let retentionWindRefreshBusy = false;
 let retentionCleanupRanOnThisPage = false;
 let deferredInstallPrompt = null;
-// GARDEN STATUS BAR v1: 여러 한 줄 안내를 하나의 고정 상태바로 통합합니다.
+// GARDEN STATUS BAR v2: 본문 열기와 다음 소식 넘기기를 분리하고,
+// 새 동물 소식은 잠깐 우선 노출한 뒤 다른 소식과 함께 순환합니다.
 const GARDEN_STATUS_ROTATE_MS = 7000;
+const GARDEN_STATUS_ANIMAL_HIGHLIGHT_MS = 4800;
 let gardenStatusItems = [];
 let gardenStatusIndex = 0;
-let gardenStatusSignature = "";
 let gardenStatusRotateTimer = null;
 let gardenStatusTransient = null;
 let gardenStatusTransientTimer = null;
+let gardenAnimalStatusSignature = "";
+let gardenAnimalStatusPriorityUntil = 0;
 let treeNamePromptedForUserId = "";
 let gardenWorldResizeObserver = null;
 let friendGardenWorldResizeObserver = null;
@@ -474,8 +477,11 @@ const els = {
   dayCount: $("#dayCount"),
   treeStageLabel: $("#treeStageLabel"),
   gardenStatusBar: $("#gardenStatusBar"),
+  gardenStatusMain: $("#gardenStatusMain"),
   gardenStatusIcon: $("#gardenStatusIcon"),
   gardenStatusText: $("#gardenStatusText"),
+  gardenStatusNext: $("#gardenStatusNext"),
+  gardenStatusCount: $("#gardenStatusCount"),
   gardenStatusMore: $("#gardenStatusMore"),
   visitorButton: $("#visitorButton"),
   visitorImage: $("#visitorImage"),
@@ -3106,6 +3112,18 @@ function clearGardenStatusRotateTimer() {
   gardenStatusRotateTimer = null;
 }
 
+function currentGardenStatusItem() {
+  return gardenStatusItems[gardenStatusIndex] || gardenStatusItems[0] || null;
+}
+
+function gardenStatusRotationDelay() {
+  const item = currentGardenStatusItem();
+  if (item?.category === "animal" && Date.now() < gardenAnimalStatusPriorityUntil) {
+    return Math.max(300, gardenAnimalStatusPriorityUntil - Date.now());
+  }
+  return GARDEN_STATUS_ROTATE_MS;
+}
+
 function scheduleGardenStatusRotation() {
   clearGardenStatusRotateTimer();
   if (gardenStatusItems.length < 2) return;
@@ -3114,33 +3132,69 @@ function scheduleGardenStatusRotation() {
     gardenStatusIndex = (gardenStatusIndex + 1) % gardenStatusItems.length;
     applyGardenStatusItem();
     scheduleGardenStatusRotation();
-  }, GARDEN_STATUS_ROTATE_MS);
+  }, gardenStatusRotationDelay());
 }
 
 function applyGardenStatusItem() {
   if (!els.gardenStatusBar || !gardenStatusItems.length) return;
-  const item = gardenStatusItems[gardenStatusIndex] || gardenStatusItems[0];
+  const item = currentGardenStatusItem();
+  if (!item) return;
+
+  const isActionable = Boolean(item.action && item.action !== "none");
+  const hasSeveral = gardenStatusItems.length > 1;
   els.gardenStatusIcon.textContent = item.icon || "🌿";
   els.gardenStatusText.textContent = item.text || "숲이 조용히 숨을 고르고 있어요.";
   els.gardenStatusBar.dataset.action = item.action || "none";
-  els.gardenStatusBar.classList.toggle("is-actionable", item.action && item.action !== "none");
-  els.gardenStatusMore.hidden = !item.action || item.action === "none";
-  els.gardenStatusBar.setAttribute("aria-label", item.label || item.text || "정원 소식 보기");
+  els.gardenStatusBar.dataset.statusKey = item.key || "";
+  els.gardenStatusMain?.classList.toggle("is-actionable", isActionable);
+  if (els.gardenStatusMain) {
+    els.gardenStatusMain.disabled = !isActionable;
+    els.gardenStatusMain.setAttribute("aria-label", item.label || item.text || "정원 소식 보기");
+  }
+  if (els.gardenStatusCount) {
+    els.gardenStatusCount.textContent = `${gardenStatusIndex + 1}/${gardenStatusItems.length}`;
+  }
+  if (els.gardenStatusNext) {
+    els.gardenStatusNext.hidden = !hasSeveral;
+    els.gardenStatusNext.setAttribute(
+      "aria-label",
+      hasSeveral
+        ? `다음 정원 소식 보기 · 현재 ${gardenStatusIndex + 1}/${gardenStatusItems.length}`
+        : "다음 정원 소식 없음",
+    );
+  }
+  els.gardenStatusBar.setAttribute(
+    "aria-label",
+    hasSeveral
+      ? `정원 소식 ${gardenStatusIndex + 1}/${gardenStatusItems.length}`
+      : "정원 소식",
+  );
 }
 
-function setGardenStatusItems(items) {
+function setGardenStatusItems(items, options = {}) {
   const nextItems = (items || []).filter((item) => item?.text);
   if (!nextItems.length) return;
-  const signature = nextItems.map((item) => `${item.key}:${item.text}`).join("|");
-  if (signature !== gardenStatusSignature) {
-    gardenStatusSignature = signature;
-    gardenStatusIndex = 0;
-  } else if (gardenStatusIndex >= nextItems.length) {
-    gardenStatusIndex = 0;
-  }
+
+  const currentKey = currentGardenStatusItem()?.key || "";
+  const previousSignature = gardenStatusItems.map((item) => `${item.key}:${item.text}`).join("|");
+  const nextSignature = nextItems.map((item) => `${item.key}:${item.text}`).join("|");
+  const hadRotationTimer = Boolean(gardenStatusRotateTimer);
   gardenStatusItems = nextItems;
+
+  let nextIndex = -1;
+  if (options.preferredKey) {
+    nextIndex = nextItems.findIndex((item) => item.key === options.preferredKey);
+  }
+  if (nextIndex < 0 && currentKey) {
+    nextIndex = nextItems.findIndex((item) => item.key === currentKey);
+  }
+  gardenStatusIndex = nextIndex >= 0 ? nextIndex : 0;
+
+  const selectionChanged = currentKey !== currentGardenStatusItem()?.key;
   applyGardenStatusItem();
-  scheduleGardenStatusRotation();
+  if (options.preferredKey || !hadRotationTimer || previousSignature !== nextSignature || selectionChanged) {
+    scheduleGardenStatusRotation();
+  }
 }
 
 function setGardenStatusTransient(item, duration = 4800) {
@@ -3154,6 +3208,72 @@ function setGardenStatusTransient(item, duration = 4800) {
     gardenStatusTransient = null;
     renderGardenStatus();
   }, duration);
+}
+
+function gardenAnimalStatus(visiting, departing, approaching, traces) {
+  if (visiting.length) {
+    const names = visiting.map((visit) => animalVisitors[visit.kind]?.name || "숲친구");
+    return {
+      signature: `visiting:${visiting.map((visit) => visit.id || visit.kind).sort().join(",")}`,
+      item: {
+        key: "animal-visiting",
+        category: "animal",
+        icon: animalVisitors[visiting[0].kind]?.icon || "🌿",
+        text: visiting.length >= 2
+          ? `${names.join("와 ")}가 정원에 머물러 있어요.`
+          : `${names[0]}가 정원에 놀러왔어요.`,
+        action: "visitor",
+        label: "정원에 온 숲친구 보기",
+      },
+    };
+  }
+
+  if (departing.length) {
+    const animal = animalVisitors[departing[0].kind];
+    return {
+      signature: `departing:${departing.map((visit) => visit.id || visit.kind).sort().join(",")}`,
+      item: {
+        key: "animal-departing",
+        category: "animal",
+        icon: animal?.icon || "🍃",
+        text: `${animal?.name || "숲친구"}가 숲길로 돌아가고 있어요.`,
+        action: "visitor",
+        label: "숲친구가 떠나는 소식 보기",
+      },
+    };
+  }
+
+  if (approaching.length) {
+    return {
+      signature: `approaching:${approaching.map((visit) => visit.id || visit.kind).sort().join(",")}`,
+      item: {
+        key: "animal-approaching",
+        category: "animal",
+        icon: "🍃",
+        text: approaching.length >= 2
+          ? "서로 다른 곳에서 작은 기척이 들려요."
+          : "숲길에서 작은 기척이 들려요.",
+        action: "visitor",
+        label: "다가오는 숲친구 소식 보기",
+      },
+    };
+  }
+
+  if (traces.length) {
+    return {
+      signature: `trace:${traces.map((visit) => visit.id || visit.kind).sort().join(",")}`,
+      item: {
+        key: "animal-trace",
+        category: "animal",
+        icon: v2TraceMeta(traces[0]).icon || "🍃",
+        text: "숲친구가 정원에 작은 흔적을 남겼어요.",
+        action: "visitor",
+        label: "숲친구가 남긴 흔적 보기",
+      },
+    };
+  }
+
+  return { signature: "", item: null };
 }
 
 function renderGardenStatus(context = {}) {
@@ -3171,14 +3291,12 @@ function renderGardenStatus(context = {}) {
     return;
   }
 
+  const items = [];
   const specialFriend = activeSpecialFriendGardenStatus();
-  if (specialFriend) {
-    setGardenStatusItems([specialFriend]);
-    return;
-  }
+  if (specialFriend) items.push(specialFriend);
 
   if (unread.length) {
-    setGardenStatusItems([{
+    items.push({
       key: "letters",
       icon: "✉️",
       text: unread.length === 1
@@ -3186,79 +3304,41 @@ function renderGardenStatus(context = {}) {
         : `새 편지 ${unread.length}통이 나뭇가지에 도착했어요.`,
       action: "letters",
       label: "도착한 편지 보기",
-    }]);
-    return;
+    });
   }
 
-  if (visiting.length) {
-    const names = visiting.map((visit) => animalVisitors[visit.kind]?.name || "숲친구");
-    setGardenStatusItems([{
-      key: "animal-visiting",
-      icon: animalVisitors[visiting[0].kind]?.icon || "🌿",
-      text: visiting.length >= 2
-        ? `${names.join("와 ")}가 정원에 머물러 있어요.`
-        : `${names[0]}가 정원에 놀러왔어요.`,
-      action: "visitor",
-      label: "정원에 온 숲친구 보기",
-    }]);
-    return;
+  const animalStatus = gardenAnimalStatus(visiting, departing, approaching, traces);
+  let preferredKey = "";
+  if (animalStatus.signature && animalStatus.signature !== gardenAnimalStatusSignature) {
+    gardenAnimalStatusSignature = animalStatus.signature;
+    gardenAnimalStatusPriorityUntil = Date.now() + GARDEN_STATUS_ANIMAL_HIGHLIGHT_MS;
+    preferredKey = animalStatus.item?.key || "";
+  } else if (!animalStatus.signature) {
+    gardenAnimalStatusSignature = "";
+    gardenAnimalStatusPriorityUntil = 0;
   }
+  if (animalStatus.item) items.push(animalStatus.item);
 
-  if (departing.length) {
-    const animal = animalVisitors[departing[0].kind];
-    setGardenStatusItems([{
-      key: "animal-departing",
-      icon: animal?.icon || "🍃",
-      text: `${animal?.name || "숲친구"}가 숲길로 돌아가고 있어요.`,
-      action: "visitor",
-      label: "숲친구가 떠나는 소식 보기",
-    }]);
-    return;
-  }
+  items.push({
+    key: `weather-${weather.className}`,
+    icon: weather.icon,
+    text: weather.text,
+    action: "weather",
+    detail: weather.message || weather.detail || weather.text,
+    label: "오늘 정원 날씨 이야기 보기",
+  });
 
-  if (approaching.length) {
-    setGardenStatusItems([{
-      key: "animal-approaching",
-      icon: "🍃",
-      text: approaching.length >= 2
-        ? "서로 다른 곳에서 작은 기척이 들려요."
-        : "숲길에서 작은 기척이 들려요.",
-      action: "visitor",
-      label: "다가오는 숲친구 소식 보기",
-    }]);
-    return;
-  }
-
-  if (traces.length) {
-    setGardenStatusItems([{
-      key: "animal-trace",
-      icon: v2TraceMeta(traces[0]).icon || "🍃",
-      text: "숲친구가 정원에 작은 흔적을 남겼어요.",
-      action: "visitor",
-      label: "숲친구가 남긴 흔적 보기",
-    }]);
-    return;
-  }
-
-  const quietStatusItems = [
-    {
-      key: `weather-${weather.className}`,
-      icon: weather.icon,
-      text: weather.text,
-      action: "cycle",
-      label: "다음 정원 소식 보기",
-    },
-    {
-      key: "next-visitor",
-      icon: "🌱",
-      text: `다음 방문자 · ${animalGrowthMessage()}`,
-      action: "cycle",
-      label: "다음 정원 소식 보기",
-    },
-  ];
+  items.push({
+    key: "next-visitor",
+    icon: "🌱",
+    text: `다음 방문자 · ${animalGrowthMessage()}`,
+    action: "next-visitor",
+    detail: animalGrowthMessage(),
+    label: "다음 방문자 안내 보기",
+  });
 
   if (shouldShowInstallStatus()) {
-    quietStatusItems.push({
+    items.push({
       key: "install-app",
       icon: "🌿",
       text: "홈 화면에 심어두면 오늘의숲을 더 쉽게 만나요.",
@@ -3267,19 +3347,22 @@ function renderGardenStatus(context = {}) {
     });
   }
 
-  setGardenStatusItems(quietStatusItems);
+  setGardenStatusItems(items, { preferredKey });
 }
 
-function handleGardenStatusClick(event) {
-  const item = gardenStatusItems[gardenStatusIndex] || gardenStatusItems[0];
+function showNextGardenStatus(event) {
+  event?.preventDefault();
+  event?.stopPropagation();
+  if (gardenStatusItems.length < 2) return;
+  gardenStatusIndex = (gardenStatusIndex + 1) % gardenStatusItems.length;
+  applyGardenStatusItem();
+  scheduleGardenStatusRotation();
+}
+
+function handleGardenStatusMainClick(event) {
+  const item = currentGardenStatusItem();
   if (!item) return;
 
-  if (item.action === "cycle") {
-    gardenStatusIndex = (gardenStatusIndex + 1) % gardenStatusItems.length;
-    applyGardenStatusItem();
-    scheduleGardenStatusRotation();
-    return;
-  }
   if (item.action === "letters") {
     $("#openLetters")?.click();
     return;
@@ -3291,6 +3374,10 @@ function handleGardenStatusClick(event) {
   if (item.action === "install") {
     event.stopPropagation();
     void requestAppInstall();
+    return;
+  }
+  if (item.action === "weather" || item.action === "next-visitor") {
+    showToast(item.detail || item.text);
     return;
   }
   if (item.action === "special-friend") {
@@ -6588,7 +6675,8 @@ function bindEvents() {
   $$("[data-public-login]").forEach((button) => button.addEventListener("click", openPublicLogin));
   els.backToPublicHome?.addEventListener("click", returnToPublicHome);
   els.signInKakao?.addEventListener("click", beginKakaoLogin);
-  els.gardenStatusBar?.addEventListener("click", handleGardenStatusClick);
+  els.gardenStatusMain?.addEventListener("click", handleGardenStatusMainClick);
+  els.gardenStatusNext?.addEventListener("click", showNextGardenStatus);
   els.foundItemSparkle?.addEventListener("click", () => { void claimFoundItem(); });
   els.openGardenDecorate?.addEventListener("click", startGardenDecorateMode);
   els.cancelGardenDecorate?.addEventListener("click", cancelGardenDecorateMode);
