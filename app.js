@@ -2968,8 +2968,9 @@ function updateTodayRecordAction() {
   const savedToday = isTutorialSandboxPreview() ? tutorialSandbox.recorded : hasSavedToday();
   if (!action || !label) return;
   action.classList.toggle("record-complete", savedToday);
-  action.setAttribute("aria-label", savedToday ? "오늘 마음 남기기 완료" : "마음 남기기");
-  label.textContent = savedToday ? "오늘 마음 남김" : "마음 남기기";
+  action.setAttribute("aria-label", savedToday ? "오늘 마음 기록 완료" : "마음 남기기");
+  action.setAttribute("aria-disabled", String(savedToday));
+  label.textContent = savedToday ? "오늘 마음 완료" : "마음 남기기";
 }
 
 function stableHash(value) {
@@ -4585,7 +4586,7 @@ function sharedTreeActionMarkup(friend) {
 function renderFriends() {
   const friends = state.friends || [];
   const hasDevTestFriend = friends.some((friend) => friend.isDevTest);
-  els.friendCount.textContent = `친구 ${friends.length}명`;
+  els.friendCount.textContent = `${friends.length}명`;
   els.friendsTotal.textContent = `${friends.length}명`;
   els.devTestFriendBox.classList.toggle("is-active", hasDevTestFriend);
 
@@ -6505,6 +6506,7 @@ async function signOut() {
   closeLetterModal();
   returnToMyGarden();
   closeFriendInviteModal({ keepLink: true });
+  syncSpecialFriendShortcutVisibility(null);
   renderAuthUI();
   setAuthError("");
 }
@@ -6720,6 +6722,15 @@ function blockHeartFruitCeremonyInput(event) {
   event.stopImmediatePropagation();
 }
 
+function syncSpecialFriendShortcutVisibility(liveState = window.__todayForestSpecialFriendLiveState || null) {
+  const button = $("#openSpecialFriendShortcut");
+  if (!button) return;
+  const isUnlocked = Boolean(liveState?.isMet);
+  button.classList.toggle("hidden", !isUnlocked);
+  button.setAttribute("aria-hidden", String(!isUnlocked));
+  button.closest(".garden-extra-nav")?.classList.toggle("special-friend-locked", !isUnlocked);
+}
+
 function bindEvents() {
   ["pointerdown", "pointerup", "click", "contextmenu", "wheel", "touchmove"].forEach((type) => {
     els.heartFruitCeremonyLock?.addEventListener(type, blockHeartFruitCeremonyInput, {
@@ -6731,6 +6742,10 @@ function bindEvents() {
   $$("[data-public-login]").forEach((button) => button.addEventListener("click", openPublicLogin));
   els.backToPublicHome?.addEventListener("click", returnToPublicHome);
   els.signInKakao?.addEventListener("click", beginKakaoLogin);
+  syncSpecialFriendShortcutVisibility();
+  window.addEventListener("todayforest:special-friend-live-state", (event) => {
+    syncSpecialFriendShortcutVisibility(event.detail);
+  });
   els.gardenStatusMain?.addEventListener("click", handleGardenStatusMainClick);
   els.gardenStatusNext?.addEventListener("click", showNextGardenStatus);
   els.foundItemSparkle?.addEventListener("click", () => { void claimFoundItem(); });
@@ -7137,7 +7152,7 @@ function prepareWelcomeSandboxGarden() {
   }
   if (els.weatherIcon) els.weatherIcon.textContent = "☀️";
   if (els.weatherText) els.weatherText.textContent = "햇살이 포근하게 내려와요";
-  if (els.friendCount) els.friendCount.textContent = "친구 0명";
+  if (els.friendCount) els.friendCount.textContent = "0명";
   if (els.visitorEmoji) els.visitorEmoji.textContent = "🌿";
   if (els.visitorName) els.visitorName.textContent = "숲이 조용히 숨을 고르고 있어요";
   if (els.visitorHint) els.visitorHint.textContent = "첫 마음이 나무 가까이에 내려앉았어요.";

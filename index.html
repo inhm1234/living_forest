@@ -32,8 +32,8 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=garden-button-spacing-v1-2" />
-  <link rel="stylesheet" href="oot-notifications.css?v=garden-button-spacing-v1-2" />
+  <link rel="stylesheet" href="style.css?v=garden-button-labels-v1-3" />
+  <link rel="stylesheet" href="oot-notifications.css?v=garden-button-labels-v1-3" />
   <link rel="stylesheet" href="tree-animal-call.css?v=tree-animal-call-v4-status-hotfix" />
   <link rel="stylesheet" href="forest-unicorn-preview.css?v=garden-header-refinement-v1" />
   <link rel="stylesheet" href="forest-friend-cinematic.css?v=operation-special-friend-v1" />
@@ -528,7 +528,7 @@
             <path d="M8.5 17h4.5" />
           </svg>
         </span>
-        <span class="nav-label">내 기록</span>
+        <span class="nav-label">마음 기록</span>
       </button>
       <button type="button" class="nav-action" id="openLetters">
         <span class="nav-icon" aria-hidden="true">
@@ -537,7 +537,7 @@
             <path d="m5 7 7 5 7-5" />
           </svg>
         </span>
-        <span class="nav-label">편지</span>
+        <span class="nav-label">편지함</span>
         <em class="nav-badge hidden" id="navLetterBadge">0</em>
       </button>
       <button type="button" class="nav-action" id="openFriends">
@@ -549,15 +549,15 @@
             <path d="M14 14.8c.8-.6 1.7-.8 2.7-.8 2.2 0 3.7 1.4 4 4" />
           </svg>
         </span>
-        <span class="nav-label" id="friendCount">친구 0명</span>
+        <span class="nav-label nav-label-with-count"><span>친구</span><small id="friendCount">0명</small></span>
       </button>
     </nav>
 
     <div class="garden-secondary-actions garden-extra-nav" aria-label="추가 메뉴">
-      <div class="secondary-action secondary-action-oot-card" role="group" aria-label="원오브텐 놀이와 친구 초대 알림">
-        <button type="button" class="secondary-action-oot-main" id="openOneOfTenShortcut" aria-label="원오브텐 놀이 열기">
+      <div class="secondary-action secondary-action-oot-card" role="group" aria-label="원오브텐 대전과 친구 초대 알림">
+        <button type="button" class="secondary-action-oot-main" id="openOneOfTenShortcut" aria-label="원오브텐 1대1 대전 열기">
           <span class="secondary-action-main-icon secondary-action-icon secondary-action-icon-oot" aria-hidden="true"><span>🐿️</span></span>
-          <span class="secondary-action-label">원오브텐</span>
+          <span class="secondary-action-label">원오브텐 대전</span>
         </button>
         <div class="secondary-action-oot-tools">
           <button type="button" class="secondary-action-oot-alert" data-oot-enable-push>초대 알림 받기</button>
@@ -566,7 +566,7 @@
           </a>
         </div>
       </div>
-      <button type="button" class="secondary-action" id="openSpecialFriendShortcut">
+      <button type="button" class="secondary-action hidden" id="openSpecialFriendShortcut" aria-hidden="true">
         <span class="secondary-action-icon secondary-action-icon-special" aria-hidden="true"><span>✦</span></span>
         <span class="secondary-action-label">특별친구</span>
       </button>
@@ -918,9 +918,9 @@
     <div class="sheet-head">
       <div>
         <p class="sheet-kicker">MY LEAVES</p>
-        <h2 id="recordsSheetTitle">내 기록</h2>
+        <h2 id="recordsSheetTitle">마음 기록</h2>
       </div>
-      <button class="close-button" data-close="recordsSheet" type="button" aria-label="내 기록 닫기">×</button>
+      <button class="close-button" data-close="recordsSheet" type="button" aria-label="마음 기록 닫기">×</button>
     </div>
     <div class="records-summary" id="recordsSummary"></div>
     <div class="record-list" id="recordList" aria-live="polite"></div>
@@ -1110,7 +1110,7 @@
     <div class="sheet-head">
       <div>
         <p class="sheet-kicker">LETTER NEST</p>
-        <h2 id="lettersSheetTitle">편지</h2>
+        <h2 id="lettersSheetTitle">편지함</h2>
       </div>
       <button class="close-button" data-close="lettersSheet" type="button" aria-label="편지함 닫기">×</button>
     </div>
@@ -1245,7 +1245,7 @@
   <div class="heart-fruit-ceremony-lock hidden" id="heartFruitCeremonyLock" aria-hidden="true"></div>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="app.js?v=settings-footer-cleanup-v1"></script>
+  <script type="module" src="app.js?v=garden-button-labels-v1-3"></script>
   <script type="module" src="tree-animal-call.js?v=operation-special-friend-visit-v1-2"></script>
   <script type="module" src="forest-unicorn-preview.js?v=garden-header-refinement-v1"></script>
   <script type="module" src="forest-friend-cinematic.js?v=operation-special-friend-v1"></script>

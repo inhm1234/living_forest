@@ -6721,3 +6721,65 @@ body.forest-unicorn-live-enabled .header-actions {
     margin-top: 8px;
   }
 }
+
+
+/* ==========================================================================
+   GARDEN BUTTON LABELS v1.3
+   버튼 이름과 실제 결과를 맞추고, 완료·수량·해금 상태를 구분합니다.
+   ========================================================================== */
+
+.garden-nav-four .nav-label-with-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.garden-nav-four .nav-label-with-count small {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: rgba(104, 139, 121, .1);
+  color: #6b8276;
+  font-size: 9px;
+  font-weight: 760;
+  line-height: 1;
+}
+
+.garden-nav-four .nav-primary.record-complete {
+  border-color: rgba(120, 151, 132, .2);
+  background: rgba(248, 251, 248, .88);
+  color: #718278;
+  box-shadow: 0 7px 16px rgba(73, 99, 85, .045);
+}
+
+.garden-nav-four .nav-primary.record-complete .nav-icon {
+  color: #7e9487;
+}
+
+@media (hover: hover) {
+  .garden-nav-four .nav-primary.record-complete:hover {
+    border-color: rgba(120, 151, 132, .25);
+    background: rgba(250, 252, 250, .96);
+  }
+}
+
+.garden-extra-nav.special-friend-locked {
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+}
+
+@media (max-width: 420px) {
+  .garden-nav-four .nav-label-with-count {
+    gap: 3px;
+  }
+
+  .garden-nav-four .nav-label-with-count small {
+    min-width: 18px;
+    height: 15px;
+    padding-inline: 3px;
+    font-size: 8px;
+  }
+}
