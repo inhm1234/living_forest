@@ -6901,3 +6901,109 @@ body.forest-unicorn-live-enabled .header-actions {
 @media (prefers-reduced-motion: reduce) {
   .animal-v2-visitor .animal-v2-art { animation: none !important; }
 }
+
+/* =========================================================
+   GENERAL VISITOR ART REFINEMENT v0.2
+   - 토끼 외곽선과 그림자를 정원보다 튀지 않게 완화
+   - 몸 전체가 둥실거리는 인상을 제거하고 호흡만 남김
+   - 편지 표시는 원형 UI 배지가 아니라 발 옆의 작은 소품으로 통합
+   - 모바일에서 특별친구보다 커 보이지 않도록 크기 조정
+   ========================================================= */
+.animal-v2-visitor.animal-v2-rabbit.has-animal-art {
+  right: 11.5%;
+  bottom: 11.7%;
+  width: 80px;
+  height: 69px;
+}
+
+.animal-v2-visitor.animal-v2-rabbit.has-animal-art .animal-v2-art {
+  filter: drop-shadow(0 4px 3px rgba(62, 89, 70, .105));
+  opacity: .985;
+  animation: animalVisitorRabbitRest 5.8s ease-in-out infinite;
+}
+
+.animal-v2-visitor.animal-v2-rabbit.has-animal-art.is-looking .animal-v2-art {
+  animation: animalVisitorRabbitNotice .92s cubic-bezier(.25,.7,.3,1) both;
+}
+
+/* 기존 글자 ✉을 감추고 작은 종이 봉투를 직접 그립니다. */
+.animal-v2-visitor.animal-v2-rabbit.has-animal-art .animal-v2-envelope {
+  right: 5px;
+  bottom: 5px;
+  width: 16px;
+  height: 11px;
+  border: 1px solid rgba(174, 118, 126, .52);
+  border-radius: 2px;
+  background: rgba(255, 248, 239, .96);
+  color: transparent;
+  font-size: 0;
+  line-height: 0;
+  text-shadow: none;
+  box-shadow: 0 2px 4px rgba(94, 77, 71, .10);
+  transform: rotate(4deg);
+  overflow: hidden;
+}
+.animal-v2-visitor.animal-v2-rabbit.has-animal-art .animal-v2-envelope::before,
+.animal-v2-visitor.animal-v2-rabbit.has-animal-art .animal-v2-envelope::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+.animal-v2-visitor.animal-v2-rabbit.has-animal-art .animal-v2-envelope::before {
+  left: 2px;
+  top: -3px;
+  width: 10px;
+  height: 8px;
+  border-right: 1px solid rgba(174, 118, 126, .42);
+  border-bottom: 1px solid rgba(174, 118, 126, .42);
+  transform: rotate(45deg);
+  background: transparent;
+}
+.animal-v2-visitor.animal-v2-rabbit.has-animal-art .animal-v2-envelope::after {
+  right: 2px;
+  bottom: 2px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(205, 119, 139, .72);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.58);
+}
+
+@keyframes animalVisitorRabbitRest {
+  0%, 100% { transform: scaleX(1) scaleY(1); }
+  46% { transform: scaleX(1.001) scaleY(.997); }
+  53% { transform: scaleX(.999) scaleY(1.002); }
+}
+
+@keyframes animalVisitorRabbitNotice {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  42% { transform: rotate(-.65deg) scale(1.006); }
+  72% { transform: rotate(.25deg) scale(1.002); }
+}
+
+@media (hover: hover) {
+  .animal-v2-visitor.animal-v2-rabbit.has-animal-art:hover .animal-v2-art {
+    filter: drop-shadow(0 4px 3px rgba(62, 89, 70, .13)) brightness(1.015);
+  }
+}
+
+@media (max-width: 520px) {
+  .animal-v2-visitor.animal-v2-rabbit.has-animal-art {
+    right: 8.5%;
+    bottom: 12.1%;
+    width: 72px;
+    height: 63px;
+  }
+  .animal-v2-visitor.animal-v2-rabbit.has-animal-art .animal-v2-envelope {
+    right: 4px;
+    bottom: 4px;
+    width: 15px;
+    height: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animal-v2-visitor.animal-v2-rabbit.has-animal-art .animal-v2-art {
+    animation: none !important;
+  }
+}
