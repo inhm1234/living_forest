@@ -412,6 +412,14 @@ let retentionWindRefreshBusy = false;
 let retentionCleanupRanOnThisPage = false;
 let deferredInstallPrompt = null;
 let installHelpVisible = false;
+// GARDEN STATUS BAR v1: 여러 한 줄 안내를 하나의 고정 상태바로 통합합니다.
+const GARDEN_STATUS_ROTATE_MS = 7000;
+let gardenStatusItems = [];
+let gardenStatusIndex = 0;
+let gardenStatusSignature = "";
+let gardenStatusRotateTimer = null;
+let gardenStatusTransient = null;
+let gardenStatusTransientTimer = null;
 let treeNamePromptedForUserId = "";
 let gardenWorldResizeObserver = null;
 let friendGardenWorldResizeObserver = null;
@@ -466,6 +474,10 @@ const els = {
   rainLayer: $("#rainLayer"),
   dayCount: $("#dayCount"),
   treeStageLabel: $("#treeStageLabel"),
+  gardenStatusBar: $("#gardenStatusBar"),
+  gardenStatusIcon: $("#gardenStatusIcon"),
+  gardenStatusText: $("#gardenStatusText"),
+  gardenStatusMore: $("#gardenStatusMore"),
   visitorButton: $("#visitorButton"),
   visitorImage: $("#visitorImage"),
   visitorEmoji: $("#visitorEmoji"),
@@ -3073,6 +3085,228 @@ function applyWeatherVisuals(stage, treeWrap, rainLayer, weather, rainSeed = "gu
   }
 }
 
+function compactGardenStatusRemaining(milliseconds) {
+  const minutes = Math.max(1, Math.ceil(Math.max(0, milliseconds) / 60000));
+  return `${minutes}분`;
+}
+
+function activeSpecialFriendGardenStatus() {
+  const now = Date.now();
+  const journeys = Array.isArray(window.__todayForestSpecialFriendJourneys)
+    ? window.__todayForestSpecialFriendJourneys
+    : [];
+  const journey = journeys.find((item) => item?.key === "forest_unicorn"
+    && new Date(item.returnAt || 0).getTime() > now);
+  if (!journey) return null;
+
+  const availableAt = new Date(journey.availableAt || 0).getTime();
+  const returnAt = new Date(journey.returnAt || 0).getTime();
+  if (Number.isFinite(availableAt) && availableAt > now) {
+    return {
+      key: "special-friend-delivering",
+      icon: "🦄",
+      text: `${journey.recipientName || "친구"}에게 편지를 전하러 가고 있어요 · 약 ${compactGardenStatusRemaining(availableAt - now)}`,
+      action: "special-friend",
+      label: "특별친구 배송 상태 보기",
+    };
+  }
+  if (Number.isFinite(returnAt) && returnAt > now) {
+    return {
+      key: "special-friend-returning",
+      icon: "🦄",
+      text: `유니콘이 정원으로 돌아오고 있어요 · 약 ${compactGardenStatusRemaining(returnAt - now)}`,
+      action: "special-friend",
+      label: "특별친구 귀환 상태 보기",
+    };
+  }
+  return null;
+}
+
+function clearGardenStatusRotateTimer() {
+  window.clearTimeout(gardenStatusRotateTimer);
+  gardenStatusRotateTimer = null;
+}
+
+function scheduleGardenStatusRotation() {
+  clearGardenStatusRotateTimer();
+  if (gardenStatusItems.length < 2) return;
+  gardenStatusRotateTimer = window.setTimeout(() => {
+    gardenStatusRotateTimer = null;
+    gardenStatusIndex = (gardenStatusIndex + 1) % gardenStatusItems.length;
+    applyGardenStatusItem();
+    scheduleGardenStatusRotation();
+  }, GARDEN_STATUS_ROTATE_MS);
+}
+
+function applyGardenStatusItem() {
+  if (!els.gardenStatusBar || !gardenStatusItems.length) return;
+  const item = gardenStatusItems[gardenStatusIndex] || gardenStatusItems[0];
+  els.gardenStatusIcon.textContent = item.icon || "🌿";
+  els.gardenStatusText.textContent = item.text || "숲이 조용히 숨을 고르고 있어요.";
+  els.gardenStatusBar.dataset.action = item.action || "none";
+  els.gardenStatusBar.classList.toggle("is-actionable", item.action && item.action !== "none");
+  els.gardenStatusMore.hidden = !item.action || item.action === "none";
+  els.gardenStatusBar.setAttribute("aria-label", item.label || item.text || "정원 소식 보기");
+}
+
+function setGardenStatusItems(items) {
+  const nextItems = (items || []).filter((item) => item?.text);
+  if (!nextItems.length) return;
+  const signature = nextItems.map((item) => `${item.key}:${item.text}`).join("|");
+  if (signature !== gardenStatusSignature) {
+    gardenStatusSignature = signature;
+    gardenStatusIndex = 0;
+  } else if (gardenStatusIndex >= nextItems.length) {
+    gardenStatusIndex = 0;
+  }
+  gardenStatusItems = nextItems;
+  applyGardenStatusItem();
+  scheduleGardenStatusRotation();
+}
+
+function setGardenStatusTransient(item, duration = 4800) {
+  window.clearTimeout(gardenStatusTransientTimer);
+  gardenStatusTransientTimer = null;
+  gardenStatusTransient = item || null;
+  renderGardenStatus();
+  if (!item) return;
+  gardenStatusTransientTimer = window.setTimeout(() => {
+    gardenStatusTransientTimer = null;
+    gardenStatusTransient = null;
+    renderGardenStatus();
+  }, duration);
+}
+
+function renderGardenStatus(context = {}) {
+  if (!els.gardenStatusBar) return;
+
+  const visiting = context.visiting || animalV2VisitsByState("visiting");
+  const departing = context.departing || animalV2VisitsByState("departing");
+  const approaching = context.approaching || animalV2VisitsByState("approaching");
+  const traces = context.traces || animalV2VisitsByState("trace");
+  const weather = context.weather || currentWeather();
+  const unread = context.unread || getUnreadLetters();
+
+  if (gardenStatusTransient?.text) {
+    setGardenStatusItems([gardenStatusTransient]);
+    return;
+  }
+
+  const specialFriend = activeSpecialFriendGardenStatus();
+  if (specialFriend) {
+    setGardenStatusItems([specialFriend]);
+    return;
+  }
+
+  if (unread.length) {
+    setGardenStatusItems([{
+      key: "letters",
+      icon: "✉️",
+      text: unread.length === 1
+        ? "새 편지 한 통이 나뭇가지에 도착했어요."
+        : `새 편지 ${unread.length}통이 나뭇가지에 도착했어요.`,
+      action: "letters",
+      label: "도착한 편지 보기",
+    }]);
+    return;
+  }
+
+  if (visiting.length) {
+    const names = visiting.map((visit) => animalVisitors[visit.kind]?.name || "숲친구");
+    setGardenStatusItems([{
+      key: "animal-visiting",
+      icon: animalVisitors[visiting[0].kind]?.icon || "🌿",
+      text: visiting.length >= 2
+        ? `${names.join("와 ")}가 정원에 머물러 있어요.`
+        : `${names[0]}가 정원에 놀러왔어요.`,
+      action: "visitor",
+      label: "정원에 온 숲친구 보기",
+    }]);
+    return;
+  }
+
+  if (departing.length) {
+    const animal = animalVisitors[departing[0].kind];
+    setGardenStatusItems([{
+      key: "animal-departing",
+      icon: animal?.icon || "🍃",
+      text: `${animal?.name || "숲친구"}가 숲길로 돌아가고 있어요.`,
+      action: "visitor",
+      label: "숲친구가 떠나는 소식 보기",
+    }]);
+    return;
+  }
+
+  if (approaching.length) {
+    setGardenStatusItems([{
+      key: "animal-approaching",
+      icon: "🍃",
+      text: approaching.length >= 2
+        ? "서로 다른 곳에서 작은 기척이 들려요."
+        : "숲길에서 작은 기척이 들려요.",
+      action: "visitor",
+      label: "다가오는 숲친구 소식 보기",
+    }]);
+    return;
+  }
+
+  if (traces.length) {
+    setGardenStatusItems([{
+      key: "animal-trace",
+      icon: v2TraceMeta(traces[0]).icon || "🍃",
+      text: "숲친구가 정원에 작은 흔적을 남겼어요.",
+      action: "visitor",
+      label: "숲친구가 남긴 흔적 보기",
+    }]);
+    return;
+  }
+
+  setGardenStatusItems([
+    {
+      key: `weather-${weather.className}`,
+      icon: weather.icon,
+      text: weather.text,
+      action: "cycle",
+      label: "다음 정원 소식 보기",
+    },
+    {
+      key: "next-visitor",
+      icon: "🌱",
+      text: `다음 방문자 · ${animalGrowthMessage()}`,
+      action: "cycle",
+      label: "오늘 날씨 소식 보기",
+    },
+  ]);
+}
+
+function handleGardenStatusClick(event) {
+  const item = gardenStatusItems[gardenStatusIndex] || gardenStatusItems[0];
+  if (!item) return;
+
+  if (item.action === "cycle") {
+    gardenStatusIndex = (gardenStatusIndex + 1) % gardenStatusItems.length;
+    applyGardenStatusItem();
+    scheduleGardenStatusRotation();
+    return;
+  }
+  if (item.action === "letters") {
+    $("#openLetters")?.click();
+    return;
+  }
+  if (item.action === "visitor") {
+    els.visitorButton?.click();
+    return;
+  }
+  if (item.action === "special-friend") {
+    event.stopPropagation();
+    if (typeof window.openTodayForestSpecialFriendInfo === "function") {
+      window.openTodayForestSpecialFriendInfo();
+    } else {
+      window.dispatchEvent(new CustomEvent("todayforest:request-special-friend-info"));
+    }
+  }
+}
+
 function renderGarden() {
   const visualGrowth = visualGrowthForGarden();
   const stage = stageForGrowth(visualGrowth);
@@ -3141,6 +3375,8 @@ function renderGarden() {
   els.weatherIcon.textContent = weather.icon;
   els.weatherText.textContent = weather.text;
   applyWeatherVisuals(els.gardenStage, els.treeWrap, els.rainLayer, weather, `${currentUser?.id || "guest"}:${seoulDateKey()}:my-garden`);
+  // 기존 하단 말풍선과 별도 방문 카드는 호환용 DOM으로만 유지하고,
+  // 실제 안내는 정원 상단의 통합 상태바 한 곳에서 보여줍니다.
   els.stageMessage.textContent = visiting.length
     ? visiting.length >= 2
       ? "두 숲친구가 각자의 자리에서 잠시 쉬어가고 있어요."
@@ -3152,6 +3388,7 @@ function renderGarden() {
         : weather.message;
 
   els.nextVisitorText.textContent = animalGrowthMessage();
+  renderGardenStatus({ visiting, departing, approaching, traces, weather, unread });
 
   renderFoundItems();
   renderBranchLetters(unread);
@@ -6357,6 +6594,7 @@ function bindEvents() {
   els.signInKakao?.addEventListener("click", beginKakaoLogin);
   els.installAppButton?.addEventListener("click", () => { void requestAppInstall(); });
   els.dismissInstallCard?.addEventListener("click", dismissInstallCardForAWhile);
+  els.gardenStatusBar?.addEventListener("click", handleGardenStatusClick);
   els.foundItemSparkle?.addEventListener("click", () => { void claimFoundItem(); });
   els.openGardenDecorate?.addEventListener("click", startGardenDecorateMode);
   els.cancelGardenDecorate?.addEventListener("click", cancelGardenDecorateMode);
@@ -6481,11 +6719,32 @@ function bindEvents() {
     const requestedKey = event?.detail?.key || Object.keys(specialForestFriendPreviewCatalog)[0] || "";
     openSpecialForestFriendEncounter(requestedKey);
   });
+  window.addEventListener("todayforest:special-friend-state-ready", () => {
+    renderGardenStatus();
+  });
+  window.addEventListener("todayforest:special-friend-letter-started", (event) => {
+    const journey = event?.detail || {};
+    setGardenStatusTransient({
+      key: "special-friend-departed",
+      icon: "🦄",
+      text: `${journey.recipientName || "친구"}에게 전할 마음을 품고 유니콘이 출발했어요.`,
+      action: "special-friend",
+      label: "특별친구 배송 상태 보기",
+    }, 4200);
+  });
   window.addEventListener("todayforest:special-friend-journey-phase", () => {
     renderSentLetters();
+    renderGardenStatus();
   });
   window.addEventListener("todayforest:special-friend-returned", () => {
     renderSentLetters();
+    setGardenStatusTransient({
+      key: "special-friend-returned",
+      icon: "🦄",
+      text: "편지를 전한 유니콘이 정원으로 돌아왔어요.",
+      action: "special-friend",
+      label: "돌아온 특별친구 보기",
+    });
   });
   els.visitorButton.addEventListener("click", () => {
     const visit = currentAnimalV2Visit();
