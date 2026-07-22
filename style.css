@@ -6458,7 +6458,7 @@ body.forest-unicorn-live-enabled .header-actions {
 
 
 /* ==========================================================================
-   GARDEN BUTTON SYSTEM v1
+   GARDEN BUTTON SYSTEM v1.1
    핵심 행동·기본 메뉴·확장 콘텐츠가 역할별로 하나의 시각 언어를 사용합니다.
    위치와 기능은 유지하고 글자, 아이콘, 카드 규격, 상호작용만 정돈합니다.
    ========================================================================== */
@@ -6473,10 +6473,10 @@ body.forest-unicorn-live-enabled .header-actions {
   min-height: 68px;
   padding: 9px 5px 8px;
   gap: 6px;
-  border: 1px solid rgba(119, 151, 133, .17);
+  border: 1px solid rgba(110, 145, 126, .21);
   border-radius: 18px;
-  background: rgba(255, 255, 255, .76);
-  color: #5d7168;
+  background: rgba(255, 255, 255, .8);
+  color: #4f655b;
   box-shadow: 0 8px 18px rgba(73, 99, 85, .055);
   font-family: inherit;
   -webkit-tap-highlight-color: transparent;
@@ -6488,7 +6488,7 @@ body.forest-unicorn-live-enabled .header-actions {
   place-items: center;
   width: 24px;
   height: 24px;
-  color: #78968a;
+  color: #668779;
   line-height: 1;
 }
 
@@ -6508,7 +6508,7 @@ body.forest-unicorn-live-enabled .header-actions {
   min-width: 0;
   color: inherit;
   font-size: 12px;
-  font-weight: 720;
+  font-weight: 740;
   line-height: 1.18;
   letter-spacing: -.018em;
   white-space: nowrap;
@@ -6551,8 +6551,8 @@ body.forest-unicorn-live-enabled .header-actions {
   gap: 5px;
   border: 1px solid rgba(119, 151, 133, .17);
   border-radius: 18px;
-  background: rgba(255, 255, 255, .78);
-  color: #5b6f66;
+  background: rgba(255, 255, 255, .8);
+  color: #50665c;
   box-shadow: 0 8px 18px rgba(73, 99, 85, .055);
   font-family: inherit;
   font-size: inherit;
@@ -6588,17 +6588,19 @@ body.forest-unicorn-live-enabled .header-actions {
 }
 
 .garden-extra-nav .secondary-action-icon-special {
-  background: rgba(239, 233, 250, .86);
-  color: #8b78ae;
+  background: rgba(237, 231, 249, .96);
+  border-color: rgba(139, 120, 174, .18);
+  color: #8069a7;
 }
 
 .garden-extra-nav .secondary-action-icon-special > span {
-  font-size: 18px;
+  font-size: 20px;
+  transform: translateY(-.5px);
 }
 
 .garden-extra-nav .secondary-action-icon-more {
-  background: rgba(239, 243, 241, .9);
-  color: #788b82;
+  background: rgba(241, 245, 243, .92);
+  color: #7d9188;
 }
 
 .garden-extra-nav .secondary-action-icon-more > span {
@@ -6611,7 +6613,7 @@ body.forest-unicorn-live-enabled .header-actions {
 .garden-extra-nav .secondary-action .secondary-action-label {
   color: inherit;
   font-size: 12px;
-  font-weight: 720;
+  font-weight: 740;
   line-height: 1.15;
   letter-spacing: -.018em;
   white-space: nowrap;

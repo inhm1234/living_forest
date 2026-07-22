@@ -375,14 +375,12 @@
 }
 
 
-/* GARDEN BUTTON SYSTEM v1 · 원오브텐 카드도 옆 확장 메뉴와 같은 규격을 사용합니다. */
+/* GARDEN BUTTON SYSTEM v1.1 · 원오브텐 카드도 옆 확장 메뉴와 같은 규격을 사용합니다. */
 .garden-extra-nav .secondary-action-oot-card {
   min-height: 76px;
   border-color: rgba(119, 151, 133, .17);
   border-radius: 18px;
-  background:
-    radial-gradient(circle at 18% 18%, rgba(255, 239, 198, .46), transparent 38%),
-    rgba(255, 255, 255, .8);
+  background: rgba(255, 255, 255, .8);
   box-shadow: 0 8px 18px rgba(73, 99, 85, .055);
 }
 
@@ -390,7 +388,7 @@
   min-height: 49px;
   padding: 5px 6px 4px;
   gap: 3px;
-  color: #5b6f66;
+  color: #50665c;
   transition: background-color .14s ease, transform .14s ease;
 }
 
@@ -403,20 +401,20 @@
 .garden-extra-nav .secondary-action-oot-main .secondary-action-label {
   color: inherit;
   font-size: 12px;
-  font-weight: 720;
+  font-weight: 740;
   line-height: 1.15;
   letter-spacing: -.018em;
 }
 
 .garden-extra-nav .secondary-action-oot-tools {
-  min-height: 27px;
-  border-top-color: rgba(117, 139, 127, .13);
-  background: rgba(247, 250, 247, .72);
+  min-height: 25px;
+  border-top-color: rgba(117, 139, 127, .1);
+  background: rgba(246, 250, 247, .58);
 }
 
 .garden-extra-nav .secondary-action-oot-alert,
 .garden-extra-nav .secondary-action-oot-invites {
-  min-height: 27px;
+  min-height: 25px;
 }
 
 @media (hover: hover) {
