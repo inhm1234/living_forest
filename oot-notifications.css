@@ -193,3 +193,80 @@
     flex: 1;
   }
 }
+
+/* GARDEN OOT COMPACT v2: 하단 중복 카드를 없애고 초대 상태를 원오브텐 바로가기에 합칩니다. */
+.garden-extra-nav .secondary-action-oot {
+  position: relative;
+  gap: 1px;
+  overflow: visible;
+  background:
+    radial-gradient(circle at 18% 20%, rgba(255, 239, 198, .5), transparent 35%),
+    rgba(255,255,255,.82);
+}
+
+.garden-extra-nav .secondary-action-oot .secondary-action-main-icon {
+  font-size: 19px;
+  line-height: 1;
+}
+
+.garden-extra-nav .secondary-action-oot .secondary-action-label {
+  font-size: inherit;
+  line-height: 1.15;
+}
+
+.garden-extra-nav .secondary-action-oot .secondary-action-oot-note {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  margin-top: 2px;
+  color: #879087;
+  font-size: 9px;
+  font-weight: 750;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.garden-extra-nav .secondary-action-oot .secondary-action-oot-note > span[aria-hidden="true"] {
+  font-size: 9px;
+  line-height: 1;
+}
+
+.garden-extra-nav .secondary-action-oot .secondary-action-oot-badge {
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  z-index: 2;
+  margin: 0;
+  padding: 4px 6px;
+  border: 2px solid rgba(255,255,255,.92);
+  border-radius: 999px;
+  box-shadow: 0 5px 12px rgba(155, 71, 78, .18);
+  font-size: 9px;
+  letter-spacing: -.01em;
+}
+
+@media (max-width: 600px) {
+  .garden-extra-nav .secondary-action-oot .secondary-action-main-icon {
+    font-size: 18px;
+  }
+
+  .garden-extra-nav .secondary-action-oot .secondary-action-oot-note {
+    font-size: 8.5px;
+  }
+
+  .garden-extra-nav .secondary-action-oot .secondary-action-oot-badge {
+    top: 6px;
+    right: 6px;
+    padding: 3px 5px;
+    font-size: 8px;
+  }
+}
+
+@media (max-width: 360px) {
+  .garden-extra-nav .secondary-action-oot .secondary-action-oot-note {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

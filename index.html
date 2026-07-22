@@ -33,7 +33,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
   <link rel="stylesheet" href="style.css?v=garden-status-navigation-v2" />
-  <link rel="stylesheet" href="oot-notifications.css?v=oot-push-v0-5" />
+  <link rel="stylesheet" href="oot-notifications.css?v=garden-oot-compact-v2" />
   <link rel="stylesheet" href="tree-animal-call.css?v=tree-animal-call-v4-status-hotfix" />
   <link rel="stylesheet" href="forest-unicorn-preview.css?v=garden-header-refinement-v1" />
   <link rel="stylesheet" href="forest-friend-cinematic.css?v=operation-special-friend-v1" />
@@ -529,8 +529,11 @@
     </nav>
 
     <div class="garden-secondary-actions garden-extra-nav" aria-label="추가 메뉴">
-      <button type="button" class="secondary-action" id="openOneOfTenShortcut" aria-label="원오브텐 놀이 화면 열기">
-        <span aria-hidden="true">🐿️</span> 원오브텐
+      <button type="button" class="secondary-action secondary-action-oot" id="openOneOfTenShortcut" aria-label="원오브텐 놀이와 친구 초대 확인하기">
+        <span class="secondary-action-main-icon" aria-hidden="true">🐿️</span>
+        <span class="secondary-action-label">원오브텐</span>
+        <span class="secondary-action-oot-note"><span aria-hidden="true">🔔</span> 친구 초대 알림</span>
+        <span class="oot-entry-badge secondary-action-oot-badge" data-oot-invite-badge hidden></span>
       </button>
       <button type="button" class="secondary-action" id="openSpecialFriendShortcut">
         <span aria-hidden="true">✨</span> 특별친구
@@ -555,37 +558,7 @@
       </div>
     </section>
 
-    <section class="forest-play-card forest-play-card-compact" aria-labelledby="forestPlayTitle">
-      <div class="forest-play-summary">
-        <div class="forest-play-art" aria-hidden="true">
-          <span class="forest-play-glow"></span>
-          <img src="assets/decorations/tiny-squirrel.png" alt="" />
-          <span class="forest-play-card-chip">1–10</span>
-        </div>
-        <div class="forest-play-copy">
-          <p class="growth-note-kicker">선택형 놀이</p>
-          <h2 id="forestPlayTitle">원오브텐</h2>
-          <p>다람쥐 또는 친구와 가볍게 한 판</p>
-        </div>
-        <a class="forest-play-launch" href="one-of-ten.html" aria-label="원오브텐 놀이 화면 열기">
-          <span>놀러가기</span>
-          <span class="oot-entry-badge" data-oot-invite-badge hidden></span>
-          <b aria-hidden="true">→</b>
-        </a>
-      </div>
 
-      <div class="oot-notification-card forest-play-notification" id="ootNotificationCard" data-oot-auth-only hidden aria-live="polite">
-        <span class="oot-notification-icon" aria-hidden="true">🔔</span>
-        <div class="oot-notification-copy">
-          <strong>친구 초대 알림</strong>
-          <span id="ootNotificationStatus" data-oot-notification-status>사이트를 닫아둬도 친구의 한 판 초대를 알려드려요.</span>
-        </div>
-        <div class="oot-notification-actions">
-          <button type="button" data-oot-enable-push>초대 알림 받기</button>
-          <a id="ootOpenInvites" href="one-of-ten-friend.html" hidden>도착한 초대 <b data-oot-invite-count>0</b></a>
-        </div>
-      </div>
-    </section>
 
     <div class="garden-footer-actions">
       <p class="database-note">내 기록과 내 나무 상태는 로그인한 계정의 정원에 저장돼요.</p>
