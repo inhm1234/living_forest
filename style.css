@@ -3856,7 +3856,7 @@ textarea::placeholder { color: #a7b4bd; }
 .garden-stage > .heart-fruit-open {
   top: auto;
   left: 16px;
-  bottom: 16px;
+  bottom: 10px;
   min-height: 35px;
   padding: 8px 11px;
   max-width: calc(50% - 28px);
@@ -4160,7 +4160,7 @@ textarea::placeholder { color: #a7b4bd; }
 
 @media (max-width: 420px) {
   .heart-fruit-layer { inset: 3% 5% 24% 5%; }
-  .garden-stage > .heart-fruit-open { left: 12px; bottom: 13px; min-height: 35px; padding: 7px 10px; max-width: calc(50% - 22px); }
+  .garden-stage > .heart-fruit-open { left: 12px; bottom: 7px; min-height: 35px; padding: 7px 10px; max-width: calc(50% - 22px); }
   .friend-heart-fruit-open { top: auto; bottom: 3%; }
   .heart-fruit-choice { flex-basis: 68px; min-height: 60px; }
   .heart-fruit-timeline-head { font-size: 9px; }
