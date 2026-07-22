@@ -188,11 +188,11 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
   }
 
   function toggleMemoryPopover(force) {
-    if (!memoryPopover || !memoryChipButton) return;
+    if (!memoryPopover) return;
     const shouldOpen = typeof force === "boolean" ? force : memoryPopover.hidden;
     memoryPopover.hidden = !shouldOpen;
     memoryPopover.classList.toggle("is-open", shouldOpen);
-    memoryChipButton.setAttribute("aria-expanded", String(shouldOpen));
+    memoryChipButton?.setAttribute("aria-expanded", String(shouldOpen));
   }
   window.openTodayForestSpecialFriendInfo = () => {
     console.log("[TodayForest] special friend info requested");
@@ -308,12 +308,10 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
     const shouldShowFriendMemory = forestFriendPreviewEnabled || forestFriendLiveEnabled;
     if (headerActions && shouldShowFriendMemory) {
       const memorySlot = document.createElement("div");
-      memorySlot.className = "forest-unicorn-header-slot";
+      // 상단의 특별친구 진입 버튼은 하단 메뉴와 기능이 중복되므로 제거합니다.
+      // 정보창 자체는 이 보이지 않는 슬롯에 유지해 하단 특별친구 버튼에서 그대로 열 수 있습니다.
+      memorySlot.className = "forest-unicorn-header-slot is-popover-only";
       memorySlot.innerHTML = `
-        <button type="button" class="forest-unicorn-header-chip" data-unicorn-memory-toggle aria-haspopup="dialog" aria-expanded="false">
-          <span class="forest-unicorn-header-chip-icon" aria-hidden="true">✨</span>
-          <span class="forest-unicorn-header-chip-text">특별친구</span>
-        </button>
         <section class="forest-unicorn-memory-popover" aria-label="특별친구 정보" hidden>
           <div class="forest-unicorn-memory-popover-head">
             <div>

@@ -807,3 +807,182 @@ body.forest-unicorn-live-enabled .header-actions > .quiet-pill span:last-child {
   .forest-unicorn-memory-icon { width: 34px; height: 34px; border-radius: 12px; font-size: 16px; }
   .forest-unicorn-memory-replay { padding-inline: 8px; }
 }
+
+/* ==========================================================================
+   GARDEN HEADER REFINEMENT v1
+   페이지 제목과 현재 정원 선택기를 한 축에 정렬하고,
+   중복되던 상단 특별친구 버튼은 제거한 최종 헤더입니다.
+   ========================================================================== */
+.garden-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 14px;
+  margin: 2px 2px 13px;
+}
+
+.garden-header > div:first-child {
+  min-width: 0;
+}
+
+.garden-header .eyebrow {
+  margin: 0 0 5px;
+  color: #8798a8;
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: .115em;
+  line-height: 1;
+  opacity: .92;
+}
+
+.garden-header h1 {
+  margin: 0;
+  color: #365162;
+  font-size: clamp(29px, 4.8vw, 34px);
+  font-weight: 900;
+  letter-spacing: -.065em;
+  line-height: 1;
+}
+
+.header-actions,
+body.forest-unicorn-preview-enabled .header-actions,
+body.forest-unicorn-live-enabled .header-actions {
+  position: relative;
+  display: flex !important;
+  grid-template-columns: none !important;
+  grid-template-rows: none !important;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  width: auto !important;
+  min-width: 0;
+}
+
+.garden-header .account-pill,
+body.forest-unicorn-preview-enabled .header-actions > .account-pill,
+body.forest-unicorn-live-enabled .header-actions > .account-pill {
+  display: inline-flex;
+  grid-column: auto;
+  grid-row: auto;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 7px;
+  width: auto;
+  min-width: 0;
+  min-height: 36px;
+  max-width: min(210px, 43vw);
+  margin: 0 0 1px;
+  padding: 8px 12px;
+  overflow: hidden;
+  border: 1px solid rgba(108, 145, 124, .16);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255,255,255,.74), rgba(246,252,248,.64));
+  color: #6b7f8e;
+  font-size: 11.5px;
+  font-weight: 900;
+  line-height: 1;
+  text-align: left;
+  box-shadow: 0 8px 18px rgba(91, 112, 137, .075), inset 0 1px 0 rgba(255,255,255,.76);
+  backdrop-filter: blur(9px);
+}
+
+.garden-header .account-pill:hover,
+.garden-header .account-pill:focus-visible {
+  border-color: rgba(105, 151, 125, .3);
+  background: rgba(255,255,255,.86);
+}
+
+.garden-header .account-pill .account-dot {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  background: #77b78d;
+  box-shadow: 0 0 0 3px rgba(119,183,141,.13);
+}
+
+.garden-header .account-pill span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 날씨는 통합 상태바에서 보여 주므로 헤더에는 표시하지 않습니다. */
+body.forest-unicorn-preview-enabled .header-actions > .quiet-pill,
+body.forest-unicorn-live-enabled .header-actions > .quiet-pill,
+.header-actions > .quiet-pill {
+  display: none !important;
+}
+
+/* 특별친구 정보창은 하단 버튼에서 열되, 헤더 레이아웃 공간은 차지하지 않습니다. */
+.forest-unicorn-header-slot.is-popover-only {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  grid-column: auto;
+  grid-row: auto;
+  width: 0;
+  min-width: 0;
+  height: 0;
+  margin: 0;
+}
+
+.forest-unicorn-header-slot.is-popover-only .forest-unicorn-memory-popover {
+  top: 10px;
+  right: 0;
+}
+
+@media (max-width: 470px) {
+  .garden-header {
+    gap: 10px;
+    margin: 1px 3px 12px;
+  }
+
+  .garden-header .eyebrow {
+    margin-bottom: 4px;
+    font-size: 8.5px;
+    letter-spacing: .1em;
+  }
+
+  .garden-header h1 {
+    font-size: clamp(28px, 8vw, 31px);
+  }
+
+  .header-actions,
+  body.forest-unicorn-preview-enabled .header-actions,
+  body.forest-unicorn-live-enabled .header-actions {
+    width: auto !important;
+  }
+
+  .garden-header .account-pill,
+  body.forest-unicorn-preview-enabled .header-actions > .account-pill,
+  body.forest-unicorn-live-enabled .header-actions > .account-pill {
+    min-height: 34px;
+    max-width: 45vw;
+    padding: 7px 10px;
+    font-size: 10.5px;
+  }
+
+  .forest-unicorn-header-slot.is-popover-only .forest-unicorn-memory-popover {
+    width: min(300px, calc(100vw - 32px));
+  }
+}
+
+@media (max-width: 350px) {
+  .garden-header {
+    gap: 8px;
+  }
+
+  .garden-header h1 {
+    font-size: 27px;
+  }
+
+  .garden-header .account-pill,
+  body.forest-unicorn-preview-enabled .header-actions > .account-pill,
+  body.forest-unicorn-live-enabled .header-actions > .account-pill {
+    max-width: 47vw;
+    padding-inline: 9px;
+    font-size: 9.8px;
+  }
+}
+
