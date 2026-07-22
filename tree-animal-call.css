@@ -1,4 +1,4 @@
-/* 오늘의숲 · 나무 손길로 숲친구 부르기 v1 */
+/* 오늘의숲 · 나무 손길로 숲친구 부르기 v1.3 · 첫 발견 뒤 상시 유도 중단 */
 .tree-wrap { --tree-call-glow: rgba(255, 238, 143, .94); }
 
 .tree-call-hitbox {
@@ -46,7 +46,7 @@
   filter: drop-shadow(0 0 8px rgba(255,231,128,.92));
   opacity: 0;
 }
-.tree-wrap.is-tree-call-ready .tree-call-ready-light {
+.tree-wrap.is-tree-call-ready:not(.is-tree-call-discovered) .tree-call-ready-light {
   opacity: .92;
   animation: treeCallReadyLure 5s ease-in-out infinite;
 }
@@ -220,7 +220,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tree-wrap.is-tree-call-ready .tree-call-ready-light,
+  .tree-wrap.is-tree-call-ready:not(.is-tree-call-discovered) .tree-call-ready-light,
   .tree-wrap.is-tree-call-tapped .tree-image,
   .tree-wrap.is-tree-call-tapped .tree-aura,
   .tree-wrap.is-tree-call-sending .tree-call-path-light,

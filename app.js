@@ -426,6 +426,13 @@ let gardenStatusTransientTimer = null;
 const GARDEN_STATUS_ACCOUNT_STORAGE_SESSION_KEY = "todayforest-account-storage-status-seen-v1";
 let gardenAnimalStatusSignature = "";
 let gardenAnimalStatusPriorityUntil = 0;
+// 나무 상호작용을 아직 발견하지 못한 사용자에게만 상태바 팁을 보여줍니다.
+// 실제 발견 여부와 현재 나무를 부를 수 있는지는 tree-animal-call.js가 전달합니다.
+let gardenTreeInteractionState = window.__todayForestTreeInteractionState || {
+  authenticated: false,
+  ready: false,
+  discovered: true,
+};
 let treeNamePromptedForUserId = "";
 let gardenWorldResizeObserver = null;
 let friendGardenWorldResizeObserver = null;
@@ -3357,6 +3364,9 @@ function renderGardenStatus(context = {}) {
   }
   if (animalStatus.item) items.push(animalStatus.item);
 
+  const treeInteraction = window.__todayForestTreeInteractionState || gardenTreeInteractionState;
+  const hasPriorityGardenStatus = Boolean(specialFriend || unread.length || animalStatus.item);
+
   items.push({
     key: `weather-${weather.className}`,
     icon: weather.icon,
@@ -3374,6 +3384,23 @@ function renderGardenStatus(context = {}) {
     detail: animalGrowthMessage(),
     label: "다음 방문자 안내 보기",
   });
+
+  // 중요한 편지·방문·특별친구 소식이 없을 때만 낮은 우선순위로 노출합니다.
+  // 한 번이라도 나무를 눌러 상호작용을 발견하면 이후에는 다시 나타나지 않습니다.
+  if (!hasPriorityGardenStatus
+    && currentUser
+    && !gardenTutorialPhase
+    && treeInteraction?.authenticated
+    && treeInteraction?.ready
+    && !treeInteraction?.discovered) {
+    items.push({
+      key: "tree-interaction-tip",
+      icon: "🌿",
+      text: "숲의 팁 · 나무를 톡톡 두드리면 누군가 찾아올지도 몰라요.",
+      action: "none",
+      label: "나무 상호작용 안내",
+    });
+  }
 
   if (shouldShowInstallStatus()) {
     items.push({
@@ -3399,6 +3426,17 @@ function renderGardenStatus(context = {}) {
 
   setGardenStatusItems(items, { preferredKey });
 }
+
+window.addEventListener("todayforest:tree-interaction-state", (event) => {
+  const detail = event?.detail;
+  if (!detail || typeof detail !== "object") return;
+  gardenTreeInteractionState = {
+    authenticated: Boolean(detail.authenticated),
+    ready: Boolean(detail.ready),
+    discovered: Boolean(detail.discovered),
+  };
+  if (currentUser && els.gardenStatusBar) renderGardenStatus();
+});
 
 function showNextGardenStatus(event) {
   event?.preventDefault();

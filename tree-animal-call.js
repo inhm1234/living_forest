@@ -1,4 +1,4 @@
-// 오늘의숲 · 나무 손길로 숲친구 부르기 운영 v1.2 · 특별친구 방문 연동
+// 오늘의숲 · 나무 손길로 숲친구 부르기 운영 v1.3 · 첫 상호작용 발견 안내
 // 기존 동물 방문/편지 기능은 그대로 사용하고, 이 파일은 나무의 입력·연출·쿨타임만 담당합니다.
 
 const TREE_CALL_RPC = "call_my_garden_animal_with_tree_v1";
@@ -7,6 +7,7 @@ const VALID_TAP_INTERVAL_MS = 700;
 const CHARGE_RESET_MS = 10_000;
 const ARRIVAL_EFFECT_MS = 3_000;
 const STATUS_REFRESH_MS = 30_000;
+const TREE_INTERACTION_DISCOVERY_STORAGE_PREFIX = "todayforest-tree-interaction-discovered-v1";
 
 let supabase = null;
 let treeWrap = null;
@@ -25,6 +26,10 @@ let pendingArrivesAtMs = 0;
 let pendingRequestId = "";
 let callBusy = false;
 let authenticated = false;
+let authenticatedUserId = "";
+// 로그인 계정을 확인하기 전에는 팁이 잠깐 나타나지 않도록 발견 완료 상태로 시작합니다.
+let treeInteractionDiscovered = true;
+let lastTreeInteractionStateSignature = "";
 let latestVisits = [];
 let serverHasActiveVisit = false;
 let specialFriendMet = Boolean(window.__todayForestSpecialFriendLiveState?.isMet);
@@ -34,6 +39,52 @@ let specialFriendPresence = window.__todayForestSpecialFriendVisitState || { pha
 
 function wait(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function treeInteractionDiscoveryStorageKey(userId = authenticatedUserId) {
+  return `${TREE_INTERACTION_DISCOVERY_STORAGE_PREFIX}:${userId || "guest"}`;
+}
+
+function readTreeInteractionDiscovered(userId) {
+  if (!userId) return true;
+  try {
+    return window.localStorage.getItem(treeInteractionDiscoveryStorageKey(userId)) === "1";
+  } catch (_error) {
+    // 저장소를 사용할 수 없는 환경에서는 반복 안내를 피하도록 발견 완료로 취급합니다.
+    return true;
+  }
+}
+
+function setTreeInteractionUser(userId) {
+  const nextUserId = String(userId || "");
+  if (authenticatedUserId === nextUserId) return;
+  authenticatedUserId = nextUserId;
+  treeInteractionDiscovered = readTreeInteractionDiscovered(nextUserId);
+  lastTreeInteractionStateSignature = "";
+}
+
+function markTreeInteractionDiscovered() {
+  if (!authenticatedUserId || treeInteractionDiscovered) return;
+  treeInteractionDiscovered = true;
+  try {
+    window.localStorage.setItem(treeInteractionDiscoveryStorageKey(), "1");
+  } catch (_error) {
+    // 저장에 실패해도 현재 페이지에서는 안내와 유도 빛을 즉시 멈춥니다.
+  }
+  renderState();
+}
+
+function publishTreeInteractionState(ready) {
+  const detail = {
+    authenticated: Boolean(authenticated),
+    ready: Boolean(ready),
+    discovered: Boolean(treeInteractionDiscovered),
+  };
+  window.__todayForestTreeInteractionState = detail;
+  const signature = `${Number(detail.authenticated)}:${Number(detail.ready)}:${Number(detail.discovered)}`;
+  if (signature === lastTreeInteractionStateSignature) return;
+  lastTreeInteractionStateSignature = signature;
+  window.dispatchEvent(new CustomEvent("todayforest:tree-interaction-state", { detail }));
 }
 
 async function resolveSupabase() {
@@ -173,6 +224,7 @@ function renderState() {
   const arriving = pendingArrivesAtMs > Date.now() || callBusy;
 
   treeWrap.classList.toggle("is-tree-call-ready", ready && charge === 0);
+  treeWrap.classList.toggle("is-tree-call-discovered", treeInteractionDiscovered);
   treeWrap.classList.toggle("is-tree-call-cooldown", cooldown);
   treeWrap.classList.toggle("is-tree-call-blocked", conflict && !arriving);
   treeWrap.classList.toggle("is-tree-call-arriving", arriving);
@@ -183,7 +235,8 @@ function renderState() {
     : conflict
       ? "나무 흔들기"
       : specialTarget ? "나무에 손길을 건네 숲 유니콘 부르기" : "나무에 손길 건네기");
-  if (readyLight) readyLight.hidden = !ready || charge > 0;
+  if (readyLight) readyLight.hidden = !ready || charge > 0 || treeInteractionDiscovered;
+  publishTreeInteractionState(ready);
 }
 
 function dispatchAnimalSync() {
@@ -341,6 +394,8 @@ function handleTreeTap(event) {
   playTapReaction();
 
   if (!authenticated || isInteractionBlocked()) return;
+  // 사용자가 나무를 직접 눌렀다면 결과와 관계없이 상호작용을 발견한 것으로 기록합니다.
+  markTreeInteractionDiscovered();
   // 동물이 머물거나 다가오는 동안, 그리고 3초 등장 연출 중에는 안내 없이 나무만 흔들립니다.
   if (hasAnimalConflict()) {
     renderState();
@@ -361,9 +416,12 @@ async function refreshAuth() {
   if (!supabase) return;
   try {
     const { data } = await supabase.auth.getSession();
-    authenticated = Boolean(data?.session?.user);
+    const user = data?.session?.user || null;
+    authenticated = Boolean(user);
+    setTreeInteractionUser(user?.id || "");
   } catch (error) {
     authenticated = false;
+    setTreeInteractionUser("");
   }
   renderState();
 }
@@ -462,6 +520,7 @@ async function initTreeAnimalCall() {
   window.addEventListener("focus", () => { void refreshStatus({ silent: true }); });
   supabase.auth.onAuthStateChange((_event, session) => {
     authenticated = Boolean(session?.user);
+    setTreeInteractionUser(session?.user?.id || "");
     if (!authenticated) {
       cooldownUntilMs = 0;
       pendingArrivesAtMs = 0;
