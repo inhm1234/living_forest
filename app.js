@@ -6438,7 +6438,10 @@ function bindEvents() {
   });
   $("#openLetters").addEventListener("click", () => { void openLettersSheet(); });
   els.openFeedback.addEventListener("click", openFeedbackSheet);
-  $("#openSpecialFriendShortcut")?.addEventListener("click", () => {
+  $("#openSpecialFriendShortcut")?.addEventListener("click", (event) => {
+    // 정보창을 연 직후 document의 바깥 클릭 감지기가 같은 클릭을 받아
+    // 곧바로 닫아버리지 않도록 여기서 전파를 멈춥니다.
+    event.stopPropagation();
     console.log("[TodayForest] special friend shortcut clicked");
     if (typeof window.openTodayForestSpecialFriendInfo === "function") {
       console.log("[TodayForest] opening special friend info");
