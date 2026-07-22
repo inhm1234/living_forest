@@ -6705,3 +6705,19 @@ body.forest-unicorn-live-enabled .header-actions {
     transition: none;
   }
 }
+
+/* ==========================================================================
+   GARDEN BUTTON SPACING v1.2
+   정원(감상·상호작용 영역)과 하단 메뉴(기능 이동 영역)를 시각적으로 분리합니다.
+   메뉴 내부의 가로·세로 간격은 유지하고, 두 영역 사이에만 작은 여백을 둡니다.
+   ========================================================================== */
+
+.garden-nav-four {
+  margin-top: 10px;
+}
+
+@media (max-width: 420px) {
+  .garden-nav-four {
+    margin-top: 8px;
+  }
+}
