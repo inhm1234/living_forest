@@ -411,7 +411,6 @@ let retentionWindTimer = null;
 let retentionWindRefreshBusy = false;
 let retentionCleanupRanOnThisPage = false;
 let deferredInstallPrompt = null;
-let installHelpVisible = false;
 // GARDEN STATUS BAR v1: 여러 한 줄 안내를 하나의 고정 상태바로 통합합니다.
 const GARDEN_STATUS_ROTATE_MS = 7000;
 let gardenStatusItems = [];
@@ -658,10 +657,6 @@ const els = {
   letterDelivery: $("#letterDelivery"),
   letterDate: $("#letterDate"),
   toast: $("#toast"),
-  installCard: $("#installCard"),
-  installAppButton: $("#installAppButton"),
-  dismissInstallCard: $("#dismissInstallCard"),
-  installHelp: $("#installHelp"),
   authScreen: $("#authScreen"),
   welcomePreview: $("#welcomePreview"),
   welcomePlantButton: $("#welcomePlantButton"),
@@ -719,17 +714,6 @@ function isKakaoTalkInAppBrowser() {
   return /kakaotalk/i.test(window.navigator.userAgent || "");
 }
 
-function updateInstallButtonLabel() {
-  if (!els.installAppButton) return;
-
-  const buttonLabel = isKakaoTalkInAppBrowser()
-    ? (isAndroidDevice() ? "Chrome에서 열고 심기" : "Safari에서 열기")
-    : "내 폰에 심기";
-
-  els.installAppButton.textContent = buttonLabel;
-  els.installAppButton.setAttribute("aria-label", buttonLabel);
-}
-
 function hasRecordBeforeToday() {
   const today = seoulDateKey();
   return Boolean(today) && state.records.some((record) => {
@@ -747,24 +731,23 @@ function installMarkedComplete() {
   return window.localStorage.getItem(pwaStorageKey(PWA_INSTALL_COMPLETE_STORAGE_PREFIX)) === "1";
 }
 
-function resetInstallCardHelp() {
-  installHelpVisible = false;
-  els.installHelp?.classList.add("hidden");
-  if (els.installHelp) els.installHelp.textContent = "";
-}
+function shouldShowInstallStatus() {
+  const installIsAvailable = Boolean(deferredInstallPrompt)
+    || isIosBrowser()
+    || isKakaoTalkInAppBrowser();
 
-function updateInstallCard() {
-  if (!els.installCard) return;
-
-  const shouldShow = Boolean(currentUser)
+  return Boolean(currentUser)
+    && installIsAvailable
     && !isStandaloneApp()
     && !installMarkedComplete()
     && hasRecordBeforeToday()
     && Date.now() >= installLaterUntil();
+}
 
-  updateInstallButtonLabel();
-  els.installCard.classList.toggle("hidden", !shouldShow);
-  if (!shouldShow) resetInstallCardHelp();
+// 예전 하단 설치 카드는 제거하고, 설치 가능 상태를 정원 통합 상태바에 반영합니다.
+function updateInstallCard() {
+  if (els.accountInstallHint) els.accountInstallHint.textContent = accountInstallHintText();
+  if (currentUser && els.gardenStatusBar) renderGardenStatus();
 }
 
 function dismissInstallCardForAWhile() {
@@ -772,17 +755,10 @@ function dismissInstallCardForAWhile() {
     pwaStorageKey(PWA_INSTALL_LATER_STORAGE_PREFIX),
     String(Date.now() + PWA_INSTALL_LATER_MS),
   );
-  resetInstallCardHelp();
   updateInstallCard();
 }
 
 function showInstallHelp(message) {
-  installHelpVisible = true;
-  if (els.installHelp) {
-    els.installHelp.textContent = message;
-    els.installHelp.classList.remove("hidden");
-  }
-  // 자동 설치 카드가 숨겨진 상태에서도, 계정 메뉴에서 누른 안내는 보이도록 합니다.
   showToast(message);
 }
 
@@ -818,6 +794,7 @@ async function requestAppInstall() {
 
   if (isKakaoTalkInAppBrowser()) {
     openChromeFromKakaoTalk();
+    dismissInstallCardForAWhile();
     return;
   }
 
@@ -837,10 +814,12 @@ async function requestAppInstall() {
 
   if (isIosBrowser()) {
     showIosInstallHelp();
+    dismissInstallCardForAWhile();
     return;
   }
 
   showToast("브라우저 메뉴에서 ‘앱 설치’ 또는 ‘홈 화면에 추가’를 눌러 주세요.");
+  dismissInstallCardForAWhile();
 }
 
 function accountInstallHintText() {
@@ -3261,7 +3240,7 @@ function renderGardenStatus(context = {}) {
     return;
   }
 
-  setGardenStatusItems([
+  const quietStatusItems = [
     {
       key: `weather-${weather.className}`,
       icon: weather.icon,
@@ -3274,9 +3253,21 @@ function renderGardenStatus(context = {}) {
       icon: "🌱",
       text: `다음 방문자 · ${animalGrowthMessage()}`,
       action: "cycle",
-      label: "오늘 날씨 소식 보기",
+      label: "다음 정원 소식 보기",
     },
-  ]);
+  ];
+
+  if (shouldShowInstallStatus()) {
+    quietStatusItems.push({
+      key: "install-app",
+      icon: "🌿",
+      text: "홈 화면에 심어두면 오늘의숲을 더 쉽게 만나요.",
+      action: "install",
+      label: "오늘의숲을 홈 화면에 추가하기",
+    });
+  }
+
+  setGardenStatusItems(quietStatusItems);
 }
 
 function handleGardenStatusClick(event) {
@@ -3295,6 +3286,11 @@ function handleGardenStatusClick(event) {
   }
   if (item.action === "visitor") {
     els.visitorButton?.click();
+    return;
+  }
+  if (item.action === "install") {
+    event.stopPropagation();
+    void requestAppInstall();
     return;
   }
   if (item.action === "special-friend") {
@@ -6592,8 +6588,6 @@ function bindEvents() {
   $$("[data-public-login]").forEach((button) => button.addEventListener("click", openPublicLogin));
   els.backToPublicHome?.addEventListener("click", returnToPublicHome);
   els.signInKakao?.addEventListener("click", beginKakaoLogin);
-  els.installAppButton?.addEventListener("click", () => { void requestAppInstall(); });
-  els.dismissInstallCard?.addEventListener("click", dismissInstallCardForAWhile);
   els.gardenStatusBar?.addEventListener("click", handleGardenStatusClick);
   els.foundItemSparkle?.addEventListener("click", () => { void claimFoundItem(); });
   els.openGardenDecorate?.addEventListener("click", startGardenDecorateMode);
@@ -6978,7 +6972,6 @@ function prepareWelcomeSandboxGarden() {
   if (els.visitorHint) els.visitorHint.textContent = "첫 마음이 나무 가까이에 내려앉았어요.";
   if (els.stageMessage) els.stageMessage.textContent = "첫 마음이 작은 나무가 되었어요.";
   if (els.nextVisitorText) els.nextVisitorText.textContent = "내일도 마음을 남기면 나무가 조금 더 자라요.";
-  if (els.installCard) els.installCard.classList.add("hidden");
   if (els.firstWalkTutorial) els.firstWalkTutorial.classList.add("hidden");
   if (els.gardenDecorateControls) els.gardenDecorateControls.hidden = false;
 
