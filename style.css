@@ -7007,3 +7007,213 @@ body.forest-unicorn-live-enabled .header-actions {
     animation: none !important;
   }
 }
+
+/* =========================================================
+   GENERAL VISITOR ART v0.3 — SMALL BIRD
+   - 가장 자주 방문하는 작은 새를 운영체제 이모지에서 정원 캐릭터로 교체
+   - 성장 1~2단계에는 가지가 없으므로 풀밭 가까이에 머물고,
+     3단계부터 실제 나무 높이에 맞춰 가지 방문 위치가 올라갑니다.
+   - 새가 통째로 둥실거리지 않도록 정지 자세 + 불규칙한 고개 반응만 사용
+   ========================================================= */
+.animal-v2-visitor.animal-v2-bird.has-animal-art {
+  top: auto;
+  right: 19%;
+  bottom: 41%;
+  width: 58px;
+  height: 52px;
+  isolation: isolate;
+}
+
+.animal-v2-visitor.animal-v2-bird.has-animal-art .animal-v2-art {
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 3px 3px rgba(59, 86, 77, .105));
+  opacity: .985;
+  animation: animalVisitorBirdRest 6.4s ease-in-out infinite;
+}
+
+.animal-v2-visitor.animal-v2-bird.has-animal-art.is-looking .animal-v2-art {
+  animation: animalVisitorBirdNotice .88s cubic-bezier(.25,.7,.3,1) both;
+}
+
+/* 성숙한 나무에서는 발 아래의 짧은 선이 수관 가장자리 가지와 이어지는 보조 접점이 됩니다. */
+.animal-v2-visitor.animal-v2-bird.has-animal-art::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  left: 5px;
+  bottom: 3px;
+  width: 48px;
+  height: 10px;
+  border-bottom: 2px solid rgba(133, 104, 75, .46);
+  border-radius: 50%;
+  transform: rotate(-4deg);
+  pointer-events: none;
+}
+
+/* 편지 표시는 새의 발 가까이에 놓인 작은 종이봉투로 통합합니다. */
+.animal-v2-visitor.animal-v2-bird.has-animal-art .animal-v2-envelope {
+  z-index: 3;
+  right: -1px;
+  bottom: 2px;
+  width: 13px;
+  height: 9px;
+  border: 1px solid rgba(169, 114, 123, .50);
+  border-radius: 2px;
+  background: rgba(255, 248, 239, .96);
+  color: transparent;
+  font-size: 0;
+  line-height: 0;
+  text-shadow: none;
+  box-shadow: 0 2px 4px rgba(94, 77, 71, .09);
+  transform: rotate(-5deg);
+  overflow: hidden;
+}
+.animal-v2-visitor.animal-v2-bird.has-animal-art .animal-v2-envelope::before,
+.animal-v2-visitor.animal-v2-bird.has-animal-art .animal-v2-envelope::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+.animal-v2-visitor.animal-v2-bird.has-animal-art .animal-v2-envelope::before {
+  left: 2px;
+  top: -3px;
+  width: 8px;
+  height: 7px;
+  border-right: 1px solid rgba(169, 114, 123, .38);
+  border-bottom: 1px solid rgba(169, 114, 123, .38);
+  transform: rotate(45deg);
+}
+.animal-v2-visitor.animal-v2-bird.has-animal-art .animal-v2-envelope::after {
+  right: 2px;
+  bottom: 1px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(205, 119, 139, .68);
+}
+
+/* 나무가 아직 가지를 만들지 않은 시기에는 새를 풀밭의 작은 손님으로 배치합니다. */
+.garden-stage[data-tree-stage="1"] .animal-v2-visitor.animal-v2-bird.has-animal-art {
+  right: 26%;
+  bottom: 18.5%;
+  width: 54px;
+  height: 49px;
+}
+.garden-stage[data-tree-stage="2"] .animal-v2-visitor.animal-v2-bird.has-animal-art {
+  right: 25%;
+  bottom: 21%;
+  width: 55px;
+  height: 50px;
+}
+.garden-stage[data-tree-stage="1"] .animal-v2-visitor.animal-v2-bird.has-animal-art::after,
+.garden-stage[data-tree-stage="2"] .animal-v2-visitor.animal-v2-bird.has-animal-art::after {
+  left: 10px;
+  bottom: 2px;
+  width: 35px;
+  height: 6px;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(76, 111, 75, .18), rgba(76, 111, 75, 0) 72%);
+  transform: none;
+}
+
+.garden-stage[data-tree-stage="3"] .animal-v2-visitor.animal-v2-bird.has-animal-art {
+  right: 25%;
+  bottom: 31%;
+}
+.garden-stage[data-tree-stage="4"] .animal-v2-visitor.animal-v2-bird.has-animal-art {
+  right: 23%;
+  bottom: 36%;
+}
+.garden-stage[data-tree-stage="5"] .animal-v2-visitor.animal-v2-bird.has-animal-art {
+  right: 21%;
+  bottom: 39%;
+}
+.garden-stage[data-tree-stage="6"] .animal-v2-visitor.animal-v2-bird.has-animal-art {
+  right: 19%;
+  bottom: 41%;
+}
+
+/* 방문·퇴장은 새의 성격에 맞게 짧은 비행 경로를 사용합니다. */
+.animal-v2-visitor.animal-v2-bird.has-animal-art.is-arriving {
+  animation: animalVisitorBirdArrive .92s cubic-bezier(.2,.78,.28,1) both;
+}
+.animal-v2-visitor.animal-v2-bird.has-animal-art.is-departing {
+  animation: animalVisitorBirdDepart 1.05s cubic-bezier(.35,.05,.65,.95) both;
+}
+
+@keyframes animalVisitorBirdRest {
+  0%, 100% { transform: rotate(0deg) scaleX(1) scaleY(1); }
+  48% { transform: rotate(.12deg) scaleX(1.001) scaleY(.998); }
+  54% { transform: rotate(-.08deg) scaleX(.999) scaleY(1.001); }
+}
+@keyframes animalVisitorBirdNotice {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  40% { transform: rotate(-1deg) scale(1.008); }
+  72% { transform: rotate(.25deg) scale(1.002); }
+}
+@keyframes animalVisitorBirdArrive {
+  0% { transform: translate3d(54px,-36px,0) scale(.74) rotate(8deg); opacity: 0; }
+  64% { transform: translate3d(-2px,2px,0) scale(1.02) rotate(-1deg); opacity: 1; }
+  100% { transform: translate3d(0,0,0) scale(1) rotate(0); opacity: 1; }
+}
+@keyframes animalVisitorBirdDepart {
+  0% { transform: translate3d(0,0,0) scale(1) rotate(0); opacity: 1; }
+  35% { transform: translate3d(-8px,-5px,0) scale(.98) rotate(-3deg); opacity: 1; }
+  100% { transform: translate3d(-76px,-82px,0) scale(.68) rotate(-10deg); opacity: 0; }
+}
+
+@media (hover: hover) {
+  .animal-v2-visitor.animal-v2-bird.has-animal-art:hover .animal-v2-art {
+    filter: drop-shadow(0 3px 3px rgba(59, 86, 77, .13)) brightness(1.015);
+  }
+}
+
+@media (max-width: 520px) {
+  .animal-v2-visitor.animal-v2-bird.has-animal-art {
+    width: 53px;
+    height: 48px;
+  }
+  .garden-stage[data-tree-stage="1"] .animal-v2-visitor.animal-v2-bird.has-animal-art {
+    right: 23%;
+    bottom: 19%;
+    width: 50px;
+    height: 45px;
+  }
+  .garden-stage[data-tree-stage="2"] .animal-v2-visitor.animal-v2-bird.has-animal-art {
+    right: 22%;
+    bottom: 21.5%;
+    width: 51px;
+    height: 46px;
+  }
+  .garden-stage[data-tree-stage="3"] .animal-v2-visitor.animal-v2-bird.has-animal-art {
+    right: 22%;
+    bottom: 31%;
+  }
+  .garden-stage[data-tree-stage="4"] .animal-v2-visitor.animal-v2-bird.has-animal-art {
+    right: 20%;
+    bottom: 36%;
+  }
+  .garden-stage[data-tree-stage="5"] .animal-v2-visitor.animal-v2-bird.has-animal-art {
+    right: 18%;
+    bottom: 39%;
+  }
+  .garden-stage[data-tree-stage="6"] .animal-v2-visitor.animal-v2-bird.has-animal-art {
+    right: 16.5%;
+    bottom: 41%;
+  }
+  .animal-v2-visitor.animal-v2-bird.has-animal-art .animal-v2-envelope {
+    right: -1px;
+    bottom: 2px;
+    width: 12px;
+    height: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animal-v2-visitor.animal-v2-bird.has-animal-art,
+  .animal-v2-visitor.animal-v2-bird.has-animal-art .animal-v2-art {
+    animation: none !important;
+  }
+}

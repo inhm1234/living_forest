@@ -234,6 +234,8 @@ const animalVisitors = {
   bird: {
     kind: "bird",
     icon: "🐦",
+    asset: "assets/visitors/forest-bird-idle.svg",
+    lookAsset: "assets/visitors/forest-bird-look.svg",
     name: "작은 새",
     deliveryHours: 2,
     sceneClass: "bird",
@@ -3571,6 +3573,9 @@ function renderGarden() {
   const unread = getUnreadLetters();
 
   const isGrowthPreview = growthPreviewFromUrl() !== null;
+  // 방문 동물은 성장 단계에 맞는 실제 착지 지점을 사용합니다.
+  // 작은 새는 가지가 없는 초기 단계에서는 풀밭 가까이, 나무가 자란 뒤에는 가지 높이에 앉습니다.
+  if (els.gardenStage) els.gardenStage.dataset.treeStage = String(stageRules.indexOf(stage) + 1);
   els.dayCount.textContent = `마음 ${visualGrowth}일째${isGrowthPreview ? " · 미리보기" : ""}`;
   els.treeStageLabel.textContent = stage.label;
   if (els.treeNameLabel) els.treeNameLabel.textContent = state.treeName || "내 마음 나무";

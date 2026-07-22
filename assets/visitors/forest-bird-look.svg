@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 130" role="img" aria-labelledby="title desc">
+  <title id="title">고개를 갸웃하는 숲의 작은 새</title>
+  <desc id="desc">고개를 살짝 기울이고 주변을 바라보는 작은 새</desc>
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d4e8df"/>
+      <stop offset=".55" stop-color="#a9cec2"/>
+      <stop offset="1" stop-color="#82aea5"/>
+    </linearGradient>
+    <linearGradient id="wing" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9bc5bb"/>
+      <stop offset="1" stop-color="#6f9f98"/>
+    </linearGradient>
+    <radialGradient id="belly" cx="45%" cy="36%" r="70%">
+      <stop offset="0" stop-color="#fff8e9"/>
+      <stop offset="1" stop-color="#f2d8b6"/>
+    </radialGradient>
+    <radialGradient id="cheek" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#efb6ad" stop-opacity=".72"/>
+      <stop offset="1" stop-color="#efb6ad" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <g stroke="#6f8178" stroke-opacity=".66" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M107 84c10 4 20 12 27 22-11 0-22-2-31-8" fill="#7ca8a0" stroke-width="2.5"/>
+    <path d="M111 88c9 7 14 14 17 19" fill="none" stroke="#c4ddd4" stroke-width="2.4" opacity=".72"/>
+    <ellipse cx="82" cy="80" rx="38" ry="31" fill="url(#body)" stroke-width="2.8"/>
+    <g transform="rotate(-8 54 61) translate(-1 -2)">
+      <circle cx="52" cy="60" r="23" fill="url(#body)" stroke-width="2.7"/>
+      <path d="M35 60 20 66l15 7" fill="#dfa579" stroke="#a77a64" stroke-width="2.2"/>
+      <circle cx="48" cy="55" r="4.3" fill="#434b48" stroke="none"/>
+      <circle cx="49.5" cy="53.3" r="1.25" fill="#fff" stroke="none" opacity=".95"/>
+      <ellipse cx="44" cy="68" rx="11" ry="8" fill="url(#cheek)" stroke="none" opacity=".48"/>
+      <path d="M54 44c7-5 16-5 23-1" fill="none" stroke="#f5fbf7" stroke-width="4" opacity=".28"/>
+    </g>
+    <ellipse cx="66" cy="84" rx="23" ry="22" fill="url(#belly)" stroke="none" opacity=".96"/>
+    <path d="M77 62c18 4 27 14 25 31-15 1-28-5-35-17 1-6 4-11 10-14Z" fill="url(#wing)" stroke-width="2.5"/>
+    <path d="M73 69c9 4 16 10 20 18" fill="none" stroke="#d9ebe4" stroke-width="3" opacity=".64"/>
+    <path d="M67 105c1 7 0 11-3 15" fill="none" stroke="#a17e68" stroke-width="2.2"/>
+    <path d="M85 106c0 7 2 11 5 14" fill="none" stroke="#a17e68" stroke-width="2.2"/>
+    <path d="M59 120h10M87 120h10" fill="none" stroke="#9d7965" stroke-width="2.2"/>
+  </g>
+
+  <path d="M69 57c8-4 17-5 25-2" fill="none" stroke="#f6fbf7" stroke-width="4" stroke-linecap="round" opacity=".18"/>
+</svg>
