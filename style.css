@@ -6455,3 +6455,251 @@ body.forest-unicorn-live-enabled .header-actions {
   .garden-status-text { font-size: 10px; }
   .garden-status-next { min-width: 45px; padding-inline: 6px; }
 }
+
+
+/* ==========================================================================
+   GARDEN BUTTON SYSTEM v1
+   핵심 행동·기본 메뉴·확장 콘텐츠가 역할별로 하나의 시각 언어를 사용합니다.
+   위치와 기능은 유지하고 글자, 아이콘, 카드 규격, 상호작용만 정돈합니다.
+   ========================================================================== */
+
+.garden-nav-four {
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.garden-nav-four .nav-action {
+  min-width: 0;
+  min-height: 68px;
+  padding: 9px 5px 8px;
+  gap: 6px;
+  border: 1px solid rgba(119, 151, 133, .17);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .76);
+  color: #5d7168;
+  box-shadow: 0 8px 18px rgba(73, 99, 85, .055);
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .14s ease, background-color .14s ease, border-color .14s ease, box-shadow .14s ease;
+}
+
+.garden-nav-four .nav-action .nav-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  color: #78968a;
+  line-height: 1;
+}
+
+.garden-nav-four .nav-action .nav-icon svg {
+  display: block;
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.garden-nav-four .nav-action .nav-label,
+.garden-nav-four .nav-action > span:last-child {
+  min-width: 0;
+  color: inherit;
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 1.18;
+  letter-spacing: -.018em;
+  white-space: nowrap;
+}
+
+.garden-nav-four .nav-primary,
+.garden-nav-four .nav-primary.record-complete {
+  border-color: rgba(112, 171, 130, .38);
+  background: linear-gradient(180deg, #eef8f0 0%, #e6f3e9 100%);
+  color: #4f7e5d;
+  box-shadow: 0 9px 19px rgba(77, 124, 90, .09);
+}
+
+.garden-nav-four .nav-primary .nav-icon,
+.garden-nav-four .nav-primary.record-complete .nav-icon {
+  color: #5f946d;
+}
+
+.garden-nav-four .nav-badge {
+  top: 7px;
+  right: 8px;
+  min-width: 18px;
+  height: 18px;
+  padding-inline: 5px;
+  border: 2px solid rgba(255, 255, 255, .92);
+  background: #ed819f;
+  font-size: 9px;
+  box-shadow: 0 4px 9px rgba(188, 92, 119, .18);
+}
+
+.garden-extra-nav {
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.garden-extra-nav .secondary-action {
+  min-width: 0;
+  min-height: 76px;
+  padding: 9px 7px;
+  gap: 5px;
+  border: 1px solid rgba(119, 151, 133, .17);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .78);
+  color: #5b6f66;
+  box-shadow: 0 8px 18px rgba(73, 99, 85, .055);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .14s ease, background-color .14s ease, border-color .14s ease, box-shadow .14s ease;
+}
+
+.garden-extra-nav .secondary-action-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(126, 150, 136, .12);
+  border-radius: 11px;
+  line-height: 1;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .72);
+}
+
+.garden-extra-nav .secondary-action-icon > span {
+  display: block;
+  line-height: 1;
+}
+
+.garden-extra-nav .secondary-action-icon-oot {
+  background: rgba(252, 241, 208, .82);
+}
+
+.garden-extra-nav .secondary-action-icon-oot > span {
+  font-size: 18px;
+  transform: translateY(1px);
+}
+
+.garden-extra-nav .secondary-action-icon-special {
+  background: rgba(239, 233, 250, .86);
+  color: #8b78ae;
+}
+
+.garden-extra-nav .secondary-action-icon-special > span {
+  font-size: 18px;
+}
+
+.garden-extra-nav .secondary-action-icon-more {
+  background: rgba(239, 243, 241, .9);
+  color: #788b82;
+}
+
+.garden-extra-nav .secondary-action-icon-more > span {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  transform: translateY(-1px);
+}
+
+.garden-extra-nav .secondary-action .secondary-action-label {
+  color: inherit;
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 1.15;
+  letter-spacing: -.018em;
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .garden-nav-four .nav-action:hover,
+  .garden-extra-nav > .secondary-action:not(.secondary-action-oot-card):hover {
+    border-color: rgba(104, 148, 122, .28);
+    background: rgba(255, 255, 255, .92);
+    box-shadow: 0 10px 21px rgba(73, 99, 85, .08);
+  }
+
+  .garden-nav-four .nav-primary:hover,
+  .garden-nav-four .nav-primary.record-complete:hover {
+    border-color: rgba(99, 160, 117, .46);
+    background: linear-gradient(180deg, #f1faf3 0%, #e8f5eb 100%);
+  }
+}
+
+.garden-nav-four .nav-action:active,
+.garden-extra-nav > .secondary-action:not(.secondary-action-oot-card):active {
+  transform: scale(.98);
+}
+
+.garden-nav-four .nav-action:focus-visible,
+.garden-extra-nav > .secondary-action:not(.secondary-action-oot-card):focus-visible {
+  outline: 2px solid rgba(91, 145, 112, .42);
+  outline-offset: 2px;
+}
+
+@media (max-width: 420px) {
+  .garden-nav-four,
+  .garden-extra-nav {
+    gap: 6px;
+  }
+
+  .garden-nav-four .nav-action {
+    min-height: 64px;
+    padding-inline: 3px;
+    border-radius: 17px;
+    gap: 5px;
+  }
+
+  .garden-nav-four .nav-action .nav-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .garden-nav-four .nav-action .nav-icon svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  .garden-nav-four .nav-action .nav-label,
+  .garden-nav-four .nav-action > span:last-child,
+  .garden-extra-nav .secondary-action .secondary-action-label {
+    font-size: 11px;
+  }
+
+  .garden-extra-nav .secondary-action {
+    min-height: 72px;
+    padding-inline: 5px;
+    border-radius: 17px;
+  }
+
+  .garden-extra-nav .secondary-action-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 350px) {
+  .garden-nav-four {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .garden-nav-four .nav-action .nav-label,
+  .garden-nav-four .nav-action > span:last-child,
+  .garden-extra-nav .secondary-action .secondary-action-label {
+    font-size: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .garden-nav-four .nav-action,
+  .garden-extra-nav .secondary-action {
+    transition: none;
+  }
+}

@@ -373,3 +373,86 @@
     padding-right: 5px;
   }
 }
+
+
+/* GARDEN BUTTON SYSTEM v1 · 원오브텐 카드도 옆 확장 메뉴와 같은 규격을 사용합니다. */
+.garden-extra-nav .secondary-action-oot-card {
+  min-height: 76px;
+  border-color: rgba(119, 151, 133, .17);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 239, 198, .46), transparent 38%),
+    rgba(255, 255, 255, .8);
+  box-shadow: 0 8px 18px rgba(73, 99, 85, .055);
+}
+
+.garden-extra-nav .secondary-action-oot-main {
+  min-height: 49px;
+  padding: 5px 6px 4px;
+  gap: 3px;
+  color: #5b6f66;
+  transition: background-color .14s ease, transform .14s ease;
+}
+
+.garden-extra-nav .secondary-action-oot-main .secondary-action-main-icon {
+  width: 30px;
+  height: 30px;
+  font-size: inherit;
+}
+
+.garden-extra-nav .secondary-action-oot-main .secondary-action-label {
+  color: inherit;
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 1.15;
+  letter-spacing: -.018em;
+}
+
+.garden-extra-nav .secondary-action-oot-tools {
+  min-height: 27px;
+  border-top-color: rgba(117, 139, 127, .13);
+  background: rgba(247, 250, 247, .72);
+}
+
+.garden-extra-nav .secondary-action-oot-alert,
+.garden-extra-nav .secondary-action-oot-invites {
+  min-height: 27px;
+}
+
+@media (hover: hover) {
+  .garden-extra-nav .secondary-action-oot-main:hover {
+    background: rgba(255, 255, 255, .45);
+  }
+
+  .garden-extra-nav .secondary-action-oot-card:hover {
+    border-color: rgba(104, 148, 122, .24);
+    box-shadow: 0 10px 21px rgba(73, 99, 85, .075);
+  }
+}
+
+@media (max-width: 420px) {
+  .garden-extra-nav .secondary-action-oot-card {
+    min-height: 72px;
+    border-radius: 17px;
+  }
+
+  .garden-extra-nav .secondary-action-oot-main {
+    min-height: 45px;
+    padding-top: 4px;
+  }
+
+  .garden-extra-nav .secondary-action-oot-main .secondary-action-main-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .garden-extra-nav .secondary-action-oot-main .secondary-action-label {
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .garden-extra-nav .secondary-action-oot-main {
+    transition: none;
+  }
+}
