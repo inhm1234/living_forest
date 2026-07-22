@@ -379,12 +379,15 @@ const HEART_FRUIT_CEREMONY_MESSAGE_HIDE_MS = 6100;
 
 const HEART_FRUIT_COMPLETE_COUNT = 30;
 const HEART_FRUIT_REVEAL_STORAGE_PREFIX = "todayforest-heart-fruit-revealed-v1";
+// 마음 열매는 몸통이 아니라 잎과 잔가지가 있는 수관에만 맺힙니다.
+// 좌표는 투명 열매 레이어 기준이며, 아래 중앙의 굵은 몸통 영역은 의도적으로 비워 둡니다.
 const HEART_FRUIT_POSITIONS = Object.freeze([
-  [35, 18], [48, 15], [61, 18], [27, 25], [42, 25], [55, 24], [70, 27],
-  [21, 34], [34, 34], [48, 33], [61, 35], [76, 36], [18, 45], [30, 44],
-  [43, 43], [56, 45], [69, 46], [80, 48], [24, 55], [37, 54], [50, 55],
-  [63, 56], [75, 58], [31, 65], [44, 64], [57, 66], [69, 67], [39, 74],
-  [52, 74], [63, 76]
+  [39, 10], [51, 8], [63, 12],
+  [28, 18], [40, 17], [53, 19], [66, 17], [77, 21],
+  [22, 27], [32, 25], [44, 28], [57, 25], [70, 28], [82, 26],
+  [14, 36], [25, 34], [37, 37], [50, 33], [63, 36], [75, 34], [87, 37],
+  [18, 45], [30, 43], [41, 47], [59, 45], [70, 47], [82, 44],
+  [25, 54], [72, 53], [82, 51]
 ]);
 const HEART_FRUIT_VISIBLE_CAPACITY = HEART_FRUIT_POSITIONS.length;
 const HEART_FRUIT_PREVIEW_MAX_COUNT = 120;
@@ -3566,7 +3569,11 @@ function heartFruitLayerMarkup(count, { records = [], markPublic = false } = {})
     const record = records[index] || null;
     const publicClass = markPublic && record?.isPublic ? " is-public" : "";
     return `
-      <span class="heart-fruit fruit-${(index % 4) + 1}${publicClass}" style="--fruit-x:${x}%; --fruit-y:${y}%; --fruit-delay:${index * 42}ms; --public-glow-delay:-${(index % 11) * 0.53}s" aria-hidden="true"></span>
+      <span class="heart-fruit fruit-${(index % 4) + 1}${publicClass}" style="--fruit-x:${x}%; --fruit-y:${y}%; --fruit-delay:${index * 42}ms; --fruit-tilt:${[-7, 5, -3, 8][index % 4]}deg; --public-glow-delay:-${(index % 11) * 0.53}s" aria-hidden="true">
+        <i class="heart-fruit-body"></i>
+        <i class="heart-fruit-stem"></i>
+        <i class="heart-fruit-leaf"></i>
+      </span>
     `;
   }).join("");
 }
