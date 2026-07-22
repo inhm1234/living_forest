@@ -6757,7 +6757,12 @@ function bindEvents() {
     window.setTimeout(() => els.openFriendInvitePanel?.focus(), 0);
   });
   $("#openLetters").addEventListener("click", () => { void openLettersSheet(); });
-  els.openFeedback.addEventListener("click", openFeedbackSheet);
+  // 상단 보조 메뉴의 의견 남기기는 더보기 메뉴에 남겨 두고,
+  // 비워진 첫 자리는 원오브텐 바로가기로 사용합니다.
+  els.openFeedback?.addEventListener("click", openFeedbackSheet);
+  $("#openOneOfTenShortcut")?.addEventListener("click", () => {
+    window.location.href = "one-of-ten.html";
+  });
   $("#openSpecialFriendShortcut")?.addEventListener("click", (event) => {
     // 정보창을 연 직후 document의 바깥 클릭 감지기가 같은 클릭을 받아
     // 곧바로 닫아버리지 않도록 여기서 전파를 멈춥니다.
