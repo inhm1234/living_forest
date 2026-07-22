@@ -423,6 +423,7 @@ let gardenStatusIndex = 0;
 let gardenStatusRotateTimer = null;
 let gardenStatusTransient = null;
 let gardenStatusTransientTimer = null;
+const GARDEN_STATUS_ACCOUNT_STORAGE_SESSION_KEY = "todayforest-account-storage-status-seen-v1";
 let gardenAnimalStatusSignature = "";
 let gardenAnimalStatusPriorityUntil = 0;
 let treeNamePromptedForUserId = "";
@@ -3127,14 +3128,47 @@ function gardenStatusRotationDelay() {
   return GARDEN_STATUS_ROTATE_MS;
 }
 
+function markGardenStatusSessionItemSeen(item) {
+  if (!item?.sessionKey) return;
+  try {
+    window.sessionStorage.setItem(item.sessionKey, "1");
+  } catch (_) {
+    // 세션 저장소를 사용할 수 없는 환경에서도 상태바 동작은 유지합니다.
+  }
+}
+
+function isGardenStatusSessionItemSeen(sessionKey) {
+  if (!sessionKey) return false;
+  try {
+    return window.sessionStorage.getItem(sessionKey) === "1";
+  } catch (_) {
+    return false;
+  }
+}
+
+function advanceGardenStatus() {
+  if (gardenStatusItems.length < 2) return;
+  const current = currentGardenStatusItem();
+
+  if (current?.oncePerSession) {
+    markGardenStatusSessionItemSeen(current);
+    gardenStatusItems.splice(gardenStatusIndex, 1);
+    if (!gardenStatusItems.length) return;
+    gardenStatusIndex %= gardenStatusItems.length;
+  } else {
+    gardenStatusIndex = (gardenStatusIndex + 1) % gardenStatusItems.length;
+  }
+
+  applyGardenStatusItem();
+  scheduleGardenStatusRotation();
+}
+
 function scheduleGardenStatusRotation() {
   clearGardenStatusRotateTimer();
   if (gardenStatusItems.length < 2) return;
   gardenStatusRotateTimer = window.setTimeout(() => {
     gardenStatusRotateTimer = null;
-    gardenStatusIndex = (gardenStatusIndex + 1) % gardenStatusItems.length;
-    applyGardenStatusItem();
-    scheduleGardenStatusRotation();
+    advanceGardenStatus();
   }, gardenStatusRotationDelay());
 }
 
@@ -3350,16 +3384,25 @@ function renderGardenStatus(context = {}) {
     });
   }
 
+  if (currentUser && !isGardenStatusSessionItemSeen(GARDEN_STATUS_ACCOUNT_STORAGE_SESSION_KEY)) {
+    items.push({
+      key: "account-storage",
+      icon: "🔒",
+      text: "내 기록과 나무는 로그인한 계정의 정원에 저장돼요.",
+      action: "settings",
+      label: "계정 설정 보기",
+      oncePerSession: true,
+      sessionKey: GARDEN_STATUS_ACCOUNT_STORAGE_SESSION_KEY,
+    });
+  }
+
   setGardenStatusItems(items, { preferredKey });
 }
 
 function showNextGardenStatus(event) {
   event?.preventDefault();
   event?.stopPropagation();
-  if (gardenStatusItems.length < 2) return;
-  gardenStatusIndex = (gardenStatusIndex + 1) % gardenStatusItems.length;
-  applyGardenStatusItem();
-  scheduleGardenStatusRotation();
+  advanceGardenStatus();
 }
 
 function handleGardenStatusMainClick(event) {
@@ -3381,6 +3424,12 @@ function handleGardenStatusMainClick(event) {
   }
   if (item.action === "weather" || item.action === "next-visitor") {
     showToast(item.detail || item.text);
+    return;
+  }
+  if (item.action === "settings") {
+    markGardenStatusSessionItemSeen(item);
+    openAccountMenu();
+    renderGardenStatus();
     return;
   }
   if (item.action === "special-friend") {
@@ -6710,7 +6759,7 @@ function bindEvents() {
   window.addEventListener("todayforest:tree-animal-call-sync", () => {
     void syncMyGardenAnimalVisit({ silent: true, rerender: true });
   });
-  els.signOutButton.addEventListener("click", signOut);
+  els.signOutButton?.addEventListener("click", signOut);
   els.accountButton?.addEventListener("click", openAccountMenu);
   els.openInstallFromAccount?.addEventListener("click", () => { void requestAppInstallFromAccountMenu(); });
   els.treeNameForm.addEventListener("submit", saveTreeName);
@@ -6818,9 +6867,9 @@ function bindEvents() {
   }));
   $$('[data-more-action="settings"]').forEach((button) => button.addEventListener("click", () => {
     setMoreMenuOpen(false);
-    showToast("설정 메뉴는 준비 중이에요.");
+    openAccountMenu();
   }));
-  els.openSupport.addEventListener("click", openSupportSheet);
+  els.openSupport?.addEventListener("click", openSupportSheet);
   els.feedbackForm.addEventListener("submit", submitGardenFeedback);
   $$("[data-feedback-tab]").forEach((button) => button.addEventListener("click", () => { void selectFeedbackTab(button.dataset.feedbackTab); }));
   $$("[data-feedback-category]").forEach((button) => button.addEventListener("click", () => {

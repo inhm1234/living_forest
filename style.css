@@ -2236,6 +2236,23 @@ textarea::placeholder { color: #a7b4bd; }
 .account-menu-action-copy b { display: block; color: #5c7890; font-size: 13px; font-weight: 950; }
 .account-menu-action-copy small { display: block; margin-top: 4px; color: #8297a7; font-size: 11px; font-weight: 750; line-height: 1.42; }
 .account-menu-action-arrow { color: #85a1b2; font-size: 25px; font-weight: 400; line-height: 1; }
+.account-menu-signout {
+  margin-top: 5px;
+  border-color: rgba(201, 126, 132, .2);
+  background: linear-gradient(135deg, rgba(255,250,249,.97), rgba(253,244,244,.92));
+}
+.account-menu-signout .account-menu-action-icon {
+  background: rgba(250, 226, 227, .82);
+  color: #a7666e;
+}
+.account-menu-signout .account-menu-action-copy b { color: #96616a; }
+.account-menu-signout .account-menu-action-copy small { color: #a18489; }
+.account-menu-signout .account-menu-action-arrow { color: #ba8b91; }
+.account-menu-signout:hover,
+.account-menu-signout:focus-visible {
+  border-color: rgba(196, 111, 119, .35);
+  background: rgba(255,248,248,.99);
+}
 .account-menu-footnote { margin-top: 13px; }
 .tree-name-sheet-head { padding-right: 0; }
 .tree-name-lock-note { color: #798c97; }

@@ -32,7 +32,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=more-menu-floating-preview-v1" />
+  <link rel="stylesheet" href="style.css?v=settings-footer-cleanup-v1" />
   <link rel="stylesheet" href="oot-notifications.css?v=garden-oot-split-actions-v3" />
   <link rel="stylesheet" href="tree-animal-call.css?v=tree-animal-call-v4-status-hotfix" />
   <link rel="stylesheet" href="forest-unicorn-preview.css?v=garden-header-refinement-v1" />
@@ -564,13 +564,6 @@
 
 
 
-    <div class="garden-footer-actions">
-      <p class="database-note">내 기록과 내 나무 상태는 로그인한 계정의 정원에 저장돼요.</p>
-      <div class="garden-footer-link-row">
-        <button id="openSupport" class="support-footer-link" type="button">🌱 운영 안내</button>
-        <button id="signOutButton" class="reset-link signout-link" type="button">로그아웃</button>
-      </div>
-    </div>
 
     <!-- FIRST-WALK TUTORIAL v2.2: 첫날의 작은 산책. 화면을 읽는 대신 숲빛을 따라 직접 첫 기록을 남깁니다. -->
     <section class="first-walk-tutorial hidden" id="firstWalkTutorial" aria-live="polite" aria-atomic="true">
@@ -816,17 +809,17 @@
     <div class="sheet-handle"></div>
     <div class="sheet-head">
       <div>
-        <p class="sheet-kicker">MY FOREST</p>
-        <h2 id="accountMenuSheetTitle">내 정원 메뉴</h2>
+        <p class="sheet-kicker">SETTINGS</p>
+        <h2 id="accountMenuSheetTitle">설정</h2>
       </div>
       <button class="close-button" data-close="accountMenuSheet" type="button" aria-label="내 정원 메뉴 닫기">×</button>
     </div>
 
     <div class="account-menu-summary">
-      <span class="account-menu-summary-icon" aria-hidden="true">🌿</span>
+      <span class="account-menu-summary-icon" aria-hidden="true">⚙</span>
       <div>
         <b id="accountMenuName">내 정원</b>
-        <p>작은 숲을 언제든 다시 만날 수 있어요.</p>
+        <p>계정과 앱 관련 설정을 한곳에서 관리해요.</p>
       </div>
     </div>
 
@@ -839,9 +832,18 @@
         </span>
         <span class="account-menu-action-arrow" aria-hidden="true">›</span>
       </button>
+
+      <button class="account-menu-action account-menu-signout" id="signOutButton" type="button">
+        <span class="account-menu-action-icon" aria-hidden="true">↪</span>
+        <span class="account-menu-action-copy">
+          <b>로그아웃</b>
+          <small>이 기기에서 내 정원 계정 연결을 해제해요.</small>
+        </span>
+        <span class="account-menu-action-arrow" aria-hidden="true">›</span>
+      </button>
     </div>
 
-    <p class="sheet-footnote account-menu-footnote">설치 안내 카드를 닫았거나 보이지 않아도, 이곳에서 다시 확인할 수 있어요.</p>
+    <p class="sheet-footnote account-menu-footnote">로그아웃하기 전 확인창이 한 번 더 나타나요.</p>
   </section>
 
   <div class="sheet-overlay hidden" id="sheetOverlay" aria-hidden="true"></div>
@@ -1216,7 +1218,7 @@
   <div class="heart-fruit-ceremony-lock hidden" id="heartFruitCeremonyLock" aria-hidden="true"></div>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="app.js?v=more-menu-floating-preview-v1"></script>
+  <script type="module" src="app.js?v=settings-footer-cleanup-v1"></script>
   <script type="module" src="tree-animal-call.js?v=operation-special-friend-visit-v1-2"></script>
   <script type="module" src="forest-unicorn-preview.js?v=garden-header-refinement-v1"></script>
   <script type="module" src="forest-friend-cinematic.js?v=operation-special-friend-v1"></script>
