@@ -1,36 +1,30 @@
-/* 오늘의숲 · 살아 있는 정원 모션 v0.3
-   나무를 계속 위아래로 흔들지 않습니다.
-   성장 단계별로 가끔 옆바람에 반응하고, 나머지 생명감은 하늘·빛·동물·장식이 나눠 가집니다. */
+/* 오늘의숲 · 살아 있는 정원 장면 시스템 v0.4
+   목표: 1초마다 무엇인가가 움직이되, 거대한 나무는 완전히 고정합니다.
+   생명감은 하늘·빛·공기·작은 생명체·장식 반응이 나눠 가집니다. */
 
-const LIFE_LAYER_ID = "gardenAmbientLayer";
-const MAX_AMBIENT_PARTICLES = 1;
+const SCENE_ID = "gardenLifeScene";
+const EVENT_LAYER_ID = "gardenLifeEventLayer";
+const MICRO_EVENT_MIN = 4200;
+const MICRO_EVENT_MAX = 7200;
+const SKY_EVENT_MIN = 15000;
+const SKY_EVENT_MAX = 26000;
 
-const STAGE_PROFILES = {
-  1: { lightMinDelay: 13000, lightMaxDelay: 21000, breezeMinDelay: 6500, breezeMaxDelay: 10500, breezeDuration: 2050, xMin: .30, xMax: .72, yMin: .50, yMax: .82 },
-  2: { lightMinDelay: 12000, lightMaxDelay: 19000, breezeMinDelay: 7000, breezeMaxDelay: 11500, breezeDuration: 2150, xMin: .27, xMax: .75, yMin: .34, yMax: .74 },
-  3: { lightMinDelay: 10000, lightMaxDelay: 17000, breezeMinDelay: 7600, breezeMaxDelay: 12500, breezeDuration: 2250, xMin: .29, xMax: .74, yMin: .22, yMax: .72 },
-  4: { lightMinDelay: 9000, lightMaxDelay: 15500, breezeMinDelay: 8200, breezeMaxDelay: 13500, breezeDuration: 2350, xMin: .22, xMax: .80, yMin: .16, yMax: .68 },
-  5: { lightMinDelay: 8000, lightMaxDelay: 14000, breezeMinDelay: 9000, breezeMaxDelay: 14500, breezeDuration: 2550, xMin: .18, xMax: .84, yMin: .13, yMax: .65 },
-  6: { lightMinDelay: 7500, lightMaxDelay: 13500, breezeMinDelay: 9500, breezeMaxDelay: 15500, breezeDuration: 2700, xMin: .18, xMax: .84, yMin: .12, yMax: .64 },
-};
-
-const TREE_CONFLICT_CLASSES = [
-  "wind-active",
-  "tree-pulse",
-  "is-tree-call-tapped",
-  "is-tree-call-sending",
-  "is-heart-fruit-revealing",
-];
-
-let lightTimer = null;
-let breezeTimer = null;
-let breezeCleanupTimer = null;
 let reducedMotionQuery = null;
 let treeObserver = null;
+let foundItemsObserver = null;
+let stageObserver = null;
+let microTimer = null;
+let skyTimer = null;
 let activeStage = 1;
+let activePeriod = "morning";
+let previousMicroEvent = "";
 
 function randomBetween(min, max) {
   return min + Math.random() * (max - min);
+}
+
+function randomItem(items) {
+  return items[Math.floor(Math.random() * items.length)];
 }
 
 function clampStage(value) {
@@ -38,10 +32,14 @@ function clampStage(value) {
   return Number.isFinite(stage) ? Math.min(6, Math.max(1, stage)) : 1;
 }
 
-function stageFromTreeImage(treeImage) {
+function readTreeState(treeImage) {
   const source = treeImage?.getAttribute("src") || treeImage?.currentSrc || "";
-  const match = source.match(/tree_stage([1-6])_/i);
-  return clampStage(match?.[1]);
+  const stageMatch = source.match(/tree_stage([1-6])_/i);
+  const periodMatch = source.match(/_(morning|sunset|night)\./i);
+  return {
+    stage: clampStage(stageMatch?.[1]),
+    period: periodMatch?.[1]?.toLowerCase() || "morning",
+  };
 }
 
 function gardenIsVisible(stage) {
@@ -50,159 +48,268 @@ function gardenIsVisible(stage) {
   return Boolean(app && !app.classList.contains("hidden"));
 }
 
-function treeCanTakeAmbientMotion(tree) {
-  if (!tree) return false;
-  return !TREE_CONFLICT_CLASSES.some((className) => tree.classList.contains(className));
+function createElement(tag, className, parent) {
+  const element = document.createElement(tag);
+  element.className = className;
+  element.setAttribute("aria-hidden", "true");
+  parent.appendChild(element);
+  return element;
 }
 
-function ensureAmbientLayer() {
+function buildScene() {
   const world = document.querySelector("#gardenWorld");
   if (!world) return null;
-  let layer = world.querySelector(`#${LIFE_LAYER_ID}`);
-  if (layer) return layer;
 
-  layer = document.createElement("div");
-  layer.id = LIFE_LAYER_ID;
-  layer.className = "garden-ambient-layer";
-  layer.setAttribute("aria-hidden", "true");
-  world.appendChild(layer);
-  return layer;
+  const oldScene = world.querySelector(`#${SCENE_ID}`);
+  if (oldScene) oldScene.remove();
+
+  const scene = createElement("div", "garden-life-scene", world);
+  scene.id = SCENE_ID;
+
+  createElement("div", "garden-life-sunwash sunwash-one", scene);
+  createElement("div", "garden-life-sunwash sunwash-two", scene);
+  createElement("div", "garden-life-ground-current", scene);
+
+  const moteField = createElement("div", "garden-life-mote-field", scene);
+  for (let index = 0; index < 12; index += 1) {
+    const mote = createElement("i", "garden-life-mote", moteField);
+    mote.style.setProperty("--life-x", `${randomBetween(5, 95).toFixed(1)}%`);
+    mote.style.setProperty("--life-y", `${randomBetween(18, 88).toFixed(1)}%`);
+    mote.style.setProperty("--life-dx", `${randomBetween(-30, 38).toFixed(1)}px`);
+    mote.style.setProperty("--life-dy", `${randomBetween(-42, -18).toFixed(1)}px`);
+    mote.style.setProperty("--life-size", `${randomBetween(2.2, 5.2).toFixed(1)}px`);
+    mote.style.setProperty("--life-duration", `${randomBetween(7.2, 13.5).toFixed(2)}s`);
+    mote.style.setProperty("--life-delay", `${randomBetween(-13, 0).toFixed(2)}s`);
+  }
+
+  const butterflyField = createElement("div", "garden-life-butterfly-field", scene);
+  ["butterfly-one", "butterfly-two"].forEach((name) => {
+    const butterfly = createElement("i", `garden-life-butterfly ${name}`, butterflyField);
+    createElement("b", "garden-life-butterfly-body", butterfly);
+  });
+
+  const fireflyField = createElement("div", "garden-life-firefly-field", scene);
+  for (let index = 0; index < 8; index += 1) {
+    const firefly = createElement("i", "garden-life-firefly", fireflyField);
+    firefly.style.setProperty("--firefly-x", `${randomBetween(12, 88).toFixed(1)}%`);
+    firefly.style.setProperty("--firefly-y", `${randomBetween(38, 84).toFixed(1)}%`);
+    firefly.style.setProperty("--firefly-dx", `${randomBetween(-25, 28).toFixed(1)}px`);
+    firefly.style.setProperty("--firefly-dy", `${randomBetween(-18, 24).toFixed(1)}px`);
+    firefly.style.setProperty("--firefly-duration", `${randomBetween(5.8, 10.5).toFixed(2)}s`);
+    firefly.style.setProperty("--firefly-delay", `${randomBetween(-10, 0).toFixed(2)}s`);
+  }
+
+  const eventLayer = createElement("div", "garden-life-event-layer", scene);
+  eventLayer.id = EVENT_LAYER_ID;
+  return scene;
 }
 
-function activeParticleCount(layer) {
-  return layer?.querySelectorAll(".garden-ambient-particle").length || 0;
-}
-
-function syncTreeStage() {
+function syncSceneState() {
   const stage = document.querySelector("#gardenStage");
+  const treeImage = document.querySelector("#treeImage");
   const treeWrap = document.querySelector("#treeWrap");
-  const treeImage = document.querySelector("#treeImage");
-  if (!stage || !treeWrap || !treeImage) return;
+  const scene = document.querySelector(`#${SCENE_ID}`);
+  if (!stage || !treeImage || !treeWrap || !scene) return;
 
-  const nextStage = stageFromTreeImage(treeImage);
-  const changed = nextStage !== activeStage;
-  activeStage = nextStage;
+  const state = readTreeState(treeImage);
+  activeStage = state.stage;
+  activePeriod = state.period;
 
-  stage.dataset.treeStage = String(nextStage);
-  treeWrap.dataset.treeStage = String(nextStage);
-
-  if (changed) restartAmbientMotion();
+  stage.dataset.treeStage = String(activeStage);
+  stage.dataset.lifePeriod = activePeriod;
+  treeWrap.dataset.treeStage = String(activeStage);
+  scene.dataset.treeStage = String(activeStage);
+  scene.dataset.lifePeriod = activePeriod;
+  scene.classList.toggle("is-rain", stage.classList.contains("weather-rain"));
+  scene.classList.toggle("is-decorating", stage.classList.contains("is-garden-decorating"));
 }
 
-function createTreeLight() {
+function classifyFoundItems() {
+  const layer = document.querySelector("#foundItemsLayer");
+  if (!layer) return;
+
+  layer.querySelectorAll(".found-item").forEach((item) => {
+    const source = item.querySelector("img")?.getAttribute("src")?.toLowerCase() || "";
+    item.classList.remove(
+      "garden-life-item-flower",
+      "garden-life-item-ribbon",
+      "garden-life-item-letter",
+      "garden-life-item-lantern",
+      "garden-life-item-animal",
+      "garden-life-item-sign",
+      "garden-life-item-mushroom",
+    );
+
+    if (/flower|dais|blossom|meadow/.test(source)) item.classList.add("garden-life-item-flower");
+    if (/ribbon|arch/.test(source)) item.classList.add("garden-life-item-ribbon");
+    if (/letter|mailbox/.test(source)) item.classList.add("garden-life-item-letter");
+    if (/firefly|lantern|moonlit/.test(source)) item.classList.add("garden-life-item-lantern");
+    if (/squirrel|hedgehog|rabbit|bird/.test(source)) item.classList.add("garden-life-item-animal");
+    if (/sign|gate/.test(source)) item.classList.add("garden-life-item-sign");
+    if (/mushroom|mushrooms|grove|shelter/.test(source)) item.classList.add("garden-life-item-mushroom");
+  });
+}
+
+function activeEventLayer() {
+  return document.querySelector(`#${EVENT_LAYER_ID}`);
+}
+
+function removeAfterAnimation(element) {
+  element.addEventListener("animationend", () => element.remove(), { once: true });
+}
+
+function spawnSkyBird() {
   const stage = document.querySelector("#gardenStage");
-  const world = document.querySelector("#gardenWorld");
-  const tree = document.querySelector("#treeWrap");
-  const layer = ensureAmbientLayer();
-  if (!stage || !world || !tree || !layer || !gardenIsVisible(stage)) return;
-  if (reducedMotionQuery?.matches) return;
-  if (activeParticleCount(layer) >= MAX_AMBIENT_PARTICLES) return;
+  const layer = activeEventLayer();
+  if (!stage || !layer || !gardenIsVisible(stage) || stage.classList.contains("weather-rain")) return;
+  if (activePeriod === "night") return;
+  if (layer.querySelector(".garden-life-sky-bird")) return;
 
-  const profile = STAGE_PROFILES[activeStage] || STAGE_PROFILES[1];
-  const worldRect = world.getBoundingClientRect();
-  const treeRect = tree.getBoundingClientRect();
-  const scaleX = world.offsetWidth ? worldRect.width / world.offsetWidth : 1;
-  const scaleY = world.offsetHeight ? worldRect.height / world.offsetHeight : 1;
-  if (!scaleX || !scaleY) return;
-
-  const treeLeft = (treeRect.left - worldRect.left) / scaleX;
-  const treeTop = (treeRect.top - worldRect.top) / scaleY;
-  const treeWidth = treeRect.width / scaleX;
-  const treeHeight = treeRect.height / scaleY;
-
-  const particle = document.createElement("i");
-  particle.className = `garden-ambient-particle is-light is-stage-${activeStage}`;
-  particle.style.left = `${treeLeft + treeWidth * randomBetween(profile.xMin, profile.xMax)}px`;
-  particle.style.top = `${treeTop + treeHeight * randomBetween(profile.yMin, profile.yMax)}px`;
-  particle.style.setProperty("--life-duration", `${randomBetween(4.4, 6.3).toFixed(2)}s`);
-  particle.style.setProperty("--life-drift-mid", `${randomBetween(-10, 11).toFixed(1)}px`);
-  particle.style.setProperty("--life-drift-end", `${randomBetween(-16, 18).toFixed(1)}px`);
-  particle.style.setProperty("--life-rise-end", `${randomBetween(-23, -34).toFixed(1)}px`);
-  particle.style.scale = randomBetween(.74, activeStage >= 5 ? 1.05 : .92).toFixed(2);
-
-  particle.addEventListener("animationend", () => particle.remove(), { once: true });
-  layer.appendChild(particle);
+  const bird = createElement("i", `garden-life-sky-bird ${Math.random() > .5 ? "from-left" : "from-right"}`, layer);
+  bird.style.setProperty("--bird-y", `${randomBetween(11, 28).toFixed(1)}%`);
+  bird.style.setProperty("--bird-duration", `${randomBetween(6.8, 9.2).toFixed(2)}s`);
+  createElement("b", "garden-life-sky-bird-body", bird);
+  removeAfterAnimation(bird);
 }
 
-function triggerTreeBreeze() {
+function spawnLightGlint() {
   const stage = document.querySelector("#gardenStage");
-  const tree = document.querySelector("#treeWrap");
-  if (!stage || !tree || !gardenIsVisible(stage)) return;
-  if (reducedMotionQuery?.matches || !treeCanTakeAmbientMotion(tree)) return;
+  const layer = activeEventLayer();
+  if (!stage || !layer || !gardenIsVisible(stage)) return;
+  if (layer.querySelector(".garden-life-glint-trail")) return;
 
-  const profile = STAGE_PROFILES[activeStage] || STAGE_PROFILES[1];
-  tree.classList.remove("garden-life-breeze");
-  void tree.offsetWidth;
-  tree.classList.add("garden-life-breeze");
-
-  window.clearTimeout(breezeCleanupTimer);
-  breezeCleanupTimer = window.setTimeout(() => {
-    tree.classList.remove("garden-life-breeze");
-  }, profile.breezeDuration + 120);
+  const glint = createElement("i", "garden-life-glint-trail", layer);
+  glint.style.setProperty("--glint-x", `${randomBetween(24, 72).toFixed(1)}%`);
+  glint.style.setProperty("--glint-y", `${randomBetween(activeStage <= 2 ? 57 : 30, 72).toFixed(1)}%`);
+  glint.style.setProperty("--glint-turn", `${randomBetween(-18, 18).toFixed(1)}deg`);
+  removeAfterAnimation(glint);
 }
 
-function scheduleTreeLight() {
-  window.clearTimeout(lightTimer);
-  const profile = STAGE_PROFILES[activeStage] || STAGE_PROFILES[1];
-  lightTimer = window.setTimeout(() => {
-    createTreeLight();
-    scheduleTreeLight();
-  }, randomBetween(profile.lightMinDelay, profile.lightMaxDelay));
+function triggerGroundCurrent() {
+  const current = document.querySelector(".garden-life-ground-current");
+  if (!current) return;
+  current.classList.remove("is-passing");
+  void current.offsetWidth;
+  current.classList.add("is-passing");
+  window.setTimeout(() => current.classList.remove("is-passing"), 3600);
 }
 
-function scheduleTreeBreeze() {
-  window.clearTimeout(breezeTimer);
-  const profile = STAGE_PROFILES[activeStage] || STAGE_PROFILES[1];
-  breezeTimer = window.setTimeout(() => {
-    triggerTreeBreeze();
-    scheduleTreeBreeze();
-  }, randomBetween(profile.breezeMinDelay, profile.breezeMaxDelay));
+function triggerDecorationMoment() {
+  const stage = document.querySelector("#gardenStage");
+  if (!stage || stage.classList.contains("is-garden-decorating")) return false;
+
+  const candidates = [...document.querySelectorAll(
+    "#foundItemsLayer .garden-life-item-flower, #foundItemsLayer .garden-life-item-ribbon, #foundItemsLayer .garden-life-item-letter, #foundItemsLayer .garden-life-item-lantern, #foundItemsLayer .garden-life-item-animal",
+  )].filter((element) => element.offsetParent !== null);
+
+  if (!candidates.length) return false;
+  const target = randomItem(candidates);
+  target.classList.remove("garden-life-moment");
+  void target.offsetWidth;
+  target.classList.add("garden-life-moment");
+  window.setTimeout(() => target.classList.remove("garden-life-moment"), 1800);
+  return true;
 }
 
-function stopAmbientMotion() {
-  window.clearTimeout(lightTimer);
-  window.clearTimeout(breezeTimer);
-  window.clearTimeout(breezeCleanupTimer);
-  lightTimer = null;
-  breezeTimer = null;
-  breezeCleanupTimer = null;
-  document.querySelector("#treeWrap")?.classList.remove("garden-life-breeze");
+function triggerAnimalMoment() {
+  const candidates = [...document.querySelectorAll(
+    "#animalV2Layer .animal-v2-visitor:not(.is-arriving):not(.is-departing) .animal-v2-emoji",
+  )].filter((element) => element.offsetParent !== null);
+  if (!candidates.length) return false;
+
+  const target = randomItem(candidates);
+  target.classList.remove("garden-life-animal-moment");
+  void target.offsetWidth;
+  target.classList.add("garden-life-animal-moment");
+  window.setTimeout(() => target.classList.remove("garden-life-animal-moment"), 1600);
+  return true;
 }
 
-function restartAmbientMotion() {
-  stopAmbientMotion();
-  document.querySelectorAll(".garden-ambient-particle").forEach((particle) => particle.remove());
+function runMicroEvent() {
+  const stage = document.querySelector("#gardenStage");
+  if (!stage || !gardenIsVisible(stage) || reducedMotionQuery?.matches) return;
+
+  const eventNames = ["glint", "ground", "decoration", "animal"].filter((name) => name !== previousMicroEvent);
+  let selected = randomItem(eventNames);
+
+  if (selected === "decoration" && !triggerDecorationMoment()) selected = "glint";
+  if (selected === "animal" && !triggerAnimalMoment()) selected = "ground";
+  if (selected === "glint") spawnLightGlint();
+  if (selected === "ground") triggerGroundCurrent();
+
+  previousMicroEvent = selected;
+}
+
+function scheduleMicroEvent() {
+  window.clearTimeout(microTimer);
+  microTimer = window.setTimeout(() => {
+    runMicroEvent();
+    scheduleMicroEvent();
+  }, randomBetween(MICRO_EVENT_MIN, MICRO_EVENT_MAX));
+}
+
+function scheduleSkyEvent() {
+  window.clearTimeout(skyTimer);
+  skyTimer = window.setTimeout(() => {
+    spawnSkyBird();
+    scheduleSkyEvent();
+  }, randomBetween(SKY_EVENT_MIN, SKY_EVENT_MAX));
+}
+
+function stopSceneTimers() {
+  window.clearTimeout(microTimer);
+  window.clearTimeout(skyTimer);
+  microTimer = null;
+  skyTimer = null;
+}
+
+function restartSceneTimers() {
+  stopSceneTimers();
   if (document.hidden || reducedMotionQuery?.matches) return;
-  scheduleTreeLight();
-  scheduleTreeBreeze();
+  scheduleMicroEvent();
+  scheduleSkyEvent();
 }
 
-function initGardenLifeMotion() {
+function initGardenLifeScene() {
   const stage = document.querySelector("#gardenStage");
   const treeImage = document.querySelector("#treeImage");
+  const foundItemsLayer = document.querySelector("#foundItemsLayer");
   if (!stage || !treeImage) return;
 
   stage.classList.add("garden-life-enabled");
-  ensureAmbientLayer();
-  syncTreeStage();
+  buildScene();
+  classifyFoundItems();
+  syncSceneState();
 
-  treeObserver = new MutationObserver(syncTreeStage);
+  treeObserver = new MutationObserver(syncSceneState);
   treeObserver.observe(treeImage, { attributes: true, attributeFilter: ["src"] });
 
-  reducedMotionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)") || null;
-  reducedMotionQuery?.addEventListener?.("change", restartAmbientMotion);
-  document.addEventListener("visibilitychange", restartAmbientMotion);
-  window.addEventListener("pageshow", () => {
-    syncTreeStage();
-    restartAmbientMotion();
-  });
-  window.addEventListener("pagehide", stopAmbientMotion);
+  stageObserver = new MutationObserver(syncSceneState);
+  stageObserver.observe(stage, { attributes: true, attributeFilter: ["class"] });
 
-  restartAmbientMotion();
+  if (foundItemsLayer) {
+    foundItemsObserver = new MutationObserver(() => {
+      classifyFoundItems();
+      syncSceneState();
+    });
+    foundItemsObserver.observe(foundItemsLayer, { childList: true, subtree: true, attributes: true, attributeFilter: ["src", "class"] });
+  }
+
+  reducedMotionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)") || null;
+  reducedMotionQuery?.addEventListener?.("change", restartSceneTimers);
+  document.addEventListener("visibilitychange", restartSceneTimers);
+  window.addEventListener("pageshow", () => {
+    syncSceneState();
+    classifyFoundItems();
+    restartSceneTimers();
+  });
+  window.addEventListener("pagehide", stopSceneTimers);
+
+  restartSceneTimers();
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initGardenLifeMotion, { once: true });
+  document.addEventListener("DOMContentLoaded", initGardenLifeScene, { once: true });
 } else {
-  initGardenLifeMotion();
+  initGardenLifeScene();
 }
