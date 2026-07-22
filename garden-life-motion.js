@@ -1,4 +1,4 @@
-/* 오늘의숲 · 살아 있는 정원 장면 시스템 v0.4
+/* 오늘의숲 · 살아 있는 정원 장면 시스템 v0.4.1 HOTFIX
    목표: 1초마다 무엇인가가 움직이되, 거대한 나무는 완전히 고정합니다.
    생명감은 하늘·빛·공기·작은 생명체·장식 반응이 나눠 가집니다. */
 
@@ -292,7 +292,15 @@ function initGardenLifeScene() {
       classifyFoundItems();
       syncSceneState();
     });
-    foundItemsObserver.observe(foundItemsLayer, { childList: true, subtree: true, attributes: true, attributeFilter: ["src", "class"] });
+    // 중요: class 변화를 감시하면 classifyFoundItems()가 붙이는 분류 클래스가
+    // 다시 observer를 호출하여 무한 MutationObserver 루프가 발생합니다.
+    // 장식 추가/삭제와 이미지 src 변경만 감시합니다.
+    foundItemsObserver.observe(foundItemsLayer, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["src"],
+    });
   }
 
   reducedMotionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)") || null;
