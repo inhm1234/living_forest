@@ -1,0 +1,227 @@
+/* 오늘의숲 · 살아 있는 정원 모션 v0.1
+   목적: 정원을 화려한 게임 로비가 아니라, 조용히 숨 쉬는 공간으로 느끼게 합니다.
+   원칙: 상시 모션은 느리고 약하게, 사건 모션은 드물게, 사용자 반응은 분명하게. */
+
+.garden-stage.garden-life-enabled {
+  --garden-life-ease: cubic-bezier(.37, .02, .25, 1);
+}
+
+/* 기존 18px 왕복보다 더 긴 호흡으로 이동하되, 화면 밖으로 빠르게 사라지지 않습니다. */
+.garden-stage.garden-life-enabled .cloud-one {
+  animation: gardenLifeCloudOne 34s var(--garden-life-ease) infinite alternate;
+}
+.garden-stage.garden-life-enabled .cloud-two {
+  animation: gardenLifeCloudTwo 41s var(--garden-life-ease) infinite alternate;
+}
+
+/* 배경빛은 거의 인식되지 않을 정도로만 호흡합니다. */
+.garden-stage.garden-life-enabled .glow-one {
+  animation: gardenLifeGlowOne 14s ease-in-out infinite;
+}
+.garden-stage.garden-life-enabled .glow-two {
+  animation: gardenLifeGlowTwo 17s ease-in-out infinite reverse;
+}
+
+/* 맑은 날에도 나무 전체가 아주 작게 호흡합니다.
+   열매와 가지 편지도 함께 움직이도록 tree-wrap 단위로 적용합니다. */
+.garden-stage.garden-life-enabled .tree-wrap:not(.wind-active):not(.tree-pulse):not(.is-tree-call-tapped):not(.is-tree-call-sending):not(.is-heart-fruit-revealing) {
+  animation: gardenLifeTreeBreathe 9.6s ease-in-out infinite;
+}
+.garden-stage.garden-life-enabled .tree-wrap:not(.is-tree-call-tapped):not(.is-tree-call-sending):not(.is-heart-fruit-revealing) .tree-aura {
+  animation: gardenLifeAuraBreathe 7.8s ease-in-out infinite;
+}
+
+/* 반짝임은 동시에 깜빡이지 않고, 오래 쉬었다가 짧게 나타납니다. */
+.garden-stage.garden-life-enabled .sparkle-layer i {
+  opacity: .18;
+  animation-name: gardenLifeMote;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+.garden-stage.garden-life-enabled .sparkle-layer i:nth-child(1) { animation-duration: 7.4s; animation-delay: -1.3s; }
+.garden-stage.garden-life-enabled .sparkle-layer i:nth-child(2) { animation-duration: 9.1s; animation-delay: -5.2s; }
+.garden-stage.garden-life-enabled .sparkle-layer i:nth-child(3) { animation-duration: 8.3s; animation-delay: -2.8s; }
+.garden-stage.garden-life-enabled .sparkle-layer i:nth-child(4) { animation-duration: 10.2s; animation-delay: -7.1s; }
+.garden-stage.garden-life-enabled .sparkle-layer i:nth-child(5) { animation-duration: 8.8s; animation-delay: -4.4s; }
+
+/* 실제 방문 동물은 계속 통통 뛰지 않고, 오래 쉬다가 한 번씩 반응합니다. */
+.garden-stage.garden-life-enabled .animal-v2-visitor:not(.is-arriving):not(.is-departing) {
+  animation: gardenLifeAnimalIdle 7.8s ease-in-out infinite;
+}
+.garden-stage.garden-life-enabled .animal-v2-squirrel { animation-delay: -2.1s; }
+.garden-stage.garden-life-enabled .animal-v2-rabbit { animation-delay: -4.7s; }
+.garden-stage.garden-life-enabled .animal-v2-hedgehog { animation-delay: -6.2s; }
+
+/* 수집 장식 중 생명감이 필요한 것만 움직입니다. 돌·표지판·버섯은 고정합니다. */
+.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="tiny_squirrel"] img,
+.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="tiny_hedgehog"] img {
+  transform-origin: 50% 94%;
+  animation: gardenLifeTinyAnimal 8.6s ease-in-out infinite;
+}
+.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="tiny_hedgehog"] img {
+  animation-delay: -4.1s;
+}
+.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="forest_ribbon"] img,
+.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="branch_letter"] img {
+  transform-origin: 50% 10%;
+  animation: gardenLifeHangingItem 6.8s ease-in-out infinite;
+}
+.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="branch_letter"] img {
+  animation-delay: -3.5s;
+}
+.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="pink_wildflower"] img,
+.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="white_daisies"] img {
+  transform-origin: 50% 96%;
+  animation: gardenLifeFlowers 9.4s ease-in-out infinite;
+}
+.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="white_daisies"] img {
+  animation-delay: -5.2s;
+}
+.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="firefly_jar"] {
+  isolation: isolate;
+}
+.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="firefly_jar"] img {
+  animation: gardenLifeJarGlow 6.2s ease-in-out infinite;
+}
+.garden-stage.garden-life-enabled:not(.is-garden-decorating) .found-item[data-found-item="firefly_jar"]::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 48%;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,213,.72), rgba(255,229,126,.18) 44%, transparent 72%);
+  filter: blur(2px);
+  transform: translate(-50%, -50%);
+  animation: gardenLifeJarLight 5.7s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* 드물게 화면을 지나가는 잎과 빛. JS가 최대 2개만 생성합니다. */
+.garden-ambient-layer {
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.garden-ambient-particle {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.garden-ambient-particle.is-leaf {
+  top: -18px;
+  width: 10px;
+  height: 6px;
+  border-radius: 80% 10% 80% 10%;
+  background: linear-gradient(135deg, rgba(151,196,128,.92), rgba(102,160,105,.72));
+  box-shadow: 0 2px 5px rgba(62,104,68,.12);
+  animation: gardenLifeLeafFall var(--life-duration, 6.2s) linear forwards;
+}
+.garden-ambient-particle.is-light {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255,250,190,.96);
+  box-shadow: 0 0 12px rgba(255,238,143,.95), 0 0 22px rgba(255,238,143,.42);
+  animation: gardenLifeLightDrift var(--life-duration, 5.4s) ease-in-out forwards;
+}
+
+@keyframes gardenLifeCloudOne {
+  0% { translate: -8px 0; }
+  48% { translate: 13px -2px; }
+  100% { translate: 39px 1px; }
+}
+@keyframes gardenLifeCloudTwo {
+  0% { translate: 14px 0; }
+  52% { translate: -8px 2px; }
+  100% { translate: -37px -1px; }
+}
+@keyframes gardenLifeGlowOne {
+  0%, 100% { opacity: .73; scale: 1; }
+  50% { opacity: .92; scale: 1.045; }
+}
+@keyframes gardenLifeGlowTwo {
+  0%, 100% { opacity: .62; scale: .98; }
+  50% { opacity: .83; scale: 1.035; }
+}
+@keyframes gardenLifeTreeBreathe {
+  0%, 100% { transform: translateX(-50%) translateY(0) rotate(-.08deg); }
+  46% { transform: translateX(-50%) translateY(-1px) rotate(.18deg); }
+  72% { transform: translateX(-50%) translateY(0) rotate(.05deg); }
+}
+@keyframes gardenLifeAuraBreathe {
+  0%, 100% { opacity: .66; transform: scale(.99); }
+  52% { opacity: .84; transform: scale(1.025); }
+}
+@keyframes gardenLifeMote {
+  0%, 18%, 72%, 100% { transform: translate3d(0, 3px, 0) scale(.55); opacity: .08; }
+  30% { opacity: .35; }
+  42% { transform: translate3d(2px, -2px, 0) scale(1.15); opacity: .9; }
+  53% { transform: translate3d(-1px, -5px, 0) scale(.72); opacity: .24; }
+}
+@keyframes gardenLifeAnimalIdle {
+  0%, 68%, 100% { transform: translateY(0) rotate(0deg); }
+  74% { transform: translateY(-2px) rotate(-1.2deg); }
+  80% { transform: translateY(-3px) rotate(1deg); }
+  87% { transform: translateY(0) rotate(-.35deg); }
+  92% { transform: translateY(-1px) rotate(.2deg); }
+}
+@keyframes gardenLifeTinyAnimal {
+  0%, 67%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  74% { transform: translateY(-1px) rotate(-.7deg) scale(1.005); }
+  80% { transform: translateY(-2px) rotate(.65deg) scale(1.01); }
+  87% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+@keyframes gardenLifeHangingItem {
+  0%, 100% { transform: rotate(-.8deg) translateY(0); }
+  50% { transform: rotate(1.1deg) translateY(1px); }
+}
+@keyframes gardenLifeFlowers {
+  0%, 100% { transform: rotate(-.35deg) scaleY(1); }
+  48% { transform: rotate(.45deg) scaleY(1.006); }
+  73% { transform: rotate(.1deg) scaleY(.998); }
+}
+@keyframes gardenLifeJarGlow {
+  0%, 100% { filter: brightness(.97) saturate(.98); }
+  45% { filter: brightness(1.07) saturate(1.05); }
+  62% { filter: brightness(1.01) saturate(1.02); }
+}
+@keyframes gardenLifeJarLight {
+  0%, 100% { opacity: .18; transform: translate(-50%, -50%) scale(.75); }
+  43% { opacity: .68; transform: translate(-50%, -50%) scale(1.08); }
+  58% { opacity: .36; transform: translate(-50%, -50%) scale(.9); }
+}
+@keyframes gardenLifeLeafFall {
+  0% { opacity: 0; transform: translate3d(0, -8px, 0) rotate(0deg); }
+  10% { opacity: .72; }
+  42% { transform: translate3d(var(--life-drift-mid, 14px), 190px, 0) rotate(150deg); }
+  76% { opacity: .64; }
+  100% { opacity: 0; transform: translate3d(var(--life-drift-end, -12px), 470px, 0) rotate(330deg); }
+}
+@keyframes gardenLifeLightDrift {
+  0% { opacity: 0; transform: translate3d(0, 8px, 0) scale(.55); }
+  18% { opacity: .72; }
+  52% { opacity: .9; transform: translate3d(var(--life-drift-mid, 8px), -10px, 0) scale(1.05); }
+  82% { opacity: .34; }
+  100% { opacity: 0; transform: translate3d(var(--life-drift-end, -7px), -28px, 0) scale(.62); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .garden-stage.garden-life-enabled .cloud,
+  .garden-stage.garden-life-enabled .pastel-glow,
+  .garden-stage.garden-life-enabled .tree-wrap,
+  .garden-stage.garden-life-enabled .tree-aura,
+  .garden-stage.garden-life-enabled .sparkle-layer i,
+  .garden-stage.garden-life-enabled .animal-v2-visitor,
+  .garden-stage.garden-life-enabled .found-item img,
+  .garden-stage.garden-life-enabled .found-item::after,
+  .garden-ambient-particle {
+    animation: none !important;
+  }
+  .garden-ambient-layer { display: none; }
+}
