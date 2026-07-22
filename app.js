@@ -245,6 +245,7 @@ const animalVisitors = {
   squirrel: {
     kind: "squirrel",
     icon: "🐿️",
+    asset: "assets/decorations/tiny-squirrel.png",
     name: "다람쥐",
     deliveryHours: 12,
     sceneClass: "squirrel",
@@ -256,6 +257,8 @@ const animalVisitors = {
   rabbit: {
     kind: "rabbit",
     icon: "🐇",
+    asset: "assets/visitors/forest-rabbit-idle.svg",
+    lookAsset: "assets/visitors/forest-rabbit-alert.svg",
     name: "토끼",
     deliveryHours: 6,
     sceneClass: "rabbit",
@@ -267,6 +270,7 @@ const animalVisitors = {
   hedgehog: {
     kind: "hedgehog",
     icon: "🦔",
+    asset: "assets/decorations/tiny-hedgehog.png",
     name: "고슴도치",
     deliveryHours: 24,
     sceneClass: "hedgehog",
@@ -403,6 +407,7 @@ let selectedAnimalV2VisitId = "";
 let animalVisitSyncBusy = false;
 let animalVisitArrivalTimer = null;
 let animalDepartureTimer = null;
+let animalVisitorLifeTimer = null;
 // 편지함을 열어 둔 동안에만 30초마다 배송 상태를 다시 읽습니다.
 // 정원 전체 데이터를 주기적으로 다시 불러오지 않기 위한 별도 타이머입니다.
 let lettersRefreshTimer = null;
@@ -1778,6 +1783,13 @@ function visualGrowthForGarden() {
   return growthPreviewFromUrl() ?? state.growth;
 }
 
+function animalPreviewKindFromUrl() {
+  // 일반 방문자 그림과 배치를 DB를 건드리지 않고 확인하는 검수용 미리보기입니다.
+  // ?animalPreview=rabbit / squirrel / hedgehog / bird
+  const kind = String(new URL(window.location.href).searchParams.get("animalPreview") || "").trim();
+  return animalVisitors[kind] ? kind : "";
+}
+
 function clearAnimalVisitArrivalTimer() {
   if (animalVisitArrivalTimer) {
     window.clearTimeout(animalVisitArrivalTimer);
@@ -1984,7 +1996,10 @@ function openSpecialForestFriendEncounter(key) {
   closeAnimalEncounterCard({ notifySpecialFriend: false });
   activeSpecialForestFriendEncounterKey = carrier.key;
 
-  if (els.animalEncounterIcon) els.animalEncounterIcon.textContent = carrier.icon;
+  if (els.animalEncounterIcon) {
+    els.animalEncounterIcon.classList.remove("has-animal-art");
+    els.animalEncounterIcon.textContent = carrier.icon;
+  }
   if (els.animalEncounterKicker) els.animalEncounterKicker.textContent = "숲에서 만난 특별한 친구";
   if (els.animalEncounterTitle) els.animalEncounterTitle.textContent = `${carrier.name}이 당신을 바라봐요.`;
   if (els.animalEncounterText) els.animalEncounterText.textContent = carrier.encounterText;
@@ -2019,7 +2034,7 @@ function openAnimalEncounterForVisit(visitId) {
 
   selectedAnimalV2VisitId = visit.id;
   animalEncounterVisitId = visit.id;
-  if (els.animalEncounterIcon) els.animalEncounterIcon.textContent = animal.icon;
+  setAnimalEncounterVisual(animal);
   if (els.animalEncounterKicker) els.animalEncounterKicker.textContent = "숲에서 만난 친구";
   if (els.animalEncounterTitle) els.animalEncounterTitle.textContent = `${animal.name}가 당신을 바라보고 있어요.`;
   if (els.animalEncounterText) els.animalEncounterText.textContent = animalV2MoodLine(animal.kind);
@@ -2080,12 +2095,68 @@ function v2TraceMeta(visit) {
   };
 }
 
+function animalVisitorMedia(animal) {
+  if (!animal) return "";
+  if (animal.asset) {
+    const lookAttr = animal.lookAsset ? ` data-look-src="${escapeAttr(animal.lookAsset)}"` : "";
+    return `<img class="animal-v2-art" src="${escapeAttr(animal.asset)}" data-idle-src="${escapeAttr(animal.asset)}"${lookAttr} alt="" aria-hidden="true" draggable="false" />`;
+  }
+  return `<span class="animal-v2-emoji" aria-hidden="true">${animal.icon}</span>`;
+}
+
+function scheduleAnimalVisitorLife() {
+  window.clearTimeout(animalVisitorLifeTimer);
+  animalVisitorLifeTimer = null;
+  const art = els.animalV2Layer?.querySelector(".animal-v2-art[data-look-src]");
+  if (!art || window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) return;
+
+  const idleSrc = art.dataset.idleSrc || art.getAttribute("src") || "";
+  const lookSrc = art.dataset.lookSrc || "";
+  if (!idleSrc || !lookSrc) return;
+
+  const wait = 3200 + Math.floor(Math.random() * 3600);
+  animalVisitorLifeTimer = window.setTimeout(() => {
+    if (!art.isConnected) return;
+    art.src = lookSrc;
+    art.closest(".animal-v2-visitor")?.classList.add("is-looking");
+    animalVisitorLifeTimer = window.setTimeout(() => {
+      if (!art.isConnected) return;
+      art.src = idleSrc;
+      art.closest(".animal-v2-visitor")?.classList.remove("is-looking");
+      scheduleAnimalVisitorLife();
+    }, 760 + Math.floor(Math.random() * 380));
+  }, wait);
+}
+
+function setAnimalEncounterVisual(animal) {
+  if (!els.animalEncounterIcon || !animal) return;
+  els.animalEncounterIcon.classList.toggle("has-animal-art", Boolean(animal.asset));
+  if (animal.asset) {
+    els.animalEncounterIcon.innerHTML = `<img src="${escapeAttr(animal.asset)}" alt="" aria-hidden="true" draggable="false" />`;
+  } else {
+    els.animalEncounterIcon.textContent = animal.icon || "🌿";
+  }
+}
+
 function renderAnimalV2Scene() {
   if (!els.animalV2Layer || !els.animalV2TraceLayer) return;
 
-  const allApproaching = animalV2VisitsByState("approaching");
-  const allActive = animalV2VisitsByState("visiting", "departing");
-  const traces = animalV2VisitsByState("trace");
+  let allApproaching = animalV2VisitsByState("approaching");
+  let allActive = animalV2VisitsByState("visiting", "departing");
+  let traces = animalV2VisitsByState("trace");
+  const previewKind = animalPreviewKindFromUrl();
+  if (previewKind) {
+    allApproaching = [];
+    allActive = [{
+      id: `preview-${previewKind}`,
+      kind: previewKind,
+      visitState: "visiting",
+      arrivedAt: new Date(Date.now() - 60000).toISOString(),
+      departureReason: "",
+      variant: "",
+    }];
+    traces = [];
+  }
   // 한 번에 한 마리만 보여주고, 겹친 다음 방문은 숲길의 기척으로만 남깁니다.
   const active = allActive.slice(0, 1);
   const approaching = active.length ? [] : allApproaching.slice(0, 1);
@@ -2108,13 +2179,14 @@ function renderAnimalV2Scene() {
         isDeparting ? "is-departing" : "",
         visit.departureReason === "letter" ? "is-letter-departing" : "",
         isArriving ? "is-arriving" : "",
+        animal.asset ? "has-animal-art" : "",
       ].filter(Boolean).join(" ");
       const aria = isDeparting
         ? `${animal.name}가 숲길을 따라 떠나는 중`
         : `${animal.name}에게 편지 맡기기`;
       return `
         <button class="${classes}" type="button" data-animal-v2-visit="${escapeAttr(visit.id)}" aria-label="${escapeAttr(aria)}" ${isDeparting ? "disabled" : ""}>
-          <span class="animal-v2-emoji" aria-hidden="true">${animal.icon}</span>
+          ${animalVisitorMedia(animal)}
           ${isDeparting ? "" : '<span class="animal-v2-envelope" aria-hidden="true">✉</span>'}
           ${visit.variant === "glimmer" ? '<span class="animal-v2-glimmer" aria-hidden="true">✦</span>' : ""}
         </button>
@@ -2133,6 +2205,7 @@ function renderAnimalV2Scene() {
 
   els.animalV2Layer.hidden = !(approaching.length || active.length);
   els.animalV2TraceLayer.hidden = !traces.length;
+  scheduleAnimalVisitorLife();
   if (els.gardenWorld) {
     els.gardenWorld.classList.toggle("is-animal-v2-approaching", approaching.length > 0);
     els.gardenWorld.classList.toggle("is-animal-v2-waiting", waitingCount > 0);
@@ -2142,6 +2215,10 @@ function renderAnimalV2Scene() {
 function handleAnimalV2LayerClick(event) {
   const button = event.target.closest("[data-animal-v2-visit]");
   if (!button || !els.animalV2Layer?.contains(button) || button.disabled) return;
+  if (String(button.dataset.animalV2Visit || "").startsWith("preview-")) {
+    showToast("일반 방문자 일러스트와 배치를 확인하는 검수용 화면이에요.");
+    return;
+  }
   openAnimalEncounterForVisit(button.dataset.animalV2Visit);
 }
 

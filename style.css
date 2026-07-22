@@ -6783,3 +6783,121 @@ body.forest-unicorn-live-enabled .header-actions {
     font-size: 8px;
   }
 }
+
+/* =========================================================
+   GENERAL VISITOR ART PROTOTYPE v0.1
+   일반 방문자를 이모지 배지가 아니라 정원 안의 작은 캐릭터로 보여줍니다.
+   새 일러스트가 없는 동물은 기존 이모지 대체 표시를 유지합니다.
+   ========================================================= */
+.animal-v2-visitor.has-animal-art {
+  width: 76px;
+  height: 70px;
+  overflow: visible;
+  border-radius: 0;
+  filter: none;
+}
+.animal-v2-visitor.has-animal-art:not(.is-arriving):not(.is-departing) {
+  animation: none;
+}
+.animal-v2-visitor .animal-v2-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 7px 5px rgba(62, 89, 70, .16));
+  user-select: none;
+  -webkit-user-drag: none;
+  animation: animalVisitorArtBreath 4.6s ease-in-out infinite;
+}
+.animal-v2-visitor.has-animal-art.is-looking .animal-v2-art {
+  animation: animalVisitorArtNotice .9s ease-in-out both;
+}
+.animal-v2-visitor.has-animal-art .animal-v2-envelope {
+  right: 2px;
+  bottom: 3px;
+  width: auto;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #b96f89;
+  font-size: 14px;
+  line-height: 1;
+  text-shadow:
+    -1px -1px 0 rgba(255,255,255,.94),
+     1px -1px 0 rgba(255,255,255,.94),
+    -1px  1px 0 rgba(255,255,255,.94),
+     1px  1px 0 rgba(255,255,255,.94),
+     0 3px 7px rgba(101,75,86,.18);
+  box-shadow: none;
+}
+.animal-v2-visitor.has-animal-art .animal-v2-glimmer {
+  top: -2px;
+  left: 7px;
+}
+.animal-v2-visitor.animal-v2-rabbit.has-animal-art {
+  right: 11%;
+  bottom: 11.5%;
+  width: 84px;
+  height: 72px;
+}
+.animal-v2-visitor.animal-v2-squirrel.has-animal-art {
+  top: 49%;
+  right: 20%;
+  width: 68px;
+  height: 68px;
+}
+.animal-v2-visitor.animal-v2-hedgehog.has-animal-art {
+  left: 10%;
+  bottom: 12.5%;
+  width: 67px;
+  height: 60px;
+}
+.garden-stage > .animal-encounter-card .animal-encounter-icon.has-animal-art {
+  width: 42px;
+  height: 38px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.garden-stage > .animal-encounter-card .animal-encounter-icon.has-animal-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 4px rgba(65,92,76,.14));
+}
+@keyframes animalVisitorArtBreath {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  46% { transform: translateY(.2px) scaleY(.992); }
+  52% { transform: translateY(-.6px) scaleY(1.006); }
+}
+@keyframes animalVisitorArtNotice {
+  0%, 100% { transform: translateY(0) scale(1); }
+  38% { transform: translateY(-1px) scale(1.018); }
+  70% { transform: translateY(0) scale(1.006); }
+}
+@media (max-width: 520px) {
+  .animal-v2-visitor.animal-v2-rabbit.has-animal-art {
+    right: 8%;
+    bottom: 12%;
+    width: 76px;
+    height: 66px;
+  }
+  .animal-v2-visitor.animal-v2-squirrel.has-animal-art {
+    top: 51%;
+    right: 15%;
+    width: 62px;
+    height: 62px;
+  }
+  .animal-v2-visitor.animal-v2-hedgehog.has-animal-art {
+    left: 7%;
+    bottom: 13%;
+    width: 61px;
+    height: 55px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animal-v2-visitor .animal-v2-art { animation: none !important; }
+}
