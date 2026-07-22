@@ -1,20 +1,37 @@
-/* 오늘의숲 · 살아 있는 정원 모션 v0.1.1
-   CSS 상시 모션에 더해, 드문 잎/빛 사건만 가볍게 생성합니다.
-   v0.1.1: 낙엽이 하늘이 아니라 실제 나무 수관에서 시작하도록 좌표를 보정합니다. */
+/* 오늘의숲 · 살아 있는 정원 모션 v0.2
+   성장 단계에 따라 정원의 호흡을 다르게 적용합니다.
+   원칙: 낙엽은 기본 상시 효과에서 제거하고, 나무의 현재 성장 단계에 맞는 미세 모션만 사용합니다. */
 
 const LIFE_LAYER_ID = "gardenAmbientLayer";
-const MAX_AMBIENT_PARTICLES = 2;
-const LEAF_MIN_DELAY = 9000;
-const LEAF_MAX_DELAY = 15500;
-const LIGHT_MIN_DELAY = 6500;
-const LIGHT_MAX_DELAY = 12000;
+const MAX_AMBIENT_PARTICLES = 1;
 
-let leafTimer = null;
+const STAGE_PROFILES = {
+  1: { lightMinDelay: 13000, lightMaxDelay: 21000, xMin: .30, xMax: .72, yMin: .50, yMax: .82 },
+  2: { lightMinDelay: 12000, lightMaxDelay: 19000, xMin: .27, xMax: .75, yMin: .34, yMax: .74 },
+  3: { lightMinDelay: 10000, lightMaxDelay: 17000, xMin: .29, xMax: .74, yMin: .22, yMax: .72 },
+  4: { lightMinDelay: 9000, lightMaxDelay: 15500, xMin: .22, xMax: .80, yMin: .16, yMax: .68 },
+  5: { lightMinDelay: 8000, lightMaxDelay: 14000, xMin: .18, xMax: .84, yMin: .13, yMax: .65 },
+  6: { lightMinDelay: 7500, lightMaxDelay: 13500, xMin: .18, xMax: .84, yMin: .12, yMax: .64 },
+};
+
 let lightTimer = null;
 let reducedMotionQuery = null;
+let treeObserver = null;
+let activeStage = 1;
 
 function randomBetween(min, max) {
   return min + Math.random() * (max - min);
+}
+
+function clampStage(value) {
+  const stage = Number.parseInt(String(value || ""), 10);
+  return Number.isFinite(stage) ? Math.min(6, Math.max(1, stage)) : 1;
+}
+
+function stageFromTreeImage(treeImage) {
+  const source = treeImage?.getAttribute("src") || treeImage?.currentSrc || "";
+  const match = source.match(/tree_stage([1-6])_/i);
+  return clampStage(match?.[1]);
 }
 
 function gardenIsVisible(stage) {
@@ -28,6 +45,7 @@ function ensureAmbientLayer() {
   if (!world) return null;
   let layer = world.querySelector(`#${LIFE_LAYER_ID}`);
   if (layer) return layer;
+
   layer = document.createElement("div");
   layer.id = LIFE_LAYER_ID;
   layer.className = "garden-ambient-layer";
@@ -40,102 +58,100 @@ function activeParticleCount(layer) {
   return layer?.querySelectorAll(".garden-ambient-particle").length || 0;
 }
 
-function createParticle(kind) {
+function syncTreeStage() {
   const stage = document.querySelector("#gardenStage");
+  const treeWrap = document.querySelector("#treeWrap");
+  const treeImage = document.querySelector("#treeImage");
+  if (!stage || !treeWrap || !treeImage) return;
+
+  const nextStage = stageFromTreeImage(treeImage);
+  const changed = nextStage !== activeStage;
+  activeStage = nextStage;
+
+  stage.dataset.treeStage = String(nextStage);
+  treeWrap.dataset.treeStage = String(nextStage);
+
+  if (changed) restartAmbientTimer();
+}
+
+function createTreeLight() {
+  const stage = document.querySelector("#gardenStage");
+  const world = document.querySelector("#gardenWorld");
+  const tree = document.querySelector("#treeWrap");
   const layer = ensureAmbientLayer();
-  if (!stage || !layer || !gardenIsVisible(stage)) return;
+  if (!stage || !world || !tree || !layer || !gardenIsVisible(stage)) return;
   if (reducedMotionQuery?.matches) return;
   if (activeParticleCount(layer) >= MAX_AMBIENT_PARTICLES) return;
 
-  // 비 오는 날은 빗방울 자체가 충분한 생명감을 가지므로 잎 사건을 줄입니다.
-  if (kind === "leaf" && stage.classList.contains("weather-rain") && Math.random() < .78) return;
+  const profile = STAGE_PROFILES[activeStage] || STAGE_PROFILES[1];
+  const worldRect = world.getBoundingClientRect();
+  const treeRect = tree.getBoundingClientRect();
+  const scaleX = world.offsetWidth ? worldRect.width / world.offsetWidth : 1;
+  const scaleY = world.offsetHeight ? worldRect.height / world.offsetHeight : 1;
+  if (!scaleX || !scaleY) return;
+
+  const treeLeft = (treeRect.left - worldRect.left) / scaleX;
+  const treeTop = (treeRect.top - worldRect.top) / scaleY;
+  const treeWidth = treeRect.width / scaleX;
+  const treeHeight = treeRect.height / scaleY;
 
   const particle = document.createElement("i");
-  particle.className = `garden-ambient-particle is-${kind}`;
-
-  if (kind === "leaf") {
-    const world = document.querySelector("#gardenWorld");
-    const tree = document.querySelector("#treeWrap");
-    if (!world || !tree) return;
-
-    // 화면 전체의 맨 위가 아니라, 실제 나무 수관 안에서 잎이 떨어지기 시작합니다.
-    // gardenWorld에는 scale 변환이 있으므로 화면 좌표를 로컬 좌표로 되돌립니다.
-    const worldRect = world.getBoundingClientRect();
-    const treeRect = tree.getBoundingClientRect();
-    const scaleX = world.offsetWidth ? worldRect.width / world.offsetWidth : 1;
-    const scaleY = world.offsetHeight ? worldRect.height / world.offsetHeight : 1;
-    if (!scaleX || !scaleY) return;
-
-    const treeLeft = (treeRect.left - worldRect.left) / scaleX;
-    const treeTop = (treeRect.top - worldRect.top) / scaleY;
-    const treeWidth = treeRect.width / scaleX;
-    const treeHeight = treeRect.height / scaleY;
-    const fallEnd = randomBetween(185, 245);
-
-    particle.style.left = `${treeLeft + treeWidth * randomBetween(.22, .78)}px`;
-    particle.style.top = `${treeTop + treeHeight * randomBetween(.10, .34)}px`;
-    particle.style.setProperty("--life-duration", `${randomBetween(4.9, 6.5).toFixed(2)}s`);
-    particle.style.setProperty("--life-drift-mid", `${randomBetween(-18, 20).toFixed(1)}px`);
-    particle.style.setProperty("--life-drift-end", `${randomBetween(-30, 34).toFixed(1)}px`);
-    particle.style.setProperty("--life-fall-mid", `${(fallEnd * .43).toFixed(1)}px`);
-    particle.style.setProperty("--life-fall-end", `${fallEnd.toFixed(1)}px`);
-    particle.style.scale = randomBetween(.72, 1.02).toFixed(2);
-  } else {
-    particle.style.left = `${randomBetween(24, 76).toFixed(1)}%`;
-    particle.style.top = `${randomBetween(30, 68).toFixed(1)}%`;
-    particle.style.setProperty("--life-duration", `${randomBetween(4.2, 6.1).toFixed(2)}s`);
-    particle.style.setProperty("--life-drift-mid", `${randomBetween(-14, 15).toFixed(1)}px`);
-    particle.style.setProperty("--life-drift-end", `${randomBetween(-20, 22).toFixed(1)}px`);
-  }
+  particle.className = `garden-ambient-particle is-light is-stage-${activeStage}`;
+  particle.style.left = `${treeLeft + treeWidth * randomBetween(profile.xMin, profile.xMax)}px`;
+  particle.style.top = `${treeTop + treeHeight * randomBetween(profile.yMin, profile.yMax)}px`;
+  particle.style.setProperty("--life-duration", `${randomBetween(4.4, 6.3).toFixed(2)}s`);
+  particle.style.setProperty("--life-drift-mid", `${randomBetween(-10, 11).toFixed(1)}px`);
+  particle.style.setProperty("--life-drift-end", `${randomBetween(-16, 18).toFixed(1)}px`);
+  particle.style.setProperty("--life-rise-end", `${randomBetween(-23, -34).toFixed(1)}px`);
+  particle.style.scale = randomBetween(.74, activeStage >= 5 ? 1.05 : .92).toFixed(2);
 
   particle.addEventListener("animationend", () => particle.remove(), { once: true });
   layer.appendChild(particle);
 }
 
-function scheduleLeaf() {
-  window.clearTimeout(leafTimer);
-  leafTimer = window.setTimeout(() => {
-    createParticle("leaf");
-    scheduleLeaf();
-  }, randomBetween(LEAF_MIN_DELAY, LEAF_MAX_DELAY));
-}
-
-function scheduleLight() {
+function scheduleTreeLight() {
   window.clearTimeout(lightTimer);
+  const profile = STAGE_PROFILES[activeStage] || STAGE_PROFILES[1];
   lightTimer = window.setTimeout(() => {
-    createParticle("light");
-    scheduleLight();
-  }, randomBetween(LIGHT_MIN_DELAY, LIGHT_MAX_DELAY));
+    createTreeLight();
+    scheduleTreeLight();
+  }, randomBetween(profile.lightMinDelay, profile.lightMaxDelay));
 }
 
-function stopAmbientTimers() {
-  window.clearTimeout(leafTimer);
+function stopAmbientTimer() {
   window.clearTimeout(lightTimer);
-  leafTimer = null;
   lightTimer = null;
 }
 
-function restartAmbientTimers() {
-  stopAmbientTimers();
+function restartAmbientTimer() {
+  stopAmbientTimer();
+  document.querySelectorAll(".garden-ambient-particle").forEach((particle) => particle.remove());
   if (document.hidden || reducedMotionQuery?.matches) return;
-  scheduleLeaf();
-  scheduleLight();
+  scheduleTreeLight();
 }
 
 function initGardenLifeMotion() {
   const stage = document.querySelector("#gardenStage");
-  if (!stage) return;
+  const treeImage = document.querySelector("#treeImage");
+  if (!stage || !treeImage) return;
 
   stage.classList.add("garden-life-enabled");
   ensureAmbientLayer();
+  syncTreeStage();
+
+  treeObserver = new MutationObserver(syncTreeStage);
+  treeObserver.observe(treeImage, { attributes: true, attributeFilter: ["src"] });
 
   reducedMotionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)") || null;
-  reducedMotionQuery?.addEventListener?.("change", restartAmbientTimers);
-  document.addEventListener("visibilitychange", restartAmbientTimers);
-  window.addEventListener("pageshow", restartAmbientTimers);
-  window.addEventListener("pagehide", stopAmbientTimers);
+  reducedMotionQuery?.addEventListener?.("change", restartAmbientTimer);
+  document.addEventListener("visibilitychange", restartAmbientTimer);
+  window.addEventListener("pageshow", () => {
+    syncTreeStage();
+    restartAmbientTimer();
+  });
+  window.addEventListener("pagehide", stopAmbientTimer);
 
-  restartAmbientTimers();
+  restartAmbientTimer();
 }
 
 if (document.readyState === "loading") {
