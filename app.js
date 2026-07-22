@@ -6782,20 +6782,42 @@ function bindEvents() {
     }
     window.dispatchEvent(new CustomEvent("todayforest:open-special-friend-letter"));
   });
-  $("#openMoreMenu")?.addEventListener("click", () => {
-    const panel = $("#moreMenuPanel");
-    panel?.classList.toggle("hidden");
+  const moreMenuButton = $("#openMoreMenu");
+  const moreMenuPanel = $("#moreMenuPanel");
+  const setMoreMenuOpen = (open, { focusFirst = false } = {}) => {
+    if (!moreMenuButton || !moreMenuPanel) return;
+    moreMenuPanel.classList.toggle("hidden", !open);
+    moreMenuButton.classList.toggle("is-open", open);
+    moreMenuButton.setAttribute("aria-expanded", String(open));
+    if (open && focusFirst) {
+      window.requestAnimationFrame(() => moreMenuPanel.querySelector('[role="menuitem"]')?.focus());
+    }
+  };
+  moreMenuButton?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    setMoreMenuOpen(moreMenuPanel?.classList.contains("hidden"), { focusFirst: false });
+  });
+  moreMenuPanel?.addEventListener("click", (event) => event.stopPropagation());
+  document.addEventListener("click", (event) => {
+    if (moreMenuPanel?.classList.contains("hidden")) return;
+    if (event.target.closest?.("#openMoreMenu, #moreMenuPanel")) return;
+    setMoreMenuOpen(false);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || moreMenuPanel?.classList.contains("hidden")) return;
+    setMoreMenuOpen(false);
+    moreMenuButton?.focus();
   });
   $$('[data-more-action="feedback"]').forEach((button) => button.addEventListener("click", () => {
-    $("#moreMenuPanel")?.classList.add("hidden");
+    setMoreMenuOpen(false);
     openFeedbackSheet();
   }));
   $$('[data-more-action="support"]').forEach((button) => button.addEventListener("click", () => {
-    $("#moreMenuPanel")?.classList.add("hidden");
+    setMoreMenuOpen(false);
     openSupportSheet();
   }));
   $$('[data-more-action="settings"]').forEach((button) => button.addEventListener("click", () => {
-    $("#moreMenuPanel")?.classList.add("hidden");
+    setMoreMenuOpen(false);
     showToast("설정 메뉴는 준비 중이에요.");
   }));
   els.openSupport.addEventListener("click", openSupportSheet);

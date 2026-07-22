@@ -6208,9 +6208,75 @@ html.shared-tree-start-moment-open body {
   }
 }
 
-.more-menu-panel { position: relative; margin: 8px auto; max-width: 320px; display: grid; gap: 8px; }
+/* 더보기는 페이지 높이를 늘리지 않고 버튼 위로 뜨는 작은 메뉴로 표시합니다. */
+.garden-extra-nav { position: relative; }
+.more-menu-panel {
+  position: absolute;
+  z-index: 40;
+  right: 0;
+  bottom: calc(100% + 10px);
+  width: min(190px, calc(100vw - 36px));
+  display: grid;
+  gap: 4px;
+  padding: 7px;
+  border: 1px solid rgba(135, 155, 143, .22);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 18px 38px rgba(74, 91, 79, .18);
+  backdrop-filter: blur(14px);
+  transform-origin: right bottom;
+  animation: more-menu-rise .16s ease-out both;
+}
+.more-menu-panel::after {
+  content: "";
+  position: absolute;
+  right: 24px;
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
+  border-right: 1px solid rgba(135, 155, 143, .18);
+  border-bottom: 1px solid rgba(135, 155, 143, .18);
+  background: rgba(255, 255, 255, .96);
+  transform: rotate(45deg);
+}
 .more-menu-panel.hidden { display: none; }
-.more-menu-panel button { border-radius: 16px; padding: 12px; border: 0; background: rgba(255,255,255,.9); }
+.more-menu-panel button {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 9px 11px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #50645a;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.more-menu-panel button:hover,
+.more-menu-panel button:focus-visible {
+  background: rgba(226, 241, 231, .7);
+  outline: none;
+}
+.more-menu-panel button span { font-size: 15px; text-align: center; }
+.more-menu-panel button b { font-size: 12px; font-weight: 850; }
+#openMoreMenu.is-open {
+  border-color: rgba(113, 153, 127, .32);
+  background: rgba(235, 247, 238, .92);
+  box-shadow: 0 8px 20px rgba(89, 124, 101, .12);
+}
+@keyframes more-menu-rise {
+  from { opacity: 0; transform: translateY(6px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (max-width: 420px) {
+  .more-menu-panel { right: 0; width: 174px; bottom: calc(100% + 8px); }
+  .more-menu-panel button { min-height: 42px; padding: 8px 10px; }
+}
 
 
 /* ==========================================================================
