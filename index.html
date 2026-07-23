@@ -32,7 +32,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=friend-navigation-v1-6" />
+  <link rel="stylesheet" href="style.css?v=shared-tree-v2-phase3" />
   <link rel="stylesheet" href="oot-notifications.css?v=garden-button-labels-v1-3" />
   <link rel="stylesheet" href="tree-animal-call.css?v=tree-discovery-v1-6" />
   <link rel="stylesheet" href="forest-unicorn-preview.css?v=garden-header-refinement-v1" />
@@ -772,20 +772,49 @@
     </section>
 
     <section class="shared-tree-progress-card" aria-label="공유나무 진행">
-      <div class="shared-tree-progress-heading">
-        <div>
-          <p class="growth-note-kicker">LIGHT LEAVES</p>
-          <p class="shared-tree-progress-copy" id="sharedTreeProgressCopy">각자가 오늘의 빛을 남길 때마다 빛 조각이 하나씩 쌓여요.</p>
+      <div id="sharedTreeLegacyProgress">
+        <div class="shared-tree-progress-heading">
+          <div>
+            <p class="growth-note-kicker">LIGHT LEAVES</p>
+            <p class="shared-tree-progress-copy" id="sharedTreeProgressCopy">각자가 오늘의 빛을 남길 때마다 빛 조각이 하나씩 쌓여요.</p>
+          </div>
+          <span class="shared-tree-progress-count" id="sharedTreeProgressCount" aria-live="polite">0 / 20</span>
         </div>
-        <span class="shared-tree-progress-count" id="sharedTreeProgressCount" aria-live="polite">0 / 20</span>
+        <div class="shared-tree-lifecycle" id="sharedTreeLifecycle" aria-live="polite">
+          <span class="shared-tree-lifecycle-badge" id="sharedTreeLifecycleBadge">함께 자라는 중</span>
+          <span class="shared-tree-lifecycle-dates" id="sharedTreeLifecycleDates">시작한 날을 불러오는 중이에요</span>
+        </div>
+        <div class="shared-tree-leaves" id="sharedTreeLeaves" aria-label="빛 조각 20개"></div>
+        <div class="shared-tree-today-row" id="sharedTreeTodayRow"></div>
+        <button class="shared-tree-record-light-button" id="sharedTreeRecordLightButton" type="button">오늘의 빛 남기기</button>
       </div>
-      <div class="shared-tree-lifecycle" id="sharedTreeLifecycle" aria-live="polite">
-        <span class="shared-tree-lifecycle-badge" id="sharedTreeLifecycleBadge">함께 자라는 중</span>
-        <span class="shared-tree-lifecycle-dates" id="sharedTreeLifecycleDates">시작한 날을 불러오는 중이에요</span>
+
+      <div class="shared-tree-v2-panel hidden" id="sharedTreeV2Panel">
+        <div class="shared-tree-v2-heading">
+          <div>
+            <p class="growth-note-kicker">CARE TOGETHER</p>
+            <h2 id="sharedTreeV2StageTitle">뿌리를 내리는 시간</h2>
+            <p id="sharedTreeV2StageDescription">씨앗이 새로운 흙에서 자리를 찾고 있어요.</p>
+          </div>
+          <span class="shared-tree-v2-stage-badge" id="sharedTreeV2StageBadge">1 / 4</span>
+        </div>
+
+        <div class="shared-tree-v2-lifecycle" id="sharedTreeV2Lifecycle" aria-label="함께 키우는 나무 성장 단계"></div>
+        <div class="shared-tree-v2-trace" id="sharedTreeV2Trace" aria-live="polite"></div>
+
+        <section class="shared-tree-v2-care" aria-labelledby="sharedTreeV2CareTitle">
+          <div class="shared-tree-v2-care-head">
+            <strong id="sharedTreeV2CareTitle">오늘 필요한 돌봄</strong>
+            <span id="sharedTreeV2TodayState"></span>
+          </div>
+          <div class="shared-tree-v2-care-options" id="sharedTreeV2CareOptions"></div>
+        </section>
+
+        <details class="shared-tree-v2-story" id="sharedTreeV2Story">
+          <summary>최근 성장 기록 보기</summary>
+          <div id="sharedTreeV2RecentStory"></div>
+        </details>
       </div>
-      <div class="shared-tree-leaves" id="sharedTreeLeaves" aria-label="빛 조각 20개"></div>
-      <div class="shared-tree-today-row" id="sharedTreeTodayRow"></div>
-      <button class="shared-tree-record-light-button" id="sharedTreeRecordLightButton" type="button">오늘의 빛 남기기</button>
     </section>
 
     <section class="shared-tree-memory-note hidden" id="sharedTreeMemoryNote" aria-label="완성된 공유나무 한마디">
@@ -1272,7 +1301,7 @@
   <div class="heart-fruit-ceremony-lock hidden" id="heartFruitCeremonyLock" aria-hidden="true"></div>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="app.js?v=friend-relationship-end-v1-7"></script>
+  <script type="module" src="app.js?v=shared-tree-v2-phase3"></script>
   <script type="module" src="tree-animal-call.js?v=tree-discovery-v1-6"></script>
   <script type="module" src="forest-unicorn-preview.js?v=animal-preview-clean-v0-4"></script>
   <script type="module" src="forest-friend-cinematic.js?v=operation-special-friend-v1"></script>

@@ -8766,3 +8766,89 @@ body.animal-preview-clean-mode .ff-cinematic {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* ========================================================================== 
+   함께 키우는 나무 v2 · PHASE 3 프론트 연결
+   기존 빛 20개(v1)는 그대로 두고 growth_version=2 나무에서만 적용합니다.
+   ========================================================================== */
+.shared-tree-view[data-growth-version="2"] .shared-tree-progress-card {
+  border-color: rgba(132, 157, 129, .2);
+  background: linear-gradient(155deg, rgba(255,255,255,.88), rgba(247,251,244,.86));
+}
+.shared-tree-v2-panel { display: grid; gap: 15px; }
+.shared-tree-v2-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.shared-tree-v2-heading h2 { margin: 2px 0 5px; color: #486554; font-size: 20px; line-height: 1.35; letter-spacing: -.035em; }
+.shared-tree-v2-heading > div > p:last-child { margin: 0; color: #77877d; font-size: 12px; font-weight: 700; line-height: 1.55; word-break: keep-all; }
+.shared-tree-v2-stage-badge { flex: 0 0 auto; min-width: 52px; padding: 7px 10px; border: 1px solid rgba(105,145,111,.15); border-radius: 999px; background: #edf6ea; color: #63806a; font-size: 11px; font-weight: 900; text-align: center; }
+.shared-tree-v2-lifecycle { display: flex; align-items: center; gap: 6px; padding: 11px 12px; border-radius: 17px; background: rgba(242,247,240,.82); overflow-x: auto; scrollbar-width: none; }
+.shared-tree-v2-lifecycle::-webkit-scrollbar { display: none; }
+.shared-tree-v2-life-step { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 5px; color: #a0aaa1; font-size: 10px; font-weight: 850; white-space: nowrap; }
+.shared-tree-v2-life-step i { display: grid; width: 22px; height: 22px; place-items: center; border: 1px solid rgba(151,163,153,.22); border-radius: 50%; background: rgba(255,255,255,.7); color: #98a49b; font-style: normal; }
+.shared-tree-v2-life-step.is-current { color: #5f7d67; }
+.shared-tree-v2-life-step.is-current i { border-color: rgba(99,142,107,.34); background: #dff0d8; color: #55785f; box-shadow: 0 0 0 4px rgba(118,158,120,.08); }
+.shared-tree-v2-life-step.is-complete { color: #78917d; }
+.shared-tree-v2-life-step.is-complete i { border-color: #c9dfc7; background: #e7f4e3; color: #64836b; }
+.shared-tree-v2-life-line { flex: 1 0 12px; min-width: 12px; height: 1px; background: rgba(126,151,130,.2); }
+.shared-tree-v2-trace { display: flex; align-items: flex-start; gap: 9px; padding: 11px 12px; border: 1px solid rgba(164,177,157,.16); border-radius: 15px; background: rgba(255,255,255,.72); color: #6e7d73; }
+.shared-tree-v2-trace > span { flex: 0 0 auto; font-size: 14px; }
+.shared-tree-v2-trace p { margin: 0; font-size: 11px; font-weight: 760; line-height: 1.55; word-break: keep-all; }
+.shared-tree-v2-care { display: grid; gap: 10px; }
+.shared-tree-v2-care-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.shared-tree-v2-care-head strong { color: #566b5b; font-size: 13px; }
+.shared-tree-v2-care-head span { color: #929d95; font-size: 10px; font-weight: 800; text-align: right; }
+.shared-tree-v2-care-options { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+.shared-tree-v2-care-card { min-width: 0; padding: 13px; border: 1px solid rgba(133,160,132,.2); border-radius: 18px; background: rgba(255,255,255,.82); box-shadow: 0 8px 18px rgba(97,125,101,.06); }
+.shared-tree-v2-care-card.is-full { background: rgba(247,249,246,.75); box-shadow: none; }
+.shared-tree-v2-care-copy { display: flex; align-items: flex-start; gap: 8px; }
+.shared-tree-v2-care-icon { display: grid; flex: 0 0 auto; width: 31px; height: 31px; place-items: center; border-radius: 11px; background: #f0f6ec; font-size: 16px; }
+.shared-tree-v2-care-copy strong { display: block; color: #526857; font-size: 12px; line-height: 1.35; }
+.shared-tree-v2-care-copy p { margin: 4px 0 0; color: #88938a; font-size: 10px; font-weight: 680; line-height: 1.5; word-break: keep-all; }
+.shared-tree-v2-care-actions { display: grid; gap: 7px; margin-top: 11px; }
+.shared-tree-v2-choice-button,
+.shared-tree-v2-care-button { width: 100%; padding: 9px 10px; border: 1px solid rgba(126,153,125,.22); border-radius: 13px; background: linear-gradient(145deg,#fbfdf9,#eef7ea); color: #58705d; text-align: left; cursor: pointer; transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease; }
+.shared-tree-v2-choice-button span,
+.shared-tree-v2-care-button span { display: block; font-size: 10px; font-weight: 900; line-height: 1.35; word-break: keep-all; }
+.shared-tree-v2-choice-button small,
+.shared-tree-v2-care-button small { display: block; margin-top: 3px; color: #8a968c; font-size: 9px; font-weight: 680; line-height: 1.45; word-break: keep-all; }
+.shared-tree-v2-choice-button:hover,
+.shared-tree-v2-care-button:hover { transform: translateY(-1px); border-color: rgba(102,142,105,.36); box-shadow: 0 7px 14px rgba(89,121,92,.08); }
+.shared-tree-v2-choice-button:focus-visible,
+.shared-tree-v2-care-button:focus-visible { outline: 3px solid rgba(117,155,119,.16); outline-offset: 2px; }
+.shared-tree-v2-choice-button:disabled,
+.shared-tree-v2-care-button:disabled { cursor: default; opacity: .58; transform: none; box-shadow: none; }
+.shared-tree-v2-care-button.is-saving { position: relative; }
+.shared-tree-v2-care-full { display: block; padding: 9px 10px; border-radius: 12px; background: #f2f4f1; color: #9aa29a; font-size: 9px; font-weight: 800; line-height: 1.45; }
+.shared-tree-v2-done-card,
+.shared-tree-v2-complete-card,
+.shared-tree-v2-loading { grid-column: 1 / -1; padding: 16px; border: 1px solid rgba(126,153,125,.17); border-radius: 18px; background: linear-gradient(145deg,rgba(246,251,243,.94),rgba(255,251,238,.86)); text-align: center; }
+.shared-tree-v2-done-card > span,
+.shared-tree-v2-complete-card > span { display: block; margin-bottom: 5px; font-size: 20px; }
+.shared-tree-v2-done-card strong,
+.shared-tree-v2-complete-card strong { display: block; color: #5a705e; font-size: 13px; }
+.shared-tree-v2-done-card p,
+.shared-tree-v2-complete-card p { margin: 5px auto 0; max-width: 360px; color: #879188; font-size: 10px; font-weight: 700; line-height: 1.55; word-break: keep-all; }
+.shared-tree-v2-loading { color: #8b968d; font-size: 11px; font-weight: 800; }
+.shared-tree-v2-story { border-top: 1px solid rgba(132,152,132,.14); padding-top: 12px; }
+.shared-tree-v2-story summary { color: #718077; font-size: 10px; font-weight: 850; cursor: pointer; list-style: none; }
+.shared-tree-v2-story summary::-webkit-details-marker { display: none; }
+.shared-tree-v2-story summary::after { content: "⌄"; margin-left: 6px; color: #9ca79e; }
+.shared-tree-v2-story[open] summary::after { content: "⌃"; }
+.shared-tree-v2-story > div { display: grid; gap: 6px; margin-top: 10px; }
+.shared-tree-v2-story p { display: flex; align-items: baseline; gap: 9px; margin: 0; padding: 7px 9px; border-radius: 11px; background: rgba(247,249,246,.82); color: #738078; font-size: 10px; line-height: 1.45; }
+.shared-tree-v2-story time { flex: 0 0 auto; color: #a2aaa3; font-size: 9px; }
+.shared-tree-view[data-growth-version="2"] .shared-tree-seed-glow { color: #d7ba70; opacity: .42; }
+.shared-tree-view[data-growth-version="2"][data-stage="1"] .shared-tree-image { transform: scale(1.03); }
+.shared-tree-view[data-growth-version="2"][data-stage="2"] .shared-tree-image { transform: scale(1.08); }
+.shared-tree-view[data-growth-version="2"] .shared-tree-note p::first-line { font-weight: 700; }
+.together-forest-tree-card.is-v2 .together-forest-tree-kicker { color: #709078; }
+@media (max-width: 560px) {
+  .shared-tree-v2-care-options { grid-template-columns: 1fr; }
+  .shared-tree-v2-heading h2 { font-size: 18px; }
+  .shared-tree-v2-lifecycle { padding-inline: 9px; }
+  .shared-tree-v2-life-step b { font-size: 9px; }
+}
+@media (hover: none) {
+  .shared-tree-v2-choice-button:hover,
+  .shared-tree-v2-care-button:hover { transform: none; box-shadow: none; }
+}

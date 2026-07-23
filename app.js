@@ -437,6 +437,7 @@ const HEART_FRUIT_PREVIEW_MAX_COUNT = 120;
 let activeSharedTreeId = "";
 let activeTogetherForestFriendId = "";
 let pendingSharedTreeInvite = null;
+const sharedTreeV2DetailRequests = new Map();
 let sharedTreeStartMomentPlaying = false;
 let sharedTreeStartMomentTimer = null;
 // DEV Animal Visit v2: V1의 한 마리 상태와 분리된, 최대 두 마리의 계정 공통 방문 목록입니다.
@@ -711,6 +712,17 @@ const els = {
   sharedTreeLightsMeet: $("#sharedTreeLightsMeet"),
   sharedTreeSeedGlow: $("#sharedTreeSeedGlow"),
   sharedTreeImage: $("#sharedTreeImage"),
+  sharedTreeLegacyProgress: $("#sharedTreeLegacyProgress"),
+  sharedTreeV2Panel: $("#sharedTreeV2Panel"),
+  sharedTreeV2StageTitle: $("#sharedTreeV2StageTitle"),
+  sharedTreeV2StageDescription: $("#sharedTreeV2StageDescription"),
+  sharedTreeV2StageBadge: $("#sharedTreeV2StageBadge"),
+  sharedTreeV2Lifecycle: $("#sharedTreeV2Lifecycle"),
+  sharedTreeV2Trace: $("#sharedTreeV2Trace"),
+  sharedTreeV2TodayState: $("#sharedTreeV2TodayState"),
+  sharedTreeV2CareOptions: $("#sharedTreeV2CareOptions"),
+  sharedTreeV2Story: $("#sharedTreeV2Story"),
+  sharedTreeV2RecentStory: $("#sharedTreeV2RecentStory"),
   sharedTreeRecordLightButton: $("#sharedTreeRecordLightButton"),
   sharedTreeMemoryNote: $("#sharedTreeMemoryNote"),
   sharedTreeMyNoteText: $("#sharedTreeMyNoteText"),
@@ -999,6 +1011,27 @@ function databaseErrorMessage(error) {
   }
   if (message.includes("SHARED_TREE_LIGHT_NOT_FOUND")) {
     return "이 함께 키우는 나무를 다시 불러와 주세요.";
+  }
+  if (message.includes("SHARED_TREE_CARE_ALREADY_RECORDED")) {
+    return "오늘의 돌봄은 이미 이 나무에 남겼어요. 내일 다시 와요.";
+  }
+  if (message.includes("SHARED_TREE_CARE_COMPLETE")) {
+    return "이 나무의 모든 돌봄이 이미 완성됐어요.";
+  }
+  if (message.includes("SHARED_TREE_CARE_TYPE_FULL")) {
+    return "이 돌봄은 충분히 전해졌어요. 다른 돌봄을 이어주세요.";
+  }
+  if (message.includes("SHARED_TREE_CARE_CHOICE_LOCKED")) {
+    return "처음 정한 돌봄의 성질은 이 나무에 이미 남아 있어요.";
+  }
+  if (message.includes("SHARED_TREE_CARE_CHOICE_REQUIRED") || message.includes("SHARED_TREE_CARE_CHOICE_INVALID") || message.includes("SHARED_TREE_CARE_TYPE_INVALID")) {
+    return "나무에게 건넬 돌봄을 다시 골라 주세요.";
+  }
+  if (message.includes("SHARED_TREE_STAGE_NEEDS_BOTH_CARE_TYPES")) {
+    return "이 시기를 마치려면 두 종류의 돌봄이 모두 필요해요.";
+  }
+  if (message.includes("SHARED_TREE_V2_NOT_FOUND") || message.includes("get_my_garden_shared_tree_v2") || message.includes("add_my_garden_shared_tree_care")) {
+    return "새 함께 키우기 기능을 불러오지 못했어요. v2 SQL 설정을 확인해 주세요.";
   }
   if (message.includes("SHARED_TREE_NOTE_REQUIRED")) {
     return "한마디를 한 글자 이상 남겨 주세요.";
@@ -1589,7 +1622,7 @@ async function loadGardenState() {
 
   const nowIso = new Date().toISOString();
   const retentionTestActive = Boolean(retentionTestModeFromUrl());
-  const [profileResult, recordsResult, foundItemsResult, lettersResult, sentLettersResult, friendsResult, sharedTreesResult, sharedTreeInvitesResult, sharedTreeNotesResult, sharedTreeStartMomentsResult, retentionDevLetters, specialFriendLettersResult] = await Promise.all([
+  const [profileResult, recordsResult, foundItemsResult, lettersResult, sentLettersResult, friendsResult, sharedTreesResult, sharedTreesV2Result, sharedTreeInvitesResult, sharedTreeNotesResult, sharedTreeStartMomentsResult, retentionDevLetters, specialFriendLettersResult] = await Promise.all([
     loadMyGardenProfile(),
     loadMyGardenRecords(),
     loadFoundGardenItems(),
@@ -1601,6 +1634,7 @@ async function loadGardenState() {
     supabase.rpc("list_my_sent_garden_letters_v2"),
     supabase.rpc("list_my_garden_friends"),
     supabase.rpc("list_my_garden_shared_trees"),
+    supabase.rpc("list_my_garden_shared_trees_v2"),
     supabase.rpc("list_my_garden_shared_tree_invites"),
     supabase.rpc("list_my_garden_shared_tree_notes"),
     supabase.rpc("list_my_unseen_garden_shared_tree_start_moments"),
@@ -1621,6 +1655,7 @@ async function loadGardenState() {
   if (sentLettersResult.error) console.warn("TodayForest sent-letter load skipped:", sentLettersResult.error);
   if (friendsResult.error) console.warn("TodayForest friend load skipped:", friendsResult.error);
   if (sharedTreesResult.error) console.warn("TodayForest shared-tree load skipped:", sharedTreesResult.error);
+  if (sharedTreesV2Result.error) console.warn("TodayForest shared-tree v2 load skipped:", sharedTreesV2Result.error);
   if (sharedTreeInvitesResult.error) console.warn("TodayForest shared-tree invite load skipped:", sharedTreeInvitesResult.error);
   if (sharedTreeNotesResult.error) console.warn("TodayForest shared-tree note load skipped:", sharedTreeNotesResult.error);
   if (sharedTreeStartMomentsResult.error) console.warn("TodayForest shared-tree start moment load skipped:", sharedTreeStartMomentsResult.error);
@@ -1696,6 +1731,46 @@ async function loadGardenState() {
       readAt: letter.read_at || null,
     }));
 
+  const previousV2Details = new Map(
+    (state.sharedTrees || [])
+      .filter((tree) => Number(tree.growthVersion || 1) === 2 && tree.v2Detail)
+      .map((tree) => [tree.id, tree.v2Detail])
+  );
+  const v2SharedTrees = (sharedTreesV2Result.error ? [] : (sharedTreesV2Result.data || [])).map((tree) => {
+    const completedStageCount = Number(tree.completed_stage_count || 0);
+    const stageEventCount = Number(tree.stage_event_count || 0);
+    return {
+      id: tree.tree_id,
+      partnerId: tree.partner_id,
+      growthVersion: 2,
+      currentStage: Number(tree.current_stage || 1),
+      stageEventCount,
+      completedStageCount,
+      progressCount: tree.completed_at ? 20 : Math.min(20, completedStageCount * 5 + stageEventCount),
+      targetSteps: 20,
+      createdAt: tree.created_at,
+      completedAt: tree.completed_at || null,
+      myRecordedToday: Boolean(tree.my_cared_today),
+      partnerRecordedToday: Boolean(tree.partner_cared_today),
+      finalName: tree.final_name || "",
+      v2Detail: previousV2Details.get(tree.tree_id) || null,
+    };
+  });
+  const v2TreeIds = new Set(v2SharedTrees.map((tree) => tree.id));
+  const v1SharedTrees = (sharedTreesResult.data || [])
+    .filter((tree) => !v2TreeIds.has(tree.tree_id))
+    .map((tree) => ({
+      id: tree.tree_id,
+      partnerId: tree.partner_id,
+      growthVersion: 1,
+      progressCount: Number(tree.progress_count || 0),
+      targetSteps: Number(tree.target_steps || 20),
+      createdAt: tree.created_at,
+      completedAt: tree.completed_at || null,
+      myRecordedToday: Boolean(tree.my_recorded_today),
+      partnerRecordedToday: Boolean(tree.partner_recorded_today),
+    }));
+
   state = {
     growth: Number(profile?.growth_count || 0),
     profileName: profile?.nickname || profileNameFromUser(currentUser),
@@ -1726,16 +1801,7 @@ async function loadGardenState() {
     sentLetters: Array.from(sentById.values()).map(applyAnimalDeliveryMeta),
     specialFriendLetters: specialSentLetters,
     friends: Array.from(friendsById.values()),
-    sharedTrees: (sharedTreesResult.data || []).map((tree) => ({
-      id: tree.tree_id,
-      partnerId: tree.partner_id,
-      progressCount: Number(tree.progress_count || 0),
-      targetSteps: Number(tree.target_steps || 20),
-      createdAt: tree.created_at,
-      completedAt: tree.completed_at || null,
-      myRecordedToday: Boolean(tree.my_recorded_today),
-      partnerRecordedToday: Boolean(tree.partner_recorded_today),
-    })),
+    sharedTrees: [...v1SharedTrees, ...v2SharedTrees],
     sharedTreeInvites: (sharedTreeInvitesResult.data || []).map((invite) => ({
       id: invite.invite_id,
       direction: invite.direction,
@@ -5624,7 +5690,7 @@ function openSharedTreeInvite(inviteId) {
   if (els.sharedTreeInviteBody) {
     els.sharedTreeInviteBody.textContent = isNextTreeInvite
       ? "완성한 나무는 함께한 숲에 그대로 남아요. 새 씨앗을 심으면 두 사람의 다음 시간이 새로운 나무로 천천히 자라요."
-      : "각자의 하루가 닿을 때마다 조금씩 자라요. 서로의 기록 내용은 보이지 않고, 둘만의 작은 나무만 남아요.";
+      : "흙과 물, 햇빛과 영양처럼 서로 다른 돌봄을 이어가요. 둘의 선택이 만나면 혼자서는 만들 수 없는 나무가 자라요.";
   }
   els.acceptSharedTreeInviteButton.textContent = isNextTreeInvite ? "다음 나무 함께 심기" : "함께 심기";
   els.sharedTreeInviteModal.classList.remove("hidden");
@@ -5664,7 +5730,7 @@ async function acceptSharedTreeInvite() {
   button.disabled = true;
   button.textContent = "씨앗을 심는 중이에요";
 
-  const { data, error } = await supabase.rpc("accept_my_garden_shared_tree_invite", { p_invite_id: invite.id });
+  const { data, error } = await supabase.rpc("accept_my_garden_shared_tree_invite_v2", { p_invite_id: invite.id });
 
   button.disabled = false;
   button.textContent = originalText || "함께 심기";
@@ -5808,25 +5874,304 @@ function sharedTreeImagePath(stage) {
   return `assets/garden/tree_growth/tree_stage${stage}_sunset.png`;
 }
 
+const SHARED_TREE_V2_STAGE_CONFIG = Object.freeze({
+  1: {
+    title: "뿌리를 내리는 시간",
+    description: "씨앗이 새로운 흙에서 자리를 찾고 있어요.",
+    completeCopy: "첫 뿌리가 자리를 잡았어요.",
+    careTypes: [
+      {
+        key: "soil",
+        profileKey: "soilChoice",
+        icon: "🪴",
+        title: "흙 돌보기",
+        description: "씨앗이 편안히 머물 자리를 만들어요.",
+        choices: [
+          { key: "soft", label: "포슬하게 골라주기", hint: "뿌리가 넓게 길을 찾도록 도와줘요." },
+          { key: "firm", label: "든든하게 다져주기", hint: "뿌리가 깊고 단단히 자리 잡도록 도와줘요." },
+        ],
+      },
+      {
+        key: "water",
+        profileKey: "waterChoice",
+        icon: "💧",
+        title: "물 건네기",
+        description: "씨앗 아래까지 물을 천천히 전해요.",
+        choices: [
+          { key: "gentle", label: "조금씩 스며들게 하기", hint: "잔잔한 물이 흙 사이로 천천히 번져요." },
+          { key: "deep", label: "깊이 머금게 하기", hint: "씨앗 아래까지 포근한 물기가 머물러요." },
+        ],
+      },
+    ],
+  },
+  2: {
+    title: "새잎이 자라는 시간",
+    description: "작은 새싹이 빛과 영양을 기다리고 있어요.",
+    completeCopy: "둘이 돋운 새잎이 바람을 만났어요.",
+    careTypes: [
+      {
+        key: "sunlight",
+        profileKey: "sunlightChoice",
+        icon: "☀️",
+        title: "햇빛 비추기",
+        description: "새싹이 따라갈 빛의 온도를 정해요.",
+        choices: [
+          { key: "morning", label: "아침빛 건네기", hint: "맑고 따뜻한 연두빛이 잎에 머물러요." },
+          { key: "shade", label: "숲그늘 만들어주기", hint: "차분하고 깊은 초록빛이 잎에 스며들어요." },
+        ],
+      },
+      {
+        key: "nutrition",
+        profileKey: "nutritionChoice",
+        icon: "🌿",
+        title: "영양 보태기",
+        description: "새잎이 펼쳐질 모양을 도와줘요.",
+        choices: [
+          { key: "dense", label: "새잎을 촘촘하게 돕기", hint: "작은 잎들이 포근하게 모여 자라요." },
+          { key: "broad", label: "잎을 넓게 펼치도록 돕기", hint: "큼직한 잎이 여유롭게 빛을 받아요." },
+        ],
+      },
+    ],
+  },
+  3: {
+    title: "가지를 펼치는 시간",
+    description: "어린 나무가 어느 방향으로 팔을 뻗을지 고민하고 있어요.",
+    completeCopy: "누군가 머물 수 있는 가지가 생겼어요.",
+    careTypes: [
+      {
+        key: "branch",
+        profileKey: "branchChoice",
+        icon: "🌳",
+        title: "가지 이끌기",
+        description: "나무가 펼쳐질 방향을 조용히 잡아줘요.",
+        choices: [
+          { key: "upright", label: "하늘을 향해 세워주기", hint: "높고 단정한 가지가 하늘을 향해 자라요." },
+          { key: "wide", label: "옆으로 넓게 펼쳐주기", hint: "포근한 그늘을 품은 가지가 넓게 퍼져요." },
+        ],
+      },
+      {
+        key: "habitat",
+        profileKey: "habitatChoice",
+        icon: "🐦",
+        title: "머물 자리 만들기",
+        description: "미래의 숲친구가 쉬어갈 곳을 남겨요.",
+        choices: [
+          { key: "nest", label: "작은 둥지 자리 남기기", hint: "새와 다람쥐가 발견할 작은 자리가 생겨요." },
+          { key: "resting_shade", label: "편히 쉬는 그늘 만들기", hint: "토끼와 고슴도치가 쉬어갈 그늘이 생겨요." },
+        ],
+      },
+    ],
+  },
+  4: {
+    title: "꽃과 열매의 시간",
+    description: "나무가 둘의 마지막 손길을 기다리고 있어요.",
+    completeCopy: "둘의 모든 선택이 한 그루의 나무가 되었어요.",
+    careTypes: [
+      {
+        key: "bloom",
+        profileKey: "bloomChoice",
+        icon: "🌸",
+        title: "꽃을 깨우기",
+        description: "꽃봉오리가 깨어날 빛을 건네요.",
+        choices: [
+          { key: "sunlight", label: "햇살로 천천히 깨우기", hint: "따뜻하고 밝은 꽃이 가지 사이로 피어나요." },
+          { key: "night_dew", label: "밤이슬로 조용히 깨우기", hint: "차분한 꽃과 은은한 반짝임이 남아요." },
+        ],
+      },
+      {
+        key: "fruit",
+        profileKey: "fruitChoice",
+        icon: "✨",
+        title: "열매에 마음 보태기",
+        description: "이 나무가 품을 마지막 결실을 정해요.",
+        choices: [
+          { key: "sweet", label: "달콤한 향을 머물게 하기", hint: "둥글고 풍성한 열매가 숲친구를 불러요." },
+          { key: "glow", label: "작은 빛을 품게 하기", hint: "밤의 숲에서도 은은하게 보이는 열매가 열려요." },
+        ],
+      },
+    ],
+  },
+});
+
+function sharedTreeV2Config(stage) {
+  return SHARED_TREE_V2_STAGE_CONFIG[Math.min(4, Math.max(1, Number(stage || 1)))] || SHARED_TREE_V2_STAGE_CONFIG[1];
+}
+
+function sharedTreeV2ChoiceLabel(careType, choiceKey) {
+  for (const stage of Object.values(SHARED_TREE_V2_STAGE_CONFIG)) {
+    const care = stage.careTypes.find((item) => item.key === careType);
+    const choice = care?.choices.find((item) => item.key === choiceKey);
+    if (choice) return choice.label;
+  }
+  return "돌봄을 남겼어요";
+}
+
+function normalizeSharedTreeV2Detail(raw) {
+  const row = normalizeRpcRow(raw);
+  if (!row?.tree_id) return null;
+  const profileRow = row.profile && typeof row.profile === "object" ? row.profile : {};
+  const memberRow = row.my_member_state && typeof row.my_member_state === "object" ? row.my_member_state : {};
+  return {
+    treeId: row.tree_id,
+    partnerId: row.partner_id,
+    growthVersion: 2,
+    status: row.status || "growing",
+    currentStage: Number(row.current_stage || 1),
+    stageEventCount: Number(row.stage_event_count || 0),
+    stageEventTarget: Number(row.stage_event_target || 5),
+    completedStageCount: Number(row.completed_stage_count || 0),
+    createdAt: row.created_at,
+    completedAt: row.completed_at || null,
+    myCaredToday: Boolean(row.my_cared_today),
+    partnerCaredToday: Boolean(row.partner_cared_today),
+    careCounts: row.care_counts && typeof row.care_counts === "object" ? row.care_counts : {},
+    profile: {
+      soilChoice: profileRow.soil_choice || null,
+      waterChoice: profileRow.water_choice || null,
+      sunlightChoice: profileRow.sunlight_choice || null,
+      nutritionChoice: profileRow.nutrition_choice || null,
+      branchChoice: profileRow.branch_choice || null,
+      habitatChoice: profileRow.habitat_choice || null,
+      bloomChoice: profileRow.bloom_choice || null,
+      fruitChoice: profileRow.fruit_choice || null,
+      finalName: profileRow.final_name || "",
+    },
+    recentEvents: Array.isArray(row.recent_events) ? row.recent_events.map((event) => ({
+      id: event.id,
+      userId: event.user_id,
+      isMine: Boolean(event.is_mine),
+      stage: Number(event.stage || 1),
+      careType: event.care_type || "",
+      choiceKey: event.choice_key || "",
+      recordDate: event.record_date || "",
+      createdAt: event.created_at || null,
+    })) : [],
+    stageResults: Array.isArray(row.stage_results) ? row.stage_results : [],
+    myMemberState: {
+      birthSceneSeenAt: memberRow.birth_scene_seen_at || null,
+      namePieceRole: memberRow.name_piece_role || null,
+      namePieceKey: memberRow.name_piece_key || null,
+      worldConsent: memberRow.world_consent,
+    },
+    bothNamePiecesReady: Boolean(row.both_name_pieces_ready),
+    bothWorldConsent: Boolean(row.both_world_consent),
+    placement: row.placement && typeof row.placement === "object" ? row.placement : {},
+  };
+}
+
+function mergeSharedTreeV2Detail(raw) {
+  const detail = normalizeSharedTreeV2Detail(raw);
+  if (!detail) return null;
+  const tree = (state.sharedTrees || []).find((item) => item.id === detail.treeId);
+  if (!tree) return null;
+  tree.growthVersion = 2;
+  tree.partnerId = detail.partnerId || tree.partnerId;
+  tree.currentStage = detail.currentStage;
+  tree.stageEventCount = detail.stageEventCount;
+  tree.completedStageCount = detail.completedStageCount;
+  tree.progressCount = detail.completedAt ? 20 : Math.min(20, detail.completedStageCount * 5 + detail.stageEventCount);
+  tree.targetSteps = 20;
+  tree.createdAt = detail.createdAt || tree.createdAt;
+  tree.completedAt = detail.completedAt;
+  tree.myRecordedToday = detail.myCaredToday;
+  tree.partnerRecordedToday = detail.partnerCaredToday;
+  tree.finalName = detail.profile.finalName;
+  tree.v2Detail = detail;
+  return tree;
+}
+
+async function hydrateSharedTreeV2(treeId, { silent = true } = {}) {
+  if (!treeId) return null;
+  if (sharedTreeV2DetailRequests.has(treeId)) return sharedTreeV2DetailRequests.get(treeId);
+
+  const request = (async () => {
+    try {
+      const { data, error } = await supabase.rpc("get_my_garden_shared_tree_v2", { p_tree_id: treeId });
+      if (error) throw error;
+      const tree = mergeSharedTreeV2Detail(data);
+      if (tree && activeSharedTreeId === treeId) renderSharedTreeV2View(tree);
+      if (tree && activeTogetherForestFriendId === tree.partnerId && !els.togetherForestView.classList.contains("hidden")) {
+        renderTogetherForest(tree.partnerId);
+      }
+      return tree;
+    } catch (error) {
+      console.warn("TodayForest shared-tree v2 detail load skipped:", error);
+      if (!silent) showToast(databaseErrorMessage(error));
+      return null;
+    } finally {
+      sharedTreeV2DetailRequests.delete(treeId);
+    }
+  })();
+
+  sharedTreeV2DetailRequests.set(treeId, request);
+  return request;
+}
+
+function sharedTreeV2ImageStage(tree) {
+  if (tree?.completedAt) return 6;
+  const stage = Number(tree?.currentStage || tree?.v2Detail?.currentStage || 1);
+  const count = Number(tree?.stageEventCount || tree?.v2Detail?.stageEventCount || 0);
+  if (stage <= 1) return count >= 3 ? 2 : 1;
+  if (stage === 2) return 3;
+  if (stage === 3) return 4;
+  return 5;
+}
+
+function sharedTreeV2EventSentence(event, friendName) {
+  if (!event) return "아직 이 시기의 첫 손길을 기다리고 있어요.";
+  const who = event.isMine ? "내가" : `${friendName}님이`;
+  const action = sharedTreeV2ChoiceLabel(event.careType, event.choiceKey);
+  return `${who} ‘${action}’를 선택했어요.`;
+}
+
+function sharedTreeV2SceneCopy(tree, friend) {
+  const detail = tree.v2Detail;
+  const config = sharedTreeV2Config(detail?.currentStage || tree.currentStage);
+  if (tree.completedAt) return `${friend.name}와 함께 돌본 나무가 둘의 시간을 조용히 기억하고 있어요.`;
+  if (!detail) return "나무가 두 사람의 돌봄을 불러오는 중이에요.";
+  if (detail.myCaredToday && detail.partnerCaredToday) return "오늘은 두 사람의 손길이 한 나무에서 만났어요.";
+  const partnerEvent = detail.recentEvents.find((event) => !event.isMine && event.stage === detail.currentStage);
+  if (partnerEvent && !detail.myCaredToday) return `${friend.name}의 손길이 먼저 이곳에 머물러 있어요.`;
+  if (detail.myCaredToday) return "오늘의 돌봄이 나무에 닿아 작은 변화가 시작됐어요.";
+  return config.description;
+}
+
 function togetherForestTreeCardMarkup(tree, { current = false, index = 0 } = {}) {
-  const target = Math.max(1, Number(tree.targetSteps || 20));
-  const progress = Math.min(target, Math.max(0, Number(tree.progressCount || 0)));
-  const stage = sharedTreeStageForProgress(progress, target);
+  const isV2 = Number(tree.growthVersion || 1) === 2;
   const startDate = formatSharedTreeLifecycleDate(tree.createdAt);
   const completeDate = tree.completedAt ? formatSharedTreeLifecycleDate(tree.completedAt) : "";
-  const title = current ? "지금 함께 자라는 나무" : `${completeDate || startDate}의 나무`;
-  const meta = current
-    ? `빛 ${progress} / ${target} · ${startDate}에 시작`
-    : `${startDate}에 시작${completeDate ? ` · ${completeDate}에 완성` : ""}`;
-  const aria = current ? "현재 함께 키우는 공유나무 보기" : `${index + 1}번째 완성 공유나무 보기`;
+  let stage;
+  let title;
+  let meta;
+  let kicker;
 
+  if (isV2) {
+    const config = sharedTreeV2Config(tree.currentStage || 1);
+    stage = sharedTreeV2ImageStage(tree);
+    title = current ? config.title : (tree.finalName || `${completeDate || startDate}의 나무`);
+    meta = current
+      ? `${Number(tree.currentStage || 1)} / 4 · ${startDate}에 시작`
+      : `${startDate}에 시작${completeDate ? ` · ${completeDate}에 완성` : ""}`;
+    kicker = current ? "GROWING TOGETHER" : "OUR MEMORY TREE";
+  } else {
+    const target = Math.max(1, Number(tree.targetSteps || 20));
+    const progress = Math.min(target, Math.max(0, Number(tree.progressCount || 0)));
+    stage = sharedTreeStageForProgress(progress, target);
+    title = current ? "지금 함께 자라는 나무" : `${completeDate || startDate}의 나무`;
+    meta = current
+      ? `빛 ${progress} / ${target} · ${startDate}에 시작`
+      : `${startDate}에 시작${completeDate ? ` · ${completeDate}에 완성` : ""}`;
+    kicker = current ? "GROWING TOGETHER" : "OUR MEMORY TREE";
+  }
+
+  const aria = current ? "현재 함께 키우는 공유나무 보기" : `${index + 1}번째 완성 공유나무 보기`;
   return `
-    <button class="together-forest-tree-card${current ? " is-current" : " is-complete"}" type="button" data-view-shared-tree="${escapeAttr(tree.id)}" aria-label="${escapeAttr(aria)}">
+    <button class="together-forest-tree-card${current ? " is-current" : " is-complete"}${isV2 ? " is-v2" : ""}" type="button" data-view-shared-tree="${escapeAttr(tree.id)}" aria-label="${escapeAttr(aria)}">
       <span class="together-forest-tree-thumb" aria-hidden="true">
         <img src="${escapeAttr(sharedTreeImagePath(stage))}" alt="" />
       </span>
       <span class="together-forest-tree-copy">
-        <span class="together-forest-tree-kicker">${current ? "GROWING TOGETHER" : "OUR MEMORY TREE"}</span>
+        <span class="together-forest-tree-kicker">${kicker}</span>
         <strong>${escapeHTML(title)}</strong>
         <span>${escapeHTML(meta)}</span>
       </span>
@@ -6064,9 +6409,13 @@ async function saveSharedTreeMemoryNote(event) {
   }
 }
 
-function renderSharedTreeView(treeId = activeSharedTreeId) {
+function renderSharedTreeV1View(treeId = activeSharedTreeId) {
   const tree = (state.sharedTrees || []).find((item) => item.id === treeId);
   if (!tree) return false;
+
+  els.sharedTreeLegacyProgress?.classList.remove("hidden");
+  els.sharedTreeV2Panel?.classList.add("hidden");
+  els.sharedTreeView.dataset.growthVersion = "1";
 
   const friend = friendForSharedTree(tree);
   const target = Math.max(1, Number(tree.targetSteps || 20));
@@ -6153,6 +6502,187 @@ function renderSharedTreeView(treeId = activeSharedTreeId) {
   els.sharedTreeView.classList.toggle("is-complete", complete);
   renderSharedTreeMemoryNote(tree, friend, serverComplete);
   return true;
+}
+
+function sharedTreeV2LifecycleMarkup(detail) {
+  const labels = ["뿌리", "새잎", "가지", "꽃과 열매"];
+  return labels.map((label, index) => {
+    const stage = index + 1;
+    const complete = detail.completedStageCount >= stage || Boolean(detail.completedAt);
+    const current = !detail.completedAt && detail.currentStage === stage;
+    return `<span class="shared-tree-v2-life-step${complete ? " is-complete" : ""}${current ? " is-current" : ""}"><i aria-hidden="true">${complete ? "✓" : stage}</i><b>${label}</b></span>`;
+  }).join('<span class="shared-tree-v2-life-line" aria-hidden="true"></span>');
+}
+
+function sharedTreeV2CareMarkup(tree, friend) {
+  const detail = tree.v2Detail;
+  if (!detail) return '<div class="shared-tree-v2-loading">오늘의 돌봄을 불러오는 중이에요.</div>';
+  if (tree.completedAt) {
+    return '<div class="shared-tree-v2-complete-card"><span aria-hidden="true">✦</span><strong>둘이 함께 돌본 나무가 완성됐어요.</strong><p>이제 나무가 자신의 이름과 머물 숲을 기다리고 있어요.</p></div>';
+  }
+  if (detail.myCaredToday) {
+    return `<div class="shared-tree-v2-done-card"><span aria-hidden="true">🍃</span><strong>오늘의 돌봄을 남겼어요.</strong><p>${escapeHTML(friend.name)}의 다음 손길을 재촉하지 않고 조용히 기다려요.</p></div>`;
+  }
+
+  const config = sharedTreeV2Config(detail.currentStage);
+  return config.careTypes.map((care) => {
+    const count = Number(detail.careCounts?.[care.key] || 0);
+    const full = count >= 3;
+    const lockedChoice = detail.profile?.[care.profileKey] || "";
+    let actions;
+    if (full) {
+      actions = '<span class="shared-tree-v2-care-full">이 돌봄은 충분히 전해졌어요</span>';
+    } else if (lockedChoice) {
+      actions = `<button class="shared-tree-v2-care-button is-primary" type="button" data-v2-care-type="${escapeAttr(care.key)}" data-v2-choice="${escapeAttr(lockedChoice)}"><span>${escapeHTML(sharedTreeV2ChoiceLabel(care.key, lockedChoice))}</span><small>처음 정한 성질로 이어서 돌보기</small></button>`;
+    } else {
+      actions = care.choices.map((choice) => `<button class="shared-tree-v2-choice-button" type="button" data-v2-care-type="${escapeAttr(care.key)}" data-v2-choice="${escapeAttr(choice.key)}"><span>${escapeHTML(choice.label)}</span><small>${escapeHTML(choice.hint)}</small></button>`).join("");
+    }
+    return `
+      <article class="shared-tree-v2-care-card${full ? " is-full" : ""}">
+        <div class="shared-tree-v2-care-copy">
+          <span class="shared-tree-v2-care-icon" aria-hidden="true">${care.icon}</span>
+          <div><strong>${escapeHTML(care.title)}</strong><p>${escapeHTML(care.description)}</p></div>
+        </div>
+        <div class="shared-tree-v2-care-actions">${actions}</div>
+      </article>
+    `;
+  }).join("");
+}
+
+function renderSharedTreeV2View(tree) {
+  if (!tree) return false;
+  const friend = friendForSharedTree(tree);
+  els.sharedTreeLegacyProgress?.classList.add("hidden");
+  els.sharedTreeV2Panel?.classList.remove("hidden");
+  els.sharedTreeView.dataset.growthVersion = "2";
+
+  const detail = tree.v2Detail;
+  if (!detail) {
+    els.sharedTreePartnerName.textContent = `${friend.name}와 함께 키우는 나무`;
+    els.sharedTreeView.dataset.stage = String(sharedTreeV2ImageStage(tree));
+    if (els.sharedTreeImage) els.sharedTreeImage.src = sharedTreeImagePath(sharedTreeV2ImageStage(tree));
+    els.sharedTreeStageCopy.textContent = "나무가 두 사람의 돌봄을 불러오는 중이에요.";
+    els.sharedTreeV2StageTitle.textContent = sharedTreeV2Config(tree.currentStage || 1).title;
+    els.sharedTreeV2StageDescription.textContent = "현재 모습을 천천히 불러오고 있어요.";
+    els.sharedTreeV2StageBadge.textContent = `${Number(tree.currentStage || 1)} / 4`;
+    els.sharedTreeV2Lifecycle.innerHTML = "";
+    els.sharedTreeV2Trace.innerHTML = '<span aria-hidden="true">🍃</span><p>친구가 남긴 손길을 확인하고 있어요.</p>';
+    els.sharedTreeV2TodayState.textContent = "불러오는 중";
+    els.sharedTreeV2CareOptions.innerHTML = '<div class="shared-tree-v2-loading">오늘의 돌봄을 불러오는 중이에요.</div>';
+    els.sharedTreeV2RecentStory.innerHTML = "";
+    els.sharedTreeMemoryNote?.classList.add("hidden");
+    void hydrateSharedTreeV2(tree.id, { silent: false });
+    return true;
+  }
+
+  const config = sharedTreeV2Config(detail.currentStage);
+  const complete = Boolean(tree.completedAt);
+  const bothToday = detail.myCaredToday && detail.partnerCaredToday;
+  const imageStage = sharedTreeV2ImageStage(tree);
+  els.sharedTreePartnerName.textContent = complete
+    ? (detail.profile.finalName || `${friend.name}와 함께 완성한 나무`)
+    : `${friend.name}와 함께 키우는 나무`;
+  els.sharedTreeView.dataset.stage = String(imageStage);
+  if (els.sharedTreeImage) els.sharedTreeImage.src = sharedTreeImagePath(imageStage);
+  els.sharedTreeStageCopy.textContent = sharedTreeV2SceneCopy(tree, friend);
+  els.sharedTreeV2StageTitle.textContent = complete ? "둘이 함께 완성한 나무" : config.title;
+  els.sharedTreeV2StageDescription.textContent = complete
+    ? "뿌리부터 열매까지, 두 사람의 돌봄이 한 그루에 남아 있어요."
+    : config.description;
+  els.sharedTreeV2StageBadge.textContent = complete ? "완성" : `${detail.currentStage} / 4`;
+  els.sharedTreeV2Lifecycle.innerHTML = sharedTreeV2LifecycleMarkup(detail);
+
+  const partnerEvent = detail.recentEvents.find((event) => !event.isMine && event.stage === detail.currentStage)
+    || detail.recentEvents.find((event) => !event.isMine);
+  const traceText = partnerEvent
+    ? sharedTreeV2EventSentence(partnerEvent, friend.name)
+    : `${friend.name}의 첫 손길도 이곳에 조용히 남게 돼요.`;
+  els.sharedTreeV2Trace.innerHTML = `<span aria-hidden="true">🍃</span><p>${escapeHTML(traceText)}</p>`;
+  els.sharedTreeV2TodayState.textContent = complete
+    ? "모든 돌봄 완료"
+    : detail.myCaredToday
+      ? "오늘 돌봄 완료"
+      : detail.partnerCaredToday
+        ? `${friend.name}의 손길이 먼저 왔어요`
+        : "각자 하루 한 번";
+  els.sharedTreeV2CareOptions.innerHTML = sharedTreeV2CareMarkup(tree, friend);
+
+  const storyEvents = detail.recentEvents.slice(0, 6);
+  els.sharedTreeV2Story.classList.toggle("hidden", !storyEvents.length);
+  els.sharedTreeV2RecentStory.innerHTML = storyEvents.length
+    ? storyEvents.map((event) => {
+      const who = event.isMine ? "나" : friend.name;
+      const date = event.recordDate ? event.recordDate.replaceAll("-", ".") : "";
+      return `<p><time>${escapeHTML(date)}</time><span>${escapeHTML(who)} · ${escapeHTML(sharedTreeV2ChoiceLabel(event.careType, event.choiceKey))}</span></p>`;
+    }).join("")
+    : "";
+
+  els.sharedTreeFireflies.innerHTML = bothToday ? '<i>✦</i><i>✦</i><i>✦</i><i>✦</i><i>✦</i><i>✦</i>' : "";
+  els.sharedTreeView.classList.toggle("my-recorded-today", Boolean(detail.myCaredToday));
+  els.sharedTreeView.classList.toggle("partner-recorded-today", Boolean(detail.partnerCaredToday));
+  els.sharedTreeView.classList.toggle("both-recorded-today", bothToday);
+  els.sharedTreeView.classList.toggle("is-complete", complete);
+  renderSharedTreeMemoryNote(tree, friend, complete);
+  return true;
+}
+
+function renderSharedTreeView(treeId = activeSharedTreeId) {
+  const tree = (state.sharedTrees || []).find((item) => item.id === treeId);
+  if (!tree) return false;
+  return Number(tree.growthVersion || 1) === 2
+    ? renderSharedTreeV2View(tree)
+    : renderSharedTreeV1View(treeId);
+}
+
+async function recordSharedTreeV2Care(button) {
+  const tree = (state.sharedTrees || []).find((item) => item.id === activeSharedTreeId);
+  if (!tree || Number(tree.growthVersion || 1) !== 2) return;
+  if (!tree.v2Detail) {
+    await hydrateSharedTreeV2(tree.id, { silent: false });
+    return;
+  }
+  if (tree.completedAt) {
+    showToast("이 나무의 모든 돌봄이 이미 완성됐어요.");
+    return;
+  }
+  if (tree.v2Detail.myCaredToday) {
+    showToast("오늘의 돌봄은 이미 이 나무에 남겼어요. 내일 다시 와요.");
+    return;
+  }
+
+  const careType = String(button?.dataset?.v2CareType || "");
+  const choiceKey = String(button?.dataset?.v2Choice || "");
+  if (!careType || !choiceKey) return;
+
+  const buttons = Array.from(els.sharedTreeV2CareOptions?.querySelectorAll("button") || []);
+  buttons.forEach((item) => { item.disabled = true; });
+  button.classList.add("is-saving");
+
+  try {
+    const { data, error } = await supabase.rpc("add_my_garden_shared_tree_care", {
+      p_tree_id: tree.id,
+      p_care_type: careType,
+      p_choice_key: choiceKey,
+    });
+    if (error) throw error;
+    const result = normalizeRpcRow(data);
+    const updatedTree = mergeSharedTreeV2Detail(result?.tree);
+    if (updatedTree) renderSharedTreeV2View(updatedTree);
+
+    if (result?.stage_completed) {
+      const stageConfig = sharedTreeV2Config(result.completed_stage);
+      showToast(result.cooperative_stage
+        ? `두 사람의 손길이 이어졌어요. ${stageConfig.completeCopy}`
+        : stageConfig.completeCopy);
+    } else {
+      showToast("오늘의 돌봄이 나무에 조용히 남았어요.");
+    }
+    if (activeTogetherForestFriendId === tree.partnerId) renderTogetherForest(tree.partnerId);
+  } catch (error) {
+    console.warn("TodayForest shared-tree v2 care save error:", error);
+    showToast(databaseErrorMessage(error));
+    renderSharedTreeV2View(tree);
+  }
 }
 
 async function leaveSharedTreeLight() {
@@ -8036,6 +8566,10 @@ function bindEvents() {
   els.returnToFriendsFromTogetherForestBottom.addEventListener("click", returnToFriendsFromTogetherForest);
   els.returnToFriendsFromSharedTree.addEventListener("click", returnToFriendsFromSharedTree);
   els.sharedTreeRecordLightButton.addEventListener("click", () => { void leaveSharedTreeLight(); });
+  els.sharedTreeV2CareOptions?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-v2-care-type]");
+    if (button) void recordSharedTreeV2Care(button);
+  });
   els.sharedTreeNoteForm?.addEventListener("submit", (event) => { void saveSharedTreeMemoryNote(event); });
   els.sharedTreeNoteInput?.addEventListener("input", updateSharedTreeNoteCount);
   window.addEventListener("focus", async () => {
