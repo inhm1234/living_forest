@@ -32,7 +32,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=letter-branch-model-v1-5" />
+  <link rel="stylesheet" href="style.css?v=friend-navigation-v1-6" />
   <link rel="stylesheet" href="oot-notifications.css?v=garden-button-labels-v1-3" />
   <link rel="stylesheet" href="tree-animal-call.css?v=tree-discovery-v1-6" />
   <link rel="stylesheet" href="forest-unicorn-preview.css?v=garden-header-refinement-v1" />
@@ -624,7 +624,16 @@
         <p class="eyebrow">VISITING FRIEND'S GARDEN</p>
         <h1 id="friendVisitName">친구의 정원</h1>
       </div>
-      <button class="friend-return-top" id="returnToMyGardenTop" type="button">← 내 정원</button>
+      <div class="friend-visit-header-actions">
+        <button class="friend-return-top" id="returnToFriendsFromFriendVisit" type="button">← 친구 목록</button>
+        <details class="friend-visit-manage" id="friendVisitManage">
+          <summary aria-label="친구 관리 메뉴" title="친구 관리">⋯</summary>
+          <div class="friend-visit-manage-menu" role="menu" aria-label="친구 관리">
+            <span class="friend-visit-manage-label">친구 관리</span>
+            <button class="friend-visit-remove-button" id="removeFriendFromVisit" type="button" role="menuitem">친구 삭제</button>
+          </div>
+        </details>
+      </div>
     </header>
 
     <section class="garden-stage friend-visit-stage" id="friendVisitStage" aria-label="친구의 마음 나무가 있는 정원">
@@ -1248,7 +1257,7 @@
   <div class="heart-fruit-ceremony-lock hidden" id="heartFruitCeremonyLock" aria-hidden="true"></div>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="app.js?v=letter-branch-model-v1-5"></script>
+  <script type="module" src="app.js?v=friend-navigation-v1-6"></script>
   <script type="module" src="tree-animal-call.js?v=tree-discovery-v1-6"></script>
   <script type="module" src="forest-unicorn-preview.js?v=animal-preview-clean-v0-4"></script>
   <script type="module" src="forest-friend-cinematic.js?v=operation-special-friend-v1"></script>

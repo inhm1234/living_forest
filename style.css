@@ -8479,3 +8479,163 @@ body.animal-preview-clean-mode .ff-cinematic {
 @media (max-width: 470px) {
   #lettersSheet .sheet-head { margin-inline: -20px; padding-inline: 20px; }
 }
+
+
+/* Friend navigation v1.6: 친구 목록과 친구 정원의 역할을 분명히 합니다. */
+.friend-row {
+  display: block;
+  padding: 12px;
+}
+.friend-row-main {
+  min-width: 0;
+  width: 100%;
+}
+.friend-garden-open {
+  width: 100%;
+  padding: 2px;
+  border-radius: 14px;
+}
+.friend-garden-open:hover {
+  background: rgba(240, 248, 242, .55);
+}
+.friend-view-cta {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  color: #91a2ab;
+}
+.friend-view-cta small {
+  font-size: 10px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+.friend-view-cta b {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1;
+}
+.friend-shared-tree-action {
+  margin-top: 9px;
+  padding: 9px 2px 0;
+  border-top: 1px solid rgba(225, 235, 231, .82);
+}
+.friend-shared-tree-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.friend-shared-tree-summary .shared-tree-status {
+  min-width: 0;
+  flex: 1;
+  padding: 0;
+  color: #7e9287;
+  line-height: 1.35;
+}
+.friend-shared-tree-summary .shared-tree-status span {
+  margin-right: 4px;
+}
+.friend-shared-tree-link {
+  flex: 0 0 auto;
+  padding: 7px 9px;
+  background: rgba(247, 251, 247, .9);
+  box-shadow: none;
+  white-space: nowrap;
+}
+.friend-shared-tree-link:hover {
+  border-color: rgba(103, 151, 124, .42);
+  background: #f1f8ef;
+}
+.remove-friend-button {
+  display: none;
+}
+
+.friend-visit-header {
+  position: relative;
+  z-index: 20;
+}
+.friend-visit-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.friend-visit-manage {
+  position: relative;
+}
+.friend-visit-manage > summary {
+  display: grid;
+  place-items: center;
+  width: 37px;
+  height: 37px;
+  margin-top: 5px;
+  border: 1px solid rgba(255,255,255,.75);
+  border-radius: 999px;
+  background: rgba(255,255,255,.6);
+  color: #7e8f9b;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 8px 16px rgba(104,126,153,.07);
+  cursor: pointer;
+  list-style: none;
+}
+.friend-visit-manage > summary::-webkit-details-marker {
+  display: none;
+}
+.friend-visit-manage > summary:focus-visible {
+  outline: 3px solid rgba(116,177,139,.28);
+  outline-offset: 3px;
+}
+.friend-visit-manage-menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 7px);
+  right: 0;
+  width: 164px;
+  padding: 8px;
+  border: 1px solid rgba(220, 229, 232, .95);
+  border-radius: 15px;
+  background: rgba(255,255,255,.96);
+  box-shadow: 0 16px 35px rgba(84, 105, 121, .16);
+  backdrop-filter: blur(12px);
+}
+.friend-visit-manage-label {
+  display: block;
+  padding: 4px 7px 7px;
+  color: #99a7ae;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .05em;
+}
+.friend-visit-remove-button {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #f1dce3;
+  border-radius: 11px;
+  background: #fff9fa;
+  color: #b9788b;
+  font-size: 11px;
+  font-weight: 900;
+  text-align: left;
+  cursor: pointer;
+}
+.friend-visit-remove-button:hover {
+  background: #fff3f6;
+}
+@media (max-width: 470px) {
+  .friend-view-cta small {
+    display: none;
+  }
+  .friend-visit-header-actions {
+    gap: 5px;
+  }
+  .friend-visit-manage > summary {
+    width: 35px;
+    height: 35px;
+    font-size: 18px;
+  }
+  .friend-visit-manage-menu {
+    width: 152px;
+  }
+}

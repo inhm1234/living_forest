@@ -668,7 +668,9 @@ const els = {
   friendVisitTreeWrap: $("#friendVisitTreeWrap"),
   friendVisitMessage: $("#friendVisitMessage"),
   returnToMyGarden: $("#returnToMyGarden"),
-  returnToMyGardenTop: $("#returnToMyGardenTop"),
+  returnToFriendsFromFriendVisit: $("#returnToFriendsFromFriendVisit"),
+  friendVisitManage: $("#friendVisitManage"),
+  removeFriendFromVisit: $("#removeFriendFromVisit"),
   friendInviteModal: $("#friendInviteModal"),
   sharedTreeInviteModal: $("#sharedTreeInviteModal"),
   sharedTreeInviteFrom: $("#sharedTreeInviteFrom"),
@@ -5359,8 +5361,10 @@ function sharedTreeActionMarkup(friend) {
             ? `완성한 나무 ${completedCount}그루가 머물러 있어요`
             : "함께한 시간이 머물러 있어요";
     return `
-      <button class="shared-tree-open-button${currentTree ? "" : " is-complete"}" type="button" data-view-together-forest="${escapeAttr(friend.id)}">🌲 함께한 숲 보기</button>
-      <span class="shared-tree-status together-forest-status">${escapeHTML(status)}</span>
+      <div class="friend-shared-tree-summary">
+        <span class="shared-tree-status together-forest-status"><span aria-hidden="true">🌲</span>${escapeHTML(status)}</span>
+        <button class="shared-tree-open-button${currentTree ? "" : " is-complete"} friend-shared-tree-link" type="button" data-view-together-forest="${escapeAttr(friend.id)}">함께한 숲</button>
+      </div>
     `;
   }
 
@@ -5391,7 +5395,6 @@ function renderFriends() {
     const avatar = friend.avatarUrl
       ? `<img src="${escapeAttr(friend.avatarUrl)}" alt="${escapeAttr(friend.name)} 프로필 사진" />`
       : escapeHTML(friend.name.slice(0, 1));
-    const actionText = friend.isDevTest ? "테스트 친구 지우기" : "친구 삭제";
     return `
       <article class="friend-row ${friend.isDevTest ? "is-dev-test" : ""}">
         <div class="friend-row-main">
@@ -5401,20 +5404,14 @@ function renderFriends() {
               <span class="friend-name">${escapeHTML(friend.name)}${friend.isDevTest ? '<span class="dev-test-tag">DEV</span>' : ""}</span>
               <span class="friend-stage">마음 ${friend.growth}일째 · ${escapeHTML(stage.label)}${friend.isDevTest ? " · 개발 확인용" : ""}</span>
             </span>
-            <span class="friend-view-arrow" aria-hidden="true">›</span>
+            <span class="friend-view-cta" aria-hidden="true"><small>정원 보기</small><b>›</b></span>
           </button>
           <div class="friend-shared-tree-action">${sharedTreeActionMarkup(friend)}</div>
         </div>
-        <button class="remove-friend-button" type="button" data-remove-friend="${escapeAttr(friend.id)}" data-friend-name="${escapeAttr(friend.name)}" data-dev-test="${friend.isDevTest ? "true" : "false"}">${actionText}</button>
       </article>
     `;
   }).join("");
 
-  $$('[data-remove-friend]').forEach((button) => {
-    button.addEventListener("click", () => {
-      void removeFriend(button.dataset.removeFriend, button.dataset.friendName, button.dataset.devTest === "true");
-    });
-  });
   $$('[data-view-friend]').forEach((button) => {
     button.addEventListener("click", () => {
       void openFriendGarden(button.dataset.viewFriend);
@@ -6246,6 +6243,10 @@ async function openFriendGarden(friendId) {
   }
 
   activeFriendGardenId = friend.friend_id || friendId;
+  if (els.friendVisitManage) els.friendVisitManage.open = false;
+  if (els.removeFriendFromVisit) {
+    els.removeFriendFromVisit.textContent = fallbackFriend.isDevTest ? "테스트 친구 지우기" : "친구 삭제";
+  }
   els.friendVisitName.textContent = `${name}의 정원`;
   els.friendVisitTree.src = `assets/garden/tree_growth/${stage.asset}`;
   els.friendVisitTree.alt = `${name}의 ${stage.label}`;
@@ -6265,18 +6266,42 @@ async function openFriendGarden(friendId) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function returnToMyGarden() {
+function resetFriendGardenView() {
   els.friendVisit.classList.add("hidden");
-  els.gardenApp.classList.remove("hidden");
   els.friendVisitRainLayer.classList.remove("active");
   els.friendVisitTreeWrap.classList.remove("wind-active");
   els.friendVisitStage.classList.remove("weather-rain");
+  if (els.friendVisitManage) els.friendVisitManage.open = false;
   renderFriendFoundItems("", []);
   activeFriendFruitRecords = [];
   activeFriendFruitName = "";
   renderFriendHeartFruits(0, []);
   activeFriendGardenId = "";
+}
+
+function returnToMyGarden() {
+  resetFriendGardenView();
+  els.gardenApp.classList.remove("hidden");
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function returnToFriendsFromFriendVisit() {
+  resetFriendGardenView();
+  els.gardenApp.classList.remove("hidden");
+  renderFriends();
+  openSheet(els.friendsSheet);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function removeActiveFriendFromVisit() {
+  const friend = (state.friends || []).find((item) => item.id === activeFriendGardenId);
+  if (!friend) {
+    showToast("친구 정보를 다시 찾지 못했어요.");
+    return;
+  }
+
+  const removed = await removeFriend(friend.id, friend.name, Boolean(friend.isDevTest));
+  if (removed) returnToFriendsFromFriendVisit();
 }
 
 async function enableDevTestFriend() {
@@ -6811,24 +6836,25 @@ async function copyFriendInviteLink() {
 }
 
 async function removeFriend(friendId, name, isDevTest = false) {
-  if (!friendId) return;
+  if (!friendId) return false;
   const prompt = isDevTest
     ? `${name || "테스트 새싹"}을 개발용 친구 목록에서 지울까요?\n테스트로 보낸 편지도 함께 지워져요.`
-    : `${name || "이 친구"}님과의 친구 관계를 끝낼까요?\n서로 새 편지는 보낼 수 없게 돼요.`;
+    : `${name || "이 친구"}님을 친구에서 삭제할까요?\n서로 새 편지를 보낼 수 없게 돼요.`;
   const okay = window.confirm(prompt);
-  if (!okay) return;
+  if (!okay) return false;
 
   const { error } = isDevTest
     ? await supabase.rpc("remove_my_dev_test_friend")
     : await supabase.rpc("remove_garden_friend", { p_friend_id: friendId });
   if (error) {
     showToast(databaseErrorMessage(error));
-    return;
+    return false;
   }
 
   await loadGardenState();
   renderAll();
   showToast(isDevTest ? "테스트 새싹과 테스트 편지를 정리했어요." : `${name || "친구"}님과의 친구 관계를 정리했어요.`);
+  return true;
 }
 
 function showToast(message, duration = 3200) {
@@ -7788,7 +7814,18 @@ function bindEvents() {
   $("#readLetterButton").addEventListener("click", markLetterRead);
   els.letterModal.addEventListener("click", (event) => { if (event.target === els.letterModal) closeLetterModal(); });
   els.returnToMyGarden.addEventListener("click", returnToMyGarden);
-  els.returnToMyGardenTop.addEventListener("click", returnToMyGarden);
+  els.returnToFriendsFromFriendVisit?.addEventListener("click", returnToFriendsFromFriendVisit);
+  els.removeFriendFromVisit?.addEventListener("click", () => { void removeActiveFriendFromVisit(); });
+  document.addEventListener("click", (event) => {
+    if (els.friendVisitManage?.open && !els.friendVisitManage.contains(event.target)) {
+      els.friendVisitManage.open = false;
+    }
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && els.friendVisitManage?.open) {
+      els.friendVisitManage.open = false;
+    }
+  });
   els.friendFoundItemsLayer?.addEventListener("click", handleFriendFoundItemClick);
   els.createInviteButton.addEventListener("click", createFriendInvite);
   els.copyInviteLink.addEventListener("click", copyFriendInviteLink);
