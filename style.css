@@ -7628,3 +7628,172 @@ body.animal-preview-clean-mode .ff-cinematic {
     animation: none !important;
   }
 }
+
+/* =========================================================
+   GENERAL VISITOR SYSTEM FINAL v0.7
+   - 네 방문자의 그림자·봉투·포커스 표현을 하나의 규격으로 마감
+   - 토끼도 다른 방문자와 같은 차분한 등장·퇴장 속도로 통일
+   - 편지를 맡긴 순간 봉투가 실제로 보인 뒤 동물과 함께 출발하도록 수정
+   - 동물별 고유 반응은 유지하되, 반복 빈도는 app.js의 calm motion profile로 조절
+   ========================================================= */
+.animal-v2-visitor.has-animal-art {
+  --visitor-envelope-width: 14px;
+  --visitor-envelope-height: 10px;
+  --visitor-envelope-rotation: 0deg;
+  --visitor-letter-take-x: -5px;
+  --visitor-letter-take-y: -4px;
+}
+
+.animal-v2-visitor.animal-v2-rabbit.has-animal-art {
+  --visitor-envelope-rotation: 4deg;
+}
+.animal-v2-visitor.animal-v2-bird.has-animal-art {
+  --visitor-envelope-rotation: -5deg;
+}
+.animal-v2-visitor.animal-v2-squirrel.has-animal-art {
+  --visitor-envelope-rotation: -7deg;
+  --visitor-letter-take-x: 5px;
+}
+.garden-stage[data-tree-stage="1"] .animal-v2-visitor.animal-v2-squirrel.has-animal-art,
+.garden-stage[data-tree-stage="2"] .animal-v2-visitor.animal-v2-squirrel.has-animal-art {
+  --visitor-envelope-rotation: 5deg;
+  --visitor-letter-take-x: -5px;
+}
+.animal-v2-visitor.animal-v2-hedgehog.has-animal-art {
+  --visitor-envelope-rotation: 3deg;
+}
+
+/* 모든 방문자가 같은 깊이의 부드러운 그림자를 사용합니다. */
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog) .animal-v2-art {
+  opacity: .985;
+  filter: drop-shadow(0 3px 3px rgba(65, 84, 66, .105));
+  transition: filter .2s ease, opacity .2s ease;
+}
+
+/* 봉투는 동물마다 다른 크기의 UI 아이콘이 아니라 같은 세계의 작은 소품입니다. */
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog) .animal-v2-envelope {
+  z-index: 4;
+  width: var(--visitor-envelope-width);
+  height: var(--visitor-envelope-height);
+  border: 1px solid rgba(170, 115, 124, .50);
+  border-radius: 2px;
+  background: rgba(255, 248, 239, .96);
+  color: transparent;
+  font-size: 0;
+  line-height: 0;
+  text-shadow: none;
+  box-shadow: 0 2px 4px rgba(94, 77, 71, .09);
+  transform: rotate(var(--visitor-envelope-rotation));
+  overflow: hidden;
+  pointer-events: none;
+}
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog) .animal-v2-envelope::before,
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog) .animal-v2-envelope::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog) .animal-v2-envelope::before {
+  left: 2px;
+  top: -3px;
+  width: 9px;
+  height: 7px;
+  border-right: 1px solid rgba(170, 115, 124, .40);
+  border-bottom: 1px solid rgba(170, 115, 124, .40);
+  background: transparent;
+  transform: rotate(45deg);
+}
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog) .animal-v2-envelope::after {
+  right: 2px;
+  bottom: 1px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(205, 119, 139, .68);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .50);
+}
+
+/* 키보드 사용자는 밝은 정원에서도 현재 방문자를 분명히 찾을 수 있습니다. */
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog):focus-visible {
+  outline: 2px solid rgba(89, 139, 104, .80);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px rgba(255, 255, 255, .80);
+}
+
+/* 토끼만 빨리 튀어 나타나던 초기 프로토타입 속도를 다른 방문자와 맞춥니다. */
+.animal-v2-visitor.animal-v2-rabbit.has-animal-art.is-arriving {
+  animation: animalVisitorRabbitArrive .96s cubic-bezier(.2,.78,.28,1) both;
+}
+.animal-v2-visitor.animal-v2-rabbit.has-animal-art.is-departing {
+  animation: animalVisitorRabbitDepart 1.08s cubic-bezier(.35,.05,.65,.95) both;
+}
+@keyframes animalVisitorRabbitArrive {
+  0% { transform: translate3d(54px, 11px, 0) scale(.78); opacity: 0; }
+  64% { transform: translate3d(-2px, -1px, 0) scale(1.015); opacity: 1; }
+  100% { transform: translate3d(0, 0, 0) scale(1); opacity: 1; }
+}
+@keyframes animalVisitorRabbitDepart {
+  0% { transform: translate3d(0, 0, 0) scale(1); opacity: 1; }
+  38% { transform: translate3d(7px, -2px, 0) scale(.985); opacity: 1; }
+  100% { transform: translate3d(72px, 10px, 0) scale(.72); opacity: 0; }
+}
+
+/* 편지 출발 상태는 개별 동물의 animation shorthand보다 우선하며 JS 대기시간과 맞습니다. */
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog).is-letter-departing {
+  animation-duration: 1.45s !important;
+}
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog).is-letter-departing .animal-v2-envelope {
+  animation: animalVisitorLetterHandoff 1.45s cubic-bezier(.25,.7,.3,1) both !important;
+}
+@keyframes animalVisitorLetterHandoff {
+  0% {
+    transform: translate3d(0, 2px, 0) rotate(var(--visitor-envelope-rotation)) scale(.72);
+    opacity: 0;
+  }
+  18% {
+    transform: translate3d(0, 0, 0) rotate(var(--visitor-envelope-rotation)) scale(1.08);
+    opacity: 1;
+  }
+  54% {
+    transform: translate3d(0, 0, 0) rotate(var(--visitor-envelope-rotation)) scale(1);
+    opacity: 1;
+  }
+  82% {
+    transform: translate3d(var(--visitor-letter-take-x), var(--visitor-letter-take-y), 0) rotate(var(--visitor-envelope-rotation)) scale(.82);
+    opacity: .95;
+  }
+  100% {
+    transform: translate3d(var(--visitor-letter-take-x), calc(var(--visitor-letter-take-y) - 2px), 0) rotate(var(--visitor-envelope-rotation)) scale(.48);
+    opacity: 0;
+  }
+}
+
+/* 희귀 방문 효과도 계속 반짝이는 UI가 아니라 가끔 숨 쉬는 숲빛처럼 보입니다. */
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog) .animal-v2-glimmer {
+  font-size: 14px;
+  opacity: .78;
+  animation: animalVisitorGlimmerCalm 2.7s ease-in-out infinite;
+}
+@keyframes animalVisitorGlimmerCalm {
+  0%, 100% { transform: scale(.82) rotate(-5deg); opacity: .35; }
+  42% { transform: scale(1.04) rotate(4deg); opacity: .78; }
+  58% { transform: scale(.96) rotate(1deg); opacity: .62; }
+}
+
+@media (max-width: 520px) {
+  .animal-v2-visitor.has-animal-art {
+    --visitor-envelope-width: 13px;
+    --visitor-envelope-height: 9px;
+  }
+  .animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog) .animal-v2-envelope::before {
+    width: 8px;
+    height: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog).is-letter-departing .animal-v2-envelope,
+  .animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog) .animal-v2-glimmer {
+    animation: none !important;
+  }
+}

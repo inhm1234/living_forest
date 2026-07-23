@@ -243,6 +243,7 @@ const animalVisitors = {
     traceIcon: "🪶",
     traceStory: "작은 새가 잠시 쉬어가며 깃털 하나를 남겼어요.",
     position: "branch",
+    motion: { waitMin: 4800, waitMax: 8200, lookMin: 700, lookMax: 920 },
   },
   squirrel: {
     kind: "squirrel",
@@ -260,6 +261,7 @@ const animalVisitors = {
     traceIcon: "🌰",
     traceStory: "다람쥐가 도토리 하나를 두고 숲길로 돌아갔어요.",
     position: "branch",
+    motion: { waitMin: 5400, waitMax: 9400, lookMin: 760, lookMax: 980 },
   },
   rabbit: {
     kind: "rabbit",
@@ -273,6 +275,7 @@ const animalVisitors = {
     traceIcon: "〰️",
     traceStory: "토끼가 풀잎을 살짝 눌러두고 뛰어갔어요.",
     position: "ground",
+    motion: { waitMin: 6000, waitMax: 10500, lookMin: 820, lookMax: 1080 },
   },
   hedgehog: {
     kind: "hedgehog",
@@ -287,8 +290,19 @@ const animalVisitors = {
     traceIcon: "🍂",
     traceStory: "고슴도치가 작은 낙엽 길을 남기고 풀숲으로 돌아갔어요.",
     position: "ground",
+    motion: { waitMin: 6800, waitMax: 11800, lookMin: 900, lookMax: 1180 },
   },
 };
+
+const DEFAULT_ANIMAL_VISITOR_MOTION = Object.freeze({
+  waitMin: 5600,
+  waitMax: 9800,
+  lookMin: 780,
+  lookMax: 1040,
+});
+const ANIMAL_LETTER_DEPARTURE_MS = 1450;
+const ANIMAL_LETTER_DEPARTURE_SYNC_GRACE_MS = 180;
+const preloadedAnimalVisitorArt = new Set();
 
 // 방문자 미리보기는 실제 정원 데이터를 바꾸지 않는 시각 검수 모드입니다.
 // 다른 모듈이 시작되기 전에 몸체 클래스부터 적용해 꾸미기·특별친구가 잠깐 비치는 현상을 줄입니다.
@@ -2107,7 +2121,10 @@ function leaveAnimalWithLetter(animal, visitId) {
   }
   return new Promise((resolve) => {
     window.clearTimeout(animalDepartureTimer);
-    animalDepartureTimer = window.setTimeout(resolve, 1050);
+    animalDepartureTimer = window.setTimeout(
+      resolve,
+      ANIMAL_LETTER_DEPARTURE_MS + ANIMAL_LETTER_DEPARTURE_SYNC_GRACE_MS
+    );
   });
 }
 
@@ -2149,27 +2166,49 @@ function animalVisitorMedia(animal) {
   return `<span class="animal-v2-emoji" aria-hidden="true">${animal.icon}</span>`;
 }
 
+function animalVisitorRandomMs(minValue, maxValue) {
+  const min = Math.max(0, Number(minValue) || 0);
+  const max = Math.max(min, Number(maxValue) || min);
+  return Math.round(min + (Math.random() * (max - min)));
+}
+
+function preloadAnimalVisitorArt(src) {
+  if (!src || preloadedAnimalVisitorArt.has(src)) return;
+  preloadedAnimalVisitorArt.add(src);
+  const image = new Image();
+  image.decoding = "async";
+  image.src = src;
+}
+
 function scheduleAnimalVisitorLife() {
   window.clearTimeout(animalVisitorLifeTimer);
   animalVisitorLifeTimer = null;
   const art = els.animalV2Layer?.querySelector(".animal-v2-art[data-look-src]");
   if (!art || window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) return;
 
+  const visitorButton = art.closest(".animal-v2-visitor");
+  if (visitorButton?.classList.contains("is-departing")) return;
+  const visitorKind = String(visitorButton?.dataset.animalV2Kind || "");
+  const motion = animalVisitors[visitorKind]?.motion || DEFAULT_ANIMAL_VISITOR_MOTION;
   const idleSrc = art.dataset.idleSrc || art.getAttribute("src") || "";
   const lookSrc = art.dataset.lookSrc || "";
   if (!idleSrc || !lookSrc) return;
 
-  const wait = 3200 + Math.floor(Math.random() * 3600);
+  // 첫 반응에서 그림이 번쩍 바뀌지 않도록 대기 중 반응 자세를 미리 불러옵니다.
+  preloadAnimalVisitorArt(lookSrc);
+
+  const wait = animalVisitorRandomMs(motion.waitMin, motion.waitMax);
   animalVisitorLifeTimer = window.setTimeout(() => {
-    if (!art.isConnected) return;
+    if (!art.isConnected || visitorButton?.classList.contains("is-departing")) return;
     art.src = lookSrc;
-    art.closest(".animal-v2-visitor")?.classList.add("is-looking");
+    visitorButton?.classList.add("is-looking");
+    const lookDuration = animalVisitorRandomMs(motion.lookMin, motion.lookMax);
     animalVisitorLifeTimer = window.setTimeout(() => {
       if (!art.isConnected) return;
       art.src = idleSrc;
-      art.closest(".animal-v2-visitor")?.classList.remove("is-looking");
+      visitorButton?.classList.remove("is-looking");
       scheduleAnimalVisitorLife();
-    }, 760 + Math.floor(Math.random() * 380));
+    }, lookDuration);
   }, wait);
 }
 
@@ -2231,9 +2270,9 @@ function renderAnimalV2Scene() {
         ? `${animal.name}가 숲길을 따라 떠나는 중`
         : `${animal.name}에게 편지 맡기기`;
       return `
-        <button class="${classes}" type="button" data-animal-v2-visit="${escapeAttr(visit.id)}" aria-label="${escapeAttr(aria)}" ${isDeparting ? "disabled" : ""}>
+        <button class="${classes}" type="button" data-animal-v2-visit="${escapeAttr(visit.id)}" data-animal-v2-kind="${escapeAttr(animal.kind)}" aria-label="${escapeAttr(aria)}" ${isDeparting ? "disabled" : ""}>
           ${animalVisitorMedia(animal)}
-          ${isDeparting ? "" : '<span class="animal-v2-envelope" aria-hidden="true">✉</span>'}
+          ${(!isDeparting || visit.departureReason === "letter") ? '<span class="animal-v2-envelope" aria-hidden="true">✉</span>' : ""}
           ${visit.variant === "glimmer" ? '<span class="animal-v2-glimmer" aria-hidden="true">✦</span>' : ""}
         </button>
       `;
@@ -4629,7 +4668,7 @@ async function sendGardenLetter(event) {
       isDevTest: isDevTestFriend,
     }, ...(state.sentLetters || [])];
 
-    // 서버도 이미 departing으로 전환했지만, 현재 화면에서는 1초 수령 반응을 먼저 보여줍니다.
+    // 서버도 이미 departing으로 전환했지만, 현재 화면에서는 짧은 편지 수령·출발 장면을 끝까지 보여줍니다.
     activeAnimalV2Visits = activeAnimalV2Visits.map((item) => (
       item.id === visit.id
         ? {
