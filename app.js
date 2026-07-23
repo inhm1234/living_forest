@@ -342,6 +342,35 @@ const RECEIVED_LETTER_PREVIEW_STORAGE_PREFIX = "todayforest-dev-received-preview
 // 테스트 친구 계정으로 로그인할 수 없는 DEV 검수용 공유나무입니다.
 // 실제 공유나무 테이블·제안·친구 데이터는 건드리지 않고, 현재 브라우저에만 저장합니다.
 const DEV_SHARED_TREE_STORAGE_PREFIX = "todayforest-dev-shared-tree-preview-v1";
+// 운영 화면에서는 QA 기능을 기본적으로 숨깁니다.
+// 이 브라우저에서 주소에 ?qa=1을 한 번 붙였을 때만 로컬 저장소에 활성화됩니다.
+// ?qa=0을 붙이면 다시 숨깁니다.
+const LOCAL_QA_MODE_STORAGE_KEY = "todayforest-local-qa-mode-v1";
+function resolveLocalQaMode() {
+  const params = new URLSearchParams(window.location.search);
+  const requested = params.get("qa");
+
+  try {
+    if (requested === "1") window.localStorage.setItem(LOCAL_QA_MODE_STORAGE_KEY, "1");
+    if (requested === "0") window.localStorage.removeItem(LOCAL_QA_MODE_STORAGE_KEY);
+  } catch (error) {
+    console.warn("TodayForest local QA preference skipped:", error);
+  }
+
+  if (requested !== null) {
+    params.delete("qa");
+    const query = params.toString();
+    const cleanUrl = `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash || ""}`;
+    window.history.replaceState(null, "", cleanUrl);
+  }
+
+  try {
+    return window.localStorage.getItem(LOCAL_QA_MODE_STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+const LOCAL_QA_MODE_ENABLED = resolveLocalQaMode();
 // DEV 공유나무 v2 로컬 검수에서 현재 선택한 행동 주체입니다. 서버에는 저장되지 않습니다.
 let sharedTreeV2DevActor = "me";
 // 공유나무를 보고 있을 때 새로고침해도 같은 나무로 돌아오기 위한 주소 상태입니다.
@@ -5770,7 +5799,8 @@ function renderFriends() {
   const hasDevTestFriend = friends.some((friend) => friend.isDevTest);
   els.friendCount.textContent = `${friends.length}명`;
   els.friendsTotal.textContent = `${friends.length}명`;
-  els.devTestFriendBox.classList.toggle("is-active", hasDevTestFriend);
+  els.devTestFriendBox.classList.toggle("is-qa-visible", LOCAL_QA_MODE_ENABLED && !hasDevTestFriend);
+  els.devTestFriendBox.classList.toggle("is-active", hasDevTestFriend || !LOCAL_QA_MODE_ENABLED);
 
   if (!friends.length) {
     els.friendsList.innerHTML = '<div class="empty-state">아직 함께 자라는 친구가 없어요.<br />초대 링크를 보내면 친구의 나무도 이곳에 찾아와요.</div>';
@@ -7257,6 +7287,10 @@ async function removeActiveFriendFromVisit() {
 }
 
 async function enableDevTestFriend() {
+  if (!LOCAL_QA_MODE_ENABLED) {
+    showToast("이 기능은 이 브라우저의 QA 모드에서만 사용할 수 있어요.");
+    return;
+  }
   if (!currentUser) {
     showToast("내 정원을 먼저 로그인해 주세요.");
     return;

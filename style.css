@@ -1415,7 +1415,7 @@ textarea::placeholder { color: #a7b4bd; }
 
 /* DEV test friend v0.5.1 */
 .dev-test-friend-box {
-  display: grid;
+  display: none;
   gap: 11px;
   margin: 13px 0 18px;
   padding: 14px;
@@ -1437,6 +1437,7 @@ textarea::placeholder { color: #a7b4bd; }
   cursor: pointer;
 }
 .enable-dev-friend-button:disabled { cursor: wait; opacity: .68; }
+.dev-test-friend-box.is-qa-visible { display: grid; }
 .dev-test-friend-box.is-active { display: none; }
 .dev-test-tag {
   display: inline-flex;
