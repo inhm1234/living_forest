@@ -4824,7 +4824,7 @@ async function submitSpecialForestFriendPreviewLetter() {
     els.letterForm.reset();
     closeAllSheets();
     window.dispatchEvent(new CustomEvent("todayforest:special-friend-letter-started", { detail: journey }));
-    showToast(`${carrier.name}이 ${journey.recipientName}에게 보낼 마음을 품고 숲길로 떠나요.`);
+    showToast(`${carrier.name}이 편지를 품었어요.`);
 
     try {
       await loadGardenState();
@@ -7456,7 +7456,7 @@ function bindEvents() {
     setGardenStatusTransient({
       key: "special-friend-departed",
       icon: "🦄",
-      text: `${journey.recipientName || "친구"}에게 전할 마음을 품고 유니콘이 출발했어요.`,
+      text: `${journey.recipientName || "친구"}에게 편지를 전하러 가는 중이에요.`,
       action: "special-friend",
       label: "특별친구 배송 상태 보기",
     }, 4200);
