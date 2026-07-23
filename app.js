@@ -6808,13 +6808,26 @@ function sharedTreeV2CareMarkup(tree, friend) {
 }
 
 function bindSharedTreeV2CareButtons() {
-  if (!els.sharedTreeV2CareOptions) return;
-  els.sharedTreeV2CareOptions.querySelectorAll("[data-v2-care-type]").forEach((button) => {
-    button.onclick = (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      void recordSharedTreeV2Care(button);
-    };
+  const container = els.sharedTreeV2CareOptions;
+  if (!container || container.dataset.v2CareDelegated === "true") return;
+
+  // 돌봄 카드는 주체 전환/날짜 변경 때마다 innerHTML로 다시 그려집니다.
+  // 개별 버튼에 이벤트를 붙이면 재렌더 이후 일부 버튼이 클릭을 놓칠 수 있으므로,
+  // 사라지지 않는 부모 컨테이너에서 한 번만 위임 처리합니다.
+  container.dataset.v2CareDelegated = "true";
+  container.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-v2-care-type][data-v2-choice]");
+    if (!button || !container.contains(button) || button.disabled) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (button.dataset.v2CarePending === "true") return;
+    button.dataset.v2CarePending = "true";
+
+    Promise.resolve(recordSharedTreeV2Care(button)).finally(() => {
+      if (button.isConnected) delete button.dataset.v2CarePending;
+    });
   });
 }
 
