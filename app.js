@@ -314,6 +314,9 @@ document.body.classList.toggle("animal-preview-clean-mode", ANIMAL_PREVIEW_KINDS
 // interactionPreview=visitor는 DB와 발견 기록을 건드리지 않는 검수 전용 모드입니다.
 const ANIMAL_INTERACTION_DISCOVERY_STORAGE_PREFIX = "todayforest-animal-interaction-discovered-v1";
 const ANIMAL_INTERACTION_PREVIEW_MODE = new URL(window.location.href).searchParams.get("interactionPreview") === "visitor";
+// statusPreview=priority는 실제 편지·방문자·특별친구 데이터를 바꾸지 않고
+// 상태바 우선순위와 자동 복귀 규칙만 확인하는 검수 전용 모드입니다.
+const GARDEN_STATUS_PRIORITY_PREVIEW_MODE = new URL(window.location.href).searchParams.get("statusPreview") === "priority";
 
 // 서버는 퇴장 뒤 animal_kind를 비워 둡니다. 다른 기기에서도 같은 짧은 흔적을 보여주기 위한 공용 표시입니다.
 const genericAnimalTrace = {
@@ -462,6 +465,7 @@ let deferredInstallPrompt = null;
 // 새 동물 소식은 잠깐 우선 노출한 뒤 다른 소식과 함께 순환합니다.
 const GARDEN_STATUS_ROTATE_MS = 7000;
 const GARDEN_STATUS_ANIMAL_HIGHLIGHT_MS = 4800;
+const GARDEN_STATUS_SPECIAL_FRIEND_RETURNED_SESSION_KEY = "todayforest-special-friend-returned-attention-v1";
 let gardenStatusItems = [];
 let gardenStatusIndex = 0;
 let gardenStatusRotateTimer = null;
@@ -3573,6 +3577,9 @@ function activeSpecialFriendGardenStatus() {
   if (Number.isFinite(availableAt) && availableAt > now) {
     return {
       key: "special-friend-delivering",
+      category: "special-friend",
+      priority: 300,
+      tone: "live",
       icon: "🦄",
       text: `${journey.recipientName || "친구"}에게 편지를 전하러 가고 있어요 · 약 ${compactGardenStatusRemaining(availableAt - now)}`,
       action: "special-friend",
@@ -3582,6 +3589,9 @@ function activeSpecialFriendGardenStatus() {
   if (Number.isFinite(returnAt) && returnAt > now) {
     return {
       key: "special-friend-returning",
+      category: "special-friend",
+      priority: 300,
+      tone: "live",
       icon: "🦄",
       text: `유니콘이 정원으로 돌아오고 있어요 · 약 ${compactGardenStatusRemaining(returnAt - now)}`,
       action: "special-friend",
@@ -3591,6 +3601,46 @@ function activeSpecialFriendGardenStatus() {
   return null;
 }
 
+function specialFriendReturnedAttentionKey() {
+  return `${GARDEN_STATUS_SPECIAL_FRIEND_RETURNED_SESSION_KEY}:${currentUser?.id || "guest"}`;
+}
+
+function setSpecialFriendReturnedAttention(active) {
+  try {
+    const key = specialFriendReturnedAttentionKey();
+    if (active) {
+      window.sessionStorage.setItem(key, "1");
+    } else {
+      window.sessionStorage.removeItem(key);
+    }
+  } catch (_) {
+    // 세션 저장소를 사용할 수 없는 환경에서도 귀환 장면과 상태바는 계속 동작합니다.
+  }
+}
+
+function hasSpecialFriendReturnedAttention() {
+  try {
+    return window.sessionStorage.getItem(specialFriendReturnedAttentionKey()) === "1";
+  } catch (_) {
+    return false;
+  }
+}
+
+function specialFriendReturnedGardenStatus() {
+  if (!hasSpecialFriendReturnedAttention()) return null;
+  return {
+    key: "special-friend-returned",
+    category: "attention",
+    priority: 520,
+    tone: "attention",
+    pinUntilAction: true,
+    icon: "🦄",
+    text: "편지를 전한 숲 유니콘이 정원으로 돌아왔어요.",
+    action: "special-friend",
+    label: "돌아온 특별친구 만나기",
+  };
+}
+
 function clearGardenStatusRotateTimer() {
   window.clearTimeout(gardenStatusRotateTimer);
   gardenStatusRotateTimer = null;
@@ -3598,6 +3648,31 @@ function clearGardenStatusRotateTimer() {
 
 function currentGardenStatusItem() {
   return gardenStatusItems[gardenStatusIndex] || gardenStatusItems[0] || null;
+}
+
+function normalizeGardenStatusItems(items) {
+  const seenKeys = new Set();
+  return (items || [])
+    .filter((item) => item?.text)
+    .map((item, order) => ({
+      ...item,
+      priority: Number.isFinite(Number(item.priority)) ? Number(item.priority) : 0,
+      __order: order,
+    }))
+    .filter((item) => {
+      const key = String(item.key || "");
+      if (!key || !seenKeys.has(key)) {
+        if (key) seenKeys.add(key);
+        return true;
+      }
+      return false;
+    })
+    .sort((a, b) => (b.priority - a.priority) || (a.__order - b.__order))
+    .map(({ __order, ...item }) => item);
+}
+
+function pinnedGardenStatusIndex() {
+  return gardenStatusItems.findIndex((item) => item?.pinUntilAction);
 }
 
 function gardenStatusRotationDelay() {
@@ -3626,10 +3701,22 @@ function isGardenStatusSessionItemSeen(sessionKey) {
   }
 }
 
-function advanceGardenStatus() {
+function advanceGardenStatus({ manual = false } = {}) {
   if (gardenStatusItems.length < 2) return;
-  const current = currentGardenStatusItem();
 
+  const pinnedIndex = pinnedGardenStatusIndex();
+  // 중요한 사건을 사용자가 직접 다른 소식으로 넘겨본 경우에는 잠시 둘러볼 수 있게 하고,
+  // 자동 전환 시에는 다시 가장 중요한 사건으로 돌아옵니다.
+  if (!manual && pinnedIndex >= 0) {
+    if (gardenStatusIndex !== pinnedIndex) {
+      gardenStatusIndex = pinnedIndex;
+      applyGardenStatusItem();
+    }
+    scheduleGardenStatusRotation();
+    return;
+  }
+
+  const current = currentGardenStatusItem();
   if (current?.oncePerSession) {
     markGardenStatusSessionItemSeen(current);
     gardenStatusItems.splice(gardenStatusIndex, 1);
@@ -3646,6 +3733,10 @@ function advanceGardenStatus() {
 function scheduleGardenStatusRotation() {
   clearGardenStatusRotateTimer();
   if (gardenStatusItems.length < 2) return;
+  const pinnedIndex = pinnedGardenStatusIndex();
+  // 최우선 사건을 보고 있는 동안에는 자동으로 밀어내지 않습니다.
+  // 사용자가 화살표로 다른 소식을 본 뒤에만 일정 시간이 지나 최우선 사건으로 복귀합니다.
+  if (pinnedIndex >= 0 && gardenStatusIndex === pinnedIndex) return;
   gardenStatusRotateTimer = window.setTimeout(() => {
     gardenStatusRotateTimer = null;
     advanceGardenStatus();
@@ -3659,10 +3750,17 @@ function applyGardenStatusItem() {
 
   const isActionable = Boolean(item.action && item.action !== "none");
   const hasSeveral = gardenStatusItems.length > 1;
+  const tone = ["attention", "live", "hint", "ambient"].includes(item.tone) ? item.tone : "ambient";
   els.gardenStatusIcon.textContent = item.icon || "🌿";
   els.gardenStatusText.textContent = item.text || "숲이 조용히 숨을 고르고 있어요.";
   els.gardenStatusBar.dataset.action = item.action || "none";
   els.gardenStatusBar.dataset.statusKey = item.key || "";
+  els.gardenStatusBar.dataset.tone = tone;
+  els.gardenStatusBar.classList.toggle("has-action", isActionable);
+  els.gardenStatusBar.classList.toggle("is-attention", tone === "attention");
+  els.gardenStatusBar.classList.toggle("is-live", tone === "live");
+  els.gardenStatusBar.classList.toggle("is-hint", tone === "hint");
+  els.gardenStatusBar.classList.toggle("is-ambient", tone === "ambient");
   els.gardenStatusMain?.classList.toggle("is-actionable", isActionable);
   if (els.gardenStatusMain) {
     els.gardenStatusMain.disabled = !isActionable;
@@ -3689,7 +3787,7 @@ function applyGardenStatusItem() {
 }
 
 function setGardenStatusItems(items, options = {}) {
-  const nextItems = (items || []).filter((item) => item?.text);
+  const nextItems = normalizeGardenStatusItems(items);
   if (!nextItems.length) return;
 
   const currentKey = currentGardenStatusItem()?.key || "";
@@ -3698,12 +3796,20 @@ function setGardenStatusItems(items, options = {}) {
   const hadRotationTimer = Boolean(gardenStatusRotateTimer);
   gardenStatusItems = nextItems;
 
-  let nextIndex = -1;
-  if (options.preferredKey) {
-    nextIndex = nextItems.findIndex((item) => item.key === options.preferredKey);
+  let nextIndex = nextItems.findIndex((item) => item?.pinUntilAction);
+  const topPriority = Number(nextItems[0]?.priority || 0);
+
+  if (nextIndex < 0 && options.preferredKey) {
+    const preferredIndex = nextItems.findIndex((item) => item.key === options.preferredKey);
+    if (preferredIndex >= 0 && Number(nextItems[preferredIndex]?.priority || 0) >= topPriority) {
+      nextIndex = preferredIndex;
+    }
   }
   if (nextIndex < 0 && currentKey) {
-    nextIndex = nextItems.findIndex((item) => item.key === currentKey);
+    const currentIndex = nextItems.findIndex((item) => item.key === currentKey);
+    if (currentIndex >= 0 && Number(nextItems[currentIndex]?.priority || 0) >= topPriority) {
+      nextIndex = currentIndex;
+    }
   }
   gardenStatusIndex = nextIndex >= 0 ? nextIndex : 0;
 
@@ -3736,6 +3842,8 @@ function gardenAnimalStatus(visiting, departing, approaching, traces) {
       item: {
         key: needsDiscoveryHint ? "animal-interaction-tip" : "animal-visiting",
         category: "animal",
+        priority: needsDiscoveryHint ? 420 : 400,
+        tone: "live",
         icon: animalVisitors[visiting[0].kind]?.icon || "🌿",
         text: needsDiscoveryHint
           ? `${names[0]}가 정원에 놀러왔어요. 살며시 눌러 인사해봐요.`
@@ -3756,6 +3864,8 @@ function gardenAnimalStatus(visiting, departing, approaching, traces) {
       item: {
         key: "animal-departing",
         category: "animal",
+        priority: 340,
+        tone: "live",
         icon: animal?.icon || "🍃",
         text: `${animal?.name || "숲친구"}가 숲길로 돌아가고 있어요.`,
         action: "visitor",
@@ -3770,6 +3880,8 @@ function gardenAnimalStatus(visiting, departing, approaching, traces) {
       item: {
         key: "animal-approaching",
         category: "animal",
+        priority: 330,
+        tone: "live",
         icon: "🍃",
         text: approaching.length >= 2
           ? "서로 다른 곳에서 작은 기척이 들려요."
@@ -3786,6 +3898,8 @@ function gardenAnimalStatus(visiting, departing, approaching, traces) {
       item: {
         key: "animal-trace",
         category: "animal",
+        priority: 320,
+        tone: "live",
         icon: v2TraceMeta(traces[0]).icon || "🍃",
         text: "숲친구가 정원에 작은 흔적을 남겼어요.",
         action: "visitor",
@@ -3797,8 +3911,80 @@ function gardenAnimalStatus(visiting, departing, approaching, traces) {
   return { signature: "", item: null };
 }
 
+function gardenStatusPriorityPreviewItems() {
+  return [
+    {
+      key: "preview-returned",
+      category: "attention",
+      priority: 520,
+      tone: "attention",
+      pinUntilAction: true,
+      icon: "🦄",
+      text: "숲 유니콘이 돌아왔어요. 만나러 가볼까요?",
+      action: "status-preview",
+      label: "귀환 소식 검수",
+    },
+    {
+      key: "preview-letters",
+      category: "attention",
+      priority: 510,
+      tone: "attention",
+      pinUntilAction: true,
+      icon: "✉️",
+      text: "새 편지 한 통이 나뭇가지에 도착했어요.",
+      action: "status-preview",
+      label: "편지 도착 소식 검수",
+    },
+    {
+      key: "preview-visitor",
+      category: "animal",
+      priority: 400,
+      tone: "live",
+      icon: "🐰",
+      text: "토끼가 정원에 놀러왔어요.",
+      action: "status-preview",
+      label: "방문자 소식 검수",
+    },
+    {
+      key: "preview-delivery",
+      category: "special-friend",
+      priority: 300,
+      tone: "live",
+      icon: "🦄",
+      text: "친구에게 편지를 전하러 가고 있어요 · 약 18분",
+      action: "status-preview",
+      label: "배송 중 상태 검수",
+    },
+    {
+      key: "preview-tree-tip",
+      category: "hint",
+      priority: 220,
+      tone: "hint",
+      icon: "🌿",
+      text: "숲의 팁 · 나무를 톡톡 두드려봐요.",
+      action: "status-preview",
+      label: "행동 힌트 검수",
+    },
+    {
+      key: "preview-weather",
+      category: "ambient",
+      priority: 100,
+      tone: "ambient",
+      icon: "☀️",
+      text: "햇살이 포근하게 내려와요.",
+      action: "none",
+      label: "오늘 정원 날씨",
+    },
+  ];
+}
+
 function renderGardenStatus(context = {}) {
   if (!els.gardenStatusBar) return;
+
+  if (GARDEN_STATUS_PRIORITY_PREVIEW_MODE) {
+    setGardenStatusItems(gardenStatusPriorityPreviewItems());
+    return;
+  }
 
   let visiting = context.visiting || animalV2VisitsByState("visiting");
   let departing = context.departing || animalV2VisitsByState("departing");
@@ -3814,18 +4000,17 @@ function renderGardenStatus(context = {}) {
   const weather = context.weather || currentWeather();
   const unread = context.unread || getUnreadLetters();
 
-  if (gardenStatusTransient?.text) {
-    setGardenStatusItems([gardenStatusTransient]);
-    return;
-  }
-
   const items = [];
-  const specialFriend = activeSpecialFriendGardenStatus();
-  if (specialFriend) items.push(specialFriend);
+  const returnedSpecialFriend = specialFriendReturnedGardenStatus();
+  if (returnedSpecialFriend) items.push(returnedSpecialFriend);
 
   if (unread.length) {
     items.push({
       key: "letters",
+      category: "attention",
+      priority: 510,
+      tone: "attention",
+      pinUntilAction: true,
       icon: "✉️",
       text: unread.length === 1
         ? "새 편지 한 통이 나뭇가지에 도착했어요."
@@ -3847,8 +4032,20 @@ function renderGardenStatus(context = {}) {
   }
   if (animalStatus.item) items.push(animalStatus.item);
 
+  if (gardenStatusTransient?.text) {
+    items.push({
+      category: "special-friend",
+      priority: 305,
+      tone: "live",
+      ...gardenStatusTransient,
+    });
+  }
+
+  const specialFriend = activeSpecialFriendGardenStatus();
+  if (specialFriend) items.push(specialFriend);
+
   const treeInteraction = window.__todayForestTreeInteractionState || gardenTreeInteractionState;
-  const hasPriorityGardenStatus = Boolean(specialFriend || unread.length || animalStatus.item);
+  const hasPriorityGardenStatus = Boolean(returnedSpecialFriend || specialFriend || unread.length || animalStatus.item);
   const shouldShowTreeInteractionTip = !hasPriorityGardenStatus
     && currentUser
     && !gardenTutorialPhase
@@ -3861,6 +4058,9 @@ function renderGardenStatus(context = {}) {
   if (shouldShowTreeInteractionTip) {
     items.push({
       key: "tree-interaction-tip",
+      category: "hint",
+      priority: 220,
+      tone: "hint",
       icon: "🌿",
       text: "숲의 팁 · 나무를 톡톡 두드리면 누군가 찾아올지도 몰라요.",
       action: "tree-hint",
@@ -3871,25 +4071,32 @@ function renderGardenStatus(context = {}) {
 
   items.push({
     key: `weather-${weather.className}`,
+    category: "ambient",
+    priority: 100,
+    tone: "ambient",
     icon: weather.icon,
     text: weather.text,
-    action: "weather",
-    detail: weather.message || weather.detail || weather.text,
-    label: "오늘 정원 날씨 이야기 보기",
+    action: "none",
+    label: "오늘 정원 날씨",
   });
 
   items.push({
     key: "next-visitor",
+    category: "ambient",
+    priority: 90,
+    tone: "ambient",
     icon: "🌱",
     text: `다음 방문자 · ${animalGrowthMessage()}`,
-    action: "next-visitor",
-    detail: animalGrowthMessage(),
-    label: "다음 방문자 안내 보기",
+    action: "none",
+    label: "다음 방문자 안내",
   });
 
   if (shouldShowInstallStatus()) {
     items.push({
       key: "install-app",
+      category: "hint",
+      priority: 180,
+      tone: "hint",
       icon: "🌿",
       text: "홈 화면에 심어두면 오늘의숲을 더 쉽게 만나요.",
       action: "install",
@@ -3900,6 +4107,9 @@ function renderGardenStatus(context = {}) {
   if (currentUser && !isGardenStatusSessionItemSeen(GARDEN_STATUS_ACCOUNT_STORAGE_SESSION_KEY)) {
     items.push({
       key: "account-storage",
+      category: "hint",
+      priority: 170,
+      tone: "hint",
       icon: "🔒",
       text: "내 기록과 나무는 로그인한 계정의 정원에 저장돼요.",
       action: "settings",
@@ -3926,7 +4136,7 @@ window.addEventListener("todayforest:tree-interaction-state", (event) => {
 function showNextGardenStatus(event) {
   event?.preventDefault();
   event?.stopPropagation();
-  advanceGardenStatus();
+  advanceGardenStatus({ manual: true });
 }
 
 function handleGardenStatusMainClick(event) {
@@ -3956,8 +4166,8 @@ function handleGardenStatusMainClick(event) {
     window.dispatchEvent(new CustomEvent("todayforest:tree-hint-request"));
     return;
   }
-  if (item.action === "weather" || item.action === "next-visitor") {
-    showToast(item.detail || item.text);
+  if (item.action === "status-preview") {
+    showToast("검수용 상태바예요. 실제 정원 데이터는 바뀌지 않아요.");
     return;
   }
   if (item.action === "settings") {
@@ -3968,11 +4178,15 @@ function handleGardenStatusMainClick(event) {
   }
   if (item.action === "special-friend") {
     event.stopPropagation();
+    if (item.key === "special-friend-returned") {
+      setSpecialFriendReturnedAttention(false);
+    }
     if (typeof window.openTodayForestSpecialFriendInfo === "function") {
       window.openTodayForestSpecialFriendInfo();
     } else {
       window.dispatchEvent(new CustomEvent("todayforest:request-special-friend-info"));
     }
+    renderGardenStatus();
   }
 }
 
@@ -7453,8 +7667,12 @@ function bindEvents() {
   });
   window.addEventListener("todayforest:special-friend-letter-started", (event) => {
     const journey = event?.detail || {};
+    setSpecialFriendReturnedAttention(false);
     setGardenStatusTransient({
-      key: "special-friend-departed",
+      key: "special-friend-delivering",
+      category: "special-friend",
+      priority: 305,
+      tone: "live",
       icon: "🦄",
       text: `${journey.recipientName || "친구"}에게 편지를 전하러 가는 중이에요.`,
       action: "special-friend",
@@ -7467,13 +7685,11 @@ function bindEvents() {
   });
   window.addEventListener("todayforest:special-friend-returned", () => {
     renderSentLetters();
-    setGardenStatusTransient({
-      key: "special-friend-returned",
-      icon: "🦄",
-      text: "편지를 전한 유니콘이 정원으로 돌아왔어요.",
-      action: "special-friend",
-      label: "돌아온 특별친구 보기",
-    });
+    window.clearTimeout(gardenStatusTransientTimer);
+    gardenStatusTransientTimer = null;
+    gardenStatusTransient = null;
+    setSpecialFriendReturnedAttention(true);
+    renderGardenStatus();
   });
   els.visitorButton.addEventListener("click", () => {
     const interactionPreview = animalInteractionPreviewVisit();

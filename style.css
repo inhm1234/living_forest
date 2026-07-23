@@ -6338,7 +6338,7 @@ body.forest-unicorn-live-enabled .header-actions {
   transition: background .18s ease, box-shadow .18s ease;
 }
 
-.garden-status-bar:hover {
+.garden-status-bar.has-action:hover {
   background: rgba(255,255,255,.78);
   box-shadow: 0 10px 20px rgba(91, 112, 137, .11);
 }
@@ -7877,7 +7877,7 @@ body.animal-preview-clean-mode .ff-cinematic {
   box-shadow: 0 10px 22px rgba(82, 104, 128, .115);
 }
 
-.garden-status-bar:hover {
+.garden-status-bar.has-action:hover {
   background: rgba(255, 255, 255, .86);
   box-shadow: 0 12px 24px rgba(82, 104, 128, .135);
 }
@@ -8341,4 +8341,82 @@ body.animal-preview-clean-mode .ff-cinematic {
     animation: none !important;
     transition: none !important;
   }
+}
+
+
+/* ==========================================================================
+   GARDEN STATUS PRIORITY v1.4
+   중요한 사건은 조용히 고정하고, 클릭 가능한 소식만 상호작용 신호를 냅니다.
+   ========================================================================== */
+.garden-status-bar {
+  --status-accent: #8aa0b1;
+  --status-icon-bg: rgba(250, 252, 255, .94);
+}
+
+.garden-status-bar.is-attention {
+  --status-accent: #c07d74;
+  --status-icon-bg: rgba(255, 246, 243, .96);
+  border-color: rgba(213, 158, 145, .42);
+  background: rgba(255, 250, 248, .86);
+  box-shadow: 0 11px 24px rgba(135, 91, 82, .105);
+}
+
+.garden-status-bar.is-live {
+  --status-accent: #72918a;
+  --status-icon-bg: rgba(245, 252, 249, .96);
+}
+
+.garden-status-bar.is-hint {
+  --status-accent: #82976f;
+  --status-icon-bg: rgba(248, 252, 244, .96);
+}
+
+.garden-status-bar.is-ambient {
+  --status-accent: #9aabb8;
+  --status-icon-bg: rgba(250, 252, 255, .9);
+}
+
+.garden-status-bar .garden-status-icon {
+  position: relative;
+  background: var(--status-icon-bg);
+}
+
+.garden-status-bar.is-attention .garden-status-icon::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 6px;
+  height: 6px;
+  border: 2px solid rgba(255,255,255,.96);
+  border-radius: 999px;
+  background: var(--status-accent);
+  box-shadow: 0 1px 5px rgba(130, 74, 65, .22);
+}
+
+.garden-status-bar.is-attention .garden-status-text {
+  color: #6f5654;
+}
+
+.garden-status-bar.is-live .garden-status-text {
+  color: #57746e;
+}
+
+.garden-status-bar.is-hint .garden-status-text {
+  color: #687a5c;
+}
+
+.garden-status-bar.is-ambient .garden-status-text {
+  color: #667b8b;
+  font-weight: 830;
+}
+
+.garden-status-bar:not(.has-action) .garden-status-main {
+  cursor: default;
+}
+
+.garden-status-bar:not(.has-action) .garden-status-main:hover,
+.garden-status-bar:not(.has-action) .garden-status-main:active {
+  background: transparent;
+  transform: none;
 }
