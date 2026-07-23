@@ -8904,13 +8904,17 @@ function bindEvents() {
       return;
     }
     if (event.target.closest("#sharedTreeV2DevReset")) {
-      if (!window.confirm("로컬 검수용 나무를 첫 씨앗 상태로 되돌릴까요? 실제 친구와 서버 데이터에는 영향이 없어요.")) return;
+      event.preventDefault();
+      event.stopPropagation();
       const tree = resetDevSharedTreeV2Preview();
       if (tree) {
         renderSharedTreeV2View(tree);
         if (activeTogetherForestFriendId === tree.partnerId) renderTogetherForest(tree.partnerId);
         showToast("로컬 검수용 나무를 처음 상태로 되돌렸어요.");
+      } else {
+        showToast("초기화할 로컬 검수 상태를 찾지 못했어요. QA 나무를 다시 열어 주세요.");
       }
+      return;
     }
   });
   els.sharedTreeNoteForm?.addEventListener("submit", (event) => { void saveSharedTreeMemoryNote(event); });
