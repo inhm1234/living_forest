@@ -7996,3 +7996,64 @@ body.animal-preview-clean-mode .ff-cinematic {
     transition: none;
   }
 }
+
+
+/* =========================================================
+   VISITOR INTERACTION DISCOVERY v1.0
+   - 첫 일반 방문자가 왔을 때만 상태바와 대상의 짧은 반응으로 클릭 가능성을 알림
+   - 팝업·강한 펄스 없이 동물과 편지 소품만 잠깐 살아나는 방식
+   - 한 번 동물을 눌러 만남 카드를 열면 계정별로 반복 노출하지 않음
+   ========================================================= */
+.animal-v2-visitor.is-interaction-discovery {
+  isolation: isolate;
+}
+
+.animal-v2-visitor.is-interaction-discovery::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 8% 2% 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255, 245, 176, .38) 0%, rgba(216, 239, 186, .18) 42%, rgba(216, 239, 186, 0) 74%);
+  pointer-events: none;
+  animation: animalInteractionDiscoveryGlow 1.9s ease-out both;
+}
+
+.animal-v2-visitor.has-animal-art.is-interaction-discovery .animal-v2-art {
+  animation: animalInteractionDiscoveryNotice 1.9s cubic-bezier(.24,.72,.28,1) both !important;
+  filter: drop-shadow(0 3px 3px rgba(65, 84, 66, .105)) brightness(1.015);
+}
+
+.animal-v2-visitor.has-animal-art.is-interaction-discovery .animal-v2-envelope {
+  animation: animalInteractionDiscoveryLetter 1.9s ease-in-out both;
+}
+
+@keyframes animalInteractionDiscoveryNotice {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  28% { transform: translateY(-1px) rotate(-.45deg) scale(1.012); }
+  53% { transform: translateY(0) rotate(.18deg) scale(1.004); }
+  72% { transform: translateY(-.4px) rotate(0deg) scale(1.006); }
+}
+
+@keyframes animalInteractionDiscoveryGlow {
+  0%, 100% { opacity: 0; transform: scale(.82); }
+  24% { opacity: .82; transform: scale(1); }
+  72% { opacity: .28; transform: scale(1.08); }
+}
+
+@keyframes animalInteractionDiscoveryLetter {
+  0%, 100% { filter: brightness(1); }
+  34% { filter: brightness(1.16) drop-shadow(0 0 3px rgba(255, 230, 151, .65)); }
+  62% { filter: brightness(1.04); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animal-v2-visitor.is-interaction-discovery::before,
+  .animal-v2-visitor.has-animal-art.is-interaction-discovery .animal-v2-art,
+  .animal-v2-visitor.has-animal-art.is-interaction-discovery .animal-v2-envelope {
+    animation: none !important;
+  }
+  .animal-v2-visitor.is-interaction-discovery::before {
+    opacity: .28;
+  }
+}

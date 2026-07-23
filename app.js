@@ -310,6 +310,11 @@ const ANIMAL_PREVIEW_KINDS = new Set(Object.keys(animalVisitors));
 const initialAnimalPreviewKind = String(new URL(window.location.href).searchParams.get("animalPreview") || "").trim();
 document.body.classList.toggle("animal-preview-clean-mode", ANIMAL_PREVIEW_KINDS.has(initialAnimalPreviewKind));
 
+// 일반 방문자를 처음 만난 사용자가 동물을 직접 눌러볼 수 있도록 돕는 1회성 발견 안내입니다.
+// interactionPreview=visitor는 DB와 발견 기록을 건드리지 않는 검수 전용 모드입니다.
+const ANIMAL_INTERACTION_DISCOVERY_STORAGE_PREFIX = "todayforest-animal-interaction-discovered-v1";
+const ANIMAL_INTERACTION_PREVIEW_MODE = new URL(window.location.href).searchParams.get("interactionPreview") === "visitor";
+
 // 서버는 퇴장 뒤 animal_kind를 비워 둡니다. 다른 기기에서도 같은 짧은 흔적을 보여주기 위한 공용 표시입니다.
 const genericAnimalTrace = {
   kind: "trace",
@@ -437,6 +442,9 @@ let animalVisitSyncBusy = false;
 let animalVisitArrivalTimer = null;
 let animalDepartureTimer = null;
 let animalVisitorLifeTimer = null;
+let animalInteractionDiscoveryNudgeTimer = null;
+let animalInteractionDiscoverySignature = "";
+let animalInteractionPreviewDiscovered = false;
 // 편지함을 열어 둔 동안에만 30초마다 배송 상태를 다시 읽습니다.
 // 정원 전체 데이터를 주기적으로 다시 불러오지 않기 위한 별도 타이머입니다.
 let lettersRefreshTimer = null;
@@ -1835,6 +1843,106 @@ function applyAnimalPreviewCleanMode() {
   return enabled;
 }
 
+function animalInteractionPreviewKindFromUrl() {
+  if (!ANIMAL_INTERACTION_PREVIEW_MODE) return "";
+  const url = new URL(window.location.href);
+  const requested = String(url.searchParams.get("visitorKind") || url.searchParams.get("animalPreview") || "rabbit").trim();
+  return ANIMAL_PREVIEW_KINDS.has(requested) ? requested : "rabbit";
+}
+
+function animalInteractionPreviewVisit() {
+  const kind = animalInteractionPreviewKindFromUrl();
+  if (!kind) return null;
+  return {
+    id: `interaction-preview-${kind}`,
+    kind,
+    habitatZone: animalVisitors[kind]?.position || "ground",
+    visitState: "visiting",
+    variant: "",
+    arrivedAt: new Date(Date.now() - 60000).toISOString(),
+    departureReason: "",
+  };
+}
+
+function animalInteractionDiscoveryStorageKey() {
+  return `${ANIMAL_INTERACTION_DISCOVERY_STORAGE_PREFIX}:${currentUser?.id || "guest"}`;
+}
+
+function isAnimalInteractionDiscovered() {
+  if (ANIMAL_INTERACTION_PREVIEW_MODE) return animalInteractionPreviewDiscovered;
+  if (!currentUser) return true;
+  try {
+    return window.localStorage.getItem(animalInteractionDiscoveryStorageKey()) === "1";
+  } catch (_) {
+    return false;
+  }
+}
+
+function markAnimalInteractionDiscovered() {
+  if (isAnimalInteractionDiscovered()) return false;
+  if (ANIMAL_INTERACTION_PREVIEW_MODE) {
+    animalInteractionPreviewDiscovered = true;
+  } else {
+    try {
+      window.localStorage.setItem(animalInteractionDiscoveryStorageKey(), "1");
+    } catch (_) {
+      // 저장소를 사용할 수 없는 환경에서도 현재 상호작용은 정상 진행합니다.
+    }
+  }
+  window.clearTimeout(animalInteractionDiscoveryNudgeTimer);
+  animalInteractionDiscoveryNudgeTimer = null;
+  els.animalV2Layer?.querySelectorAll(".is-interaction-discovery").forEach((element) => {
+    element.classList.remove("is-interaction-discovery");
+  });
+  return true;
+}
+
+function animalInteractionDiscoveryEligible(visit) {
+  return Boolean(
+    visit
+    && visit.visitState === "visiting"
+    && !gardenTutorialPhase
+    && (currentUser || ANIMAL_INTERACTION_PREVIEW_MODE)
+    && !isAnimalInteractionDiscovered()
+  );
+}
+
+function nudgeAnimalInteractionTarget(visitId = "") {
+  const escaped = visitId ? CSS.escape(String(visitId)) : "";
+  const target = escaped
+    ? els.animalV2Layer?.querySelector(`[data-animal-v2-visit="${escaped}"]`)
+    : els.animalV2Layer?.querySelector("[data-animal-v2-visit]:not(:disabled)");
+  if (!target || target.disabled) return false;
+
+  target.classList.remove("is-interaction-discovery");
+  void target.offsetWidth;
+  target.classList.add("is-interaction-discovery");
+  window.clearTimeout(animalInteractionDiscoveryNudgeTimer);
+  animalInteractionDiscoveryNudgeTimer = window.setTimeout(() => {
+    target.classList.remove("is-interaction-discovery");
+    animalInteractionDiscoveryNudgeTimer = null;
+  }, 2100);
+  return true;
+}
+
+function scheduleAnimalInteractionDiscoveryNudge(activeVisits = []) {
+  const visit = activeVisits.find((item) => item?.visitState === "visiting");
+  if (!animalInteractionDiscoveryEligible(visit)) {
+    animalInteractionDiscoverySignature = "";
+    window.clearTimeout(animalInteractionDiscoveryNudgeTimer);
+    animalInteractionDiscoveryNudgeTimer = null;
+    return;
+  }
+
+  const signature = String(visit.id || visit.kind || "visitor");
+  if (signature === animalInteractionDiscoverySignature) return;
+  animalInteractionDiscoverySignature = signature;
+  window.clearTimeout(animalInteractionDiscoveryNudgeTimer);
+  animalInteractionDiscoveryNudgeTimer = window.setTimeout(() => {
+    nudgeAnimalInteractionTarget(visit.id);
+  }, 900);
+}
+
 function clearAnimalVisitArrivalTimer() {
   if (animalVisitArrivalTimer) {
     window.clearTimeout(animalVisitArrivalTimer);
@@ -2058,6 +2166,26 @@ function openSpecialForestFriendEncounter(key) {
   els.animalEncounterCard.hidden = false;
 }
 
+function openAnimalInteractionPreview(kind) {
+  const animal = animalVisitors[kind];
+  if (!animal || !els.animalEncounterCard) return;
+
+  markAnimalInteractionDiscovered();
+  closeAnimalEncounterCard({ notifySpecialFriend: false });
+  setAnimalEncounterVisual(animal);
+  if (els.animalEncounterKicker) els.animalEncounterKicker.textContent = "숲에서 만난 친구";
+  if (els.animalEncounterTitle) els.animalEncounterTitle.textContent = `${animal.name}가 당신을 바라보고 있어요.`;
+  if (els.animalEncounterText) els.animalEncounterText.textContent = animalV2MoodLine(animal.kind);
+  if (els.animalEncounterTime) els.animalEncounterTime.textContent = animalV2DeliveryLine(animal);
+  if (els.animalEncounterSend) {
+    els.animalEncounterSend.textContent = "미리보기에서는 편지를 맡기지 않아요";
+    els.animalEncounterSend.disabled = true;
+  }
+  els.animalEncounterCard.dataset.animalKind = animal.kind;
+  els.animalEncounterCard.hidden = false;
+  renderGardenStatus();
+}
+
 function openEncounterLetterComposer() {
   const specialFriend = activeSpecialForestFriendEncounter();
   if (specialFriend) {
@@ -2077,6 +2205,7 @@ function openAnimalEncounterForVisit(visitId) {
     return;
   }
 
+  const discoveredNow = markAnimalInteractionDiscovered();
   selectedAnimalV2VisitId = visit.id;
   animalEncounterVisitId = visit.id;
   setAnimalEncounterVisual(animal);
@@ -2093,6 +2222,7 @@ function openAnimalEncounterForVisit(visitId) {
     els.animalEncounterCard.dataset.animalKind = animal.kind;
     els.animalEncounterCard.hidden = false;
   }
+  if (discoveredNow) renderGardenStatus();
 }
 
 function openAnimalLetterComposer() {
@@ -2229,8 +2359,13 @@ function renderAnimalV2Scene() {
   let allApproaching = animalV2VisitsByState("approaching");
   let allActive = animalV2VisitsByState("visiting", "departing");
   let traces = animalV2VisitsByState("trace");
+  const interactionPreviewVisit = animalInteractionPreviewVisit();
   const previewKind = animalPreviewKindFromUrl();
-  if (previewKind) {
+  if (interactionPreviewVisit) {
+    allApproaching = [];
+    allActive = [interactionPreviewVisit];
+    traces = [];
+  } else if (previewKind) {
     allApproaching = [];
     allActive = [{
       id: `preview-${previewKind}`,
@@ -2291,6 +2426,7 @@ function renderAnimalV2Scene() {
   els.animalV2Layer.hidden = !(approaching.length || active.length);
   els.animalV2TraceLayer.hidden = !traces.length;
   scheduleAnimalVisitorLife();
+  scheduleAnimalInteractionDiscoveryNudge(active);
   if (els.gardenWorld) {
     els.gardenWorld.classList.toggle("is-animal-v2-approaching", approaching.length > 0);
     els.gardenWorld.classList.toggle("is-animal-v2-waiting", waitingCount > 0);
@@ -2300,11 +2436,16 @@ function renderAnimalV2Scene() {
 function handleAnimalV2LayerClick(event) {
   const button = event.target.closest("[data-animal-v2-visit]");
   if (!button || !els.animalV2Layer?.contains(button) || button.disabled) return;
-  if (String(button.dataset.animalV2Visit || "").startsWith("preview-")) {
+  const visitId = String(button.dataset.animalV2Visit || "");
+  if (visitId.startsWith("interaction-preview-")) {
+    openAnimalInteractionPreview(String(button.dataset.animalV2Kind || animalInteractionPreviewKindFromUrl()));
+    return;
+  }
+  if (visitId.startsWith("preview-")) {
     showToast("일반 방문자 일러스트와 배치를 확인하는 검수용 화면이에요.");
     return;
   }
-  openAnimalEncounterForVisit(button.dataset.animalV2Visit);
+  openAnimalEncounterForVisit(visitId);
 }
 
 function handleAnimalV2TraceClick(event) {
@@ -3425,17 +3566,21 @@ function setGardenStatusTransient(item, duration = 4800) {
 function gardenAnimalStatus(visiting, departing, approaching, traces) {
   if (visiting.length) {
     const names = visiting.map((visit) => animalVisitors[visit.kind]?.name || "숲친구");
+    const needsDiscoveryHint = animalInteractionDiscoveryEligible(visiting[0]);
     return {
-      signature: `visiting:${visiting.map((visit) => visit.id || visit.kind).sort().join(",")}`,
+      signature: `visiting:${visiting.map((visit) => visit.id || visit.kind).sort().join(",")}:${needsDiscoveryHint ? "discover" : "known"}`,
       item: {
-        key: "animal-visiting",
+        key: needsDiscoveryHint ? "animal-interaction-tip" : "animal-visiting",
         category: "animal",
         icon: animalVisitors[visiting[0].kind]?.icon || "🌿",
-        text: visiting.length >= 2
-          ? `${names.join("와 ")}가 정원에 머물러 있어요.`
-          : `${names[0]}가 정원에 놀러왔어요.`,
-        action: "visitor",
-        label: "정원에 온 숲친구 보기",
+        text: needsDiscoveryHint
+          ? `${names[0]}가 정원에 놀러왔어요. 살며시 눌러 인사해봐요.`
+          : visiting.length >= 2
+            ? `${names.join("와 ")}가 정원에 머물러 있어요.`
+            : `${names[0]}가 정원에 놀러왔어요.`,
+        action: needsDiscoveryHint ? "visitor-hint" : "visitor",
+        visitId: visiting[0]?.id || "",
+        label: needsDiscoveryHint ? `${names[0]}가 있는 곳 살펴보기` : "정원에 온 숲친구 보기",
       },
     };
   }
@@ -3491,10 +3636,17 @@ function gardenAnimalStatus(visiting, departing, approaching, traces) {
 function renderGardenStatus(context = {}) {
   if (!els.gardenStatusBar) return;
 
-  const visiting = context.visiting || animalV2VisitsByState("visiting");
-  const departing = context.departing || animalV2VisitsByState("departing");
-  const approaching = context.approaching || animalV2VisitsByState("approaching");
-  const traces = context.traces || animalV2VisitsByState("trace");
+  let visiting = context.visiting || animalV2VisitsByState("visiting");
+  let departing = context.departing || animalV2VisitsByState("departing");
+  let approaching = context.approaching || animalV2VisitsByState("approaching");
+  let traces = context.traces || animalV2VisitsByState("trace");
+  const interactionPreviewVisit = animalInteractionPreviewVisit();
+  if (interactionPreviewVisit) {
+    visiting = [interactionPreviewVisit];
+    departing = [];
+    approaching = [];
+    traces = [];
+  }
   const weather = context.weather || currentWeather();
   const unread = context.unread || getUnreadLetters();
 
@@ -3621,6 +3773,11 @@ function handleGardenStatusMainClick(event) {
     $("#openLetters")?.click();
     return;
   }
+  if (item.action === "visitor-hint") {
+    event?.preventDefault();
+    nudgeAnimalInteractionTarget(item.visitId || "");
+    return;
+  }
   if (item.action === "visitor") {
     els.visitorButton?.click();
     return;
@@ -3658,11 +3815,18 @@ function handleGardenStatusMainClick(event) {
 function renderGarden() {
   const visualGrowth = visualGrowthForGarden();
   const stage = stageForGrowth(visualGrowth);
-  const visiting = animalV2VisitsByState("visiting");
-  const departing = animalV2VisitsByState("departing");
-  const approaching = animalV2VisitsByState("approaching");
-  const traces = animalV2VisitsByState("trace");
-  const primaryVisit = currentAnimalV2Visit();
+  let visiting = animalV2VisitsByState("visiting");
+  let departing = animalV2VisitsByState("departing");
+  let approaching = animalV2VisitsByState("approaching");
+  let traces = animalV2VisitsByState("trace");
+  const interactionPreviewVisit = animalInteractionPreviewVisit();
+  if (interactionPreviewVisit) {
+    visiting = [interactionPreviewVisit];
+    departing = [];
+    approaching = [];
+    traces = [];
+  }
+  const primaryVisit = visiting[0] || currentAnimalV2Visit();
   const primaryAnimal = primaryVisit ? animalVisitors[primaryVisit.kind] : null;
   const weather = currentWeather();
   const unread = getUnreadLetters();
@@ -7143,6 +7307,11 @@ function bindEvents() {
     });
   });
   els.visitorButton.addEventListener("click", () => {
+    const interactionPreview = animalInteractionPreviewVisit();
+    if (interactionPreview) {
+      openAnimalInteractionPreview(interactionPreview.kind);
+      return;
+    }
     const visit = currentAnimalV2Visit();
     if (visit) {
       openAnimalEncounterForVisit(visit.id);
