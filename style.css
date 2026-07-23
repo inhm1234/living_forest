@@ -7797,3 +7797,202 @@ body.animal-preview-clean-mode .ff-cinematic {
     animation: none !important;
   }
 }
+
+
+/* ==========================================================================
+   GARDEN ACTION HIERARCHY v0.8
+   화면 구조와 버튼 수는 유지하면서, 정원 요약·실시간 소식·오늘의 핵심 행동·
+   보조 메뉴가 서로 다른 역할로 읽히도록 대비만 최소 조정합니다.
+   ========================================================================== */
+
+/* 상단의 유일한 정원 메뉴가 단순 상태표시가 아니라 눌리는 버튼임을 조용히 알립니다. */
+.account-pill {
+  gap: 7px;
+  padding: 7px 9px 7px 10px;
+  background: rgba(255, 255, 255, .58);
+  box-shadow: 0 6px 14px rgba(82, 105, 93, .055);
+  transition: transform .14s ease, border-color .14s ease, background-color .14s ease, box-shadow .14s ease;
+}
+
+#accountName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-chevron {
+  display: inline-grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  margin-left: 1px;
+  color: #91a198;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+  transform: translateY(-1px);
+  transition: transform .14s ease, color .14s ease;
+}
+
+.account-pill:hover,
+.account-pill:focus-visible {
+  box-shadow: 0 8px 18px rgba(82, 105, 93, .085);
+}
+
+.account-pill:hover .account-chevron,
+.account-pill:focus-visible .account-chevron {
+  color: #698577;
+  transform: translateY(0);
+}
+
+.account-pill:active {
+  transform: scale(.98);
+}
+
+/* 고정된 성장 요약은 한 단계 조용하게, 지금 발생한 정원 소식은 한 단계 또렷하게 구분합니다. */
+.stage-topline {
+  padding: 7px 11px;
+  border-color: rgba(255, 255, 255, .52);
+  background: rgba(255, 255, 255, .38);
+  color: #7d8d9b;
+  font-size: 11.5px;
+  font-weight: 760;
+  box-shadow: none;
+  backdrop-filter: blur(6px);
+}
+
+.stage-topline .tree-name-label {
+  color: #677d8d;
+  font-weight: 850;
+}
+
+.stage-topline .dot {
+  color: #b8c3cc;
+}
+
+.garden-status-bar {
+  border-color: rgba(255, 255, 255, .92);
+  background: rgba(255, 255, 255, .78);
+  box-shadow: 0 10px 22px rgba(82, 104, 128, .115);
+}
+
+.garden-status-bar:hover {
+  background: rgba(255, 255, 255, .86);
+  box-shadow: 0 12px 24px rgba(82, 104, 128, .135);
+}
+
+.garden-status-icon {
+  background: rgba(250, 252, 255, .94);
+  box-shadow: inset 0 0 0 1px rgba(128, 151, 169, .08);
+}
+
+.garden-status-text {
+  color: #596f80;
+  font-weight: 900;
+}
+
+/* 기록 전에는 오늘의 핵심 행동이 가장 먼저 읽히고, 완료 뒤에는 다시 차분한 상태 카드가 됩니다. */
+.garden-nav-four .nav-primary:not(.record-complete) {
+  border-color: rgba(91, 157, 111, .48);
+  background: linear-gradient(180deg, #e7f6ea 0%, #dcefe1 100%);
+  color: #426f50;
+  box-shadow: 0 11px 24px rgba(67, 125, 84, .145);
+}
+
+.garden-nav-four .nav-primary:not(.record-complete) .nav-icon {
+  color: #4f875f;
+}
+
+.garden-nav-four .nav-primary.record-complete {
+  border-color: rgba(120, 151, 132, .18);
+  background: rgba(249, 251, 249, .78);
+  color: #74837a;
+  box-shadow: 0 6px 14px rgba(73, 99, 85, .035);
+}
+
+.garden-nav-four .nav-primary.record-complete::after {
+  content: "✓";
+  position: absolute;
+  top: 8px;
+  right: 9px;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: rgba(118, 157, 130, .12);
+  color: #718b78;
+  font-size: 9px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+@media (hover: hover) {
+  .garden-nav-four .nav-primary:not(.record-complete):hover {
+    border-color: rgba(78, 146, 99, .56);
+    background: linear-gradient(180deg, #ecf9ef 0%, #e0f2e5 100%);
+    box-shadow: 0 13px 27px rgba(67, 125, 84, .17);
+  }
+}
+
+/* 더보기는 기능을 숨기지 않되, 콘텐츠 카드와 같은 중요도로 보이지 않게 낮춥니다. */
+.garden-extra-nav #openMoreMenu {
+  border-color: rgba(119, 145, 130, .11);
+  background: rgba(255, 255, 255, .48);
+  color: #75867d;
+  box-shadow: none;
+}
+
+.garden-extra-nav #openMoreMenu .secondary-action-icon-more {
+  border-color: rgba(126, 150, 136, .08);
+  background: rgba(241, 245, 243, .62);
+  color: #899990;
+}
+
+@media (hover: hover) {
+  .garden-extra-nav #openMoreMenu:hover {
+    border-color: rgba(113, 153, 127, .2);
+    background: rgba(255, 255, 255, .67);
+    box-shadow: 0 7px 16px rgba(73, 99, 85, .045);
+  }
+}
+
+.garden-extra-nav #openMoreMenu.is-open {
+  border-color: rgba(113, 153, 127, .3);
+  background: rgba(235, 247, 238, .92);
+  color: #526b5e;
+  box-shadow: 0 8px 20px rgba(89, 124, 101, .12);
+}
+
+@media (max-width: 470px) {
+  .account-pill {
+    padding: 6px 8px 6px 9px;
+  }
+
+  .account-chevron {
+    width: 13px;
+    height: 13px;
+    font-size: 12px;
+  }
+
+  .stage-topline {
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+
+  .garden-nav-four .nav-primary.record-complete::after {
+    top: 7px;
+    right: 7px;
+    width: 15px;
+    height: 15px;
+    font-size: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-pill,
+  .account-chevron {
+    transition: none;
+  }
+}
