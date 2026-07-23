@@ -802,6 +802,24 @@
         <div class="shared-tree-v2-lifecycle" id="sharedTreeV2Lifecycle" aria-label="함께 키우는 나무 성장 단계"></div>
         <div class="shared-tree-v2-trace" id="sharedTreeV2Trace" aria-live="polite"></div>
 
+        <section class="shared-tree-v2-dev-tools hidden" id="sharedTreeV2DevTools" aria-label="로컬 검수 도구">
+          <div class="shared-tree-v2-dev-head">
+            <div>
+              <span>DEV · LOCAL QA</span>
+              <strong>서버와 실제 친구 기록에는 저장되지 않아요</strong>
+            </div>
+            <b id="sharedTreeV2DevDay">1일차</b>
+          </div>
+          <div class="shared-tree-v2-dev-actors" role="group" aria-label="돌봄 행동 주체 선택">
+            <button type="button" data-v2-dev-actor="me">내 손길</button>
+            <button type="button" data-v2-dev-actor="partner">테스트 새싹의 손길</button>
+          </div>
+          <div class="shared-tree-v2-dev-actions">
+            <button id="sharedTreeV2DevNextDay" type="button">다음 날로 넘기기</button>
+            <button id="sharedTreeV2DevReset" type="button">처음부터 다시</button>
+          </div>
+        </section>
+
         <section class="shared-tree-v2-care" aria-labelledby="sharedTreeV2CareTitle">
           <div class="shared-tree-v2-care-head">
             <strong id="sharedTreeV2CareTitle">오늘 필요한 돌봄</strong>

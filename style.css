@@ -8852,3 +8852,94 @@ body.animal-preview-clean-mode .ff-cinematic {
   .shared-tree-v2-choice-button:hover,
   .shared-tree-v2-care-button:hover { transform: none; box-shadow: none; }
 }
+
+
+/* --------------------------------------------------------------------------
+   함께 키우는 나무 v2 · 로컬 QA 도구
+   실제 공유나무/친구 데이터에 쓰지 않고 DEV 테스트 새싹에서만 노출됩니다.
+   -------------------------------------------------------------------------- */
+.shared-tree-v2-dev-tools {
+  margin: 14px 0 16px;
+  padding: 14px;
+  border: 1px dashed rgba(87, 116, 91, 0.34);
+  border-radius: 18px;
+  background: rgba(247, 251, 244, 0.9);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.shared-tree-v2-dev-tools.hidden { display: none !important; }
+
+.shared-tree-v2-dev-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.shared-tree-v2-dev-head div {
+  display: grid;
+  gap: 3px;
+}
+
+.shared-tree-v2-dev-head span {
+  color: #6e8a72;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.shared-tree-v2-dev-head strong {
+  color: #536658;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.shared-tree-v2-dev-head b {
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #e7f0e4;
+  color: #55705a;
+  font-size: 0.75rem;
+}
+
+.shared-tree-v2-dev-actors,
+.shared-tree-v2-dev-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.shared-tree-v2-dev-actors { margin-bottom: 8px; }
+
+.shared-tree-v2-dev-tools button {
+  min-height: 42px;
+  padding: 9px 10px;
+  border: 1px solid rgba(88, 115, 91, 0.18);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #5a675d;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.shared-tree-v2-dev-actors button.is-active {
+  border-color: rgba(92, 129, 94, 0.55);
+  background: #dfeedd;
+  color: #39513e;
+  box-shadow: 0 4px 12px rgba(83, 112, 88, 0.12);
+}
+
+.shared-tree-v2-dev-actions button:last-child {
+  color: #7d6d64;
+  background: rgba(249, 245, 239, 0.9);
+}
+
+@media (max-width: 520px) {
+  .shared-tree-v2-dev-head { align-items: center; }
+  .shared-tree-v2-dev-head strong { font-size: 0.76rem; }
+  .shared-tree-v2-dev-tools button { font-size: 0.76rem; }
+}
