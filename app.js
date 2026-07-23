@@ -3533,6 +3533,25 @@ function renderGardenStatus(context = {}) {
 
   const treeInteraction = window.__todayForestTreeInteractionState || gardenTreeInteractionState;
   const hasPriorityGardenStatus = Boolean(specialFriend || unread.length || animalStatus.item);
+  const shouldShowTreeInteractionTip = !hasPriorityGardenStatus
+    && currentUser
+    && !gardenTutorialPhase
+    && treeInteraction?.authenticated
+    && treeInteraction?.ready
+    && !treeInteraction?.discovered;
+
+  // 첫 상호작용을 아직 발견하지 못한 계정에서는 일반 날씨·방문 예고보다 먼저 보여줍니다.
+  // 상태바를 누르면 나무가 한 번만 은은하게 반응하고, 실제 호출은 나무를 직접 눌렀을 때 진행됩니다.
+  if (shouldShowTreeInteractionTip) {
+    items.push({
+      key: "tree-interaction-tip",
+      icon: "🌿",
+      text: "숲의 팁 · 나무를 톡톡 두드리면 누군가 찾아올지도 몰라요.",
+      action: "tree-hint",
+      label: "나무가 반응하는 위치 살펴보기",
+    });
+    if (!preferredKey) preferredKey = "tree-interaction-tip";
+  }
 
   items.push({
     key: `weather-${weather.className}`,
@@ -3551,23 +3570,6 @@ function renderGardenStatus(context = {}) {
     detail: animalGrowthMessage(),
     label: "다음 방문자 안내 보기",
   });
-
-  // 중요한 편지·방문·특별친구 소식이 없을 때만 낮은 우선순위로 노출합니다.
-  // 한 번이라도 나무를 눌러 상호작용을 발견하면 이후에는 다시 나타나지 않습니다.
-  if (!hasPriorityGardenStatus
-    && currentUser
-    && !gardenTutorialPhase
-    && treeInteraction?.authenticated
-    && treeInteraction?.ready
-    && !treeInteraction?.discovered) {
-    items.push({
-      key: "tree-interaction-tip",
-      icon: "🌿",
-      text: "숲의 팁 · 나무를 톡톡 두드리면 누군가 찾아올지도 몰라요.",
-      action: "none",
-      label: "나무 상호작용 안내",
-    });
-  }
 
   if (shouldShowInstallStatus()) {
     items.push({
@@ -3626,6 +3628,11 @@ function handleGardenStatusMainClick(event) {
   if (item.action === "install") {
     event.stopPropagation();
     void requestAppInstall();
+    return;
+  }
+  if (item.action === "tree-hint") {
+    event?.preventDefault();
+    window.dispatchEvent(new CustomEvent("todayforest:tree-hint-request"));
     return;
   }
   if (item.action === "weather" || item.action === "next-visitor") {

@@ -1,13 +1,14 @@
-// 오늘의숲 · 나무 손길로 숲친구 부르기 운영 v1.3 · 첫 상호작용 발견 안내
+// 오늘의숲 · 나무 손길로 숲친구 부르기 운영 v1.4 · 첫 상호작용 발견 안내
 // 기존 동물 방문/편지 기능은 그대로 사용하고, 이 파일은 나무의 입력·연출·쿨타임만 담당합니다.
 
 const TREE_CALL_RPC = "call_my_garden_animal_with_tree_v1";
 const TREE_CALL_STATUS_RPC = "get_my_garden_tree_call_status_v1";
-const VALID_TAP_INTERVAL_MS = 700;
+const VALID_TAP_INTERVAL_MS = 280;
 const CHARGE_RESET_MS = 10_000;
 const ARRIVAL_EFFECT_MS = 3_000;
 const STATUS_REFRESH_MS = 30_000;
 const TREE_INTERACTION_DISCOVERY_STORAGE_PREFIX = "todayforest-tree-interaction-discovered-v1";
+const TREE_INTERACTION_PREVIEW_MODE = new URL(window.location.href).searchParams.get("interactionPreview") === "tree";
 
 let supabase = null;
 let treeWrap = null;
@@ -46,6 +47,7 @@ function treeInteractionDiscoveryStorageKey(userId = authenticatedUserId) {
 }
 
 function readTreeInteractionDiscovered(userId) {
+  if (TREE_INTERACTION_PREVIEW_MODE) return false;
   if (!userId) return true;
   try {
     return window.localStorage.getItem(treeInteractionDiscoveryStorageKey(userId)) === "1";
@@ -64,14 +66,17 @@ function setTreeInteractionUser(userId) {
 }
 
 function markTreeInteractionDiscovered() {
-  if (!authenticatedUserId || treeInteractionDiscovered) return;
+  if (!authenticatedUserId || treeInteractionDiscovered) return false;
   treeInteractionDiscovered = true;
-  try {
-    window.localStorage.setItem(treeInteractionDiscoveryStorageKey(), "1");
-  } catch (_error) {
-    // 저장에 실패해도 현재 페이지에서는 안내와 유도 빛을 즉시 멈춥니다.
+  if (!TREE_INTERACTION_PREVIEW_MODE) {
+    try {
+      window.localStorage.setItem(treeInteractionDiscoveryStorageKey(), "1");
+    } catch (_error) {
+      // 저장에 실패해도 현재 페이지에서는 안내와 유도 빛을 즉시 멈춥니다.
+    }
   }
   renderState();
+  return true;
 }
 
 function publishTreeInteractionState(ready) {
@@ -215,6 +220,14 @@ function playTapReaction() {
   window.setTimeout(() => treeWrap?.classList.remove("is-tree-call-tapped"), 520);
 }
 
+function playTreeHintReaction() {
+  if (!treeWrap || treeInteractionDiscovered || !authenticated || !canCharge()) return;
+  treeWrap.classList.remove("is-tree-call-hint-pulse");
+  void treeWrap.offsetWidth;
+  treeWrap.classList.add("is-tree-call-hint-pulse");
+  window.setTimeout(() => treeWrap?.classList.remove("is-tree-call-hint-pulse"), 1500);
+}
+
 function renderState() {
   if (!treeWrap || !hitbox) return;
   const conflict = hasAnimalConflict();
@@ -331,6 +344,12 @@ async function completeTreeCall() {
   }
 
   clearChargeResetTimer();
+  if (TREE_INTERACTION_PREVIEW_MODE) {
+    resetCharge();
+    showStatus("미리보기에서는 나무의 반응까지만 확인해요.");
+    renderState();
+    return;
+  }
   if (shouldCallSpecialFriend()) {
     completeSpecialFriendTreeCall();
     return;
@@ -395,7 +414,8 @@ function handleTreeTap(event) {
 
   if (!authenticated || isInteractionBlocked()) return;
   // 사용자가 나무를 직접 눌렀다면 결과와 관계없이 상호작용을 발견한 것으로 기록합니다.
-  markTreeInteractionDiscovered();
+  const discoveredNow = markTreeInteractionDiscovered();
+  if (discoveredNow) showStatus("나무가 손길을 느끼고 살며시 빛났어요.");
   // 동물이 머물거나 다가오는 동안, 그리고 3초 등장 연출 중에는 안내 없이 나무만 흔들립니다.
   if (hasAnimalConflict()) {
     renderState();
@@ -491,6 +511,8 @@ function createTreeCallSurface() {
   hitbox.addEventListener("click", handleTreeTap);
   // 마음 열매 투명 레이어의 빈 부분도 기존 나무 손길로 전달합니다.
   window.addEventListener("todayforest:tree-tap-request", handleTreeTap);
+  // 상단 상태바의 첫 발견 안내를 누르면 호출을 대신 실행하지 않고, 대상인 나무만 한 번 강조합니다.
+  window.addEventListener("todayforest:tree-hint-request", playTreeHintReaction);
   return true;
 }
 
