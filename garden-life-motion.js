@@ -269,7 +269,7 @@ function triggerDecorationMoment() {
   if (!stage || stage.classList.contains("is-garden-decorating")) return false;
 
   const candidates = [...document.querySelectorAll(
-    "#foundItemsLayer .garden-life-item-flower, #foundItemsLayer .garden-life-item-ribbon, #foundItemsLayer .garden-life-item-letter, #foundItemsLayer .garden-life-item-lantern, #foundItemsLayer .garden-life-item-animal",
+    "#foundItemsLayer .garden-life-item-flower, #foundItemsLayer .garden-life-item-ribbon, #foundItemsLayer .garden-life-item-letter, #foundItemsLayer .garden-life-item-animal",
   )].filter((element) => element.offsetParent !== null);
 
   if (!candidates.length) return false;
