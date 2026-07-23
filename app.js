@@ -247,14 +247,19 @@ const animalVisitors = {
   squirrel: {
     kind: "squirrel",
     icon: "🐿️",
-    asset: "assets/decorations/tiny-squirrel.png",
+    // 줄기가 없는 초기 정원과, 나무를 탈 수 있는 성장 정원은 자세를 분리합니다.
+    // 꾸미기용 tiny-squirrel과도 리소스를 분리해 방문자 역할이 코드에서 섞이지 않게 합니다.
+    asset: "assets/visitors/forest-squirrel-trunk-idle.svg",
+    lookAsset: "assets/visitors/forest-squirrel-trunk-look.svg",
+    groundAsset: "assets/visitors/forest-squirrel-ground-idle.svg",
+    groundLookAsset: "assets/visitors/forest-squirrel-ground-look.svg",
     name: "다람쥐",
     deliveryHours: 12,
     sceneClass: "squirrel",
-    speech: "다람쥐가 나무 아래에서 편지를 기다리고 있어요.",
+    speech: "다람쥐가 나무 곁에서 편지를 기다리고 있어요.",
     traceIcon: "🌰",
     traceStory: "다람쥐가 도토리 하나를 두고 숲길로 돌아갔어요.",
-    position: "trunk",
+    position: "branch",
   },
   rabbit: {
     kind: "rabbit",
@@ -2119,11 +2124,25 @@ function v2TraceMeta(visit) {
   };
 }
 
+function animalVisitorArtSources(animal) {
+  if (!animal) return { idle: "", look: "" };
+  const treeStage = Number.parseInt(els.gardenStage?.dataset.treeStage || "6", 10);
+  const usesGroundPose = animal.kind === "squirrel"
+    && Number.isFinite(treeStage)
+    && treeStage <= 2
+    && animal.groundAsset;
+  return {
+    idle: usesGroundPose ? animal.groundAsset : animal.asset,
+    look: usesGroundPose ? (animal.groundLookAsset || animal.groundAsset) : (animal.lookAsset || animal.asset),
+  };
+}
+
 function animalVisitorMedia(animal) {
   if (!animal) return "";
-  if (animal.asset) {
-    const lookAttr = animal.lookAsset ? ` data-look-src="${escapeAttr(animal.lookAsset)}"` : "";
-    return `<img class="animal-v2-art" src="${escapeAttr(animal.asset)}" data-idle-src="${escapeAttr(animal.asset)}"${lookAttr} alt="" aria-hidden="true" draggable="false" />`;
+  const art = animalVisitorArtSources(animal);
+  if (art.idle) {
+    const lookAttr = art.look && art.look !== art.idle ? ` data-look-src="${escapeAttr(art.look)}"` : "";
+    return `<img class="animal-v2-art" src="${escapeAttr(art.idle)}" data-idle-src="${escapeAttr(art.idle)}"${lookAttr} alt="" aria-hidden="true" draggable="false" />`;
   }
   return `<span class="animal-v2-emoji" aria-hidden="true">${animal.icon}</span>`;
 }
@@ -2154,9 +2173,10 @@ function scheduleAnimalVisitorLife() {
 
 function setAnimalEncounterVisual(animal) {
   if (!els.animalEncounterIcon || !animal) return;
-  els.animalEncounterIcon.classList.toggle("has-animal-art", Boolean(animal.asset));
-  if (animal.asset) {
-    els.animalEncounterIcon.innerHTML = `<img src="${escapeAttr(animal.asset)}" alt="" aria-hidden="true" draggable="false" />`;
+  const art = animalVisitorArtSources(animal).idle;
+  els.animalEncounterIcon.classList.toggle("has-animal-art", Boolean(art));
+  if (art) {
+    els.animalEncounterIcon.innerHTML = `<img src="${escapeAttr(art)}" alt="" aria-hidden="true" draggable="false" />`;
   } else {
     els.animalEncounterIcon.textContent = animal.icon || "🌿";
   }

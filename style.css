@@ -7240,3 +7240,206 @@ body.animal-preview-clean-mode .ff-cinematic {
   display: none !important;
 }
 
+
+/* =========================================================
+   GENERAL VISITOR ART v0.5 — SQUIRREL
+   - 꾸미기용 tiny-squirrel과 방문자 다람쥐의 리소스·자세를 완전히 분리
+   - 성장 1~2단계에는 풀밭에 앉은 자세, 3단계부터는 줄기를 붙잡은 자세 사용
+   - 다람쥐가 정원 중앙에 둥실 떠 있지 않고 나무와 실제 접촉하는 장면으로 배치
+   ========================================================= */
+.animal-v2-visitor.animal-v2-squirrel.has-animal-art {
+  top: 49%;
+  right: 33%;
+  width: 70px;
+  height: 72px;
+  isolation: isolate;
+}
+
+.animal-v2-visitor.animal-v2-squirrel.has-animal-art .animal-v2-art {
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 3px 3px rgba(72, 83, 61, .105));
+  opacity: .985;
+  animation: animalVisitorSquirrelRest 6.1s ease-in-out infinite;
+}
+
+.animal-v2-visitor.animal-v2-squirrel.has-animal-art.is-looking .animal-v2-art {
+  animation: animalVisitorSquirrelNotice .9s cubic-bezier(.25,.7,.3,1) both;
+}
+
+/* 편지는 줄기를 잡은 앞발 가까이 놓인 작은 종이봉투로 보입니다. */
+.animal-v2-visitor.animal-v2-squirrel.has-animal-art .animal-v2-envelope {
+  z-index: 4;
+  left: 0;
+  right: auto;
+  bottom: 23px;
+  width: 14px;
+  height: 10px;
+  border: 1px solid rgba(169, 114, 123, .50);
+  border-radius: 2px;
+  background: rgba(255, 248, 239, .96);
+  color: transparent;
+  font-size: 0;
+  line-height: 0;
+  text-shadow: none;
+  box-shadow: 0 2px 4px rgba(94, 77, 71, .09);
+  transform: rotate(-7deg);
+  overflow: hidden;
+}
+.animal-v2-visitor.animal-v2-squirrel.has-animal-art .animal-v2-envelope::before,
+.animal-v2-visitor.animal-v2-squirrel.has-animal-art .animal-v2-envelope::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+.animal-v2-visitor.animal-v2-squirrel.has-animal-art .animal-v2-envelope::before {
+  left: 2px;
+  top: -3px;
+  width: 9px;
+  height: 7px;
+  border-right: 1px solid rgba(169, 114, 123, .38);
+  border-bottom: 1px solid rgba(169, 114, 123, .38);
+  transform: rotate(45deg);
+}
+.animal-v2-visitor.animal-v2-squirrel.has-animal-art .animal-v2-envelope::after {
+  right: 2px;
+  bottom: 1px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(205, 119, 139, .68);
+}
+
+/* 줄기가 없는 시기에는 새싹 오른쪽 풀밭에 앉은 전용 자세를 사용합니다. */
+.garden-stage[data-tree-stage="1"] .animal-v2-visitor.animal-v2-squirrel.has-animal-art {
+  top: auto;
+  right: 15%;
+  bottom: 17.5%;
+  width: 65px;
+  height: 59px;
+}
+.garden-stage[data-tree-stage="2"] .animal-v2-visitor.animal-v2-squirrel.has-animal-art {
+  top: auto;
+  right: 16%;
+  bottom: 20%;
+  width: 67px;
+  height: 61px;
+}
+.garden-stage[data-tree-stage="1"] .animal-v2-visitor.animal-v2-squirrel.has-animal-art .animal-v2-envelope,
+.garden-stage[data-tree-stage="2"] .animal-v2-visitor.animal-v2-squirrel.has-animal-art .animal-v2-envelope {
+  left: auto;
+  right: 2px;
+  bottom: 4px;
+  transform: rotate(5deg);
+}
+
+/* 나무가 자라면 오른쪽 줄기와 낮은 가지를 따라 조금씩 위로 이동합니다. */
+.garden-stage[data-tree-stage="3"] .animal-v2-visitor.animal-v2-squirrel.has-animal-art {
+  top: 51%;
+  right: 35%;
+  width: 63px;
+  height: 66px;
+}
+.garden-stage[data-tree-stage="4"] .animal-v2-visitor.animal-v2-squirrel.has-animal-art {
+  top: 50%;
+  right: 34%;
+  width: 66px;
+  height: 69px;
+}
+.garden-stage[data-tree-stage="5"] .animal-v2-visitor.animal-v2-squirrel.has-animal-art {
+  top: 49.5%;
+  right: 33.5%;
+  width: 68px;
+  height: 71px;
+}
+.garden-stage[data-tree-stage="6"] .animal-v2-visitor.animal-v2-squirrel.has-animal-art {
+  top: 49%;
+  right: 33%;
+  width: 70px;
+  height: 72px;
+}
+
+/* 화면 가장자리에서 달려와 줄기를 타고 멈추는 짧은 방문 장면입니다. */
+.animal-v2-visitor.animal-v2-squirrel.has-animal-art.is-arriving {
+  animation: animalVisitorSquirrelArrive .96s cubic-bezier(.2,.78,.28,1) both;
+}
+.animal-v2-visitor.animal-v2-squirrel.has-animal-art.is-departing {
+  animation: animalVisitorSquirrelDepart 1.08s cubic-bezier(.35,.05,.65,.95) both;
+}
+
+@keyframes animalVisitorSquirrelRest {
+  0%, 100% { transform: rotate(0deg) scaleX(1) scaleY(1); }
+  47% { transform: rotate(.1deg) scaleX(1.001) scaleY(.998); }
+  54% { transform: rotate(-.08deg) scaleX(.999) scaleY(1.001); }
+}
+@keyframes animalVisitorSquirrelNotice {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  42% { transform: rotate(-.8deg) scale(1.007); }
+  72% { transform: rotate(.2deg) scale(1.002); }
+}
+@keyframes animalVisitorSquirrelArrive {
+  0% { transform: translate3d(48px,36px,0) scale(.76) rotate(8deg); opacity: 0; }
+  62% { transform: translate3d(-2px,-3px,0) scale(1.02) rotate(-1deg); opacity: 1; }
+  100% { transform: translate3d(0,0,0) scale(1) rotate(0); opacity: 1; }
+}
+@keyframes animalVisitorSquirrelDepart {
+  0% { transform: translate3d(0,0,0) scale(1) rotate(0); opacity: 1; }
+  35% { transform: translate3d(-4px,-10px,0) scale(.98) rotate(-3deg); opacity: 1; }
+  100% { transform: translate3d(34px,-88px,0) scale(.67) rotate(10deg); opacity: 0; }
+}
+
+@media (hover: hover) {
+  .animal-v2-visitor.animal-v2-squirrel.has-animal-art:hover .animal-v2-art {
+    filter: drop-shadow(0 3px 3px rgba(72, 83, 61, .13)) brightness(1.015);
+  }
+}
+
+@media (max-width: 520px) {
+  .garden-stage[data-tree-stage="1"] .animal-v2-visitor.animal-v2-squirrel.has-animal-art {
+    right: 12.5%;
+    bottom: 18%;
+    width: 59px;
+    height: 54px;
+  }
+  .garden-stage[data-tree-stage="2"] .animal-v2-visitor.animal-v2-squirrel.has-animal-art {
+    right: 13.5%;
+    bottom: 20.5%;
+    width: 61px;
+    height: 56px;
+  }
+  .garden-stage[data-tree-stage="3"] .animal-v2-visitor.animal-v2-squirrel.has-animal-art {
+    top: 51.5%;
+    right: 32%;
+    width: 58px;
+    height: 61px;
+  }
+  .garden-stage[data-tree-stage="4"] .animal-v2-visitor.animal-v2-squirrel.has-animal-art {
+    top: 50.5%;
+    right: 31%;
+    width: 60px;
+    height: 63px;
+  }
+  .garden-stage[data-tree-stage="5"] .animal-v2-visitor.animal-v2-squirrel.has-animal-art {
+    top: 50%;
+    right: 30%;
+    width: 62px;
+    height: 65px;
+  }
+  .garden-stage[data-tree-stage="6"] .animal-v2-visitor.animal-v2-squirrel.has-animal-art {
+    top: 49.5%;
+    right: 29.5%;
+    width: 64px;
+    height: 67px;
+  }
+  .animal-v2-visitor.animal-v2-squirrel.has-animal-art .animal-v2-envelope {
+    width: 13px;
+    height: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animal-v2-visitor.animal-v2-squirrel.has-animal-art,
+  .animal-v2-visitor.animal-v2-squirrel.has-animal-art .animal-v2-art {
+    animation: none !important;
+  }
+}

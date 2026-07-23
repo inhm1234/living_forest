@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 155" role="img" aria-labelledby="title desc">
+  <title id="title">풀밭의 숲 다람쥐</title>
+  <desc id="desc">어린 정원 곁 풀밭에 조용히 앉아 나무를 바라보는 작은 다람쥐</desc>
+  <defs>
+    <linearGradient id="fur" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e9b77f"/>
+      <stop offset=".55" stop-color="#cf8d55"/>
+      <stop offset="1" stop-color="#ad6d42"/>
+    </linearGradient>
+    <linearGradient id="tail" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#efc18e"/>
+      <stop offset=".48" stop-color="#d5955e"/>
+      <stop offset="1" stop-color="#ad6d42"/>
+    </linearGradient>
+    <radialGradient id="belly" cx="46%" cy="34%" r="72%">
+      <stop offset="0" stop-color="#fff1d7"/>
+      <stop offset="1" stop-color="#eec99c"/>
+    </radialGradient>
+    <radialGradient id="cheek" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#e9a698" stop-opacity=".68"/>
+      <stop offset="1" stop-color="#e9a698" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softGround" x="-30%" y="-120%" width="160%" height="340%">
+      <feGaussianBlur stdDeviation="2.6"/>
+    </filter>
+  </defs>
+
+  <ellipse cx="101" cy="139" rx="48" ry="5" fill="#6f976a" opacity=".16" filter="url(#softGround)"/>
+
+  <!-- 풍성한 꼬리는 몸 뒤로 크게 휘어 방문자 실루엣을 한눈에 알아보게 합니다. -->
+  <path d="M74 120C42 119 25 99 31 74c5-24 27-41 50-34 19 6 29 25 22 43-5 14-18 23-31 22 9 5 15 10 20 18Z"
+        fill="url(#tail)" stroke="#8d674f" stroke-opacity=".68" stroke-width="2.8" stroke-linejoin="round"/>
+  <path d="M69 99c-18 0-29-11-27-26 2-13 15-24 29-21 12 2 20 13 18 25-2 10-10 18-20 22Z"
+        fill="#f3c99b" opacity=".84"/>
+  <path d="M50 62c10-10 25-13 36-7" fill="none" stroke="#fff3dd" stroke-width="5" stroke-linecap="round" opacity=".24"/>
+
+  <g stroke="#8d674f" stroke-opacity=".7" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="105" cy="113" rx="31" ry="27" fill="url(#fur)" stroke-width="2.8"/>
+    <ellipse cx="112" cy="119" rx="20" ry="19" fill="url(#belly)" stroke="none" opacity=".94"/>
+    <circle cx="119" cy="78" r="27" fill="url(#fur)" stroke-width="2.7"/>
+    <path d="M102 59 105 38l15 18" fill="#d99661" stroke-width="2.6"/>
+    <path d="M127 55 141 38l1 24" fill="#d99661" stroke-width="2.6"/>
+    <path d="M107 54 109 44l7 11" fill="#eab0a0" stroke="none" opacity=".78"/>
+    <path d="m133 52 7-9v14" fill="#eab0a0" stroke="none" opacity=".78"/>
+    <ellipse cx="137" cy="82" rx="15" ry="12" fill="#f7dfc0" stroke="none"/>
+    <path d="M95 103c7-7 17-9 24-4 4 3 5 8 3 13" fill="none" stroke-width="3"/>
+    <path d="M121 103c5-5 11-6 16-2" fill="none" stroke-width="2.8"/>
+    <path d="M96 135c7-5 15-5 22 0M117 135c6-4 14-4 20 0" fill="none" stroke-width="2.7"/>
+  </g>
+
+  <circle cx="119" cy="74" r="4.2" fill="#4a4744"/>
+  <circle cx="120.4" cy="72.7" r="1.2" fill="#fff" opacity=".95"/>
+  <ellipse cx="146" cy="81" rx="3.9" ry="3" fill="#6f5048"/>
+  <path d="M146 85c-2 3-5 4-8 4" fill="none" stroke="#7f6258" stroke-width="1.8" stroke-linecap="round"/>
+  <ellipse cx="130" cy="88" rx="11" ry="7" fill="url(#cheek)" opacity=".45"/>
+  <path d="M109 65c6-5 14-7 21-5" fill="none" stroke="#fff5e6" stroke-width="4" stroke-linecap="round" opacity=".25"/>
+  <path d="M91 99c7-4 14-5 20-3" fill="none" stroke="#fff3df" stroke-width="4" stroke-linecap="round" opacity=".2"/>
+
+  <!-- 앞쪽 풀잎이 발을 살짝 가려 정원 위에 얹힌 스티커가 아니라 풀밭의 손님처럼 보이게 합니다. -->
+  <g fill="none" stroke="#6f9e68" stroke-linecap="round" opacity=".62">
+    <path d="M90 141c0-7 2-12 6-16" stroke-width="2.3"/>
+    <path d="M98 141c-1-6-4-10-7-13" stroke-width="2"/>
+    <path d="M126 141c1-7 4-11 8-14" stroke-width="2.2"/>
+    <path d="M134 141c0-5-2-9-5-12" stroke-width="1.9"/>
+  </g>
+</svg>
