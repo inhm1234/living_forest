@@ -6807,6 +6807,17 @@ function sharedTreeV2CareMarkup(tree, friend) {
   }).join("");
 }
 
+function bindSharedTreeV2CareButtons() {
+  if (!els.sharedTreeV2CareOptions) return;
+  els.sharedTreeV2CareOptions.querySelectorAll("[data-v2-care-type]").forEach((button) => {
+    button.onclick = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      void recordSharedTreeV2Care(button);
+    };
+  });
+}
+
 function renderSharedTreeV2View(tree) {
   if (!tree) return false;
   const friend = friendForSharedTree(tree);
@@ -6868,6 +6879,7 @@ function renderSharedTreeV2View(tree) {
           ? `${friend.name}의 손길이 먼저 왔어요`
           : "각자 하루 한 번";
   els.sharedTreeV2CareOptions.innerHTML = sharedTreeV2CareMarkup(tree, friend);
+  bindSharedTreeV2CareButtons();
 
   const storyEvents = detail.recentEvents.slice(0, 6);
   els.sharedTreeV2Story.classList.toggle("hidden", !storyEvents.length);
@@ -8860,10 +8872,8 @@ function bindEvents() {
   els.returnToFriendsFromTogetherForestBottom.addEventListener("click", returnToFriendsFromTogetherForest);
   els.returnToFriendsFromSharedTree.addEventListener("click", returnToFriendsFromSharedTree);
   els.sharedTreeRecordLightButton.addEventListener("click", () => { void leaveSharedTreeLight(); });
-  els.sharedTreeV2CareOptions?.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-v2-care-type]");
-    if (button) void recordSharedTreeV2Care(button);
-  });
+  // v2 돌봄 버튼은 렌더링 직후 각 버튼에 직접 연결합니다.
+  // 동적으로 다시 그려지는 QA 화면에서도 클릭이 누락되지 않게 하기 위함입니다.
   els.sharedTreeV2DevTools?.addEventListener("click", (event) => {
     const actorButton = event.target.closest("[data-v2-dev-actor]");
     if (actorButton) {
