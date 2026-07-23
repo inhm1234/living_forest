@@ -283,6 +283,12 @@ const animalVisitors = {
   },
 };
 
+// 방문자 미리보기는 실제 정원 데이터를 바꾸지 않는 시각 검수 모드입니다.
+// 다른 모듈이 시작되기 전에 몸체 클래스부터 적용해 꾸미기·특별친구가 잠깐 비치는 현상을 줄입니다.
+const ANIMAL_PREVIEW_KINDS = new Set(Object.keys(animalVisitors));
+const initialAnimalPreviewKind = String(new URL(window.location.href).searchParams.get("animalPreview") || "").trim();
+document.body.classList.toggle("animal-preview-clean-mode", ANIMAL_PREVIEW_KINDS.has(initialAnimalPreviewKind));
+
 // 서버는 퇴장 뒤 animal_kind를 비워 둡니다. 다른 기기에서도 같은 짧은 흔적을 보여주기 위한 공용 표시입니다.
 const genericAnimalTrace = {
   kind: "trace",
@@ -1789,7 +1795,23 @@ function animalPreviewKindFromUrl() {
   // 일반 방문자 그림과 배치를 DB를 건드리지 않고 확인하는 검수용 미리보기입니다.
   // ?animalPreview=rabbit / squirrel / hedgehog / bird
   const kind = String(new URL(window.location.href).searchParams.get("animalPreview") || "").trim();
-  return animalVisitors[kind] ? kind : "";
+  return ANIMAL_PREVIEW_KINDS.has(kind) ? kind : "";
+}
+
+function isAnimalPreviewMode() {
+  return Boolean(animalPreviewKindFromUrl());
+}
+
+function applyAnimalPreviewCleanMode() {
+  const enabled = isAnimalPreviewMode();
+  document.body.classList.toggle("animal-preview-clean-mode", enabled);
+  els.gardenStage?.classList.toggle("is-animal-preview-clean", enabled);
+  if (enabled) {
+    els.gardenStage?.setAttribute("data-animal-preview", animalPreviewKindFromUrl());
+  } else {
+    els.gardenStage?.removeAttribute("data-animal-preview");
+  }
+  return enabled;
 }
 
 function clearAnimalVisitArrivalTimer() {
@@ -2766,8 +2788,13 @@ function tutorialSandboxFoundItems() {
 function renderFoundItems() {
   if (!els.foundItemsLayer || !els.foundItemSparkle) return;
 
-  const foundItems = [...(state.foundItems || []), ...tutorialSandboxFoundItems()]
-    .filter((item) => foundItemCatalog[item.itemKey]);
+  // animalPreview에서는 사용자의 실제 배치 데이터를 읽어도 화면에는 그리지 않습니다.
+  // 상태·좌표·DB는 그대로 두고, 검수 화면에서만 대상 방문자와 기본 정원 배경을 분리해 봅니다.
+  const isCleanAnimalPreview = isAnimalPreviewMode();
+  const foundItems = isCleanAnimalPreview
+    ? []
+    : [...(state.foundItems || []), ...tutorialSandboxFoundItems()]
+      .filter((item) => foundItemCatalog[item.itemKey]);
   els.foundItemsLayer.innerHTML = foundItems.map((item) => {
     const catalogItem = foundItemCatalog[item.itemKey];
     const position = foundItemDisplayPosition(item);
@@ -2781,7 +2808,7 @@ function renderFoundItems() {
 
   renderGardenDecorateControls(foundItems);
 
-  const canDiscover = canDiscoverFoundItem();
+  const canDiscover = !isCleanAnimalPreview && canDiscoverFoundItem();
   const shouldShowDiscoveryGuide = !gardenDecorateMode && canDiscover;
   els.foundItemSparkle.hidden = !shouldShowDiscoveryGuide;
   if (els.foundItemHint) els.foundItemHint.hidden = !shouldShowDiscoveryGuide;
@@ -3573,6 +3600,7 @@ function renderGarden() {
   const unread = getUnreadLetters();
 
   const isGrowthPreview = growthPreviewFromUrl() !== null;
+  applyAnimalPreviewCleanMode();
   // 방문 동물은 성장 단계에 맞는 실제 착지 지점을 사용합니다.
   // 작은 새는 가지가 없는 초기 단계에서는 풀밭 가까이, 나무가 자란 뒤에는 가지 높이에 앉습니다.
   if (els.gardenStage) els.gardenStage.dataset.treeStage = String(stageRules.indexOf(stage) + 1);

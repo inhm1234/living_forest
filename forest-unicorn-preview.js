@@ -6,6 +6,7 @@
    실제 배송 기록은 일반 동물 편지와 분리된 특별 친구 전용 RPC에 저장됩니다.
    ------------------------------------------------------------------------- */
 const previewParams = new URLSearchParams(window.location.search);
+const animalPreviewMode = ["bird", "rabbit", "squirrel", "hedgehog"].includes(String(previewParams.get("animalPreview") || "").trim());
 const forestFriendPreviewEnabled = previewParams.get("forestFriendPreview") === "1";
 const forestFriendVisitFastMode = false;
 const forestFriendForceNaturalVisit = false;
@@ -1238,11 +1239,15 @@ let forestFriendLiveMetAt = window.__todayForestSpecialFriendLiveState?.metAt ||
   }
 
   function bootPreview() {
+    // 일반 방문자 검수에서는 특별친구 장면을 만들지 않습니다.
+    // 실제 특별친구 상태나 서버 데이터는 건드리지 않고 이 페이지에서만 초기화를 건너뜁니다.
+    if (animalPreviewMode) return;
     if (!forestFriendPreviewEnabled && !forestFriendLiveEnabled) return;
     initWhenReady();
   }
 
   window.addEventListener("todayforest:special-friend-live-state", (event) => {
+    if (animalPreviewMode) return;
     const detail = event?.detail || {};
     if (detail.friendKey !== "forest_unicorn") return;
     forestFriendLiveEnabled = Boolean(detail.isMet);

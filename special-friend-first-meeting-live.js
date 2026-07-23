@@ -10,7 +10,9 @@
 const liveParams = new URLSearchParams(window.location.search);
 const statePreviewMode = liveParams.get("specialFriendStatePreview") || "";
 const isStatePreviewMode = ["1", "2", "ready", "resume", "after-save", "met"].includes(statePreviewMode);
-const isSpecialFriendPreview = liveParams.has("forestFriendPreview")
+const isAnimalPreview = ["bird", "rabbit", "squirrel", "hedgehog"].includes(String(liveParams.get("animalPreview") || "").trim());
+const isSpecialFriendPreview = isAnimalPreview
+  || liveParams.has("forestFriendPreview")
   || liveParams.has("forestFriendCinematic")
   || liveParams.has("firstMeeting")
   || liveParams.has("welcomePreview")

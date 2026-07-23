@@ -7095,13 +7095,13 @@ body.forest-unicorn-live-enabled .header-actions {
 
 /* 나무가 아직 가지를 만들지 않은 시기에는 새를 풀밭의 작은 손님으로 배치합니다. */
 .garden-stage[data-tree-stage="1"] .animal-v2-visitor.animal-v2-bird.has-animal-art {
-  right: 26%;
+  right: 17.5%;
   bottom: 18.5%;
   width: 54px;
   height: 49px;
 }
 .garden-stage[data-tree-stage="2"] .animal-v2-visitor.animal-v2-bird.has-animal-art {
-  right: 25%;
+  right: 17%;
   bottom: 21%;
   width: 55px;
   height: 50px;
@@ -7176,13 +7176,13 @@ body.forest-unicorn-live-enabled .header-actions {
     height: 48px;
   }
   .garden-stage[data-tree-stage="1"] .animal-v2-visitor.animal-v2-bird.has-animal-art {
-    right: 23%;
+    right: 15.5%;
     bottom: 19%;
     width: 50px;
     height: 45px;
   }
   .garden-stage[data-tree-stage="2"] .animal-v2-visitor.animal-v2-bird.has-animal-art {
-    right: 22%;
+    right: 15%;
     bottom: 21.5%;
     width: 51px;
     height: 46px;
@@ -7217,3 +7217,26 @@ body.forest-unicorn-live-enabled .header-actions {
     animation: none !important;
   }
 }
+
+/* =========================================================
+   ANIMAL PREVIEW CLEAN MODE v0.4
+   - ?animalPreview=... 에서만 사용자의 꾸미기 배치와 편지 가지를 숨김
+   - 특별친구의 정원 캐릭터·도착 UI도 검수 화면에서 제외
+   - 실제 장식 좌표, 특별친구 상태, 편지 데이터는 변경하지 않음
+   ========================================================= */
+body.animal-preview-clean-mode .garden-stage.is-animal-preview-clean .found-items-layer,
+body.animal-preview-clean-mode .garden-stage.is-animal-preview-clean .found-item-sparkle,
+body.animal-preview-clean-mode .garden-stage.is-animal-preview-clean .found-item-hint,
+body.animal-preview-clean-mode .garden-stage.is-animal-preview-clean .garden-decorate-controls,
+body.animal-preview-clean-mode .garden-stage.is-animal-preview-clean .branch-letters,
+body.animal-preview-clean-mode .garden-stage.is-animal-preview-clean .special-friend-call-layer,
+body.animal-preview-clean-mode .garden-stage.is-animal-preview-clean .forest-unicorn-preview,
+body.animal-preview-clean-mode .garden-stage.is-animal-preview-clean .forest-unicorn-hit,
+body.animal-preview-clean-mode .garden-stage.is-animal-preview-clean .forest-unicorn-arrival,
+body.animal-preview-clean-mode .garden-stage.is-animal-preview-clean .forest-unicorn-delivery-card,
+body.animal-preview-clean-mode .special-friend-arrival-notice,
+body.animal-preview-clean-mode .special-friend-arrival-chip,
+body.animal-preview-clean-mode .ff-cinematic {
+  display: none !important;
+}
+
