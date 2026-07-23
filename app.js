@@ -440,6 +440,7 @@ let activeAnimalV2Visits = [];
 let selectedAnimalV2VisitId = "";
 let animalVisitSyncBusy = false;
 let animalVisitArrivalTimer = null;
+let animalVisitSafetyTimer = null;
 let animalDepartureTimer = null;
 let animalVisitorLifeTimer = null;
 let animalInteractionDiscoveryNudgeTimer = null;
@@ -1950,6 +1951,10 @@ function clearAnimalVisitArrivalTimer() {
     window.clearTimeout(animalVisitArrivalTimer);
     animalVisitArrivalTimer = null;
   }
+  if (animalVisitSafetyTimer) {
+    window.clearTimeout(animalVisitSafetyTimer);
+    animalVisitSafetyTimer = null;
+  }
 }
 
 function animalVisitMs(value) {
@@ -2057,17 +2062,37 @@ function animalV2TimingCandidates() {
   return targets.filter((time) => time > Date.now());
 }
 
-function scheduleAnimalVisitRefresh() {
+function scheduleAnimalVisitRefresh({ retryAfterMs = 0 } = {}) {
   clearAnimalVisitArrivalTimer();
   if (!currentUser || document.hidden) return;
+
+  const now = Date.now();
   const targets = animalV2TimingCandidates();
-  if (!targets.length) return;
-  const nextAt = Math.min(...targets);
-  const wait = nextAt - Date.now();
+  const nextAt = targets.length ? Math.min(...targets) : 0;
+  const wait = nextAt ? nextAt - now : 0;
+
+  // 접근·체류·퇴장 시각이 있으면 해당 순간에 정확히 다시 동기화합니다.
   if (wait > 0 && wait <= 6 * 60 * 60 * 1000) {
     animalVisitArrivalTimer = window.setTimeout(() => {
       void syncMyGardenAnimalVisit({ silent: true, rerender: true });
     }, Math.max(150, wait + 150));
+  }
+
+  // 방문 목록이 비어 있거나 서버 시각 정보가 빠진 경우에도 화면을 새로고침하지
+  // 않아도 자연 방문 예약을 다시 확인할 수 있도록 저빈도 안전 점검을 둡니다.
+  let safetyWait = Number(retryAfterMs) > 0 ? Number(retryAfterMs) : 0;
+  if (!safetyWait && !activeAnimalV2Visits.length) {
+    safetyWait = 45 * 1000;
+  } else if (!safetyWait && !targets.length) {
+    safetyWait = 60 * 1000;
+  } else if (!safetyWait && wait > 2 * 60 * 1000) {
+    safetyWait = 90 * 1000;
+  }
+
+  if (safetyWait > 0) {
+    animalVisitSafetyTimer = window.setTimeout(() => {
+      void syncMyGardenAnimalVisit({ silent: true, rerender: true });
+    }, safetyWait);
   }
 }
 
@@ -2101,6 +2126,7 @@ async function syncMyGardenAnimalVisit({ silent = false, rerender = false } = {}
   } catch (error) {
     console.warn("TodayForest DEV animal v2 sync skipped:", error);
     if (!silent) showToast("숲친구 방문 소식을 불러오지 못했어요. 잠시 뒤 다시 확인해 주세요.");
+    scheduleAnimalVisitRefresh({ retryAfterMs: 20 * 1000 });
     return activeAnimalV2Visits;
   } finally {
     animalVisitSyncBusy = false;
@@ -7287,6 +7313,11 @@ function bindEvents() {
       void syncMyGardenAnimalVisit({ beginWhenReady: true, silent: true, rerender: true });
       // 편지함을 보고 있다가 다시 돌아오면 배송 상태만 한 번 최신으로 맞춥니다.
       if (isLettersSheetOpen()) void refreshLettersWhileOpen();
+    }
+  });
+  window.addEventListener("online", () => {
+    if (currentUser && !document.hidden) {
+      void syncMyGardenAnimalVisit({ silent: true, rerender: true });
     }
   });
   window.addEventListener("todayforest:tree-animal-call-sync", () => {
