@@ -450,6 +450,7 @@ let animalInteractionPreviewDiscovered = false;
 let lettersRefreshTimer = null;
 let lettersRefreshBusy = false;
 let animalEncounterVisitId = "";
+let animalEncounterAnchorVisitId = "";
 let pendingExpiredLetterReturn = null;
 let pendingRetentionNextVisitNoticeCount = 0;
 let retentionWindTimer = null;
@@ -557,6 +558,7 @@ const els = {
   animalEncounterTitle: $("#animalEncounterTitle"),
   animalEncounterText: $("#animalEncounterText"),
   animalEncounterTime: $("#animalEncounterTime"),
+  animalEncounterPreviewNote: $("#animalEncounterPreviewNote"),
   letterComposerTitle: $("#letterComposerTitle"),
   letterComposerFootnote: $("#letterComposerFootnote"),
   nextVisitorText: $("#nextVisitorText"),
@@ -2126,12 +2128,144 @@ function animalV2DeliveryLine(animal) {
   return `${mood} · 약 ${animal?.deliveryHours || 0}시간`;
 }
 
+
+function animalEncounterUsesMobileSheet() {
+  return Boolean(window.matchMedia?.("(max-width: 560px)")?.matches);
+}
+
+function clearAnimalEncounterPosition() {
+  const card = els.animalEncounterCard;
+  if (!card) return;
+  ["left", "top", "right", "bottom", "--animal-encounter-tail-x"].forEach((property) => {
+    card.style.removeProperty(property);
+  });
+  delete card.dataset.placement;
+  delete card.dataset.positionMode;
+}
+
+function setAnimalEncounterPreviewState(isPreview) {
+  if (els.animalEncounterPreviewNote) els.animalEncounterPreviewNote.hidden = !isPreview;
+  if (!els.animalEncounterSend) return;
+  if (isPreview) {
+    els.animalEncounterSend.setAttribute("aria-describedby", "animalEncounterPreviewNote");
+  } else {
+    els.animalEncounterSend.removeAttribute("aria-describedby");
+  }
+}
+
+function animalEncounterAnchorTarget(visitId = animalEncounterAnchorVisitId) {
+  if (!visitId || !els.animalV2Layer) return null;
+  const escaped = CSS.escape(String(visitId));
+  return els.animalV2Layer.querySelector(`[data-animal-v2-visit="${escaped}"]`);
+}
+
+function syncAnimalEncounterCardHost() {
+  const card = els.animalEncounterCard;
+  const stage = els.gardenStage;
+  if (!card || !stage) return;
+  const mobile = animalEncounterUsesMobileSheet();
+  card.classList.toggle("is-mobile-sheet", mobile);
+  if (mobile) {
+    if (card.previousElementSibling !== stage || card.parentElement !== stage.parentElement) {
+      stage.insertAdjacentElement("afterend", card);
+    }
+  } else if (card.parentElement !== stage) {
+    stage.append(card);
+  }
+}
+
+function positionAnimalEncounterCard(anchor = animalEncounterAnchorTarget()) {
+  const card = els.animalEncounterCard;
+  const stage = els.gardenStage;
+  if (!card || !stage || card.hidden) return false;
+
+  syncAnimalEncounterCardHost();
+  clearAnimalEncounterPosition();
+
+  if (animalEncounterUsesMobileSheet()) {
+    card.dataset.positionMode = "bottom-sheet";
+    window.requestAnimationFrame(() => {
+      if (!card.hidden && card.classList.contains("is-mobile-sheet")) {
+        card.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      }
+    });
+    return true;
+  }
+
+  if (!anchor || !anchor.isConnected) {
+    card.dataset.positionMode = "safe";
+    return false;
+  }
+
+  card.dataset.positionMode = "anchored";
+  card.style.left = "0px";
+  card.style.top = "0px";
+  const stageRect = stage.getBoundingClientRect();
+  const anchorRect = anchor.getBoundingClientRect();
+  const cardRect = card.getBoundingClientRect();
+  const cardWidth = cardRect.width || card.offsetWidth || 224;
+  const cardHeight = cardRect.height || card.offsetHeight || 132;
+  const stageWidth = stageRect.width;
+  const stageHeight = stageRect.height;
+  const targetCenterX = anchorRect.left - stageRect.left + (anchorRect.width / 2);
+  const targetTop = anchorRect.top - stageRect.top;
+  const targetBottom = anchorRect.bottom - stageRect.top;
+  const sidePadding = 14;
+  const topSafe = 108;
+  const bottomSafe = Math.max(topSafe + cardHeight, stageHeight - 54);
+  const gap = 12;
+
+  let placement = "above";
+  let top = targetTop - cardHeight - gap;
+  if (top < topSafe) {
+    placement = "below";
+    top = targetBottom + gap;
+  }
+  if (top + cardHeight > bottomSafe) {
+    placement = "above";
+    top = Math.max(topSafe, Math.min(targetTop - cardHeight - gap, bottomSafe - cardHeight));
+  }
+
+  const prefersRightEdge = targetCenterX >= stageWidth / 2;
+  let left = prefersRightEdge ? stageWidth - cardWidth - sidePadding : sidePadding;
+  left = Math.max(sidePadding, Math.min(left, stageWidth - cardWidth - sidePadding));
+  const tailX = Math.max(25, Math.min(targetCenterX - left, cardWidth - 25));
+
+  card.dataset.placement = placement;
+  card.style.left = `${Math.round(left)}px`;
+  card.style.top = `${Math.round(top)}px`;
+  card.style.setProperty("--animal-encounter-tail-x", `${Math.round(tailX)}px`);
+  return true;
+}
+
+function repositionOpenAnimalEncounterCard() {
+  if (!els.animalEncounterCard || els.animalEncounterCard.hidden) return;
+  window.requestAnimationFrame(() => {
+    positionAnimalEncounterCard(animalEncounterAnchorTarget());
+  });
+}
+
+function openPositionedAnimalEncounter(visitId = "", { preview = false, nudge = true } = {}) {
+  animalEncounterAnchorVisitId = String(visitId || "");
+  setAnimalEncounterPreviewState(preview);
+  if (!els.animalEncounterCard) return;
+  els.animalEncounterCard.hidden = false;
+  window.requestAnimationFrame(() => {
+    const target = animalEncounterAnchorTarget();
+    positionAnimalEncounterCard(target);
+    if (nudge && target) nudgeAnimalInteractionTarget(animalEncounterAnchorVisitId);
+  });
+}
+
 function closeAnimalEncounterCard({ notifySpecialFriend = true } = {}) {
   const specialFriend = activeSpecialForestFriendEncounter();
   animalEncounterVisitId = "";
+  animalEncounterAnchorVisitId = "";
   activeSpecialForestFriendEncounterKey = "";
+  setAnimalEncounterPreviewState(false);
   if (els.animalEncounterCard) {
     els.animalEncounterCard.hidden = true;
+    clearAnimalEncounterPosition();
     delete els.animalEncounterCard.dataset.animalKind;
     delete els.animalEncounterCard.dataset.specialFriend;
   }
@@ -2163,7 +2297,10 @@ function openSpecialForestFriendEncounter(key) {
   }
 
   els.animalEncounterCard.dataset.specialFriend = carrier.key;
+  animalEncounterAnchorVisitId = "";
+  setAnimalEncounterPreviewState(false);
   els.animalEncounterCard.hidden = false;
+  window.requestAnimationFrame(() => positionAnimalEncounterCard(null));
 }
 
 function openAnimalInteractionPreview(kind) {
@@ -2178,11 +2315,12 @@ function openAnimalInteractionPreview(kind) {
   if (els.animalEncounterText) els.animalEncounterText.textContent = animalV2MoodLine(animal.kind);
   if (els.animalEncounterTime) els.animalEncounterTime.textContent = animalV2DeliveryLine(animal);
   if (els.animalEncounterSend) {
-    els.animalEncounterSend.textContent = "미리보기에서는 편지를 맡기지 않아요";
+    els.animalEncounterSend.textContent = "편지 맡기기";
     els.animalEncounterSend.disabled = true;
   }
+  const previewVisitId = `interaction-preview-${animal.kind}`;
   els.animalEncounterCard.dataset.animalKind = animal.kind;
-  els.animalEncounterCard.hidden = false;
+  openPositionedAnimalEncounter(previewVisitId, { preview: true, nudge: true });
   renderGardenStatus();
 }
 
@@ -2218,9 +2356,8 @@ function openAnimalEncounterForVisit(visitId) {
     els.animalEncounterSend.disabled = false;
   }
   if (els.animalEncounterCard) {
-    // 카드가 정원을 덮지 않도록 세계 안의 빈 하늘 위치에서 작게 보입니다.
     els.animalEncounterCard.dataset.animalKind = animal.kind;
-    els.animalEncounterCard.hidden = false;
+    openPositionedAnimalEncounter(visit.id, { preview: false, nudge: true });
   }
   if (discoveredNow) renderGardenStatus();
 }
@@ -2431,6 +2568,7 @@ function renderAnimalV2Scene() {
     els.gardenWorld.classList.toggle("is-animal-v2-approaching", approaching.length > 0);
     els.gardenWorld.classList.toggle("is-animal-v2-waiting", waitingCount > 0);
   }
+  repositionOpenAnimalEncounterCard();
 }
 
 function handleAnimalV2LayerClick(event) {
@@ -7333,6 +7471,7 @@ function bindEvents() {
   els.animalEncounterClose?.addEventListener("click", closeAnimalEncounterCard);
   els.animalEncounterQuiet?.addEventListener("click", closeAnimalEncounterCard);
   els.animalEncounterSend?.addEventListener("click", openEncounterLetterComposer);
+  window.addEventListener("resize", repositionOpenAnimalEncounterCard, { passive: true });
   els.recordForm.addEventListener("submit", saveRecord);
   els.toggleDetail.addEventListener("click", () => {
     const isHidden = els.detailWrap.classList.toggle("hidden");

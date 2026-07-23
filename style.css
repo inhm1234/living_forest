@@ -8057,3 +8057,288 @@ body.animal-preview-clean-mode .ff-cinematic {
     opacity: .28;
   }
 }
+
+
+/* ==========================================================================
+   VISITOR ENCOUNTER CARD v1.1
+   - PC: 클릭한 방문자와 같은 화면 가장자리에서 열리고 작은 꼬리표로 연결
+   - 모바일: 정원 바로 아래, 하단 메뉴 위의 읽기 쉬운 미니 시트
+   - 미리보기: 실제 버튼 문구는 유지하고 전송되지 않는다는 안내를 별도 표기
+   ========================================================================== */
+.garden-stage > .animal-encounter-card,
+.animal-encounter-card.is-mobile-sheet {
+  z-index: 20;
+  grid-template-columns: 43px minmax(0, 1fr);
+  gap: 5px 9px;
+  width: min(228px, calc(100% - 28px));
+  min-width: 0;
+  padding: 11px 11px 10px;
+  border: 1px solid rgba(255,255,255,.92);
+  border-radius: 18px;
+  background: rgba(255,255,255,.93);
+  color: #607585;
+  box-shadow: 0 14px 30px rgba(74,94,108,.16);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  transform-origin: var(--animal-encounter-tail-x, 50%) 100%;
+}
+
+.garden-stage > .animal-encounter-card[data-position-mode="safe"] {
+  top: 108px;
+  left: 14px;
+  right: auto;
+  bottom: auto;
+}
+
+.garden-stage > .animal-encounter-card[data-position-mode="anchored"] {
+  right: auto;
+  bottom: auto;
+}
+
+.garden-stage > .animal-encounter-card[data-position-mode="anchored"]::after {
+  content: "";
+  position: absolute;
+  left: var(--animal-encounter-tail-x, 50%);
+  width: 11px;
+  height: 11px;
+  border-right: 1px solid rgba(255,255,255,.92);
+  border-bottom: 1px solid rgba(255,255,255,.92);
+  background: rgba(255,255,255,.93);
+  transform: translateX(-50%) rotate(45deg);
+  pointer-events: none;
+}
+
+.garden-stage > .animal-encounter-card[data-position-mode="anchored"][data-placement="above"]::after {
+  bottom: -6px;
+}
+
+.garden-stage > .animal-encounter-card[data-position-mode="anchored"][data-placement="below"] {
+  transform-origin: var(--animal-encounter-tail-x, 50%) 0;
+}
+
+.garden-stage > .animal-encounter-card[data-position-mode="anchored"][data-placement="below"]::after {
+  top: -6px;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 1px solid rgba(255,255,255,.92);
+  border-top: 1px solid rgba(255,255,255,.92);
+}
+
+.garden-stage > .animal-encounter-card .animal-encounter-close,
+.animal-encounter-card.is-mobile-sheet .animal-encounter-close {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  display: grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(239,245,244,.92);
+  color: #7f9199;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.garden-stage > .animal-encounter-card .animal-encounter-icon,
+.animal-encounter-card.is-mobile-sheet .animal-encounter-icon {
+  display: grid;
+  place-items: center;
+  width: 43px;
+  height: 40px;
+  margin-top: 3px;
+  border: 1px solid rgba(255,255,255,.84);
+  border-radius: 50%;
+  background: rgba(244,250,246,.9);
+  font-size: 20px;
+}
+
+.garden-stage > .animal-encounter-card .animal-encounter-icon.has-animal-art,
+.animal-encounter-card.is-mobile-sheet .animal-encounter-icon.has-animal-art {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.garden-stage > .animal-encounter-card .animal-encounter-icon.has-animal-art img,
+.animal-encounter-card.is-mobile-sheet .animal-encounter-icon.has-animal-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 4px rgba(65,92,76,.14));
+}
+
+.garden-stage > .animal-encounter-card .animal-encounter-copy,
+.animal-encounter-card.is-mobile-sheet .animal-encounter-copy {
+  padding-right: 19px;
+}
+
+.garden-stage > .animal-encounter-card .animal-encounter-kicker,
+.animal-encounter-card.is-mobile-sheet .animal-encounter-kicker {
+  margin-bottom: 2px;
+  color: #91a49a;
+  font-size: 8.5px;
+  letter-spacing: .025em;
+}
+
+.garden-stage > .animal-encounter-card .animal-encounter-copy h3,
+.animal-encounter-card.is-mobile-sheet .animal-encounter-copy h3 {
+  margin: 0;
+  color: #58707e;
+  font-size: 11.5px;
+  line-height: 1.34;
+  letter-spacing: -.018em;
+}
+
+.garden-stage > .animal-encounter-card .animal-encounter-copy > p:not(.animal-encounter-kicker):not(.animal-encounter-time),
+.animal-encounter-card.is-mobile-sheet .animal-encounter-copy > p:not(.animal-encounter-kicker):not(.animal-encounter-time) {
+  margin: 3px 0 0;
+  color: #778a95;
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 1.38;
+}
+
+.garden-stage > .animal-encounter-card .animal-encounter-time,
+.animal-encounter-card.is-mobile-sheet .animal-encounter-time {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 5px;
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: rgba(248,241,232,.78);
+  color: #947964;
+  font-size: 8.5px;
+  line-height: 1.2;
+}
+
+.garden-stage > .animal-encounter-card .animal-encounter-actions,
+.animal-encounter-card.is-mobile-sheet .animal-encounter-actions {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.15fr);
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.garden-stage > .animal-encounter-card .animal-encounter-actions button,
+.animal-encounter-card.is-mobile-sheet .animal-encounter-actions button {
+  min-height: 31px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 9px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform .14s ease, background-color .14s ease, border-color .14s ease, box-shadow .14s ease;
+}
+
+.garden-stage > .animal-encounter-card .animal-encounter-actions button:active,
+.animal-encounter-card.is-mobile-sheet .animal-encounter-actions button:active {
+  transform: scale(.98);
+}
+
+.garden-stage > .animal-encounter-card .animal-encounter-quiet,
+.animal-encounter-card.is-mobile-sheet .animal-encounter-quiet {
+  border-color: rgba(200,214,214,.78);
+  background: rgba(250,253,252,.76);
+  color: #71888c;
+}
+
+.garden-stage > .animal-encounter-card .animal-encounter-send,
+.animal-encounter-card.is-mobile-sheet .animal-encounter-send {
+  border-color: rgba(238,205,215,.92);
+  background: linear-gradient(135deg, rgba(255,241,245,.98), rgba(255,235,240,.96));
+  color: #ad657b;
+  box-shadow: 0 5px 12px rgba(186,112,135,.10);
+}
+
+.garden-stage > .animal-encounter-card .animal-encounter-send:disabled,
+.animal-encounter-card.is-mobile-sheet .animal-encounter-send:disabled {
+  border-color: rgba(209,219,218,.78);
+  background: rgba(241,246,245,.9);
+  color: #91a09f;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: .82;
+}
+
+.animal-encounter-card.is-mobile-sheet[hidden] {
+  display: none;
+}
+
+.animal-encounter-preview-note {
+  grid-column: 1 / -1;
+  margin: -1px 2px 0;
+  color: #98a5a7;
+  font-size: 8px;
+  font-weight: 750;
+  line-height: 1.35;
+  text-align: right;
+}
+
+.animal-encounter-preview-note[hidden] {
+  display: none;
+}
+
+
+@media (max-width: 560px) {
+  .animal-encounter-card.is-mobile-sheet {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    display: grid;
+    width: calc(100% - 24px);
+    max-width: none;
+    margin: 10px auto 12px;
+    padding: 12px 13px 11px;
+    border-radius: 19px;
+    box-shadow: 0 12px 26px rgba(74,94,108,.13);
+    animation: animalEncounterSheetIn .22s ease-out both;
+  }
+
+  .animal-encounter-card.is-mobile-sheet[hidden] {
+    display: none;
+  }
+
+  .animal-encounter-card.is-mobile-sheet::after {
+    display: none;
+  }
+
+  .animal-encounter-card.is-mobile-sheet .animal-encounter-copy h3 {
+    font-size: 12px;
+  }
+
+  .animal-encounter-card.is-mobile-sheet .animal-encounter-copy > p:not(.animal-encounter-kicker):not(.animal-encounter-time) {
+    font-size: 10px;
+  }
+
+  .animal-encounter-card.is-mobile-sheet .animal-encounter-actions button {
+    min-height: 34px;
+    font-size: 9.5px;
+  }
+
+  .animal-encounter-card.is-mobile-sheet .animal-encounter-preview-note {
+    font-size: 8.5px;
+  }
+}
+
+@keyframes animalEncounterSheetIn {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .garden-stage > .animal-encounter-card,
+  .animal-encounter-card.is-mobile-sheet,
+  .garden-stage > .animal-encounter-card .animal-encounter-actions button,
+  .animal-encounter-card.is-mobile-sheet .animal-encounter-actions button {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -32,7 +32,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=visitor-interaction-discovery-v1-0" />
+  <link rel="stylesheet" href="style.css?v=visitor-encounter-card-v1-1" />
   <link rel="stylesheet" href="oot-notifications.css?v=garden-button-labels-v1-3" />
   <link rel="stylesheet" href="tree-animal-call.css?v=tree-discovery-v1-6" />
   <link rel="stylesheet" href="forest-unicorn-preview.css?v=garden-header-refinement-v1" />
@@ -439,8 +439,8 @@
       <div class="heart-fruit-ceremony-veil" aria-hidden="true"></div>
       <p class="heart-fruit-reveal-message hidden" id="heartFruitRevealMessage" role="status" aria-live="polite">지금까지의 마음이 열매로 맺혔어요.</p>
 
-      <!-- 동물 카드는 정원 안의 안전 구역(왼쪽 하늘)에만 열립니다.
-           상단 상태칩·오른쪽 방문 안내·나무·장식·꾸미기 버튼과 겹치지 않는 전용 자리입니다. -->
+      <!-- 방문자 만남 카드는 PC에서 클릭한 동물 가까이에 연결되고,
+           작은 화면에서는 정원 바로 아래의 읽기 쉬운 미니 시트로 전환됩니다. -->
       <section class="animal-encounter-card" id="animalEncounterCard" aria-live="polite" aria-label="숲친구와 만난 순간" hidden>
         <button class="animal-encounter-close" id="animalEncounterClose" type="button" aria-label="숲친구 카드 닫기">×</button>
         <div class="animal-encounter-icon" id="animalEncounterIcon" aria-hidden="true">🐦</div>
@@ -454,6 +454,7 @@
           <button class="animal-encounter-quiet" id="animalEncounterQuiet" type="button">조용히 둘러보기</button>
           <button class="animal-encounter-send" id="animalEncounterSend" type="button">편지 맡기기</button>
         </div>
+        <p class="animal-encounter-preview-note" id="animalEncounterPreviewNote" hidden>미리보기에서는 실제로 전송되지 않아요.</p>
       </section>
 
       <div class="stage-topline">
@@ -1247,7 +1248,7 @@
   <div class="heart-fruit-ceremony-lock hidden" id="heartFruitCeremonyLock" aria-hidden="true"></div>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="app.js?v=visitor-interaction-discovery-v1-0"></script>
+  <script type="module" src="app.js?v=visitor-encounter-card-v1-1"></script>
   <script type="module" src="tree-animal-call.js?v=tree-discovery-v1-6"></script>
   <script type="module" src="forest-unicorn-preview.js?v=animal-preview-clean-v0-4"></script>
   <script type="module" src="forest-friend-cinematic.js?v=operation-special-friend-v1"></script>
