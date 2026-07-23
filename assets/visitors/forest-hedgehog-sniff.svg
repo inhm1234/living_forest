@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 145" role="img" aria-labelledby="title desc">
+  <title id="title">냄새를 맡는 숲 고슴도치</title>
+  <desc id="desc">몸을 낮추고 코를 앞으로 내밀어 풀밭의 냄새를 맡는 작은 고슴도치</desc>
+  <defs>
+    <linearGradient id="spines" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b89d84"/>
+      <stop offset=".48" stop-color="#8f7868"/>
+      <stop offset="1" stop-color="#6f625b"/>
+    </linearGradient>
+    <linearGradient id="spinesSoft" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d5bea4" stop-opacity=".88"/>
+      <stop offset="1" stop-color="#9e846f" stop-opacity=".34"/>
+    </linearGradient>
+    <linearGradient id="face" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f7dfbd"/>
+      <stop offset=".56" stop-color="#e9c394"/>
+      <stop offset="1" stop-color="#d7a977"/>
+    </linearGradient>
+    <radialGradient id="cheek" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#e8a69b" stop-opacity=".63"/>
+      <stop offset="1" stop-color="#e8a69b" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="groundSoft" x="-30%" y="-120%" width="160%" height="340%">
+      <feGaussianBlur stdDeviation="2.4"/>
+    </filter>
+  </defs>
+
+  <ellipse cx="103" cy="132" rx="57" ry="5.2" fill="#6f976a" opacity=".15" filter="url(#groundSoft)"/>
+  <path d="M50 130c20-3 84-3 111 0" fill="none" stroke="#79a66f" stroke-width="3" stroke-linecap="round" opacity=".38"/>
+
+  <path d="M39 114c-5-12-2-24 6-33-1-10 4-20 13-25 3-11 12-19 23-20 8-8 20-10 30-5 11-3 23 1 29 11 12 3 20 12 21 24 9 9 12 22 7 34-7 18-28 30-55 31H68c-14-1-24-6-29-17Z" fill="url(#spines)" stroke="#75655d" stroke-opacity=".65" stroke-width="2.8" stroke-linejoin="round"/>
+  <path d="M52 102c-4-9-1-18 6-25 1-9 8-16 17-18 7-8 18-11 28-7 10-2 20 2 25 11 10 3 15 11 15 21 7 7 8 16 4 24-13-10-30-16-49-16-18 0-34 4-46 10Z" fill="url(#spinesSoft)" opacity=".56"/>
+  <g fill="none" stroke="#e7d2ba" stroke-linecap="round" opacity=".48">
+    <path d="M64 70c7-7 14-11 22-12" stroke-width="3.1"/>
+    <path d="M89 52c8-3 16-3 24 0" stroke-width="3"/>
+    <path d="M118 58c7 3 13 8 17 14" stroke-width="2.8"/>
+    <path d="M55 88c8-6 16-8 24-8" stroke-width="2.6"/>
+  </g>
+
+  <path d="M105 91c-3-8 1-15 8-16 7-1 12 5 10 13-4 0-8 1-12 3Z" fill="#ddb88f" stroke="#8c6f61" stroke-opacity=".58" stroke-width="2.1"/>
+  <path d="M109 86c2-4 6-6 10-4" fill="none" stroke="#efcfaa" stroke-width="2" stroke-linecap="round" opacity=".68"/>
+
+  <!-- 반응 상태에서는 머리와 앞발만 앞으로 낮아집니다. 몸 전체가 통통 뛰지 않습니다. -->
+  <g transform="translate(3 5) rotate(3 132 106)">
+    <path d="M91 96c17-15 41-17 59-7 12 6 19 15 19 24 0 10-9 18-22 21-18 4-40-1-56-12-10-7-10-18 0-26Z" fill="url(#face)" stroke="#8c6f61" stroke-opacity=".69" stroke-width="2.7" stroke-linejoin="round"/>
+    <ellipse cx="154" cy="113" rx="20" ry="13" fill="#f5ddb9" opacity=".93"/>
+    <path d="M102 96c9-6 19-8 29-7" fill="none" stroke="#fff3dd" stroke-width="4.4" stroke-linecap="round" opacity=".25"/>
+    <circle cx="133" cy="103" r="4.5" fill="#4b4947"/>
+    <circle cx="134.5" cy="101.4" r="1.25" fill="#fff" opacity=".95"/>
+    <ellipse cx="172" cy="114" rx="4.8" ry="3.6" fill="#66504a"/>
+    <path d="M172 118c-3 3-7 4-11 3" fill="none" stroke="#7d6259" stroke-width="1.8" stroke-linecap="round"/>
+    <ellipse cx="148" cy="117" rx="12" ry="8" fill="url(#cheek)" opacity=".43"/>
+    <path d="M101 119c8 5 11 9 12 14M136 127c8 1 13 3 17 6" fill="none" stroke="#8c6f61" stroke-opacity=".72" stroke-width="2.7" stroke-linecap="round"/>
+    <path d="M106 134c7-4 14-4 21 0M142 134c6-3 12-3 18 0" fill="none" stroke="#81665c" stroke-opacity=".7" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+
+  <g fill="none" stroke="#6f9e68" stroke-linecap="round" opacity=".59">
+    <path d="M64 135c0-7 2-12 6-16" stroke-width="2.2"/>
+    <path d="M72 135c-1-6-4-10-7-13" stroke-width="1.9"/>
+    <path d="M157 136c0-6 3-10 7-13" stroke-width="2.2"/>
+    <path d="M165 136c0-5-2-8-5-11" stroke-width="1.9"/>
+  </g>
+</svg>

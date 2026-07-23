@@ -7443,3 +7443,188 @@ body.animal-preview-clean-mode .ff-cinematic {
     animation: none !important;
   }
 }
+
+
+/* =========================================================
+   GENERAL VISITOR ART v0.6 — HEDGEHOG
+   - 꾸미기용 tiny-hedgehog와 방문자 고슴도치의 리소스를 분리
+   - 톱니형 장식 실루엣 대신 둥근 가시와 낮은 걸음 자세로 실제 방문자처럼 표현
+   - 몸 전체를 튕기지 않고, 가끔 머리와 코만 앞으로 낮춰 냄새를 맡는 반응 사용
+   ========================================================= */
+.animal-v2-visitor.animal-v2-hedgehog.has-animal-art {
+  left: 9.5%;
+  bottom: 12.4%;
+  width: 82px;
+  height: 63px;
+  isolation: isolate;
+}
+
+.animal-v2-visitor.animal-v2-hedgehog.has-animal-art .animal-v2-art {
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 3px 3px rgba(69, 83, 63, .10));
+  opacity: .985;
+  animation: animalVisitorHedgehogRest 6.5s ease-in-out infinite;
+}
+
+.animal-v2-visitor.animal-v2-hedgehog.has-animal-art.is-looking .animal-v2-art {
+  animation: animalVisitorHedgehogSniff .96s cubic-bezier(.25,.7,.3,1) both;
+}
+
+/* 편지는 고슴도치가 냄새를 맡을 수 있는 코 앞의 작은 종이봉투로 보입니다. */
+.animal-v2-visitor.animal-v2-hedgehog.has-animal-art .animal-v2-envelope {
+  z-index: 4;
+  right: -1px;
+  bottom: 5px;
+  width: 15px;
+  height: 10px;
+  border: 1px solid rgba(170, 115, 124, .50);
+  border-radius: 2px;
+  background: rgba(255, 248, 239, .96);
+  color: transparent;
+  font-size: 0;
+  line-height: 0;
+  text-shadow: none;
+  box-shadow: 0 2px 4px rgba(94, 77, 71, .09);
+  transform: rotate(3deg);
+  overflow: hidden;
+}
+.animal-v2-visitor.animal-v2-hedgehog.has-animal-art .animal-v2-envelope::before,
+.animal-v2-visitor.animal-v2-hedgehog.has-animal-art .animal-v2-envelope::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+.animal-v2-visitor.animal-v2-hedgehog.has-animal-art .animal-v2-envelope::before {
+  left: 2px;
+  top: -3px;
+  width: 10px;
+  height: 7px;
+  border-right: 1px solid rgba(170, 115, 124, .40);
+  border-bottom: 1px solid rgba(170, 115, 124, .40);
+  transform: rotate(45deg);
+}
+.animal-v2-visitor.animal-v2-hedgehog.has-animal-art .animal-v2-envelope::after {
+  right: 2px;
+  bottom: 1px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(205, 119, 139, .68);
+}
+
+/* 초기 정원에서는 새싹의 시각 중심을 비우고 왼쪽 풀밭 가장자리에 머뭅니다. */
+.garden-stage[data-tree-stage="1"] .animal-v2-visitor.animal-v2-hedgehog.has-animal-art {
+  left: 13%;
+  bottom: 17.2%;
+  width: 76px;
+  height: 58px;
+}
+.garden-stage[data-tree-stage="2"] .animal-v2-visitor.animal-v2-hedgehog.has-animal-art {
+  left: 12%;
+  bottom: 18.2%;
+  width: 78px;
+  height: 60px;
+}
+.garden-stage[data-tree-stage="3"] .animal-v2-visitor.animal-v2-hedgehog.has-animal-art {
+  left: 10.5%;
+  bottom: 14.5%;
+  width: 79px;
+  height: 61px;
+}
+.garden-stage[data-tree-stage="4"] .animal-v2-visitor.animal-v2-hedgehog.has-animal-art {
+  left: 10%;
+  bottom: 13.5%;
+  width: 80px;
+  height: 62px;
+}
+.garden-stage[data-tree-stage="5"] .animal-v2-visitor.animal-v2-hedgehog.has-animal-art {
+  left: 9.7%;
+  bottom: 12.9%;
+}
+.garden-stage[data-tree-stage="6"] .animal-v2-visitor.animal-v2-hedgehog.has-animal-art {
+  left: 9.5%;
+  bottom: 12.4%;
+}
+
+/* 풀숲에서 낮게 걸어 들어오고, 떠날 때도 갑자기 사라지지 않습니다. */
+.animal-v2-visitor.animal-v2-hedgehog.has-animal-art.is-arriving {
+  animation: animalVisitorHedgehogArrive .98s cubic-bezier(.2,.78,.28,1) both;
+}
+.animal-v2-visitor.animal-v2-hedgehog.has-animal-art.is-departing {
+  animation: animalVisitorHedgehogDepart 1.12s cubic-bezier(.35,.05,.65,.95) both;
+}
+
+@keyframes animalVisitorHedgehogRest {
+  0%, 100% { transform: scaleX(1) scaleY(1); }
+  48% { transform: scaleX(1.001) scaleY(.998); }
+  55% { transform: scaleX(.999) scaleY(1.001); }
+}
+@keyframes animalVisitorHedgehogSniff {
+  0%, 100% { transform: translateX(0) rotate(0deg) scale(1); }
+  44% { transform: translateX(1.5px) rotate(.35deg) scale(1.004); }
+  74% { transform: translateX(.4px) rotate(-.08deg) scale(1.001); }
+}
+@keyframes animalVisitorHedgehogArrive {
+  0% { transform: translate3d(-52px,10px,0) scale(.78); opacity: 0; }
+  64% { transform: translate3d(2px,-1px,0) scale(1.015); opacity: 1; }
+  100% { transform: translate3d(0,0,0) scale(1); opacity: 1; }
+}
+@keyframes animalVisitorHedgehogDepart {
+  0% { transform: translate3d(0,0,0) scale(1); opacity: 1; }
+  38% { transform: translate3d(-6px,1px,0) scale(.985); opacity: 1; }
+  100% { transform: translate3d(-70px,13px,0) scale(.72); opacity: 0; }
+}
+
+@media (hover: hover) {
+  .animal-v2-visitor.animal-v2-hedgehog.has-animal-art:hover .animal-v2-art {
+    filter: drop-shadow(0 3px 3px rgba(69, 83, 63, .13)) brightness(1.015);
+  }
+}
+
+@media (max-width: 520px) {
+  .garden-stage[data-tree-stage="1"] .animal-v2-visitor.animal-v2-hedgehog.has-animal-art {
+    left: 9.5%;
+    bottom: 17.8%;
+    width: 68px;
+    height: 52px;
+  }
+  .garden-stage[data-tree-stage="2"] .animal-v2-visitor.animal-v2-hedgehog.has-animal-art {
+    left: 8.8%;
+    bottom: 18.8%;
+    width: 70px;
+    height: 54px;
+  }
+  .garden-stage[data-tree-stage="3"] .animal-v2-visitor.animal-v2-hedgehog.has-animal-art {
+    left: 7.8%;
+    bottom: 15%;
+    width: 71px;
+    height: 55px;
+  }
+  .garden-stage[data-tree-stage="4"] .animal-v2-visitor.animal-v2-hedgehog.has-animal-art {
+    left: 7.5%;
+    bottom: 14%;
+    width: 72px;
+    height: 56px;
+  }
+  .garden-stage[data-tree-stage="5"] .animal-v2-visitor.animal-v2-hedgehog.has-animal-art,
+  .garden-stage[data-tree-stage="6"] .animal-v2-visitor.animal-v2-hedgehog.has-animal-art {
+    left: 7%;
+    bottom: 13%;
+    width: 73px;
+    height: 57px;
+  }
+  .animal-v2-visitor.animal-v2-hedgehog.has-animal-art .animal-v2-envelope {
+    right: -1px;
+    bottom: 4px;
+    width: 13px;
+    height: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animal-v2-visitor.animal-v2-hedgehog.has-animal-art,
+  .animal-v2-visitor.animal-v2-hedgehog.has-animal-art .animal-v2-art {
+    animation: none !important;
+  }
+}

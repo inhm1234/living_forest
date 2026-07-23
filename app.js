@@ -277,7 +277,9 @@ const animalVisitors = {
   hedgehog: {
     kind: "hedgehog",
     icon: "🦔",
-    asset: "assets/decorations/tiny-hedgehog.png",
+    // 꾸미기용 tiny-hedgehog와 분리된 방문자 전용 자세입니다.
+    asset: "assets/visitors/forest-hedgehog-idle.svg",
+    lookAsset: "assets/visitors/forest-hedgehog-sniff.svg",
     name: "고슴도치",
     deliveryHours: 24,
     sceneClass: "hedgehog",
