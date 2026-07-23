@@ -251,6 +251,9 @@ function normalizeFriendRow(friend) {
 function friendById(friendId) {
   return state.friends.find((friend) => String(friend.friend_id) === String(friendId)) || null;
 }
+function isCurrentGardenFriend(friendId) {
+  return Boolean(friendId) && Boolean(friendById(friendId));
+}
 function availabilityByFriendId(friendId) {
   return state.friendAvailability.get(String(friendId)) || { availability: "offline", has_push: false };
 }
@@ -720,9 +723,28 @@ async function loadLobby({ silent = false } = {}) {
     }
 
     if (invitesResult.status === "fulfilled") {
-      const nextInvites = normalizeRows(invitesResult.value)
+      const normalizedInvites = normalizeRows(invitesResult.value)
         .map(inviteDisplay)
         .filter((item) => !state.processingInviteIds.has(String(item.invite_id)));
+      const staleInvites = state.friendsLoadFailed
+        ? []
+        : normalizedInvites.filter((item) => !isCurrentGardenFriend(item.other_user_id));
+      const nextInvites = state.friendsLoadFailed
+        ? normalizedInvites
+        : normalizedInvites.filter((item) => isCurrentGardenFriend(item.other_user_id));
+
+      // 친구 관계가 끝난 뒤 남아 있는 오래된 초대는 화면과 서버에서 조용히 정리합니다.
+      if (staleInvites.length) {
+        staleInvites.forEach((item) => {
+          clearInviteTracking(item.invite_id);
+          void closeInviteNotification(item.invite_id);
+        });
+        Promise.allSettled(staleInvites.map((item) => rpc(
+          item.direction === "incoming" ? "oot_decline_invite" : "oot_cancel_invite",
+          { p_invite_id: item.invite_id }
+        ))).catch(() => {});
+      }
+
       const incomingIds = nextInvites
         .filter((item) => item.direction === "incoming")
         .map((item) => String(item.invite_id));
@@ -1068,6 +1090,28 @@ async function acceptInvite(inviteId, button, battleMode = "casual") {
 
   const invite = state.invites.find((item) => String(item.invite_id) === normalizedInviteId);
   const opponentId = invite?.other_user_id || "";
+
+  if (!invite) {
+    clearInviteTracking(normalizedInviteId);
+    void closeInviteNotification(normalizedInviteId);
+    showToast("이 초대는 더 이상 받을 수 없어요.");
+    return;
+  }
+
+  if (opponentId && !state.friendsLoadFailed && !isCurrentGardenFriend(opponentId)) {
+    state.invites = state.invites.filter((item) => String(item.invite_id) !== normalizedInviteId);
+    renderLobby();
+    clearInviteTracking(normalizedInviteId);
+    void closeInviteNotification(normalizedInviteId);
+    try {
+      await rpc("oot_decline_invite", { p_invite_id: normalizedInviteId });
+    } catch {
+      // 이미 만료되었거나 서버에서 정리된 초대라면 화면 정리만 유지합니다.
+    }
+    showToast("지금은 연결된 친구가 아니라 이 초대를 받을 수 없어요.");
+    return;
+  }
+
   state.processingInviteIds.add(normalizedInviteId);
   button.disabled = true;
 

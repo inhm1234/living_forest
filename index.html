@@ -630,7 +630,7 @@
           <summary aria-label="친구 관리 메뉴" title="친구 관리">⋯</summary>
           <div class="friend-visit-manage-menu" role="menu" aria-label="친구 관리">
             <span class="friend-visit-manage-label">친구 관리</span>
-            <button class="friend-visit-remove-button" id="removeFriendFromVisit" type="button" role="menuitem">친구 삭제</button>
+            <button class="friend-visit-remove-button" id="removeFriendFromVisit" type="button" role="menuitem">친구 관계 끝내기</button>
           </div>
         </details>
       </div>
@@ -1193,6 +1193,21 @@
 
 
 
+  <section class="relationship-end-modal hidden" id="friendRelationshipEndModal" role="alertdialog" aria-modal="true" aria-labelledby="friendRelationshipEndTitle" aria-describedby="friendRelationshipEndDescription">
+    <div class="relationship-end-card">
+      <span class="relationship-end-icon" aria-hidden="true">🍂</span>
+      <p class="relationship-end-kicker">FRIEND CONNECTION</p>
+      <h2 id="friendRelationshipEndTitle"><span id="friendRelationshipEndName">이 친구</span>님과 친구 관계를 끝낼까요?</h2>
+      <p class="relationship-end-description" id="friendRelationshipEndDescription">서로의 친구 목록에서 사라지고, 새 편지·정원 방문·친구 대전을 이용할 수 없게 돼요.</p>
+      <p class="relationship-end-note">함께 키운 숲은 마지막 모습으로 보관되고, 아직 이동 중인 편지는 전달되지 않고 정원으로 돌아와요.</p>
+      <div class="relationship-end-actions">
+        <button class="relationship-end-cancel" id="cancelFriendRelationshipEnd" type="button">계속 친구로 지내기</button>
+        <button class="relationship-end-confirm" id="confirmFriendRelationshipEnd" type="button">친구 관계 끝내기</button>
+      </div>
+    </div>
+  </section>
+
+
   <section class="letter-modal hidden" id="friendInviteModal" role="dialog" aria-modal="true" aria-labelledby="friendInviteTitle">
     <div class="letter-card friend-invite-card">
       <button class="letter-close" id="closeFriendInviteModal" type="button" aria-label="친구 초대 닫기">×</button>
@@ -1257,7 +1272,7 @@
   <div class="heart-fruit-ceremony-lock hidden" id="heartFruitCeremonyLock" aria-hidden="true"></div>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="app.js?v=friend-navigation-v1-6"></script>
+  <script type="module" src="app.js?v=friend-relationship-end-v1-7"></script>
   <script type="module" src="tree-animal-call.js?v=tree-discovery-v1-6"></script>
   <script type="module" src="forest-unicorn-preview.js?v=animal-preview-clean-v0-4"></script>
   <script type="module" src="forest-friend-cinematic.js?v=operation-special-friend-v1"></script>

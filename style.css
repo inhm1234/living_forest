@@ -8639,3 +8639,130 @@ body.animal-preview-clean-mode .ff-cinematic {
     width: 152px;
   }
 }
+
+
+/* 친구 관계 종료 v1.7 */
+.relationship-end-modal {
+  position: fixed;
+  z-index: 90;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: rgba(65, 75, 88, .4);
+  backdrop-filter: blur(10px);
+}
+.relationship-end-modal.hidden { display: none; }
+.relationship-end-card {
+  width: min(100%, 430px);
+  padding: 27px 24px 23px;
+  border: 1px solid rgba(255,255,255,.92);
+  border-radius: 28px;
+  background: linear-gradient(145deg, #fffdf9, #fff7f4 56%, #fbfbff);
+  box-shadow: 0 28px 74px rgba(54, 66, 83, .26);
+  text-align: center;
+}
+.relationship-end-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 12px;
+  border-radius: 17px;
+  background: #f8efe8;
+  font-size: 24px;
+}
+.relationship-end-kicker {
+  margin: 0 0 6px;
+  color: #a48f84;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .1em;
+}
+.relationship-end-card h2 {
+  margin: 0;
+  color: #556a78;
+  font-size: 22px;
+  line-height: 1.35;
+  letter-spacing: -.055em;
+}
+.relationship-end-description {
+  margin: 15px 0 0;
+  color: #687b87;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.relationship-end-note {
+  margin: 10px 0 0;
+  padding: 11px 12px;
+  border: 1px solid #ebe5df;
+  border-radius: 15px;
+  background: rgba(255,255,255,.62);
+  color: #8b7e76;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.55;
+}
+.relationship-end-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-top: 19px;
+}
+.relationship-end-cancel,
+.relationship-end-confirm {
+  min-height: 46px;
+  padding: 11px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.relationship-end-cancel {
+  border: 1px solid #dfe8e4;
+  background: #f7fbf9;
+  color: #5e796b;
+}
+.relationship-end-confirm {
+  border: 1px solid #efd9df;
+  background: #fff6f7;
+  color: #b36f82;
+}
+.relationship-end-confirm:disabled {
+  cursor: wait;
+  opacity: .66;
+}
+
+.sent-letter-item.is-returned-letter {
+  align-items: flex-start;
+  border-color: #eadfd8;
+  background: linear-gradient(135deg, #fffdf9, #fff8f5);
+}
+.sent-letter-item.is-returned-letter .sent-letter-icon {
+  margin-top: 2px;
+  background: #f8efe8;
+}
+.animal-return-note {
+  margin: 6px 0 0;
+  color: #8a786f;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+.sent-letter-status.is-returned {
+  background: #f4ebe5;
+  color: #9a7668;
+}
+
+@media (max-width: 470px) {
+  .relationship-end-card {
+    padding: 24px 18px 20px;
+    border-radius: 24px;
+  }
+  .relationship-end-card h2 {
+    font-size: 20px;
+  }
+  .relationship-end-actions {
+    grid-template-columns: 1fr;
+  }
+}

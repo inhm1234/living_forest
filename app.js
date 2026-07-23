@@ -405,6 +405,8 @@ let publicEntryView = "home";
 let activeFriendGardenId = "";
 let activeFriendFruitRecords = [];
 let activeFriendFruitName = "";
+let pendingFriendRelationshipEnd = null;
+let returnedLetterSeenTimer = null;
 let activeHeartFruitMode = "mine";
 let activeHeartFruitRecordId = "";
 let heartFruitVisibilityReady = true;
@@ -671,6 +673,10 @@ const els = {
   returnToFriendsFromFriendVisit: $("#returnToFriendsFromFriendVisit"),
   friendVisitManage: $("#friendVisitManage"),
   removeFriendFromVisit: $("#removeFriendFromVisit"),
+  friendRelationshipEndModal: $("#friendRelationshipEndModal"),
+  friendRelationshipEndName: $("#friendRelationshipEndName"),
+  cancelFriendRelationshipEnd: $("#cancelFriendRelationshipEnd"),
+  confirmFriendRelationshipEnd: $("#confirmFriendRelationshipEnd"),
   friendInviteModal: $("#friendInviteModal"),
   sharedTreeInviteModal: $("#sharedTreeInviteModal"),
   sharedTreeInviteFrom: $("#sharedTreeInviteFrom"),
@@ -1064,10 +1070,65 @@ function carrierForGrowth(growth) {
 }
 
 function deliveryStatus(sentLetter) {
+  if (sentLetter.returnedAt) return "정원으로 돌아왔어요";
   if (sentLetter.readAt) return "친구가 읽었어요";
   const availableAt = new Date(sentLetter.availableAt);
   if (availableAt.getTime() > Date.now()) return "새가 날아가는 중";
   return "나뭇가지에 도착";
+}
+
+function unseenReturnedGardenLetters() {
+  return (state.sentLetters || []).filter((letter) => (
+    !letter?.isDevTest
+    && Boolean(letter?.returnedAt)
+    && !letter?.returnSeenAt
+  ));
+}
+
+function clearReturnedAnimalDeliveryQueue(returnedLetterIds = []) {
+  const returnedIds = new Set((returnedLetterIds || []).map((id) => String(id || "")).filter(Boolean));
+  if (!returnedIds.size) return;
+
+  const queue = readAnimalDeliveryQueue();
+  const kept = queue.filter((item) => !returnedIds.has(String(item?.remoteId || "")));
+  if (kept.length !== queue.length) saveAnimalDeliveryQueue(kept);
+}
+
+async function markReturnedGardenLettersSeen(letterIds = []) {
+  if (!currentUser || !Array.isArray(letterIds) || !letterIds.length) return;
+
+  const ids = [...new Set(letterIds.map((id) => String(id || "")).filter(Boolean))];
+  if (!ids.length) return;
+
+  const { error } = await supabase.rpc("mark_my_returned_garden_letters_seen", {
+    p_letter_ids: ids,
+  });
+  if (error) {
+    console.warn("TodayForest returned-letter seen update skipped:", error);
+    return;
+  }
+
+  const seenAt = new Date().toISOString();
+  state.sentLetters = (state.sentLetters || []).map((letter) => (
+    ids.includes(String(letter?.id || ""))
+      ? { ...letter, returnSeenAt: letter.returnSeenAt || seenAt }
+      : letter
+  ));
+  renderGardenStatus();
+}
+
+function scheduleReturnedGardenLettersSeen() {
+  window.clearTimeout(returnedLetterSeenTimer);
+  returnedLetterSeenTimer = null;
+
+  const ids = unseenReturnedGardenLetters().map((letter) => letter.id).filter(Boolean);
+  if (!ids.length || !isLettersSheetOpen()) return;
+
+  returnedLetterSeenTimer = window.setTimeout(() => {
+    returnedLetterSeenTimer = null;
+    if (!isLettersSheetOpen()) return;
+    void markReturnedGardenLettersSeen(ids);
+  }, 1800);
 }
 
 
@@ -1536,8 +1597,8 @@ async function loadGardenState() {
     // 그래서 DEV 봉투가 실제 친구 편지와 같은 목록이나 나뭇가지에 섞이지 않습니다.
     retentionTestActive
       ? Promise.resolve({ data: [], error: null })
-      : supabase.from("garden_letters").select("id, sender_name, title, delivery_kind, sent_at, available_at, read_at, created_at").lte("available_at", nowIso).is("read_at", null).order("available_at", { ascending: true }).limit(60),
-    supabase.rpc("list_my_sent_garden_letters"),
+      : supabase.from("garden_letters").select("id, sender_name, title, delivery_kind, sent_at, available_at, read_at, returned_at, created_at").lte("available_at", nowIso).is("read_at", null).is("returned_at", null).order("available_at", { ascending: true }).limit(60),
+    supabase.rpc("list_my_sent_garden_letters_v2"),
     supabase.rpc("list_my_garden_friends"),
     supabase.rpc("list_my_garden_shared_trees"),
     supabase.rpc("list_my_garden_shared_tree_invites"),
@@ -1594,6 +1655,9 @@ async function loadGardenState() {
       sentAt: letter.sent_at,
       availableAt: letter.available_at,
       readAt: letter.read_at,
+      returnedAt: letter.returned_at || null,
+      returnReason: letter.return_reason || "",
+      returnSeenAt: letter.return_seen_at || null,
       isDevTest: false,
     }));
   const sentById = new Map();
@@ -1705,6 +1769,10 @@ async function loadGardenState() {
       })),
   };
 
+  clearReturnedAnimalDeliveryQueue(
+    (state.sentLetters || []).filter((letter) => letter.returnedAt).map((letter) => letter.id)
+  );
+
   // v9 보관 정책 검수 봉투도 실제 수신 편지와 분리된 DEV 전용 데이터입니다.
   if (retentionDevLetters.length) {
     const existing = new Set((state.letters || []).map((letter) => String(letter.id)));
@@ -1806,6 +1874,8 @@ function closeAllSheets({ force = false } = {}) {
   if (wasViewingLetters) {
     clearAnimalDeliveryArrivals();
     stopLettersAutoRefresh();
+    window.clearTimeout(returnedLetterSeenTimer);
+    returnedLetterSeenTimer = null;
   }
 }
 
@@ -2810,6 +2880,7 @@ function queuedAnimalDeliveryLetters() {
 
   return inTransit.map((item) => ({
     id: `animal-local:${item.localId}`,
+    remoteId: item.remoteId || "",
     to: item.to || "친구",
     title: item.title || "마음을 전해요",
     deliveryKind: item.kind,
@@ -4006,6 +4077,23 @@ function renderGardenStatus(context = {}) {
   const returnedSpecialFriend = specialFriendReturnedGardenStatus();
   if (returnedSpecialFriend) items.push(returnedSpecialFriend);
 
+  const returnedLetters = unseenReturnedGardenLetters();
+  if (returnedLetters.length) {
+    items.push({
+      key: "returned-letters",
+      category: "attention",
+      priority: 515,
+      tone: "attention",
+      pinUntilAction: true,
+      icon: "🍃",
+      text: returnedLetters.length === 1
+        ? "전하지 못한 편지 한 통이 정원으로 돌아왔어요."
+        : `전하지 못한 편지 ${returnedLetters.length}통이 정원으로 돌아왔어요.`,
+      action: "returned-letters",
+      label: "정원으로 돌아온 편지 확인하기",
+    });
+  }
+
   if (unread.length) {
     items.push({
       key: "letters",
@@ -4047,7 +4135,7 @@ function renderGardenStatus(context = {}) {
   if (specialFriend) items.push(specialFriend);
 
   const treeInteraction = window.__todayForestTreeInteractionState || gardenTreeInteractionState;
-  const hasPriorityGardenStatus = Boolean(returnedSpecialFriend || specialFriend || unread.length || animalStatus.item);
+  const hasPriorityGardenStatus = Boolean(returnedSpecialFriend || returnedLetters.length || specialFriend || unread.length || animalStatus.item);
   const shouldShowTreeInteractionTip = !hasPriorityGardenStatus
     && currentUser
     && !gardenTutorialPhase
@@ -4145,6 +4233,11 @@ function handleGardenStatusMainClick(event) {
   const item = currentGardenStatusItem();
   if (!item) return;
 
+  if (item.action === "returned-letters") {
+    event?.preventDefault();
+    void openLettersSheet();
+    return;
+  }
   if (item.action === "branch-letters") {
     event?.preventDefault();
     nudgeBranchLetters();
@@ -4843,10 +4936,17 @@ function renderSentLetters() {
     .filter(Boolean)
     .join("");
 
-  // 보낸 편지함은 만들지 않습니다. 배송 중인 편지와, 지금 확인한 도착 장면만 보여줍니다.
-  const queuedLetters = queuedAnimalDeliveryLetters();
+  // 보낸 편지함은 만들지 않습니다. 배송 중인 편지, 돌아온 편지, 지금 확인한 도착 장면만 보여줍니다.
+  const returnedLetters = unseenReturnedGardenLetters()
+    .map(applyAnimalDeliveryMeta)
+    .sort((a, b) => new Date(b.returnedAt) - new Date(a.returnedAt));
+  const returnedIds = new Set(returnedLetters.map((letter) => String(letter.id || "")));
+
+  const queuedLetters = queuedAnimalDeliveryLetters()
+    .filter((letter) => !returnedIds.has(String(letter.remoteId || "")));
   const persistedLetters = (state.sentLetters || [])
     .map(applyAnimalDeliveryMeta)
+    .filter((letter) => !letter.returnedAt)
     .filter((letter) => {
       const tracking = animalDeliveryTracking(letter);
       return Boolean(tracking.meta && tracking.isInTransit);
@@ -4856,10 +4956,28 @@ function renderSentLetters() {
     .sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
   const arrivalNotices = animalDeliveryArrivalNotices();
 
-  if (!specialFriendCards && !inTransitLetters.length && !arrivalNotices.length) {
+  if (!specialFriendCards && !returnedLetters.length && !inTransitLetters.length && !arrivalNotices.length) {
     els.sentLetterList.innerHTML = '<div class="empty-state">지금 숲길을 걷는 편지가 없어요.<br />정원에 온 숲친구에게 작은 마음을 부탁해볼래요?</div>';
     return;
   }
+
+  const returnedCards = returnedLetters.map((letter) => {
+    const carrier = carrierForKind(letter.deliveryKind);
+    const story = letter.returnReason === "friendship_ended"
+      ? "친구 관계가 끝나 전달하지 않고 정원으로 돌아왔어요."
+      : "편지를 전하지 못해 다시 정원으로 돌아왔어요.";
+    return `
+      <article class="sent-letter-item is-returned-letter">
+        <div class="sent-letter-icon" aria-hidden="true">${carrier.icon}</div>
+        <div class="sent-letter-main">
+          <div class="sent-letter-title">${escapeHTML(letter.to)}에게 가던 편지가 돌아왔어요</div>
+          <div class="sent-letter-detail">${escapeHTML(carrier.name)} · ${escapeHTML(formatDate(letter.returnedAt))}</div>
+          <p class="animal-return-note">${escapeHTML(story)}</p>
+        </div>
+        <span class="sent-letter-status is-returned">돌아옴</span>
+      </article>
+    `;
+  }).join("");
 
   const inTransitCards = inTransitLetters.map((letter) => {
     const tracking = animalDeliveryTracking(letter);
@@ -4899,7 +5017,7 @@ function renderSentLetters() {
     `;
   }).join("");
 
-  els.sentLetterList.innerHTML = `${specialFriendCards}${inTransitCards}${arrivalCards}`;
+  els.sentLetterList.innerHTML = `${specialFriendCards}${returnedCards}${inTransitCards}${arrivalCards}`;
 }
 
 function carrierForKind(kind) {
@@ -6245,7 +6363,7 @@ async function openFriendGarden(friendId) {
   activeFriendGardenId = friend.friend_id || friendId;
   if (els.friendVisitManage) els.friendVisitManage.open = false;
   if (els.removeFriendFromVisit) {
-    els.removeFriendFromVisit.textContent = fallbackFriend.isDevTest ? "테스트 친구 지우기" : "친구 삭제";
+    els.removeFriendFromVisit.textContent = fallbackFriend.isDevTest ? "테스트 친구 지우기" : "친구 관계 끝내기";
   }
   els.friendVisitName.textContent = `${name}의 정원`;
   els.friendVisitTree.src = `assets/garden/tree_growth/${stage.asset}`;
@@ -6293,6 +6411,45 @@ function returnToFriendsFromFriendVisit() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function closeFriendRelationshipEndModal() {
+  if (!els.friendRelationshipEndModal) return;
+  els.friendRelationshipEndModal.classList.add("hidden");
+  pendingFriendRelationshipEnd = null;
+  if (els.confirmFriendRelationshipEnd) {
+    els.confirmFriendRelationshipEnd.disabled = false;
+    els.confirmFriendRelationshipEnd.textContent = "친구 관계 끝내기";
+  }
+}
+
+function openFriendRelationshipEndModal(friend) {
+  if (!friend || !els.friendRelationshipEndModal) return;
+  pendingFriendRelationshipEnd = friend;
+  if (els.friendVisitManage) els.friendVisitManage.open = false;
+  if (els.friendRelationshipEndName) {
+    els.friendRelationshipEndName.textContent = friend.name || "이 친구";
+  }
+  els.friendRelationshipEndModal.classList.remove("hidden");
+  window.setTimeout(() => els.cancelFriendRelationshipEnd?.focus(), 60);
+}
+
+async function confirmFriendRelationshipEnd() {
+  const friend = pendingFriendRelationshipEnd;
+  if (!friend || !els.confirmFriendRelationshipEnd) return;
+
+  els.confirmFriendRelationshipEnd.disabled = true;
+  els.confirmFriendRelationshipEnd.textContent = "관계를 정리하는 중이에요…";
+
+  const removed = await removeFriend(friend.id, friend.name, false, { skipConfirm: true });
+  if (!removed) {
+    els.confirmFriendRelationshipEnd.disabled = false;
+    els.confirmFriendRelationshipEnd.textContent = "친구 관계 끝내기";
+    return;
+  }
+
+  closeFriendRelationshipEndModal();
+  returnToFriendsFromFriendVisit();
+}
+
 async function removeActiveFriendFromVisit() {
   const friend = (state.friends || []).find((item) => item.id === activeFriendGardenId);
   if (!friend) {
@@ -6300,8 +6457,13 @@ async function removeActiveFriendFromVisit() {
     return;
   }
 
-  const removed = await removeFriend(friend.id, friend.name, Boolean(friend.isDevTest));
-  if (removed) returnToFriendsFromFriendVisit();
+  if (friend.isDevTest) {
+    const removed = await removeFriend(friend.id, friend.name, true);
+    if (removed) returnToFriendsFromFriendVisit();
+    return;
+  }
+
+  openFriendRelationshipEndModal(friend);
 }
 
 async function enableDevTestFriend() {
@@ -6835,25 +6997,37 @@ async function copyFriendInviteLink() {
   }
 }
 
-async function removeFriend(friendId, name, isDevTest = false) {
+async function removeFriend(friendId, name, isDevTest = false, options = {}) {
   if (!friendId) return false;
-  const prompt = isDevTest
-    ? `${name || "테스트 새싹"}을 개발용 친구 목록에서 지울까요?\n테스트로 보낸 편지도 함께 지워져요.`
-    : `${name || "이 친구"}님을 친구에서 삭제할까요?\n서로 새 편지를 보낼 수 없게 돼요.`;
-  const okay = window.confirm(prompt);
-  if (!okay) return false;
 
-  const { error } = isDevTest
+  if (isDevTest && !options.skipConfirm) {
+    const okay = window.confirm(`${name || "테스트 새싹"}을 개발용 친구 목록에서 지울까요?\n테스트로 보낸 편지도 함께 지워져요.`);
+    if (!okay) return false;
+  }
+
+  const result = isDevTest
     ? await supabase.rpc("remove_my_dev_test_friend")
-    : await supabase.rpc("remove_garden_friend", { p_friend_id: friendId });
-  if (error) {
-    showToast(databaseErrorMessage(error));
+    : await supabase.rpc("end_garden_friendship_v1", { p_friend_id: friendId });
+  if (result.error) {
+    showToast(databaseErrorMessage(result.error));
     return false;
   }
 
+  const summary = isDevTest ? {} : (normalizeRpcRow(result.data) || result.data || {});
   await loadGardenState();
   renderAll();
-  showToast(isDevTest ? "테스트 새싹과 테스트 편지를 정리했어요." : `${name || "친구"}님과의 친구 관계를 정리했어요.`);
+
+  if (isDevTest) {
+    showToast("테스트 새싹과 테스트 편지를 정리했어요.");
+    return true;
+  }
+
+  const myReturnedCount = Number(summary.my_returned_letter_count || 0);
+  showToast(
+    myReturnedCount > 0
+      ? `${name || "친구"}님과의 친구 관계를 정리했어요. 내가 보낸 편지 ${myReturnedCount}통이 정원으로 돌아왔어요.`
+      : `${name || "친구"}님과의 친구 관계를 정리했어요.`
+  );
   return true;
 }
 
@@ -7362,12 +7536,13 @@ async function refreshLettersWhileOpen() {
         ? Promise.resolve({ data: [], error: null })
         : supabase
           .from("garden_letters")
-          .select("id, sender_name, title, delivery_kind, sent_at, available_at, read_at, created_at")
+          .select("id, sender_name, title, delivery_kind, sent_at, available_at, read_at, returned_at, created_at")
           .lte("available_at", nowIso)
           .is("read_at", null)
+          .is("returned_at", null)
           .order("available_at", { ascending: true })
           .limit(60),
-      supabase.rpc("list_my_sent_garden_letters"),
+      supabase.rpc("list_my_sent_garden_letters_v2"),
       loadRetentionDevLetters(),
       loadSpecialForestFriendLetters(),
     ]);
@@ -7413,9 +7588,16 @@ async function refreshLettersWhileOpen() {
           sentAt: letter.sent_at,
           availableAt: letter.available_at,
           readAt: letter.read_at,
+          returnedAt: letter.returned_at || null,
+          returnReason: letter.return_reason || "",
+          returnSeenAt: letter.return_seen_at || null,
           isDevTest: false,
         }))
         .map(applyAnimalDeliveryMeta);
+
+      clearReturnedAnimalDeliveryQueue(
+        state.sentLetters.filter((letter) => letter.returnedAt).map((letter) => letter.id)
+      );
     }
 
     if (specialFriendLettersResult.error) {
@@ -7460,6 +7642,7 @@ async function refreshLettersWhileOpen() {
     // 편지 상태만 다시 그립니다. 정원 전체·친구·기록·장식·공유나무는 다시 읽지 않습니다.
     renderGarden();
     renderLetters();
+    scheduleReturnedGardenLettersSeen();
   } catch (error) {
     console.warn("TodayForest letter refresh skipped:", error);
   } finally {
@@ -7491,6 +7674,7 @@ async function openLettersSheet({ focus = "" } = {}) {
 
   await refreshLettersWhileOpen();
   focusLettersSheetSection(focus);
+  scheduleReturnedGardenLettersSeen();
   startLettersAutoRefresh();
 }
 
@@ -7816,13 +8000,23 @@ function bindEvents() {
   els.returnToMyGarden.addEventListener("click", returnToMyGarden);
   els.returnToFriendsFromFriendVisit?.addEventListener("click", returnToFriendsFromFriendVisit);
   els.removeFriendFromVisit?.addEventListener("click", () => { void removeActiveFriendFromVisit(); });
+  els.cancelFriendRelationshipEnd?.addEventListener("click", closeFriendRelationshipEndModal);
+  els.confirmFriendRelationshipEnd?.addEventListener("click", () => { void confirmFriendRelationshipEnd(); });
+  els.friendRelationshipEndModal?.addEventListener("click", (event) => {
+    if (event.target === els.friendRelationshipEndModal) closeFriendRelationshipEndModal();
+  });
   document.addEventListener("click", (event) => {
     if (els.friendVisitManage?.open && !els.friendVisitManage.contains(event.target)) {
       els.friendVisitManage.open = false;
     }
   });
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && els.friendVisitManage?.open) {
+    if (event.key !== "Escape") return;
+    if (els.friendRelationshipEndModal && !els.friendRelationshipEndModal.classList.contains("hidden")) {
+      closeFriendRelationshipEndModal();
+      return;
+    }
+    if (els.friendVisitManage?.open) {
       els.friendVisitManage.open = false;
     }
   });
