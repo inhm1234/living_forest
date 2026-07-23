@@ -4015,8 +4015,8 @@ function renderGardenStatus(context = {}) {
       text: unread.length === 1
         ? "새 편지 한 통이 나뭇가지에 도착했어요."
         : `새 편지 ${unread.length}통이 나뭇가지에 도착했어요.`,
-      action: "letters",
-      label: "도착한 편지 보기",
+      action: "branch-letters",
+      label: "나뭇가지에 도착한 편지 살펴보기",
     });
   }
 
@@ -4143,8 +4143,15 @@ function handleGardenStatusMainClick(event) {
   const item = currentGardenStatusItem();
   if (!item) return;
 
+  if (item.action === "branch-letters") {
+    event?.preventDefault();
+    nudgeBranchLetters();
+    return;
+  }
   if (item.action === "letters") {
-    $("#openLetters")?.click();
+    // 이전 캐시나 호환 메시지가 남아 있어도 편지 도착의 실제 발견 지점인 가지를 안내합니다.
+    event?.preventDefault();
+    nudgeBranchLetters();
     return;
   }
   if (item.action === "visitor-hint") {
@@ -4329,6 +4336,23 @@ function updateReceivedLetterCopy(placement) {
   if (receivedIntro) receivedIntro.textContent = placement.intro;
 }
 
+function nudgeBranchLetters({ openSingle = false } = {}) {
+  const unread = getUnreadLetters();
+  if (!unread.length || !els.branchLetters) {
+    showToast("지금 나뭇가지에 기다리는 새 편지는 없어요.");
+    return;
+  }
+
+  // 편지 도착의 1차 발견 지점은 편지함이 아니라 실제 나뭇가지입니다.
+  // 상태바를 눌렀을 때도 편지함으로 순간 이동시키지 않고, 정원 안 봉투 위치만 알려줍니다.
+  els.branchLetters.classList.remove("is-attention-nudged");
+  void els.branchLetters.offsetWidth;
+  els.branchLetters.classList.add("is-attention-nudged");
+  window.setTimeout(() => els.branchLetters?.classList.remove("is-attention-nudged"), 1600);
+
+  if (openSingle && unread.length === 1) openLetter(unread[0].id);
+}
+
 function renderBranchLetters(unreadLetters) {
   const letters = [...unreadLetters].sort((a, b) => new Date(a.date) - new Date(b.date));
   const placement = receivedLetterPlacementForGrowth(visualGrowthForGarden());
@@ -4362,7 +4386,9 @@ function renderBranchLetters(unreadLetters) {
   }
 
   $$('[data-open-letter]').forEach((button) => button.addEventListener("click", () => openLetter(button.dataset.openLetter)));
-  $$('[data-open-letters]').forEach((button) => button.addEventListener("click", () => { void openLettersSheet(); }));
+  $$('[data-open-letters]').forEach((button) => button.addEventListener("click", () => {
+    void openLettersSheet({ focus: "received" });
+  }));
 }
 
 
@@ -4736,15 +4762,22 @@ function renderLetters() {
   const canWrite = friends.length > 0;
 
   const animal = currentAnimalVisitor();
-  els.openLetterComposer.disabled = true;
-  els.openLetterComposer.textContent = animal
-    ? `${animal.icon} 정원에 있는 ${animal.name}에게 맡기기`
-    : "다음 숲친구를 기다리고 있어요";
+  const visit = currentAnimalV2Visit();
+  const canOpenVisitor = Boolean(canWrite && animal && visit);
+  els.openLetterComposer.disabled = !canOpenVisitor;
+  els.openLetterComposer.dataset.action = canOpenVisitor ? "visit-animal" : "none";
+  els.openLetterComposer.textContent = !canWrite
+    ? "친구와 연결하면 편지를 맡길 수 있어요"
+    : canOpenVisitor
+      ? `${animal.icon} ${animal.name} 만나러 가기`
+      : "다음 숲친구를 기다리는 중";
   els.letterFriendHint.textContent = !canWrite
-    ? "친구와 연결되면 숲친구에게 편지를 맡길 수 있어요."
-    : animal
-      ? `정원에 온 ${animal.name}를 눌러 편지를 직접 맡겨 보세요.`
-      : "편지는 다음에 찾아오는 숲친구에게 직접 맡길 수 있어요.";
+    ? "친구와 연결되면 정원에 찾아온 숲친구에게 마음을 부탁할 수 있어요."
+    : canOpenVisitor
+      ? `정원에 온 ${animal.name}를 누르면 편지를 맡길 수 있어요.`
+      : "편지는 정원에 찾아온 숲친구에게 직접 맡겨요.";
+  document.querySelector(".write-letter-box")?.classList.toggle("is-ready", canOpenVisitor);
+  document.querySelector(".write-letter-box")?.classList.toggle("is-waiting", !canOpenVisitor);
 
   renderSentLetters();
 
@@ -4778,10 +4811,10 @@ function specialFriendDeliveryCardMarkup(letter) {
     ? `${escapeHTML(letter.to)}에게 전한 마음`
     : `${escapeHTML(letter.to)}에게 · ${escapeHTML(letter.title)}`;
   const story = isReturning
-    ? `편지는 도착했어요 · ${carrier.name}이 숲을 지나 돌아오고 있어요.`
+    ? `편지 전달 완료 · ${carrier.name}은 정원으로 돌아오는 중이에요.`
     : `${carrier.name}이 ${letter.to}에게 마음을 전하러 가고 있어요.`;
-  const countdownLabel = isReturning ? "귀환까지" : "도착까지";
-  const badge = isReturning ? "돌아오는 중" : "전달 중";
+  const countdownLabel = isReturning ? "정원 귀환까지" : "도착까지";
+  const badge = isReturning ? "귀환 중" : "배송 중";
   return `
     <article class="sent-letter-item has-animal-tracking special-friend-delivery">
       <div class="sent-letter-icon" aria-hidden="true">${carrier.icon}</div>
@@ -7408,14 +7441,30 @@ async function refreshLettersWhileOpen() {
   }
 }
 
-async function openLettersSheet() {
-  // 편지 버튼을 누르는 순간 한 번 바로 새로 읽고,
-  // 열어 둔 동안에만 30초 단위로 배송 상태를 갱신합니다.
+function focusLettersSheetSection(section) {
+  if (!els.lettersSheet || section !== "received") return;
+  const target = document.querySelector("#receivedLetterSection");
+  if (!target) return;
+  window.requestAnimationFrame(() => {
+    const top = Math.max(0, target.offsetTop - 68);
+    els.lettersSheet.scrollTo({ top, behavior: "smooth" });
+    target.classList.remove("is-section-focused");
+    void target.offsetWidth;
+    target.classList.add("is-section-focused");
+    window.setTimeout(() => target.classList.remove("is-section-focused"), 1700);
+  });
+}
+
+async function openLettersSheet({ focus = "" } = {}) {
+  // 하단 편지함은 '도착 알림의 시작점'이 아니라 배송 현황과 아직 읽지 않은 마음을 정리하는 둥지입니다.
+  // 나뭇가지 묶음에서 들어온 경우에만 도착 편지 구역으로 바로 안내합니다.
   renderLetters();
   openSheet(els.lettersSheet);
+  focusLettersSheetSection(focus);
   if (!currentUser) return;
 
   await refreshLettersWhileOpen();
+  focusLettersSheetSection(focus);
   startLettersAutoRefresh();
 }
 
@@ -7655,7 +7704,11 @@ function bindEvents() {
     renderFeedbackCategorySelection();
   }));
   els.openLetterComposer.addEventListener("click", () => {
-    showToast("정원에 찾아온 숲친구를 눌러 편지를 맡겨요.");
+    const visit = currentAnimalV2Visit();
+    const animal = currentAnimalVisitor();
+    if (!visit || !animal || !(state.friends || []).length) return;
+    closeAllSheets();
+    window.requestAnimationFrame(() => openAnimalEncounterForVisit(visit.id));
   });
   els.letterForm.addEventListener("submit", sendGardenLetter);
   window.addEventListener("todayforest:open-special-friend-letter", (event) => {
