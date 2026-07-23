@@ -1894,17 +1894,17 @@ async function loadGardenState() {
   if (specialFriendLettersResult.error) console.warn("TodayForest special-friend letter load skipped:", specialFriendLettersResult.error);
 
   const profile = profileResult.data;
-  // 운영에서는 목록 RPC가 함께 돌려줄 수 있는 DEV 테스트 친구를 화면 데이터에서 제외합니다.
-  // 실제 친구 관계와 테스트 친구를 서버에서 삭제하지 않고, 운영 UI에만 섞이지 않게 합니다.
+  // 일반 운영 화면에서는 DEV 테스트 친구를 숨기고, 이 브라우저의 QA 모드에서만 다시 불러옵니다.
+  // 생성 직후 loadGardenState()가 실행돼도 테스트 친구가 목록에서 사라지지 않게 합니다.
   const realFriends = (friendsResult.data || [])
-    .filter((friend) => !friend.is_dev_test)
+    .filter((friend) => LOCAL_QA_MODE_ENABLED || !friend.is_dev_test)
     .map((friend) => ({
       id: friend.friend_id,
-      name: friend.nickname || "친구",
+      name: friend.nickname || (friend.is_dev_test ? "테스트 새싹" : "친구"),
       avatarUrl: friend.avatar_url || "",
       growth: Number(friend.growth_count || 0),
       becameFriendsAt: friend.became_friends_at,
-      isDevTest: false,
+      isDevTest: Boolean(friend.is_dev_test),
     }));
   const friendsById = new Map();
   realFriends.forEach((friend) => {
