@@ -1045,6 +1045,21 @@ function databaseErrorMessage(error) {
   if (message.includes("SHARED_TREE_INVITE_NOT_FOUND")) {
     return "이 씨앗 제안은 더 이상 기다리고 있지 않아요.";
   }
+  if (message.includes("SHARED_TREE_NAME_PIECE_ALREADY_SET")) {
+    return "이 나무에는 이미 내 이름 조각을 남겼어요.";
+  }
+  if (message.includes("SHARED_TREE_NAME_ALREADY_FINALIZED")) {
+    return "이 나무의 이름은 이미 완성됐어요.";
+  }
+  if (message.includes("SHARED_TREE_NAME_PIECE_INVALID")) {
+    return "지금 고를 수 없는 이름 조각이에요.";
+  }
+  if (message.includes("SHARED_TREE_NAME_NOT_READY")) {
+    return "두 사람의 이름 조각이 먼저 모여야 해요.";
+  }
+  if (message.includes("SHARED_TREE_WORLD_CHOICE_INVALID")) {
+    return "나무가 머물 곳을 다시 골라 주세요.";
+  }
   if (message.includes("SHARED_TREE_LIGHT_ALREADY_RECORDED")) {
     return "오늘의 빛은 이미 이 나무에 남겼어요. 내일 다시 와요.";
   }
@@ -1072,7 +1087,7 @@ function databaseErrorMessage(error) {
   if (message.includes("SHARED_TREE_STAGE_NEEDS_BOTH_CARE_TYPES")) {
     return "이 시기를 마치려면 두 종류의 돌봄이 모두 필요해요.";
   }
-  if (message.includes("SHARED_TREE_V2_NOT_FOUND") || message.includes("get_my_garden_shared_tree_v2") || message.includes("add_my_garden_shared_tree_care")) {
+  if (message.includes("SHARED_TREE_V2_NOT_FOUND") || message.includes("get_my_garden_shared_tree_v2") || message.includes("add_my_garden_shared_tree_care") || message.includes("set_my_garden_shared_tree_name_piece") || message.includes("set_my_garden_shared_tree_world_choice")) {
     return "새 함께 키우기 기능을 불러오지 못했어요. v2 SQL 설정을 확인해 주세요.";
   }
   if (message.includes("SHARED_TREE_NOTE_REQUIRED")) {
@@ -1411,21 +1426,21 @@ const DEV_SHARED_TREE_V2_CARE_TYPES = new Set([
   "soil", "water", "sunlight", "nutrition", "branch", "habitat", "bloom", "fruit",
 ]);
 const DEV_SHARED_TREE_V2_ACTORS = new Set(["me", "partner"]);
-const DEV_SHARED_TREE_V2_NAME_PIECES = {
-  emotion: [
+const SHARED_TREE_V2_NAME_PIECES = Object.freeze({
+  emotion: Object.freeze([
     { key: "warm", label: "포근한", description: "포근히 감싸는 마음의 온기" },
     { key: "calm", label: "고요한", description: "조용히 오래 머무는 마음" },
     { key: "sparkling", label: "반짝이는", description: "작은 기쁨이 반짝이는 순간" },
-  ],
-  nature: [
+  ]),
+  nature: Object.freeze([
     { key: "summerlight", label: "여름빛", description: "따뜻하고 환한 계절의 기억" },
     { key: "dawnleaf", label: "새벽잎", description: "조용히 깨어나는 숲의 기운" },
     { key: "starfruit", label: "별열매", description: "밤에도 은은하게 빛나는 마음" },
-  ],
-};
+  ]),
+});
 
-function devSharedTreeV2NamePieceLabel(role, key) {
-  return DEV_SHARED_TREE_V2_NAME_PIECES[role]?.find((item) => item.key === key)?.label || "";
+function sharedTreeV2NamePieceLabel(role, key) {
+  return SHARED_TREE_V2_NAME_PIECES[role]?.find((item) => item.key === key)?.label || "";
 }
 
 function normalizeDevSharedTreeV2Note(value) {
@@ -1598,8 +1613,8 @@ function buildDevSharedTreeV2Detail(preview) {
 
   const emotionKey = String(preview.namePieces?.me || "");
   const natureKey = String(preview.namePieces?.partner || "");
-  const emotionLabel = devSharedTreeV2NamePieceLabel("emotion", emotionKey);
-  const natureLabel = devSharedTreeV2NamePieceLabel("nature", natureKey);
+  const emotionLabel = sharedTreeV2NamePieceLabel("emotion", emotionKey);
+  const natureLabel = sharedTreeV2NamePieceLabel("nature", natureKey);
   profile.finalName = emotionLabel && natureLabel ? `${emotionLabel} ${natureLabel} 나무` : "";
 
   const currentStage = completedStageCount >= 4 ? 4 : completedStageCount + 1;
@@ -1812,7 +1827,7 @@ function recordDevSharedTreeV2NamePiece(tree, actor, pieceKey) {
     return { ok: false, message: "완성된 로컬 검수 나무를 다시 열어 주세요." };
   }
   const role = actor === "me" ? "emotion" : "nature";
-  const valid = DEV_SHARED_TREE_V2_NAME_PIECES[role]?.some((item) => item.key === pieceKey);
+  const valid = SHARED_TREE_V2_NAME_PIECES[role]?.some((item) => item.key === pieceKey);
   if (!valid) return { ok: false, message: "선택할 수 없는 이름 조각이에요." };
 
   const namePieces = {
@@ -6712,14 +6727,21 @@ function updateSharedTreeNoteCount() {
 
 function renderSharedTreeV2Home(tree, friend) {
   if (!els.sharedTreeV2Home) return;
-  const visible = Boolean(tree?.isDevPreview && tree?.completedAt && tree?.v2Detail?.profile?.finalName);
+  const isV2 = Number(tree?.growthVersion || 1) === 2;
+  const visible = Boolean(isV2 && tree?.completedAt && tree?.v2Detail?.profile?.finalName);
   els.sharedTreeV2Home.classList.toggle("hidden", !visible);
   if (!visible) return;
 
-  const actor = sharedTreeV2DevActor;
-  const actorLabel = devSharedTreeV2ActorLabel(friend, actor);
+  const isDevQa = Boolean(tree?.isDevPreview);
+  const actor = isDevQa ? sharedTreeV2DevActor : "me";
   const choices = tree.v2Detail?.devWorldChoices || { me: "", partner: "" };
-  const selected = normalizeDevSharedTreeV2WorldChoice(choices[actor]);
+  const selected = isDevQa
+    ? normalizeDevSharedTreeV2WorldChoice(choices[actor])
+    : tree.v2Detail?.myMemberState?.worldConsent === true
+      ? "world"
+      : tree.v2Detail?.myMemberState?.worldConsent === false
+        ? "private"
+        : "";
   const bothWorld = Boolean(tree.v2Detail?.bothWorldConsent);
 
   els.sharedTreeV2Home.querySelectorAll("[data-v2-home-choice]").forEach((button) => {
@@ -6732,7 +6754,9 @@ function renderSharedTreeV2Home(tree, friend) {
     els.sharedTreeV2HomeWithdraw.classList.toggle("hidden", selected !== "world");
   }
   if (els.sharedTreeV2HomeActorHint) {
-    els.sharedTreeV2HomeActorHint.textContent = `현재 ${actorLabel}의 선택을 확인하고 있어요.`;
+    els.sharedTreeV2HomeActorHint.textContent = isDevQa
+      ? `현재 ${actor === "partner" ? friend.name : "내"} 선택을 확인하고 있어요.`
+      : "내 선택은 언제든 다시 바꿀 수 있어요.";
   }
   if (els.sharedTreeV2HomeStatus) {
     els.sharedTreeV2HomeStatus.classList.toggle("is-ready", bothWorld);
@@ -6752,8 +6776,9 @@ function renderSharedTreeMemoryNote(tree, friend, isComplete) {
   if (!els.sharedTreeMemoryNote) return;
 
   const isDevQa = Boolean(tree?.isDevPreview);
-  const qaReady = Boolean(isDevQa && tree?.v2Detail?.profile?.finalName);
-  const visible = Boolean(isComplete && (!isDevQa || qaReady));
+  const isV2 = Number(tree?.growthVersion || 1) === 2;
+  const nameReady = Boolean(tree?.v2Detail?.profile?.finalName);
+  const visible = Boolean(isComplete && (!isV2 || nameReady));
   els.sharedTreeMemoryNote.classList.toggle("hidden", !visible);
   if (!visible) {
     renderSharedTreeV2Home(tree, friend);
@@ -6795,7 +6820,7 @@ function renderSharedTreeMemoryNote(tree, friend, isComplete) {
   els.sharedTreeNoteSubmit.textContent = selectedNote ? "한마디 수정하기" : "한마디 남기기";
   if (els.sharedTreeNoteInputLabel) {
     els.sharedTreeNoteInputLabel.textContent = isDevQa
-      ? `${devSharedTreeV2ActorLabel(friend, selectedActor)}의 한마디`
+      ? (selectedActor === "partner" ? `${friend.name}의 한마디` : "내 한마디")
       : "내 한마디";
   }
   if (els.sharedTreeNoteHelp) {
@@ -6817,6 +6842,10 @@ async function saveSharedTreeMemoryNote(event) {
   }
   if (!tree.completedAt) {
     showToast("완성된 나무에만 한마디를 남길 수 있어요.");
+    return;
+  }
+  if (Number(tree.growthVersion || 1) === 2 && !tree.v2Detail?.profile?.finalName) {
+    showToast("두 사람의 이름 조각이 먼저 모여야 해요.");
     return;
   }
 
@@ -6998,13 +7027,18 @@ function renderSharedTreeV2DevTools(tree, friend) {
 
 function sharedTreeV2NameMarkup(tree, friend) {
   const detail = tree.v2Detail;
-  const actor = sharedTreeV2DevActor;
-  const role = actor === "me" ? "emotion" : "nature";
+  const isDevQa = Boolean(tree?.isDevPreview);
+  const actor = isDevQa ? sharedTreeV2DevActor : "me";
+  const role = isDevQa
+    ? (actor === "me" ? "emotion" : "nature")
+    : String(detail?.myMemberState?.namePieceRole || "");
   const roleLabel = role === "emotion" ? "마음 조각" : "자연 조각";
-  const actorLabel = devSharedTreeV2ActorLabel(friend, actor);
+  const actorLabel = isDevQa ? devSharedTreeV2ActorLabel(friend, actor) : "내 손길";
   const pieces = detail?.devNamePieces || { me: "", partner: "" };
-  const selectedKey = String(pieces[actor] || "");
-  const selectedLabel = devSharedTreeV2NamePieceLabel(role, selectedKey);
+  const selectedKey = isDevQa
+    ? String(pieces[actor] || "")
+    : String(detail?.myMemberState?.namePieceKey || "");
+  const selectedLabel = sharedTreeV2NamePieceLabel(role, selectedKey);
   const finalName = String(detail?.profile?.finalName || "");
 
   if (finalName) {
@@ -7017,17 +7051,24 @@ function sharedTreeV2NameMarkup(tree, friend) {
       </div>`;
   }
 
+  if (!SHARED_TREE_V2_NAME_PIECES[role]) {
+    return '<div class="shared-tree-v2-loading">이름 조각 역할을 불러오는 중이에요.</div>';
+  }
+
   if (selectedLabel) {
-    const waitingFor = actor === "me" ? `${escapeHTML(friend.name)}의 자연 조각` : "내 마음 조각";
+    const waitingFor = isDevQa
+      ? (actor === "me" ? `${escapeHTML(friend.name)}의 자연 조각` : "내 마음 조각")
+      : `${escapeHTML(friend.name)}의 이름 조각`;
+    const qaHelp = isDevQa ? " 위에서 다른 손길로 전환해 이어서 확인해요." : "";
     return `
       <div class="shared-tree-v2-name-waiting">
         <span aria-hidden="true">🍃</span>
         <strong>${escapeHTML(actorLabel)}이 ‘${escapeHTML(selectedLabel)}’을 남겼어요.</strong>
-        <p>${waitingFor}이 더해지면 이름이 완성돼요. 위에서 다른 손길로 전환해 이어서 확인해요.</p>
+        <p>${waitingFor}이 더해지면 이름이 완성돼요.${qaHelp}</p>
       </div>`;
   }
 
-  const choices = (DEV_SHARED_TREE_V2_NAME_PIECES[role] || []).map((piece) => `
+  const choices = (SHARED_TREE_V2_NAME_PIECES[role] || []).map((piece) => `
     <button class="shared-tree-v2-name-piece" type="button" data-v2-name-piece="${escapeAttr(piece.key)}">
       <span>${escapeHTML(piece.label)}</span>
       <small>${escapeHTML(piece.description || (role === "emotion" ? "나무에 남길 마음의 분위기" : "나무가 품을 자연의 이미지"))}</small>
@@ -7061,9 +7102,7 @@ function sharedTreeV2CareMarkup(tree, friend) {
   const detail = tree.v2Detail;
   if (!detail) return '<div class="shared-tree-v2-loading">오늘의 돌봄을 불러오는 중이에요.</div>';
   if (tree.completedAt) {
-    return tree.isDevPreview
-      ? sharedTreeV2NameMarkup(tree, friend)
-      : '<div class="shared-tree-v2-complete-card"><span aria-hidden="true">✦</span><strong>둘이 함께 돌본 나무가 완성됐어요.</strong><p>이제 나무가 자신의 이름과 머물 숲을 기다리고 있어요.</p></div>';
+    return sharedTreeV2NameMarkup(tree, friend);
   }
   const devActor = tree.isDevPreview ? sharedTreeV2DevActor : "me";
   const actorCaredToday = tree.isDevPreview
@@ -7117,15 +7156,19 @@ function bindSharedTreeV2CareButtons() {
       event.stopPropagation();
       const tree = (state.sharedTrees || []).find((item) => item.id === activeSharedTreeId);
       const pieceKey = String(nameButton.dataset.v2NamePiece || "");
-      const result = recordDevSharedTreeV2NamePiece(tree, sharedTreeV2DevActor, pieceKey);
-      if (!result.ok) {
-        showToast(result.message || "이름 조각을 남기지 못했어요.");
-        return;
+      if (tree?.isDevPreview) {
+        const result = recordDevSharedTreeV2NamePiece(tree, sharedTreeV2DevActor, pieceKey);
+        if (!result.ok) {
+          showToast(result.message || "이름 조각을 남기지 못했어요.");
+          return;
+        }
+        renderSharedTreeV2View(result.tree);
+        showToast(result.tree?.v2Detail?.profile?.finalName
+          ? `${result.tree.v2Detail.profile.finalName}라는 이름이 완성됐어요.`
+          : `${devSharedTreeV2ActorLabel(friendForSharedTree(result.tree), sharedTreeV2DevActor)}이 이름 조각을 남겼어요.`);
+      } else {
+        void recordSharedTreeV2NamePiece(tree, pieceKey, nameButton);
       }
-      renderSharedTreeV2View(result.tree);
-      showToast(result.tree?.v2Detail?.profile?.finalName
-        ? `${result.tree.v2Detail.profile.finalName}라는 이름이 완성됐어요.`
-        : `${devSharedTreeV2ActorLabel(friendForSharedTree(result.tree), sharedTreeV2DevActor)}이 이름 조각을 남겼어요.`);
       return;
     }
 
@@ -7248,6 +7291,41 @@ function renderSharedTreeView(treeId = activeSharedTreeId) {
     : renderSharedTreeV1View(treeId);
 }
 
+async function recordSharedTreeV2NamePiece(tree, pieceKey, button) {
+  if (!tree || Number(tree.growthVersion || 1) !== 2 || !tree.completedAt) {
+    showToast("완성된 나무를 다시 열어 주세요.");
+    return;
+  }
+  const role = String(tree.v2Detail?.myMemberState?.namePieceRole || "");
+  const valid = SHARED_TREE_V2_NAME_PIECES[role]?.some((item) => item.key === pieceKey);
+  if (!valid) {
+    showToast("지금 고를 수 없는 이름 조각이에요.");
+    return;
+  }
+
+  const buttons = Array.from(els.sharedTreeV2CareOptions?.querySelectorAll("button") || []);
+  buttons.forEach((item) => { item.disabled = true; });
+  button?.classList.add("is-saving");
+
+  try {
+    const { data, error } = await supabase.rpc("set_my_garden_shared_tree_name_piece", {
+      p_tree_id: tree.id,
+      p_piece_key: pieceKey,
+    });
+    if (error) throw error;
+    const updatedTree = mergeSharedTreeV2Detail(data);
+    if (updatedTree) renderSharedTreeV2View(updatedTree);
+    showToast(updatedTree?.v2Detail?.profile?.finalName
+      ? `${updatedTree.v2Detail.profile.finalName}라는 이름이 완성됐어요.`
+      : "내 이름 조각을 나무에 남겼어요.");
+    if (activeTogetherForestFriendId === tree.partnerId) renderTogetherForest(tree.partnerId);
+  } catch (error) {
+    console.warn("TodayForest shared-tree v2 name piece save error:", error);
+    showToast(databaseErrorMessage(error));
+    renderSharedTreeV2View(tree);
+  }
+}
+
 async function recordSharedTreeV2Care(button) {
   const tree = (state.sharedTrees || []).find((item) => item.id === activeSharedTreeId);
   if (!tree || Number(tree.growthVersion || 1) !== 2) return;
@@ -7320,6 +7398,41 @@ async function recordSharedTreeV2Care(button) {
     if (activeTogetherForestFriendId === tree.partnerId) renderTogetherForest(tree.partnerId);
   } catch (error) {
     console.warn("TodayForest shared-tree v2 care save error:", error);
+    showToast(databaseErrorMessage(error));
+    renderSharedTreeV2View(tree);
+  }
+}
+
+async function saveSharedTreeV2WorldChoice(tree, choice) {
+  if (!tree || Number(tree.growthVersion || 1) !== 2 || !tree.completedAt || !tree.v2Detail?.profile?.finalName) {
+    showToast("이름이 완성된 나무를 다시 열어 주세요.");
+    return;
+  }
+  const normalizedChoice = choice === "world" || choice === "private" || choice === "withdraw" ? choice : "";
+  if (!normalizedChoice) return;
+
+  const buttons = Array.from(els.sharedTreeV2Home?.querySelectorAll("button") || []);
+  buttons.forEach((button) => { button.disabled = true; });
+
+  try {
+    const { data, error } = await supabase.rpc("set_my_garden_shared_tree_world_choice", {
+      p_tree_id: tree.id,
+      p_choice: normalizedChoice,
+    });
+    if (error) throw error;
+    const updatedTree = mergeSharedTreeV2Detail(data);
+    if (updatedTree) renderSharedTreeV2View(updatedTree);
+    if (updatedTree?.v2Detail?.bothWorldConsent) {
+      showToast("두 사람의 동의가 모여 숲길에 심을 준비를 마쳤어요.");
+    } else if (normalizedChoice === "world") {
+      showToast("모두의 숲길에 심고 싶은 마음을 남겼어요.");
+    } else if (normalizedChoice === "private") {
+      showToast("이 나무를 둘만의 함께한 숲에 두었어요.");
+    } else {
+      showToast("숲길 공개 동의를 철회했어요.");
+    }
+  } catch (error) {
+    console.warn("TodayForest shared-tree v2 world choice save error:", error);
     showToast(databaseErrorMessage(error));
     renderSharedTreeV2View(tree);
   }
@@ -9246,29 +9359,35 @@ function bindEvents() {
   });
   els.sharedTreeV2Home?.addEventListener("click", (event) => {
     const tree = (state.sharedTrees || []).find((item) => item.id === activeSharedTreeId);
-    if (!tree?.isDevPreview) return;
+    if (!tree) return;
 
     const choiceButton = event.target.closest("[data-v2-home-choice]");
     const withdrawButton = event.target.closest("#sharedTreeV2HomeWithdraw");
     if (!choiceButton && !withdrawButton) return;
     event.preventDefault();
 
-    const choice = withdrawButton ? "" : String(choiceButton.dataset.v2HomeChoice || "");
-    const result = recordDevSharedTreeV2WorldChoice(tree, sharedTreeV2DevActor, choice);
-    if (!result.ok) {
-      showToast(result.message || "머물 곳 선택을 저장하지 못했어요.");
+    const choice = withdrawButton ? "withdraw" : String(choiceButton.dataset.v2HomeChoice || "");
+    if (tree.isDevPreview) {
+      const devChoice = choice === "withdraw" ? "" : choice;
+      const result = recordDevSharedTreeV2WorldChoice(tree, sharedTreeV2DevActor, devChoice);
+      if (!result.ok) {
+        showToast(result.message || "머물 곳 선택을 저장하지 못했어요.");
+        return;
+      }
+      renderSharedTreeV2View(result.tree);
+      if (result.tree?.v2Detail?.bothWorldConsent) {
+        showToast("두 사람의 동의가 모여 숲길에 심을 준비를 마쳤어요.");
+      } else if (choice === "world") {
+        showToast("모두의 숲길에 심고 싶은 마음을 남겼어요.");
+      } else if (choice === "private") {
+        showToast("이 나무를 둘만의 함께한 숲에 두었어요.");
+      } else {
+        showToast("숲길 공개 동의를 철회했어요.");
+      }
       return;
     }
-    renderSharedTreeV2View(result.tree);
-    if (result.tree?.v2Detail?.bothWorldConsent) {
-      showToast("두 사람의 동의가 모여 숲길에 심을 준비를 마쳤어요.");
-    } else if (choice === "world") {
-      showToast("모두의 숲길에 심고 싶은 마음을 남겼어요.");
-    } else if (choice === "private") {
-      showToast("이 나무를 둘만의 함께한 숲에 두었어요.");
-    } else {
-      showToast("숲길 공개 동의를 철회했어요.");
-    }
+
+    void saveSharedTreeV2WorldChoice(tree, choice);
   });
   els.sharedTreeNoteForm?.addEventListener("submit", (event) => { void saveSharedTreeMemoryNote(event); });
   els.sharedTreeNoteInput?.addEventListener("input", updateSharedTreeNoteCount);
