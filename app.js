@@ -6563,23 +6563,15 @@ function sharedTreeV2SceneVisual(tree) {
   const stage = Math.min(4, Math.max(1, Number(detail?.currentStage || tree?.currentStage || 1)));
   const count = Math.min(4, Math.max(0, Number(detail?.stageEventCount || tree?.stageEventCount || 0)));
 
-  // PHASE 7.3 QA: 전용 수채화 성장 장면을 QA 브라우저에서만 검수합니다.
-  // 운영 사용자는 기존 검증된 stage-1 이미지를 계속 보며, QA가 꺼지면 즉시 원상 복귀합니다.
+  // PHASE 7.5 운영: QA를 통과한 공통 카메라의 1단계 성장 장면을
+  // 실제 growth_version=2 나무에만 사용합니다. ?qa=1은 DEV 검수 도구용으로 계속 보존합니다.
   if (stage === 1) {
-    if (LOCAL_QA_MODE_ENABLED) {
-      const frame = count <= 0 ? 0 : count <= 2 ? 1 : 2;
-      return {
-        src: "assets/garden/shared_tree_v2/stage1-growth-qa.webp",
-        imageStage: 1,
-        kind: frame === 0 ? "seed" : frame === 1 ? "rooting" : "first-sprout",
-        qaFrame: frame,
-      };
-    }
+    const frame = count <= 0 ? 0 : count <= 2 ? 1 : 2;
     return {
-      src: sharedTreeImagePath(1),
+      src: "assets/garden/shared_tree_v2/stage1-growth-qa.webp",
       imageStage: 1,
-      kind: count >= 3 ? "first-sprout" : "rooting-watercolor",
-      qaFrame: -1,
+      kind: frame === 0 ? "seed" : frame === 1 ? "rooting" : "first-sprout",
+      visualFrame: frame,
     };
   }
   return {
@@ -6597,11 +6589,13 @@ function applySharedTreeV2SceneState(tree) {
   els.sharedTreeView.dataset.v2Stage = String(detail?.currentStage || tree?.currentStage || 1);
   els.sharedTreeView.dataset.v2Step = String(Math.min(4, Math.max(0, Number(detail?.stageEventCount || tree?.stageEventCount || 0))));
   els.sharedTreeView.dataset.v2Scene = visual.kind;
-  if (Number.isInteger(visual.qaFrame) && visual.qaFrame >= 0) {
-    els.sharedTreeView.dataset.v2QaFrame = String(visual.qaFrame);
+  if (Number.isInteger(visual.visualFrame) && visual.visualFrame >= 0) {
+    els.sharedTreeView.dataset.v2VisualFrame = String(visual.visualFrame);
   } else {
-    delete els.sharedTreeView.dataset.v2QaFrame;
+    delete els.sharedTreeView.dataset.v2VisualFrame;
   }
+  // PHASE 7.5 이전 QA 속성이 남은 상태에서도 스타일이 섞이지 않도록 정리합니다.
+  delete els.sharedTreeView.dataset.v2QaFrame;
   els.sharedTreeView.dataset.v2LastCare = latestEvent?.careType || "";
   els.sharedTreeView.dataset.v2Soil = detail?.profile?.soilChoice || "";
   els.sharedTreeView.dataset.v2Water = detail?.profile?.waterChoice || "";
