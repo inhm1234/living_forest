@@ -8944,3 +8944,39 @@ body.animal-preview-clean-mode .ff-cinematic {
   .shared-tree-v2-dev-head strong { font-size: 0.76rem; }
   .shared-tree-v2-dev-tools button { font-size: 0.76rem; }
 }
+
+/* Shared tree v2 · local QA naming flow */
+.shared-tree-v2-name-card,
+.shared-tree-v2-name-waiting,
+.shared-tree-v2-name-complete {
+  grid-column: 1 / -1;
+  padding: 16px;
+  border: 1px solid rgba(126,153,125,.18);
+  border-radius: 18px;
+  background: linear-gradient(145deg,rgba(248,252,246,.96),rgba(255,248,237,.9));
+}
+.shared-tree-v2-name-copy { display: flex; align-items: flex-start; gap: 10px; }
+.shared-tree-v2-name-copy > span { flex: 0 0 auto; display: grid; width: 32px; height: 32px; place-items: center; border-radius: 11px; background: rgba(239,247,234,.96); color: #7f956f; font-size: 16px; }
+.shared-tree-v2-name-copy small,
+.shared-tree-v2-name-complete small { display: block; color: #98a29a; font-size: 9px; font-weight: 850; letter-spacing: .08em; }
+.shared-tree-v2-name-copy strong,
+.shared-tree-v2-name-waiting strong,
+.shared-tree-v2-name-complete strong { display: block; margin-top: 3px; color: #566d5b; font-size: 13px; line-height: 1.4; word-break: keep-all; }
+.shared-tree-v2-name-copy p,
+.shared-tree-v2-name-waiting p,
+.shared-tree-v2-name-complete p { margin: 5px 0 0; color: #879188; font-size: 10px; font-weight: 700; line-height: 1.55; word-break: keep-all; }
+.shared-tree-v2-name-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin-top: 13px; }
+.shared-tree-v2-name-piece { min-width: 0; padding: 11px 8px; border: 1px solid rgba(126,153,125,.22); border-radius: 14px; background: rgba(255,255,255,.86); color: #5d725f; text-align: center; cursor: pointer; transition: transform .16s ease,border-color .16s ease,box-shadow .16s ease; }
+.shared-tree-v2-name-piece span { display: block; font-size: 12px; font-weight: 900; line-height: 1.35; }
+.shared-tree-v2-name-piece small { display: block; margin-top: 4px; color: #98a099; font-size: 8px; font-weight: 700; line-height: 1.4; word-break: keep-all; }
+.shared-tree-v2-name-piece:hover { transform: translateY(-1px); border-color: rgba(105,142,106,.38); box-shadow: 0 7px 14px rgba(89,121,92,.08); }
+.shared-tree-v2-name-waiting,
+.shared-tree-v2-name-complete { text-align: center; }
+.shared-tree-v2-name-waiting > span,
+.shared-tree-v2-name-complete > span { display: block; margin-bottom: 5px; font-size: 20px; }
+.shared-tree-v2-name-complete strong { margin-top: 6px; font-size: 18px; color: #4f6755; }
+.shared-tree-v2-dev-actions button:disabled { opacity: .48; cursor: default; }
+@media (max-width: 560px) {
+  .shared-tree-v2-name-grid { grid-template-columns: 1fr; }
+  .shared-tree-v2-name-piece:hover { transform: none; box-shadow: none; }
+}
