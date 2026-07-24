@@ -2210,6 +2210,13 @@ async function loadGardenState() {
       })),
   };
 
+  // QA 로컬 공유나무는 서버 목록과 별도로 localStorage에 저장됩니다.
+  // 새로고침 뒤에도 성장·이름·한마디·공개 선택이 이어지도록
+  // 서버 상태를 조립한 직후 로컬 미리보기를 다시 합칩니다.
+  if (LOCAL_QA_MODE_ENABLED) {
+    mergeDevSharedTreePreview(state.friends || []);
+  }
+
   clearReturnedAnimalDeliveryQueue(
     (state.sentLetters || []).filter((letter) => letter.returnedAt).map((letter) => letter.id)
   );
