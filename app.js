@@ -372,6 +372,27 @@ function resolveLocalQaMode() {
 }
 const LOCAL_QA_MODE_ENABLED = resolveLocalQaMode();
 document.documentElement.classList.toggle("local-qa-mode", LOCAL_QA_MODE_ENABLED);
+
+// PHASE 7.6 성장 카메라 QA는 운영 루트의 로컬 QA 모드에서만 동작합니다.
+// 실제 나무의 단계·서버 기록·돌봄 상태는 바꾸지 않고, 장면 이미지 한 장만 강제로 교체합니다.
+// 사용 예: ?qa=1&growthQa=3&growthFrame=2
+const SHARED_TREE_V2_GROWTH_QA_STAGE_PARAM = "growthQa";
+const SHARED_TREE_V2_GROWTH_QA_FRAME_PARAM = "growthFrame";
+function resolveSharedTreeV2GrowthQa() {
+  if (!LOCAL_QA_MODE_ENABLED) return null;
+  const params = new URLSearchParams(window.location.search);
+  const stage = Number(params.get(SHARED_TREE_V2_GROWTH_QA_STAGE_PARAM));
+  if (!Number.isInteger(stage) || stage < 1 || stage > 5) return null;
+
+  const requestedFrame = params.get(SHARED_TREE_V2_GROWTH_QA_FRAME_PARAM);
+  const parsedFrame = requestedFrame === null ? null : Number(requestedFrame);
+  const frame = Number.isInteger(parsedFrame) && parsedFrame >= 0 && parsedFrame <= 2
+    ? parsedFrame
+    : null;
+
+  return Object.freeze({ stage, frame });
+}
+const SHARED_TREE_V2_GROWTH_QA = resolveSharedTreeV2GrowthQa();
 // DEV 공유나무 v2 로컬 검수에서 현재 선택한 행동 주체입니다. 서버에는 저장되지 않습니다.
 let sharedTreeV2DevActor = "me";
 // 공유나무를 보고 있을 때 새로고침해도 같은 나무로 돌아오기 위한 주소 상태입니다.
@@ -6555,7 +6576,33 @@ function sharedTreeV2StageProgressCopy(tree) {
   return SHARED_TREE_V2_STAGE_PROGRESS_COPY[stage]?.[count] || sharedTreeV2Config(stage).description;
 }
 
+function sharedTreeV2GrowthQaVisual(tree) {
+  if (!SHARED_TREE_V2_GROWTH_QA || Number(tree?.growthVersion || 1) !== 2) return null;
+
+  const stage = SHARED_TREE_V2_GROWTH_QA.stage;
+  const count = Math.min(4, Math.max(0, Number(tree?.v2Detail?.stageEventCount || tree?.stageEventCount || 0)));
+  const frame = SHARED_TREE_V2_GROWTH_QA.frame ?? (count <= 0 ? 0 : count <= 2 ? 1 : 2);
+  const kindByStage = {
+    1: "seed",
+    2: "leafing",
+    3: "branching",
+    4: "fruiting",
+    5: "complete",
+  };
+
+  return {
+    src: `assets/garden/shared_tree_v2/stage${stage}-growth-qa.webp`,
+    imageStage: stage,
+    kind: kindByStage[stage] || "leafing",
+    growthQaStage: stage,
+    growthQaFrame: frame,
+  };
+}
+
 function sharedTreeV2SceneVisual(tree) {
+  const growthQaVisual = sharedTreeV2GrowthQaVisual(tree);
+  if (growthQaVisual) return growthQaVisual;
+
   if (tree?.completedAt) {
     return { src: sharedTreeImagePath(6), imageStage: 6, kind: "complete" };
   }
@@ -6594,6 +6641,17 @@ function applySharedTreeV2SceneState(tree) {
   } else {
     delete els.sharedTreeView.dataset.v2VisualFrame;
   }
+
+  if (Number.isInteger(visual.growthQaStage) && Number.isInteger(visual.growthQaFrame)) {
+    els.sharedTreeView.dataset.v2GrowthQaStage = String(visual.growthQaStage);
+    els.sharedTreeView.dataset.v2GrowthQaFrame = String(visual.growthQaFrame);
+    els.sharedTreeView.dataset.v2GrowthQaLabel = `QA · ${visual.growthQaStage}단계 · 프레임 ${visual.growthQaFrame + 1}`;
+  } else {
+    delete els.sharedTreeView.dataset.v2GrowthQaStage;
+    delete els.sharedTreeView.dataset.v2GrowthQaFrame;
+    delete els.sharedTreeView.dataset.v2GrowthQaLabel;
+  }
+
   // PHASE 7.5 이전 QA 속성이 남은 상태에서도 스타일이 섞이지 않도록 정리합니다.
   delete els.sharedTreeView.dataset.v2QaFrame;
   els.sharedTreeView.dataset.v2LastCare = latestEvent?.careType || "";

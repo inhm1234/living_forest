@@ -1,0 +1,91 @@
+/* 오늘의숲 · 함께 키우는 나무 PHASE 7.6 성장 카메라 QA v1.0
+   - 운영 루트에서 ?qa=1&growthQa=1~5 로 켠 브라우저에만 적용
+   - 실제 v2 단계·서버 기록·돌봄 상태는 변경하지 않고 장면 이미지만 강제 교체
+   - 1920×640 / 3프레임 스프라이트, 공통 중심축·공통 지면·단계별 줌 없음
+   - 일반 사용자·v1 나무·QA 파라미터가 없는 v2 화면에는 영향 없음 */
+
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-growth-qa-stage][data-v2-growth-qa-frame] .shared-tree-plant {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  overflow: hidden;
+  transform: none !important;
+  animation: none !important;
+  will-change: auto;
+}
+
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-growth-qa-stage][data-v2-growth-qa-frame] .shared-tree-image {
+  position: absolute;
+  z-index: 2;
+  bottom: 0;
+  left: 0;
+  display: block;
+  width: 300%;
+  max-width: none;
+  height: auto;
+  object-fit: initial;
+  object-position: initial;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: none;
+  transform: none !important;
+  animation: none !important;
+  filter: drop-shadow(0 10px 14px rgba(84,104,88,.09));
+  transition: opacity .3s ease, filter .35s ease;
+}
+
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-growth-qa-frame="0"] .shared-tree-image { left: 0 !important; }
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-growth-qa-frame="1"] .shared-tree-image { left: -100% !important; }
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-growth-qa-frame="2"] .shared-tree-image { left: -200% !important; }
+
+/* 운영 데이터와 구분되는 작은 QA 표식입니다. 실제 단계 제목·진행도는 그대로 둡니다. */
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-growth-qa-label]::after {
+  content: attr(data-v2-growth-qa-label);
+  position: absolute;
+  z-index: 12;
+  right: 14px;
+  bottom: 12px;
+  padding: 6px 9px;
+  border: 1px solid rgba(111,91,177,.18);
+  border-radius: 999px;
+  background: rgba(255,255,255,.76);
+  box-shadow: 0 5px 14px rgba(76,67,112,.08);
+  color: #74649d;
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: .015em;
+  pointer-events: none;
+  backdrop-filter: blur(5px);
+}
+
+/* QA 장면은 자산 안의 빛과 잔디섬을 기준으로 보므로 중복 효과를 약하게 제한합니다. */
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-growth-qa-stage][data-v2-growth-qa-frame] .shared-tree-v2-root-mark {
+  display: none !important;
+}
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-growth-qa-stage][data-v2-growth-qa-frame] .shared-tree-v2-soil-mark,
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-growth-qa-stage][data-v2-growth-qa-frame] .shared-tree-v2-water-mark {
+  max-width: 24%;
+  opacity: .22;
+}
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-growth-qa-stage][data-v2-growth-qa-frame] .shared-tree-v2-scene-effects {
+  z-index: 3;
+}
+
+@media (max-width: 470px) {
+  html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-growth-qa-label]::after {
+    right: 10px;
+    bottom: 9px;
+    padding: 5px 8px;
+    font-size: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-growth-qa-stage][data-v2-growth-qa-frame] .shared-tree-image {
+    transition: none !important;
+  }
+}
