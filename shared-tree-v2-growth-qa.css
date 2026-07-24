@@ -1,14 +1,18 @@
-/* 오늘의숲 · 함께 키우는 나무 1단계 비주얼 QA v1
+/* 오늘의숲 · 함께 키우는 나무 1단계 비주얼 QA v2
    - ?qa=1로 활성화한 브라우저에서만 적용
-   - 3프레임 WebP 스프라이트 1회 로드
-   - 운영 기본 이미지와 데이터에는 영향 없음 */
+   - 배경과 성장 자산을 분리한 투명 WebP 3프레임 스프라이트
+   - 잔디섬/흙은 고정하고 기존 CSS 배경빛만 움직임
+   - 운영 기본 이미지와 서버 데이터에는 영향 없음 */
 
 html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-plant {
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  aspect-ratio: auto;
+  bottom: 1.5%;
+  width: min(92%, 560px);
+  height: auto;
+  aspect-ratio: 640 / 420;
   overflow: hidden;
+  /* 섬 전체가 떠다니지 않도록 1단계 QA에서는 본체 idle motion을 멈춥니다. */
+  animation: none !important;
+  will-change: auto;
 }
 
 html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-image {
@@ -20,7 +24,8 @@ html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"]
   height: 100%;
   object-fit: fill;
   object-position: left top;
-  filter: none;
+  filter: drop-shadow(0 12px 15px rgba(84, 104, 88, .10));
+  transform-origin: left top;
   transition: transform .58s cubic-bezier(.2,.8,.2,1), opacity .3s ease;
 }
 
@@ -34,13 +39,23 @@ html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"]
   transform: translate3d(-66.666667%,0,0) !important;
 }
 
-/* 새 장면 자체에 배경빛이 포함되어 있어 QA 중 중복 발광만 숨깁니다. */
+/* 새 자산은 투명 배경이므로 기존 카드의 좌우 햇빛과 파스텔 하늘을 그대로 사용합니다. */
 html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-sunset-glow {
-  opacity: 0 !important;
-  animation: none !important;
+  display: block;
 }
 
-/* 돌봄 흔적과 두 사람의 빛은 이미지 위에서 계속 확인합니다. */
+/* 뿌리는 흙 밖에 노출하지 않고, 흙 갈라짐과 빛으로만 표현합니다. */
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-v2-root-mark {
+  display: none !important;
+}
+
+/* 돌봄 흔적은 그림을 덮지 않도록 강도를 낮춰 유지합니다. */
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-v2-soil-mark,
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-v2-water-mark {
+  max-width: 30%;
+  opacity: .42;
+}
+
 html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-v2-scene-effects {
   z-index: 3;
 }
@@ -49,9 +64,9 @@ html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"]
 }
 
 @media (max-width: 470px) {
-  html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-image {
-    width: 300%;
-    height: 100%;
+  html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-plant {
+    bottom: 2.5%;
+    width: min(96%, 410px);
   }
 }
 
