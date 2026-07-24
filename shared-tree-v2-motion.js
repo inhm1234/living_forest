@@ -1,20 +1,12 @@
-/* 오늘의숲 · 함께 키우는 나무 v2 모션 QA v0.1 */
+/* 오늘의숲 · 함께 키우는 나무 v2 운영 모션 v1.0
+   - 실제 growth_version=2 나무에만 적용
+   - 화면 비가시/탭 숨김/저사양/reduced-motion 대응 */
 
-const QA_STORAGE_KEY = "todayforest-local-qa-mode-v1";
-const MOTION_QA_CLASS = "shared-tree-motion-qa";
+const MOTION_ENABLED_CLASS = "shared-tree-motion-enabled";
 const MOTION_LITE_CLASS = "shared-tree-motion-lite";
 const MOTION_PAUSED_CLASS = "shared-tree-motion-paused";
 const OFFSCREEN_CLASS = "shared-tree-motion-offscreen";
 const CARE_REACTION_CLASS = "shared-tree-motion-care-reacting";
-
-function qaMotionEnabled() {
-  try {
-    return window.localStorage.getItem(QA_STORAGE_KEY) === "1";
-  } catch (error) {
-    console.warn("TodayForest shared-tree motion QA preference skipped:", error);
-    return false;
-  }
-}
 
 function isLiteEnvironment() {
   const memory = Number(navigator.deviceMemory || 0);
@@ -29,16 +21,19 @@ function setDocumentMotionState() {
 
 function installVisibilityPause(view) {
   if (!("IntersectionObserver" in window) || !view) return null;
+
   const observer = new IntersectionObserver((entries) => {
     const entry = entries[0];
     view.classList.toggle(OFFSCREEN_CLASS, !entry?.isIntersecting);
   }, { threshold: 0.08 });
+
   observer.observe(view);
   return observer;
 }
 
 function installCareReaction(view) {
   if (!view) return;
+
   let timer = null;
   view.addEventListener("click", (event) => {
     const button = event.target.closest("[data-v2-care-type], [data-v2-choice]");
@@ -46,12 +41,12 @@ function installCareReaction(view) {
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) return;
 
     view.classList.remove(CARE_REACTION_CLASS);
-    // 강제 레이아웃 계산 없이 다음 프레임에 재적용합니다.
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
         view.classList.add(CARE_REACTION_CLASS);
       });
     });
+
     window.clearTimeout(timer);
     timer = window.setTimeout(() => {
       view.classList.remove(CARE_REACTION_CLASS);
@@ -59,22 +54,23 @@ function installCareReaction(view) {
   });
 }
 
-function initSharedTreeMotionQa() {
-  if (!qaMotionEnabled()) return;
+function initSharedTreeMotion() {
+  const root = document.documentElement;
+  root.classList.add(MOTION_ENABLED_CLASS);
+  root.classList.toggle(MOTION_LITE_CLASS, isLiteEnvironment());
 
-  document.documentElement.classList.add(MOTION_QA_CLASS);
-  document.documentElement.classList.toggle(MOTION_LITE_CLASS, isLiteEnvironment());
   setDocumentMotionState();
-  document.addEventListener("visibilitychange", setDocumentMotionState, { passive: true });
+  document.addEventListener("visibilitychange", setDocumentMotionState);
 
   const view = document.querySelector("#sharedTreeView");
   if (!view) return;
+
   installVisibilityPause(view);
   installCareReaction(view);
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initSharedTreeMotionQa, { once: true });
+  document.addEventListener("DOMContentLoaded", initSharedTreeMotion, { once: true });
 } else {
-  initSharedTreeMotionQa();
+  initSharedTreeMotion();
 }
