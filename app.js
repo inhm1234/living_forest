@@ -6562,11 +6562,17 @@ function sharedTreeV2SceneVisual(tree) {
   const stage = Math.min(4, Math.max(1, Number(detail?.currentStage || tree?.currentStage || 1)));
   const count = Math.min(4, Math.max(0, Number(detail?.stageEventCount || tree?.stageEventCount || 0)));
 
-  if (stage === 1 && count === 0) {
-    return { src: "assets/garden/tree-seed.svg", imageStage: 1, kind: "seed" };
-  }
-  if (stage === 1 && count <= 2) {
-    return { src: "assets/garden/tree-sprout.svg", imageStage: 1, kind: "rooting" };
+  // PHASE 7 visual hotfix:
+  // The existing seed/sprout SVGs use a dark flat-vector style that clashes with
+  // TodayForest's watercolor art. Until dedicated watercolor seed/root assets are
+  // produced, keep the original watercolor stage-1 art and express care through
+  // the soil/water/root overlays instead.
+  if (stage === 1) {
+    return {
+      src: sharedTreeImagePath(1),
+      imageStage: 1,
+      kind: count >= 3 ? "first-sprout" : "rooting-watercolor",
+    };
   }
   return {
     src: sharedTreeImagePath(sharedTreeV2ImageStage(tree)),
