@@ -1,0 +1,138 @@
+/* 오늘의숲 · 함께 키우는 나무 v2 모션 QA v0.1
+   - ?qa=1이 활성화된 브라우저에서만 적용
+   - 이미지 프레임 추가 없이 transform/opacity 중심
+   - 저사양·데이터 절약·화면 비가시·reduced-motion 대응 */
+
+html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"] .shared-tree-plant {
+  will-change: transform;
+  animation: sharedTreeV2IdlePlant 6.4s ease-in-out infinite;
+}
+
+html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"] .shared-tree-sunset-glow.glow-one {
+  will-change: transform, opacity;
+  animation: sharedTreeV2GlowDriftOne 9.5s ease-in-out infinite;
+}
+
+html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"] .shared-tree-sunset-glow.glow-two {
+  will-change: transform, opacity;
+  animation: sharedTreeV2GlowDriftTwo 11s ease-in-out infinite;
+}
+
+html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"][data-v2-stage="1"] .shared-tree-plant {
+  animation-duration: 7.2s;
+}
+
+html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-soil]:not([data-v2-soil=""]) .shared-tree-v2-soil-mark,
+html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-last-care="soil"] .shared-tree-v2-soil-mark {
+  animation: sharedTreeV2SoilBreath 7.8s ease-in-out infinite;
+}
+
+html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-water]:not([data-v2-water=""]) .shared-tree-v2-water-mark,
+html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-last-care="water"] .shared-tree-v2-water-mark {
+  animation: sharedTreeV2WaterBreath 6.6s ease-in-out infinite;
+}
+
+/* 기존 box-shadow 반복 갱신 대신 transform/opacity만 움직여 GPU 부담을 줄입니다. */
+html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"].both-recorded-today .shared-tree-seed-glow {
+  animation: sharedTreeV2LightBreath 3.8s ease-in-out infinite;
+}
+
+html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"] .shared-tree-fireflies i {
+  animation-duration: 3.6s;
+  animation-timing-function: ease-in-out;
+}
+
+html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"].shared-tree-motion-care-reacting .shared-tree-plant {
+  animation: sharedTreeV2CareResponse .78s cubic-bezier(.2,.8,.2,1) both;
+}
+
+html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"].shared-tree-motion-care-reacting .shared-tree-seed-glow {
+  animation: sharedTreeV2CareLight .82s ease-out both;
+}
+
+html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"].shared-tree-motion-care-reacting .shared-tree-v2-scene-effects {
+  animation: sharedTreeV2SceneWarmth .86s ease-out both;
+}
+
+@keyframes sharedTreeV2IdlePlant {
+  0%, 100% { transform: translate3d(-50%, 0, 0) rotate(-.18deg); }
+  48% { transform: translate3d(-50%, -2px, 0) rotate(.28deg); }
+  72% { transform: translate3d(-50%, -1px, 0) rotate(.08deg); }
+}
+
+@keyframes sharedTreeV2GlowDriftOne {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: .58; }
+  50% { transform: translate3d(8px, 3px, 0) scale(1.035); opacity: .68; }
+}
+
+@keyframes sharedTreeV2GlowDriftTwo {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: .54; }
+  50% { transform: translate3d(-7px, -2px, 0) scale(1.04); opacity: .64; }
+}
+
+@keyframes sharedTreeV2SoilBreath {
+  0%, 100% { transform: translateX(-50%) scale(1.02); }
+  50% { transform: translateX(-50%) scale(1.055); }
+}
+
+@keyframes sharedTreeV2WaterBreath {
+  0%, 100% { transform: translateX(-50%) scale(.99); opacity: .72; }
+  50% { transform: translateX(-50%) scale(1.04); opacity: .9; }
+}
+
+@keyframes sharedTreeV2LightBreath {
+  0%, 100% { transform: translateX(-50%) scale(.94); opacity: .7; }
+  50% { transform: translateX(-50%) scale(1.08); opacity: 1; }
+}
+
+@keyframes sharedTreeV2CareResponse {
+  0% { transform: translate3d(-50%, 0, 0) scale(1); }
+  36% { transform: translate3d(-50%, -4px, 0) scale(1.018); }
+  68% { transform: translate3d(-50%, 1px, 0) scale(.997); }
+  100% { transform: translate3d(-50%, 0, 0) scale(1); }
+}
+
+@keyframes sharedTreeV2CareLight {
+  0% { transform: translateX(-50%) scale(.76); opacity: .45; }
+  38% { transform: translateX(-50%) scale(1.22); opacity: 1; }
+  100% { transform: translateX(-50%) scale(1); opacity: .78; }
+}
+
+@keyframes sharedTreeV2SceneWarmth {
+  0% { opacity: .72; }
+  42% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+/* 브라우저 탭이 숨겨졌거나 화면 밖이면 반복 모션을 멈춥니다. */
+html.shared-tree-motion-paused .shared-tree-view[data-growth-version="2"] *,
+html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"].shared-tree-motion-offscreen * {
+  animation-play-state: paused !important;
+}
+
+/* 저사양/데이터 절약 환경: 기본 생명감만 남기고 장식 모션을 축소합니다. */
+html.shared-tree-motion-lite.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"] .shared-tree-sunset-glow,
+html.shared-tree-motion-lite.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"] .shared-tree-v2-soil-mark,
+html.shared-tree-motion-lite.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"] .shared-tree-v2-water-mark {
+  animation: none !important;
+}
+
+html.shared-tree-motion-lite.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"] .shared-tree-fireflies i:nth-child(n+4) {
+  display: none !important;
+}
+
+html.shared-tree-motion-lite.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"] .shared-tree-plant {
+  animation-duration: 9s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"] .shared-tree-plant,
+  html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"] .shared-tree-sunset-glow,
+  html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"] .shared-tree-v2-scene-effects,
+  html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"] .shared-tree-v2-scene-effects > span,
+  html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"] .shared-tree-seed-glow,
+  html.shared-tree-motion-qa .shared-tree-view[data-growth-version="2"] .shared-tree-fireflies i {
+    animation: none !important;
+    transition: none !important;
+  }
+}
