@@ -371,6 +371,7 @@ function resolveLocalQaMode() {
   }
 }
 const LOCAL_QA_MODE_ENABLED = resolveLocalQaMode();
+document.documentElement.classList.toggle("local-qa-mode", LOCAL_QA_MODE_ENABLED);
 // DEV 공유나무 v2 로컬 검수에서 현재 선택한 행동 주체입니다. 서버에는 저장되지 않습니다.
 let sharedTreeV2DevActor = "me";
 // 공유나무를 보고 있을 때 새로고침해도 같은 나무로 돌아오기 위한 주소 상태입니다.
@@ -6562,16 +6563,23 @@ function sharedTreeV2SceneVisual(tree) {
   const stage = Math.min(4, Math.max(1, Number(detail?.currentStage || tree?.currentStage || 1)));
   const count = Math.min(4, Math.max(0, Number(detail?.stageEventCount || tree?.stageEventCount || 0)));
 
-  // PHASE 7 visual hotfix:
-  // The existing seed/sprout SVGs use a dark flat-vector style that clashes with
-  // TodayForest's watercolor art. Until dedicated watercolor seed/root assets are
-  // produced, keep the original watercolor stage-1 art and express care through
-  // the soil/water/root overlays instead.
+  // PHASE 7.3 QA: 전용 수채화 성장 장면을 QA 브라우저에서만 검수합니다.
+  // 운영 사용자는 기존 검증된 stage-1 이미지를 계속 보며, QA가 꺼지면 즉시 원상 복귀합니다.
   if (stage === 1) {
+    if (LOCAL_QA_MODE_ENABLED) {
+      const frame = count <= 0 ? 0 : count <= 2 ? 1 : 2;
+      return {
+        src: "assets/garden/shared_tree_v2/stage1-growth-qa.webp",
+        imageStage: 1,
+        kind: frame === 0 ? "seed" : frame === 1 ? "rooting" : "first-sprout",
+        qaFrame: frame,
+      };
+    }
     return {
       src: sharedTreeImagePath(1),
       imageStage: 1,
       kind: count >= 3 ? "first-sprout" : "rooting-watercolor",
+      qaFrame: -1,
     };
   }
   return {
@@ -6589,6 +6597,11 @@ function applySharedTreeV2SceneState(tree) {
   els.sharedTreeView.dataset.v2Stage = String(detail?.currentStage || tree?.currentStage || 1);
   els.sharedTreeView.dataset.v2Step = String(Math.min(4, Math.max(0, Number(detail?.stageEventCount || tree?.stageEventCount || 0))));
   els.sharedTreeView.dataset.v2Scene = visual.kind;
+  if (Number.isInteger(visual.qaFrame) && visual.qaFrame >= 0) {
+    els.sharedTreeView.dataset.v2QaFrame = String(visual.qaFrame);
+  } else {
+    delete els.sharedTreeView.dataset.v2QaFrame;
+  }
   els.sharedTreeView.dataset.v2LastCare = latestEvent?.careType || "";
   els.sharedTreeView.dataset.v2Soil = detail?.profile?.soilChoice || "";
   els.sharedTreeView.dataset.v2Water = detail?.profile?.waterChoice || "";
