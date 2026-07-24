@@ -854,7 +854,7 @@
       </div>
 
       <form class="shared-tree-note-form" id="sharedTreeNoteForm">
-        <label for="sharedTreeNoteInput">내 한마디</label>
+        <label id="sharedTreeNoteInputLabel" for="sharedTreeNoteInput">내 한마디</label>
         <textarea
           id="sharedTreeNoteInput"
           maxlength="40"
@@ -865,8 +865,31 @@
           <span class="shared-tree-note-count" id="sharedTreeNoteCount">0 / 40</span>
           <button class="shared-tree-note-submit" id="sharedTreeNoteSubmit" type="submit">한마디 남기기</button>
         </div>
-        <p class="shared-tree-note-help">상대가 남길 때까지 기다리지 않아도 돼요. 내 문장은 나중에 다시 고칠 수 있어요.</p>
+        <p class="shared-tree-note-help" id="sharedTreeNoteHelp">상대가 남길 때까지 기다리지 않아도 돼요. 내 문장은 나중에 다시 고칠 수 있어요.</p>
       </form>
+
+      <section class="shared-tree-v2-home hidden" id="sharedTreeV2Home" aria-labelledby="sharedTreeV2HomeTitle">
+        <div class="shared-tree-v2-home-heading">
+          <p class="growth-note-kicker">WHERE OUR TREE RESTS</p>
+          <h2 id="sharedTreeV2HomeTitle">이 나무가 머물 곳</h2>
+          <p>각자가 따로 선택하며, 두 사람 모두 동의할 때만 모두의 숲길로 향해요.</p>
+        </div>
+        <div class="shared-tree-v2-home-status" id="sharedTreeV2HomeStatus" aria-live="polite"></div>
+        <div class="shared-tree-v2-home-choices" role="group" aria-label="나무가 머물 곳 선택">
+          <button type="button" data-v2-home-choice="private">
+            <span aria-hidden="true">🌿</span>
+            <b>둘만의 함께한 숲에 두기</b>
+            <small>두 사람만 다시 찾아볼 수 있어요.</small>
+          </button>
+          <button type="button" data-v2-home-choice="world">
+            <span aria-hidden="true">🌳</span>
+            <b>모두의 숲길에 심기 동의</b>
+            <small>두 사람 모두 동의하면 공개 준비가 끝나요.</small>
+          </button>
+        </div>
+        <button class="shared-tree-v2-home-withdraw hidden" id="sharedTreeV2HomeWithdraw" type="button">숲길 공개 동의 철회</button>
+        <p class="shared-tree-v2-home-actor-hint" id="sharedTreeV2HomeActorHint"></p>
+      </section>
     </section>
 
     <section class="shared-tree-note" aria-label="공유나무 안내">

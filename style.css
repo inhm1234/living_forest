@@ -8980,3 +8980,80 @@ body.animal-preview-clean-mode .ff-cinematic {
   .shared-tree-v2-name-grid { grid-template-columns: 1fr; }
   .shared-tree-v2-name-piece:hover { transform: none; box-shadow: none; }
 }
+
+
+/* Shared tree v2 PHASE 5B: completion notes, home choice, and clearer growth cues */
+.shared-tree-view[data-growth-version="2"] .shared-tree-seed-glow {
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+  opacity: .24;
+  box-shadow: 0 0 0 5px rgba(255,249,212,.12), 0 0 15px rgba(255,231,143,.38);
+}
+.shared-tree-view[data-growth-version="2"].both-recorded-today .shared-tree-lights-meet {
+  opacity: .72;
+  transform: translate(-50%, -50%) scale(2.05);
+  animation: sharedTreeV2LightsMeetPulse 1.8s ease-in-out infinite;
+}
+.shared-tree-view[data-growth-version="2"].is-complete .shared-tree-lights-meet {
+  opacity: .22;
+  transform: translate(-50%, -50%) scale(1.15);
+  animation: none;
+}
+.shared-tree-view[data-growth-version="2"].is-complete .shared-tree-seed-glow {
+  opacity: .14;
+  animation: none;
+}
+@keyframes sharedTreeV2LightsMeetPulse {
+  0%,100% { filter: drop-shadow(0 0 3px rgba(255,237,146,.42)); }
+  50% { filter: drop-shadow(0 0 9px rgba(255,231,127,.72)); }
+}
+.shared-tree-v2-stage-badge { max-width: 112px; line-height: 1.25; }
+.shared-tree-v2-care-button.is-continuation span { font-size: 11px; }
+.shared-tree-v2-care-button.is-continuation small { color: #76877a; }
+.shared-tree-v2-home {
+  display: grid;
+  gap: 13px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(138,153,139,.16);
+}
+.shared-tree-v2-home.hidden { display: none !important; }
+.shared-tree-v2-home-heading h2 { margin: 4px 0 5px; color: #536a59; font-size: 19px; letter-spacing: -.035em; }
+.shared-tree-v2-home-heading > p:last-child { margin: 0; color: #879188; font-size: 10px; font-weight: 700; line-height: 1.55; word-break: keep-all; }
+.shared-tree-v2-home-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 13px;
+  border: 1px solid rgba(129,155,129,.18);
+  border-radius: 16px;
+  background: rgba(247,250,245,.86);
+}
+.shared-tree-v2-home-status.is-ready { border-color: rgba(204,169,94,.25); background: linear-gradient(145deg,rgba(255,249,225,.9),rgba(242,249,238,.9)); }
+.shared-tree-v2-home-status > span { flex: 0 0 auto; font-size: 18px; }
+.shared-tree-v2-home-status strong { display: block; color: #5a705e; font-size: 12px; line-height: 1.45; }
+.shared-tree-v2-home-status p { margin: 4px 0 0; color: #879188; font-size: 9px; font-weight: 700; line-height: 1.5; word-break: keep-all; }
+.shared-tree-v2-home-choices { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; }
+.shared-tree-v2-home-choices button {
+  min-width: 0;
+  padding: 13px 11px;
+  border: 1px solid rgba(126,153,125,.21);
+  border-radius: 16px;
+  background: rgba(255,255,255,.86);
+  color: #607563;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+.shared-tree-v2-home-choices button:hover { transform: translateY(-1px); border-color: rgba(102,142,105,.38); box-shadow: 0 7px 15px rgba(89,121,92,.08); }
+.shared-tree-v2-home-choices button.is-selected { border-color: rgba(93,138,99,.48); background: linear-gradient(145deg,#f5faef,#e7f3e3); box-shadow: 0 0 0 3px rgba(105,148,109,.08); }
+.shared-tree-v2-home-choices span { display: block; margin-bottom: 6px; font-size: 18px; }
+.shared-tree-v2-home-choices b { display: block; font-size: 11px; line-height: 1.4; word-break: keep-all; }
+.shared-tree-v2-home-choices small { display: block; margin-top: 4px; color: #929c94; font-size: 8px; font-weight: 700; line-height: 1.45; word-break: keep-all; }
+.shared-tree-v2-home-withdraw { justify-self: start; padding: 0; border: 0; background: transparent; color: #929b94; font-size: 9px; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.shared-tree-v2-home-actor-hint { margin: -3px 0 0; color: #9aa39b; font-size: 9px; font-weight: 700; }
+@media (max-width: 560px) {
+  .shared-tree-v2-home-choices { grid-template-columns: 1fr; }
+  .shared-tree-v2-home-choices button:hover { transform: none; box-shadow: none; }
+}
