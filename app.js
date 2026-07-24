@@ -6509,10 +6509,90 @@ function sharedTreeV2ImageStage(tree) {
   if (tree?.completedAt) return 6;
   const stage = Number(tree?.currentStage || tree?.v2Detail?.currentStage || 1);
   const count = Number(tree?.stageEventCount || tree?.v2Detail?.stageEventCount || 0);
-  if (stage <= 1) return count >= 3 ? 2 : 1;
+  if (stage <= 1) return count >= 3 ? 1 : 1;
   if (stage === 2) return count >= 3 ? 3 : 2;
   if (stage === 3) return count >= 3 ? 4 : 3;
   return count >= 3 ? 5 : 4;
+}
+
+const SHARED_TREE_V2_STAGE_PROGRESS_COPY = Object.freeze({
+  1: [
+    "흙 아래 작은 씨앗이 첫 손길을 기다리고 있어요.",
+    "씨앗이 흙의 결을 느끼며 머물 자리를 찾고 있어요.",
+    "물기와 흙이 만나 씨앗 아래로 가느다란 길이 생겼어요.",
+    "첫 뿌리가 흙 속으로 조심스럽게 뻗고 있어요.",
+    "뿌리가 자리를 잡으며 작은 새싹을 밀어 올리고 있어요.",
+  ],
+  2: [
+    "작은 새싹이 빛과 영양을 기다리고 있어요.",
+    "떡잎이 천천히 벌어지며 빛을 바라보고 있어요.",
+    "첫 새잎이 돋아나 나무의 표정을 만들기 시작했어요.",
+    "잎의 색과 모양이 두 사람의 선택을 따라 선명해지고 있어요.",
+    "새잎들이 바람을 맞을 준비를 마치고 있어요.",
+  ],
+  3: [
+    "어린 줄기에서 첫 가지가 나올 자리를 찾고 있어요.",
+    "한 갈래 가지가 조심스럽게 방향을 잡고 있어요.",
+    "가지가 둘의 선택을 따라 하늘과 숲 쪽으로 뻗고 있어요.",
+    "누군가 머물 작은 자리와 그늘이 모습을 드러내고 있어요.",
+    "어린 나무의 실루엣이 거의 완성되었어요.",
+  ],
+  4: [
+    "가지 끝의 꽃봉오리가 마지막 손길을 기다리고 있어요.",
+    "첫 꽃봉오리가 조용히 빛을 머금고 있어요.",
+    "꽃이 가지 사이로 번지며 나무의 마지막 색을 만들고 있어요.",
+    "꽃 사이에 작은 열매가 맺히기 시작했어요.",
+    "열매가 빛과 향을 품으며 탄생을 준비하고 있어요.",
+  ],
+});
+
+function sharedTreeV2StageProgressCopy(tree) {
+  if (tree?.completedAt) return "뿌리부터 열매까지, 두 사람의 돌봄이 한 그루에 남아 있어요.";
+  const detail = tree?.v2Detail;
+  const stage = Math.min(4, Math.max(1, Number(detail?.currentStage || tree?.currentStage || 1)));
+  const count = Math.min(4, Math.max(0, Number(detail?.stageEventCount || tree?.stageEventCount || 0)));
+  return SHARED_TREE_V2_STAGE_PROGRESS_COPY[stage]?.[count] || sharedTreeV2Config(stage).description;
+}
+
+function sharedTreeV2SceneVisual(tree) {
+  if (tree?.completedAt) {
+    return { src: sharedTreeImagePath(6), imageStage: 6, kind: "complete" };
+  }
+  const detail = tree?.v2Detail;
+  const stage = Math.min(4, Math.max(1, Number(detail?.currentStage || tree?.currentStage || 1)));
+  const count = Math.min(4, Math.max(0, Number(detail?.stageEventCount || tree?.stageEventCount || 0)));
+
+  if (stage === 1 && count === 0) {
+    return { src: "assets/garden/tree-seed.svg", imageStage: 1, kind: "seed" };
+  }
+  if (stage === 1 && count <= 2) {
+    return { src: "assets/garden/tree-sprout.svg", imageStage: 1, kind: "rooting" };
+  }
+  return {
+    src: sharedTreeImagePath(sharedTreeV2ImageStage(tree)),
+    imageStage: sharedTreeV2ImageStage(tree),
+    kind: stage === 1 ? "first-sprout" : stage === 2 ? "leafing" : stage === 3 ? "branching" : "fruiting",
+  };
+}
+
+function applySharedTreeV2SceneState(tree) {
+  const detail = tree?.v2Detail;
+  const visual = sharedTreeV2SceneVisual(tree);
+  const latestEvent = detail?.recentEvents?.[0] || null;
+  els.sharedTreeView.dataset.stage = String(visual.imageStage);
+  els.sharedTreeView.dataset.v2Stage = String(detail?.currentStage || tree?.currentStage || 1);
+  els.sharedTreeView.dataset.v2Step = String(Math.min(4, Math.max(0, Number(detail?.stageEventCount || tree?.stageEventCount || 0))));
+  els.sharedTreeView.dataset.v2Scene = visual.kind;
+  els.sharedTreeView.dataset.v2LastCare = latestEvent?.careType || "";
+  els.sharedTreeView.dataset.v2Soil = detail?.profile?.soilChoice || "";
+  els.sharedTreeView.dataset.v2Water = detail?.profile?.waterChoice || "";
+  els.sharedTreeView.dataset.v2Habitat = detail?.profile?.habitatChoice || "";
+  els.sharedTreeView.dataset.v2Bloom = detail?.profile?.bloomChoice || "";
+  els.sharedTreeView.dataset.v2Fruit = detail?.profile?.fruitChoice || "";
+  if (els.sharedTreeImage && els.sharedTreeImage.getAttribute("src") !== visual.src) {
+    els.sharedTreeImage.src = visual.src;
+  }
+  return visual;
 }
 
 function sharedTreeV2EventSentence(event, friendName) {
@@ -7197,8 +7277,7 @@ function renderSharedTreeV2View(tree) {
   const detail = tree.v2Detail;
   if (!detail) {
     els.sharedTreePartnerName.textContent = `${friend.name}와 함께 키우는 나무`;
-    els.sharedTreeView.dataset.stage = String(sharedTreeV2ImageStage(tree));
-    if (els.sharedTreeImage) els.sharedTreeImage.src = sharedTreeImagePath(sharedTreeV2ImageStage(tree));
+    applySharedTreeV2SceneState(tree);
     els.sharedTreeStageCopy.textContent = "나무가 두 사람의 돌봄을 불러오는 중이에요.";
     els.sharedTreeV2StageTitle.textContent = sharedTreeV2Config(tree.currentStage || 1).title;
     els.sharedTreeV2StageDescription.textContent = "현재 모습을 천천히 불러오고 있어요.";
@@ -7218,17 +7297,13 @@ function renderSharedTreeV2View(tree) {
   const config = sharedTreeV2Config(detail.currentStage);
   const complete = Boolean(tree.completedAt);
   const bothToday = detail.myCaredToday && detail.partnerCaredToday;
-  const imageStage = sharedTreeV2ImageStage(tree);
   els.sharedTreePartnerName.textContent = complete
     ? (detail.profile.finalName || `${friend.name}와 함께 완성한 나무`)
     : `${friend.name}와 함께 키우는 나무`;
-  els.sharedTreeView.dataset.stage = String(imageStage);
-  if (els.sharedTreeImage) els.sharedTreeImage.src = sharedTreeImagePath(imageStage);
+  applySharedTreeV2SceneState(tree);
   els.sharedTreeStageCopy.textContent = sharedTreeV2SceneCopy(tree, friend);
   els.sharedTreeV2StageTitle.textContent = complete ? "둘이 함께 완성한 나무" : config.title;
-  els.sharedTreeV2StageDescription.textContent = complete
-    ? "뿌리부터 열매까지, 두 사람의 돌봄이 한 그루에 남아 있어요."
-    : config.description;
+  els.sharedTreeV2StageDescription.textContent = sharedTreeV2StageProgressCopy(tree);
   els.sharedTreeV2StageBadge.textContent = complete
     ? "완성"
     : Number(detail.currentStage) === 4
@@ -7248,9 +7323,13 @@ function renderSharedTreeV2View(tree) {
       : `${friend.name}의 첫 손길도 이곳에 조용히 남게 돼요.`;
   els.sharedTreeV2Trace.innerHTML = `<span aria-hidden="true">🍃</span><p>${escapeHTML(traceText)}</p>`;
   if (els.sharedTreeV2CareTitle) {
+    const stageConfig = sharedTreeV2Config(detail.currentStage);
+    const hasStageChoice = stageConfig.careTypes.some((care) => Boolean(detail.profile?.[care.profileKey]));
     els.sharedTreeV2CareTitle.textContent = complete
       ? (detail.profile.finalName ? "우리 나무의 이름" : "우리 나무 이름 짓기")
-      : "오늘 필요한 돌봄";
+      : hasStageChoice
+        ? "오늘 어떤 돌봄을 이어갈까요?"
+        : "오늘 필요한 돌봄";
   }
   els.sharedTreeV2TodayState.textContent = complete
     ? (detail.profile.finalName ? "이름 완성" : "이름 조각 기다리는 중")
