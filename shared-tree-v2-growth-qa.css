@@ -1,77 +1,96 @@
-/* 오늘의숲 · 함께 키우는 나무 1단계 비주얼 QA v2
-   - ?qa=1로 활성화한 브라우저에서만 적용
-   - 배경과 성장 자산을 분리한 투명 WebP 3프레임 스프라이트
-   - 잔디섬/흙은 고정하고 기존 CSS 배경빛만 움직임
-   - 운영 기본 이미지와 서버 데이터에는 영향 없음 */
+/* 오늘의숲 · 함께 키우는 나무 1단계 마스터 카메라 QA v3
+   - ?qa=1 브라우저의 growth_version=2 / 1단계에만 적용
+   - 씨앗부터 완성 나무까지 사용할 공통 카메라·지면 기준을 먼저 검수
+   - 한 프레임 640×640, 공통 중심축·공통 지면, 단계별 줌 없음
+   - 운영 기본 이미지·서버 기록·v1 나무에는 영향 없음 */
 
 html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-plant {
-  bottom: 1.5%;
-  width: min(92%, 560px);
-  height: auto;
-  aspect-ratio: 640 / 420;
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
   overflow: hidden;
-  /* 섬 전체가 떠다니지 않도록 1단계 QA에서는 본체 idle motion을 멈춥니다. */
+  transform: none;
   animation: none !important;
   will-change: auto;
 }
 
+/* 기존 img 태그는 데이터와 접근성을 유지하고, QA 장면은 동일 카메라의 배경 스프라이트로 표시합니다. */
 html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-image {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  animation: none !important;
+}
+
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-plant::before {
+  content: "";
   position: absolute;
-  inset: 0 auto 0 0;
-  display: block;
-  width: 300%;
-  max-width: none;
-  height: 100%;
-  object-fit: fill;
-  object-position: left top;
-  filter: drop-shadow(0 12px 15px rgba(84, 104, 88, .10));
-  transform-origin: left top;
-  transition: transform .58s cubic-bezier(.2,.8,.2,1), opacity .3s ease;
+  z-index: 2;
+  inset: 0;
+  background-image: url("assets/garden/shared_tree_v2/stage1-growth-qa.webp?v=master-camera-v1");
+  background-repeat: no-repeat;
+  /* 각 640×640 프레임이 카드 너비와 같아지며, 하단 정렬로 공통 지면을 유지합니다. */
+  background-size: 300% auto;
+  background-position-y: bottom;
+  filter: drop-shadow(0 10px 14px rgba(84,104,88,.09));
+  transition: opacity .3s ease, filter .35s ease;
 }
 
-html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame="0"] .shared-tree-image {
-  transform: translate3d(0,0,0) !important;
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame="0"] .shared-tree-plant::before {
+  background-position-x: 0%;
 }
-html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame="1"] .shared-tree-image {
-  transform: translate3d(-33.333333%,0,0) !important;
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame="1"] .shared-tree-plant::before {
+  background-position-x: 50%;
 }
-html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame="2"] .shared-tree-image {
-  transform: translate3d(-66.666667%,0,0) !important;
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame="2"] .shared-tree-plant::before {
+  background-position-x: 100%;
 }
 
-/* 새 자산은 투명 배경이므로 기존 카드의 좌우 햇빛과 파스텔 하늘을 그대로 사용합니다. */
+/* 씨앗을 키우지 않고 작은 빛으로만 발견성을 보강합니다. */
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-seed-glow {
+  z-index: 4;
+  bottom: 20.5%;
+  width: 24px;
+  height: 24px;
+  opacity: .40;
+  box-shadow: 0 0 0 6px rgba(255,249,212,.10), 0 0 18px rgba(255,223,126,.36);
+}
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame="1"] .shared-tree-seed-glow {
+  opacity: .58;
+}
+html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame="2"] .shared-tree-seed-glow {
+  opacity: .30;
+}
+
+/* 본체와 땅은 고정. 기존 파스텔 하늘과 양쪽 햇빛만 아주 미세하게 움직입니다. */
 html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-sunset-glow {
   display: block;
 }
-
-/* 뿌리는 흙 밖에 노출하지 않고, 흙 갈라짐과 빛으로만 표현합니다. */
 html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-v2-root-mark {
   display: none !important;
 }
-
-/* 돌봄 흔적은 그림을 덮지 않도록 강도를 낮춰 유지합니다. */
 html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-v2-soil-mark,
 html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-v2-water-mark {
-  max-width: 30%;
-  opacity: .42;
+  max-width: 24%;
+  opacity: .28;
 }
-
 html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-v2-scene-effects {
   z-index: 3;
 }
-html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-seed-glow {
-  z-index: 4;
-}
 
 @media (max-width: 470px) {
-  html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-plant {
-    bottom: 2.5%;
-    width: min(96%, 410px);
+  html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-seed-glow {
+    bottom: 20%;
+    width: 21px;
+    height: 21px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-image {
+  html.local-qa-mode .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-qa-frame] .shared-tree-plant::before {
     transition: none !important;
   }
 }
