@@ -798,6 +798,7 @@ const els = {
   sharedTreeV2StageBadge: $("#sharedTreeV2StageBadge"),
   sharedTreeV2Lifecycle: $("#sharedTreeV2Lifecycle"),
   sharedTreeV2Trace: $("#sharedTreeV2Trace"),
+  sharedTreeV2Handoff: $("#sharedTreeV2Handoff"),
   sharedTreeV2CareTitle: $("#sharedTreeV2CareTitle"),
   sharedTreeV2TodayState: $("#sharedTreeV2TodayState"),
   sharedTreeV2CareOptions: $("#sharedTreeV2CareOptions"),
@@ -7427,6 +7428,91 @@ function sharedTreeV2ContinueLabel(careType) {
   return labels[careType] || "이 돌봄 이어가기";
 }
 
+function sharedTreeV2CurrentStageEvents(detail) {
+  const stage = Number(detail?.currentStage || 1);
+  return Array.isArray(detail?.recentEvents)
+    ? detail.recentEvents.filter((event) => Number(event.stage || 1) === stage)
+    : [];
+}
+
+function sharedTreeV2RecommendedCare(detail) {
+  const config = sharedTreeV2Config(detail?.currentStage || 1);
+  const stageEvents = sharedTreeV2CurrentStageEvents(detail);
+  const partnerLatest = stageEvents.find((event) => !event.isMine);
+  const available = config.careTypes
+    .filter((care) => Number(detail?.careCounts?.[care.key] || 0) < 3)
+    .map((care, index) => ({
+      care,
+      index,
+      count: Number(detail?.careCounts?.[care.key] || 0),
+    }));
+  if (!available.length) return null;
+
+  available.sort((a, b) => a.count - b.count || a.index - b.index);
+  if (partnerLatest) {
+    const complementary = available.find((item) => item.care.key !== partnerLatest.careType && item.count <= available[0].count + 1);
+    if (complementary) return complementary.care;
+  }
+  return available[0].care;
+}
+
+function sharedTreeV2HandoffMarkup(tree, friend) {
+  const detail = tree?.v2Detail;
+  if (!detail || tree.completedAt) return "";
+
+  const stageEvents = sharedTreeV2CurrentStageEvents(detail);
+  const myLatest = stageEvents.find((event) => event.isMine);
+  const partnerLatest = stageEvents.find((event) => !event.isMine);
+  const target = Math.max(1, Number(detail.stageEventTarget || 5));
+  const count = Math.min(target, Math.max(0, Number(detail.stageEventCount || 0)));
+  const recommended = sharedTreeV2RecommendedCare(detail);
+
+  let icon = "🌱";
+  let title = "시간이 달라도 함께 자라요";
+  let body = "같은 시간에 접속하지 않아도 각자의 하루가 이 나무에 차곡차곡 이어져요.";
+
+  if (detail.myCaredToday && detail.partnerCaredToday) {
+    icon = "🍃";
+    title = "오늘 두 사람의 손길이 이어졌어요";
+    body = "먼저 온 손길과 뒤이어 온 손길이 한 장면에 함께 남았어요.";
+  } else if (detail.myCaredToday) {
+    icon = "🌿";
+    title = "오늘의 내 손길은 이미 남았어요";
+    body = `${friend.name}이 오늘 늦게 오거나 쉬어도 나무는 멈추지 않아요. 내일 다시 이어갈 수 있어요.`;
+  } else if (detail.partnerCaredToday) {
+    icon = "🍀";
+    title = `${friend.name}의 손길이 먼저 도착했어요`;
+    body = "기다릴 필요 없이 지금 내 돌봄을 더해 흐름을 이어갈 수 있어요.";
+  } else if (partnerLatest) {
+    icon = "🍂";
+    title = `${friend.name}이 남긴 손길이 이어지고 있어요`;
+    body = `‘${sharedTreeV2ChoiceLabel(partnerLatest.careType, partnerLatest.choiceKey)}’ 다음을 내 시간에 이어가면 돼요.`;
+  } else if (myLatest) {
+    icon = "🌾";
+    title = "내가 먼저 돌봄의 길을 열었어요";
+    body = `${friend.name}은 편한 시간에 이어오고, 나도 다음 날 계속 돌볼 수 있어요.`;
+  }
+
+  const steps = Array.from({ length: target }, (_, index) => `<i class="${index < count ? "is-on" : ""}" aria-hidden="true"></i>`).join("");
+  const recommendation = !detail.myCaredToday && recommended
+    ? `<p class="shared-tree-v2-handoff-next"><span aria-hidden="true">${recommended.icon}</span><b>지금 이어주기 좋은 돌봄</b> · ${escapeHTML(recommended.title)}</p>`
+    : "";
+
+  return `
+    <div class="shared-tree-v2-handoff-copy">
+      <span class="shared-tree-v2-handoff-icon" aria-hidden="true">${icon}</span>
+      <div><strong>${escapeHTML(title)}</strong><p>${escapeHTML(body)}</p></div>
+    </div>
+    <div class="shared-tree-v2-handoff-members" aria-label="오늘의 돌봄 상태">
+      <span class="${detail.myCaredToday ? "is-done" : ""}"><b>나</b>${detail.myCaredToday ? "오늘 완료" : "내 시간에 돌보기"}</span>
+      <span class="${detail.partnerCaredToday ? "is-done" : ""}"><b>${escapeHTML(friend.name)}</b>${detail.partnerCaredToday ? "오늘 완료" : "편한 시간에 이어오기"}</span>
+    </div>
+    <div class="shared-tree-v2-handoff-progress" aria-label="현재 단계 돌봄 ${count}/${target}">
+      <span>${steps}</span><b>${count} / ${target}</b>
+    </div>
+    ${recommendation}`;
+}
+
 function sharedTreeV2CareMarkup(tree, friend) {
   const detail = tree.v2Detail;
   if (!detail) return '<div class="shared-tree-v2-loading">오늘의 돌봄을 불러오는 중이에요.</div>';
@@ -7441,15 +7527,29 @@ function sharedTreeV2CareMarkup(tree, friend) {
     const actorLabel = tree.isDevPreview ? devSharedTreeV2ActorLabel(friend, devActor) : "오늘의 돌봄";
     const waitingCopy = tree.isDevPreview
       ? "다른 주체를 선택하거나 다음 날로 넘겨 흐름을 계속 확인해요."
-      : `${escapeHTML(friend.name)}의 다음 손길을 재촉하지 않고 조용히 기다려요.`;
+      : `${escapeHTML(friend.name)}이 오늘 오지 않아도 나무는 멈추지 않아요. 내일 내 손길로 다시 이어갈 수 있어요.`;
     return `<div class="shared-tree-v2-done-card"><span aria-hidden="true">🍃</span><strong>${escapeHTML(actorLabel)}을 남겼어요.</strong><p>${waitingCopy}</p></div>`;
   }
 
   const config = sharedTreeV2Config(detail.currentStage);
+  const stageEvents = sharedTreeV2CurrentStageEvents(detail);
+  const myLatest = stageEvents.find((event) => event.isMine);
+  const partnerLatest = stageEvents.find((event) => !event.isMine);
+  const recommended = sharedTreeV2RecommendedCare(detail);
   return config.careTypes.map((care) => {
     const count = Number(detail.careCounts?.[care.key] || 0);
     const full = count >= 3;
     const lockedChoice = detail.profile?.[care.profileKey] || "";
+    const partnerTouched = partnerLatest?.careType === care.key;
+    const mineTouched = myLatest?.careType === care.key;
+    const recommendedNow = recommended?.key === care.key && !full;
+    const relationLabel = partnerTouched
+      ? `${friend.name}이 먼저 남긴 돌봄`
+      : mineTouched
+        ? "내가 이어온 돌봄"
+        : recommendedNow
+          ? "지금 이어주기 좋아요"
+          : "서로 다른 시간에 이어가기";
     let actions;
     if (full) {
       actions = '<span class="shared-tree-v2-care-full">이 돌봄은 충분히 전해졌어요</span>';
@@ -7459,7 +7559,8 @@ function sharedTreeV2CareMarkup(tree, friend) {
       actions = care.choices.map((choice) => `<button class="shared-tree-v2-choice-button" type="button" data-v2-care-type="${escapeAttr(care.key)}" data-v2-choice="${escapeAttr(choice.key)}"><span>${escapeHTML(choice.label)}</span><small>${escapeHTML(choice.hint)}</small></button>`).join("");
     }
     return `
-      <article class="shared-tree-v2-care-card${full ? " is-full" : ""}">
+      <article class="shared-tree-v2-care-card${full ? " is-full" : ""}${partnerTouched ? " is-partner-touch" : ""}${recommendedNow ? " is-recommended" : ""}">
+        <div class="shared-tree-v2-care-meta"><span>${escapeHTML(relationLabel)}</span><b>${Math.min(3, count)} / 3</b></div>
         <div class="shared-tree-v2-care-copy">
           <span class="shared-tree-v2-care-icon" aria-hidden="true">${care.icon}</span>
           <div><strong>${escapeHTML(care.title)}</strong><p>${escapeHTML(care.description)}</p></div>
@@ -7534,6 +7635,10 @@ function renderSharedTreeV2View(tree) {
     els.sharedTreeV2Lifecycle.innerHTML = "";
     renderSharedTreeV2DevTools(tree, friend);
     els.sharedTreeV2Trace.innerHTML = '<span aria-hidden="true">🍃</span><p>친구가 남긴 손길을 확인하고 있어요.</p>';
+    if (els.sharedTreeV2Handoff) {
+      els.sharedTreeV2Handoff.classList.add("hidden");
+      els.sharedTreeV2Handoff.innerHTML = "";
+    }
     if (els.sharedTreeV2CareTitle) els.sharedTreeV2CareTitle.textContent = "오늘 필요한 돌봄";
     els.sharedTreeV2TodayState.textContent = "불러오는 중";
     els.sharedTreeV2CareOptions.innerHTML = '<div class="shared-tree-v2-loading">오늘의 돌봄을 불러오는 중이에요.</div>';
@@ -7561,16 +7666,21 @@ function renderSharedTreeV2View(tree) {
   els.sharedTreeV2Lifecycle.innerHTML = sharedTreeV2LifecycleMarkup(detail);
   renderSharedTreeV2DevTools(tree, friend);
 
-  const partnerEvent = detail.recentEvents.find((event) => !event.isMine && event.stage === detail.currentStage)
-    || detail.recentEvents.find((event) => !event.isMine);
+  const currentStageEvent = detail.recentEvents.find((event) => event.stage === detail.currentStage)
+    || detail.recentEvents[0];
   const traceText = complete
     ? (detail.profile.finalName
       ? `${detail.profile.finalName}라는 이름이 두 사람의 손길 위에 남았어요.`
       : "각자 이름 한 조각을 남기면 이 나무의 이름이 완성돼요.")
-    : partnerEvent
-      ? sharedTreeV2EventSentence(partnerEvent, friend.name)
-      : `${friend.name}의 첫 손길도 이곳에 조용히 남게 돼요.`;
+    : currentStageEvent
+      ? sharedTreeV2EventSentence(currentStageEvent, friend.name)
+      : "같은 시간에 만나지 않아도 각자의 첫 손길부터 차곡차곡 이어져요.";
   els.sharedTreeV2Trace.innerHTML = `<span aria-hidden="true">🍃</span><p>${escapeHTML(traceText)}</p>`;
+  if (els.sharedTreeV2Handoff) {
+    const handoffMarkup = sharedTreeV2HandoffMarkup(tree, friend);
+    els.sharedTreeV2Handoff.innerHTML = handoffMarkup;
+    els.sharedTreeV2Handoff.classList.toggle("hidden", !handoffMarkup);
+  }
   if (els.sharedTreeV2CareTitle) {
     const stageConfig = sharedTreeV2Config(detail.currentStage);
     const hasStageChoice = stageConfig.careTypes.some((care) => Boolean(detail.profile?.[care.profileKey]));
@@ -7584,11 +7694,13 @@ function renderSharedTreeV2View(tree) {
     ? (detail.profile.finalName ? "이름 완성" : "이름 조각 기다리는 중")
     : tree.isDevPreview
       ? `QA ${Number(tree.devPreviewDayIndex || 0) + 1}일차 · ${devSharedTreeV2ActorLabel(friend)}`
-      : detail.myCaredToday
-        ? "오늘 돌봄 완료"
-        : detail.partnerCaredToday
-          ? `${friend.name}의 손길이 먼저 왔어요`
-          : "각자 하루 한 번";
+      : detail.myCaredToday && detail.partnerCaredToday
+        ? "오늘 두 손길이 이어졌어요"
+        : detail.myCaredToday
+          ? "오늘 내 손길 완료 · 내일 계속"
+          : detail.partnerCaredToday
+            ? `${friend.name}의 손길 이어받기`
+            : "시간이 달라도 함께 자라요";
   els.sharedTreeV2CareOptions.innerHTML = sharedTreeV2CareMarkup(tree, friend);
   bindSharedTreeV2CareButtons();
 
