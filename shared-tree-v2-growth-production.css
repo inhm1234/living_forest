@@ -1,0 +1,106 @@
+/* 오늘의숲 · 함께 키우는 나무 v2 PHASE 7.6 성장 아트 운영 승격 v1.0
+   - QA 통과한 1~5단계 공통 카메라·공통 지면 스프라이트를 실제 growth_version=2 나무에 적용
+   - 각 640×640 프레임을 같은 카드 크기와 같은 하단 기준선으로 표시
+   - 서버 단계·돌봄 기록·v1 나무·운영 QA 도구에는 영향 없음
+   - 본체/잔디섬의 위치를 고정하고 기존 하늘빛·반딧불·협동 반응만 유지 */
+
+.shared-tree-view[data-growth-version="2"][data-v2-visual-frame] .shared-tree-plant {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  overflow: hidden;
+  transform: none !important;
+  animation: none !important;
+  will-change: auto;
+}
+
+/*
+  전체 파일은 1920×640, 각 프레임은 640×640입니다.
+  이미지를 카드 너비의 300%로 표시하면 각 프레임이 카드와 정확히 같은 폭이 됩니다.
+  단계별 줌 없이 하단 정렬해 씨앗부터 완성 나무까지 같은 풍경 안에서 자라게 합니다.
+*/
+.shared-tree-view[data-growth-version="2"][data-v2-visual-frame] .shared-tree-image {
+  position: absolute;
+  z-index: 2;
+  bottom: 0;
+  left: 0;
+  display: block;
+  width: 300%;
+  max-width: none;
+  height: auto;
+  object-fit: initial;
+  object-position: initial;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: none;
+  transform: none !important;
+  animation: none !important;
+  filter: drop-shadow(0 10px 14px rgba(84,104,88,.09));
+  transition: opacity .3s ease, filter .35s ease;
+}
+
+.shared-tree-view[data-growth-version="2"][data-v2-visual-frame="0"] .shared-tree-image { left: 0 !important; }
+.shared-tree-view[data-growth-version="2"][data-v2-visual-frame="1"] .shared-tree-image { left: -100% !important; }
+.shared-tree-view[data-growth-version="2"][data-v2-visual-frame="2"] .shared-tree-image { left: -200% !important; }
+
+/*
+  1단계는 이미 운영 검증을 마친 흙·물의 아주 약한 반응을 보존합니다.
+  뿌리는 스프라이트 안에 있으므로 별도 선형 뿌리 마크만 숨깁니다.
+*/
+.shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-visual-frame] .shared-tree-v2-root-mark {
+  display: none !important;
+}
+.shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-visual-frame] .shared-tree-v2-soil-mark,
+.shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-visual-frame] .shared-tree-v2-water-mark {
+  display: block;
+  max-width: 24%;
+  opacity: .28;
+}
+.shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-visual-frame] .shared-tree-v2-scene-effects {
+  z-index: 3;
+}
+
+/*
+  2단계 이후의 승인 자산에는 잔디섬·흙·뿌리·잎·꽃이 모두 포함되어 있습니다.
+  구형 단계 장식 레이어가 다시 겹치면 QA에서 발견한 타원형 잔상과 합성 얼룩이 재발하므로 완전히 차단합니다.
+  하늘빛·두 사람의 빛·반딧불은 이 레이어 밖에 있어 기존 운영 감성을 유지합니다.
+*/
+.shared-tree-view[data-growth-version="2"]:not([data-v2-stage="1"])[data-v2-visual-frame] .shared-tree-v2-scene-effects,
+.shared-tree-view[data-growth-version="2"][data-v2-scene="complete"][data-v2-visual-frame] .shared-tree-v2-scene-effects {
+  display: none !important;
+}
+
+/* 1단계 씨앗의 발견성만 작은 빛으로 보강합니다. */
+.shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-visual-frame] .shared-tree-seed-glow {
+  z-index: 4;
+  bottom: 20.5%;
+  width: 24px;
+  height: 24px;
+  opacity: .40;
+  box-shadow: 0 0 0 6px rgba(255,249,212,.10), 0 0 18px rgba(255,223,126,.36);
+}
+.shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-visual-frame="1"] .shared-tree-seed-glow { opacity: .58; }
+.shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-visual-frame="2"] .shared-tree-seed-glow { opacity: .30; }
+
+/* 완성 이후에는 씨앗 중심광을 줄여 완성 수관과 뿌리에 시선이 머물게 합니다. */
+.shared-tree-view[data-growth-version="2"][data-v2-scene="complete"][data-v2-visual-frame] .shared-tree-seed-glow {
+  bottom: 17%;
+  opacity: .36;
+}
+
+@media (max-width: 470px) {
+  .shared-tree-view[data-growth-version="2"][data-v2-stage="1"][data-v2-visual-frame] .shared-tree-seed-glow {
+    bottom: 20%;
+    width: 21px;
+    height: 21px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shared-tree-view[data-growth-version="2"][data-v2-visual-frame] .shared-tree-image {
+    transition: none !important;
+  }
+}

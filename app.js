@@ -6599,32 +6599,45 @@ function sharedTreeV2GrowthQaVisual(tree) {
   };
 }
 
+function sharedTreeV2FrameForCount(count) {
+  const safeCount = Math.min(4, Math.max(0, Number(count || 0)));
+  return safeCount <= 0 ? 0 : safeCount <= 2 ? 1 : 2;
+}
+
 function sharedTreeV2SceneVisual(tree) {
   const growthQaVisual = sharedTreeV2GrowthQaVisual(tree);
   if (growthQaVisual) return growthQaVisual;
 
-  if (tree?.completedAt) {
-    return { src: sharedTreeImagePath(6), imageStage: 6, kind: "complete" };
-  }
   const detail = tree?.v2Detail;
   const stage = Math.min(4, Math.max(1, Number(detail?.currentStage || tree?.currentStage || 1)));
-  const count = Math.min(4, Math.max(0, Number(detail?.stageEventCount || tree?.stageEventCount || 0)));
+  const count = Number(detail?.stageEventCount ?? tree?.stageEventCount ?? 0);
 
-  // PHASE 7.5 운영: QA를 통과한 공통 카메라의 1단계 성장 장면을
-  // 실제 growth_version=2 나무에만 사용합니다. ?qa=1은 DEV 검수 도구용으로 계속 보존합니다.
-  if (stage === 1) {
-    const frame = count <= 0 ? 0 : count <= 2 ? 1 : 2;
+  // PHASE 7.6 운영 승격:
+  // QA를 통과한 공통 카메라의 1~5단계 스프라이트를 실제 growth_version=2 나무에 사용합니다.
+  // 실제 서버 단계·기록은 그대로 두고, 현재 단계의 돌봄 횟수만 3개 시각 프레임에 매핑합니다.
+  // 완성 나무는 안정화가 끝난 5단계 마지막 프레임을 고정해 오래 남는 풍경으로 보여줍니다.
+  if (tree?.completedAt) {
     return {
-      src: "assets/garden/shared_tree_v2/stage1-growth-qa.webp",
-      imageStage: 1,
-      kind: frame === 0 ? "seed" : frame === 1 ? "rooting" : "first-sprout",
-      visualFrame: frame,
+      src: "assets/garden/shared_tree_v2/stage5-growth-qa.webp",
+      imageStage: 5,
+      kind: "complete",
+      visualFrame: 2,
     };
   }
+
+  const frame = sharedTreeV2FrameForCount(count);
+  const kindByStage = {
+    1: frame === 0 ? "seed" : frame === 1 ? "rooting" : "first-sprout",
+    2: "leafing",
+    3: "branching",
+    4: "fruiting",
+  };
+
   return {
-    src: sharedTreeImagePath(sharedTreeV2ImageStage(tree)),
-    imageStage: sharedTreeV2ImageStage(tree),
-    kind: stage === 1 ? "first-sprout" : stage === 2 ? "leafing" : stage === 3 ? "branching" : "fruiting",
+    src: `assets/garden/shared_tree_v2/stage${stage}-growth-qa.webp`,
+    imageStage: stage,
+    kind: kindByStage[stage] || "leafing",
+    visualFrame: frame,
   };
 }
 
