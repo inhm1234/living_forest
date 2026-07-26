@@ -1,6 +1,7 @@
-/* 오늘의숲 · 함께 키우는 나무 v2 PHASE 7.7 성장 순간 v1.0
+/* 오늘의숲 · 함께 키우는 나무 v2 PHASE 7.7 성장 순간 v1.1
    - 승인된 공통 카메라와 잔디섬 위치는 움직이지 않음
-   - 이전/새 스프라이트를 opacity·filter로만 교차 전환
+   - 큰 스프라이트의 blur/brightness 애니메이션을 제거해 모바일 끊김 완화
+   - 이전 장면을 충분히 머물게 한 뒤 opacity만 천천히 교차 전환
    - 서버 저장 성공 이후에만 실행, 실패/중복 클릭에는 실행하지 않음 */
 
 .shared-tree-view[data-growth-version="2"] .shared-tree-growth-previous {
@@ -15,6 +16,8 @@
   pointer-events: none;
   filter: drop-shadow(0 10px 14px rgba(84,104,88,.09));
   transform: none !important;
+  will-change: opacity;
+  backface-visibility: hidden;
 }
 
 /* 이전 장면 복제본이 준비된 동안 새 장면은 숨겨 깜빡임을 막습니다. */
@@ -23,45 +26,37 @@
 }
 
 .shared-tree-view[data-growth-version="2"].shared-tree-growth-transitioning .shared-tree-image {
-  animation: sharedTreeV2GrowthReveal .82s cubic-bezier(.22,.72,.22,1) both !important;
+  animation: sharedTreeV2GrowthReveal 1.5s cubic-bezier(.22,.62,.22,1) both !important;
+  will-change: opacity;
 }
 
 .shared-tree-view[data-growth-version="2"].shared-tree-growth-transitioning .shared-tree-growth-previous {
-  animation: sharedTreeV2GrowthRelease .72s ease-out both;
+  animation: sharedTreeV2GrowthRelease 1.45s cubic-bezier(.22,.62,.22,1) both;
 }
 
 .shared-tree-view[data-growth-version="2"].shared-tree-growth-transitioning.shared-tree-growth-stage-change .shared-tree-image {
-  animation-duration: 1.02s !important;
+  animation-duration: 1.85s !important;
 }
 
 .shared-tree-view[data-growth-version="2"].shared-tree-growth-transitioning.shared-tree-growth-stage-change .shared-tree-growth-previous {
-  animation-duration: .9s;
+  animation-duration: 1.78s;
 }
 
+/*
+  큰 1920px 스프라이트에 blur·brightness를 실시간 적용하면 모바일에서 재래스터링이 발생해
+  끊김처럼 보일 수 있습니다. 성장 장면은 opacity만 겹쳐 자연스럽고 안정적으로 이어집니다.
+*/
 @keyframes sharedTreeV2GrowthReveal {
-  0% {
-    opacity: 0;
-    filter: blur(1.2px) brightness(1.08) saturate(.98) drop-shadow(0 8px 11px rgba(84,104,88,.06));
-  }
-  48% {
-    opacity: .82;
-    filter: blur(.25px) brightness(1.055) saturate(1.025) drop-shadow(0 11px 16px rgba(110,123,96,.12));
-  }
-  100% {
-    opacity: 1;
-    filter: blur(0) brightness(1) saturate(1) drop-shadow(0 10px 14px rgba(84,104,88,.09));
-  }
+  0%, 12% { opacity: 0; }
+  36% { opacity: .22; }
+  68% { opacity: .76; }
+  100% { opacity: 1; }
 }
 
 @keyframes sharedTreeV2GrowthRelease {
-  0%, 24% {
-    opacity: 1;
-    filter: brightness(1) saturate(1) drop-shadow(0 10px 14px rgba(84,104,88,.09));
-  }
-  100% {
-    opacity: 0;
-    filter: blur(.7px) brightness(1.07) saturate(.96) drop-shadow(0 8px 10px rgba(84,104,88,.04));
-  }
+  0%, 30% { opacity: 1; }
+  62% { opacity: .66; }
+  100% { opacity: 0; }
 }
 
 /* 타원형 광원 대신 작은 빛점만 사용해 과거의 회색 얼룩처럼 보이지 않게 합니다. */
@@ -94,38 +89,38 @@
 .shared-tree-growth-moment i:nth-child(5) { left: 50%; top: 8%; width: 3px; height: 3px; }
 
 .shared-tree-view[data-growth-version="2"].shared-tree-growth-transitioning .shared-tree-growth-moment {
-  animation: sharedTreeV2GrowthMomentLayer .94s ease-out both;
+  animation: sharedTreeV2GrowthMomentLayer 1.62s ease-out both;
 }
 
 .shared-tree-view[data-growth-version="2"].shared-tree-growth-transitioning .shared-tree-growth-moment i {
-  animation: sharedTreeV2GrowthSpark .86s ease-out both;
+  animation: sharedTreeV2GrowthSpark 1.42s ease-out both;
 }
 
-.shared-tree-view[data-growth-version="2"].shared-tree-growth-transitioning .shared-tree-growth-moment i:nth-child(2) { animation-delay: .08s; }
-.shared-tree-view[data-growth-version="2"].shared-tree-growth-transitioning .shared-tree-growth-moment i:nth-child(3) { animation-delay: .04s; }
-.shared-tree-view[data-growth-version="2"].shared-tree-growth-transitioning .shared-tree-growth-moment i:nth-child(4) { animation-delay: .13s; }
-.shared-tree-view[data-growth-version="2"].shared-tree-growth-transitioning .shared-tree-growth-moment i:nth-child(5) { animation-delay: .18s; }
+.shared-tree-view[data-growth-version="2"].shared-tree-growth-transitioning .shared-tree-growth-moment i:nth-child(2) { animation-delay: .14s; }
+.shared-tree-view[data-growth-version="2"].shared-tree-growth-transitioning .shared-tree-growth-moment i:nth-child(3) { animation-delay: .08s; }
+.shared-tree-view[data-growth-version="2"].shared-tree-growth-transitioning .shared-tree-growth-moment i:nth-child(4) { animation-delay: .20s; }
+.shared-tree-view[data-growth-version="2"].shared-tree-growth-transitioning .shared-tree-growth-moment i:nth-child(5) { animation-delay: .28s; }
 
 .shared-tree-view[data-growth-version="2"].shared-tree-growth-transitioning .shared-tree-stage-copy {
-  animation: sharedTreeV2GrowthCopyWarm .82s ease-out both;
+  animation: sharedTreeV2GrowthCopyWarm 1.28s ease-out both;
 }
 
 @keyframes sharedTreeV2GrowthMomentLayer {
-  0% { opacity: 0; }
-  22% { opacity: 1; }
-  76% { opacity: .84; }
+  0%, 15% { opacity: 0; }
+  34% { opacity: .86; }
+  72% { opacity: .72; }
   100% { opacity: 0; }
 }
 
 @keyframes sharedTreeV2GrowthSpark {
-  0% { opacity: 0; transform: translate3d(0, 6px, 0) scale(.72); }
-  38% { opacity: .95; transform: translate3d(0, -1px, 0) scale(1.06); }
-  100% { opacity: 0; transform: translate3d(0, -10px, 0) scale(.9); }
+  0%, 12% { opacity: 0; transform: translate3d(0, 5px, 0) scale(.78); }
+  45% { opacity: .92; transform: translate3d(0, -1px, 0) scale(1.04); }
+  100% { opacity: 0; transform: translate3d(0, -9px, 0) scale(.92); }
 }
 
 @keyframes sharedTreeV2GrowthCopyWarm {
-  0% { opacity: .62; transform: translateY(2px); }
-  48% { opacity: 1; transform: translateY(0); }
+  0% { opacity: .72; transform: translateY(1px); }
+  55% { opacity: 1; transform: translateY(0); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
@@ -159,15 +154,15 @@ html.shared-tree-motion-lite .shared-tree-view[data-growth-version="2"] .shared-
   }
 }
 
-/* 시각 프레임이 유지되는 돌봄도 저장 성공 후에만 짧은 온도 변화로 응답합니다. */
+/* 시각 프레임이 유지되는 돌봄도 저장 성공 후에만 짧고 가벼운 투명도 반응으로 응답합니다. */
 .shared-tree-view[data-growth-version="2"].shared-tree-motion-care-reacting .shared-tree-image {
-  animation: sharedTreeV2SavedCareWarm .76s ease-out both !important;
+  animation: sharedTreeV2SavedCareWarm 1.02s ease-out both !important;
 }
 
 @keyframes sharedTreeV2SavedCareWarm {
-  0% { opacity: .92; filter: brightness(1) saturate(1) drop-shadow(0 10px 14px rgba(84,104,88,.09)); }
-  42% { opacity: 1; filter: brightness(1.07) saturate(1.035) drop-shadow(0 12px 17px rgba(113,128,96,.14)); }
-  100% { opacity: 1; filter: brightness(1) saturate(1) drop-shadow(0 10px 14px rgba(84,104,88,.09)); }
+  0% { opacity: .92; }
+  46% { opacity: 1; }
+  100% { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {

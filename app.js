@@ -6732,10 +6732,11 @@ function queueSharedTreeV2GrowthMomentQa(tree) {
   if (!SHARED_TREE_V2_GROWTH_MOMENT_QA || sharedTreeV2GrowthMomentQaPlayed || !tree) return;
   const targetVisual = sharedTreeV2SceneVisual(tree);
   const targetFrame = sharedTreeV2VisualFrame(targetVisual);
+  const previousFrame = SHARED_TREE_V2_GROWTH_MOMENT_QA.fromFrame;
   const previousVisual = {
     ...targetVisual,
-    visualFrame: SHARED_TREE_V2_GROWTH_MOMENT_QA.fromFrame,
-    growthQaFrame: SHARED_TREE_V2_GROWTH_MOMENT_QA.fromFrame,
+    visualFrame: previousFrame,
+    growthQaFrame: previousFrame,
   };
   if (sharedTreeV2VisualSignature(previousVisual) === sharedTreeV2VisualSignature(targetVisual)) return;
 
@@ -6746,16 +6747,26 @@ function queueSharedTreeV2GrowthMomentQa(tree) {
     qa: true,
   });
 
-  // 모션 모듈과 현재 이미지가 모두 준비된 뒤 한 번만 재생합니다.
+  /*
+    QA 주소는 서버 데이터상 목표 프레임으로 먼저 렌더링됩니다.
+    기존 방식은 목표 프레임이 잠깐 보인 뒤 이전 프레임으로 되감겨 '끊김'처럼 느껴졌습니다.
+    첫 페인트 전에 DOM을 이전 프레임으로 맞추고, 잠시 안정적으로 보여준 뒤 실제 저장 성공 흐름과
+    같은 순서(이전 장면 복제 → 목표 프레임 반영 → 교차 전환)로 재생합니다.
+  */
+  if (els.sharedTreeView && !els.sharedTreeView.classList.contains("hidden")) {
+    els.sharedTreeView.dataset.v2VisualFrame = String(previousFrame);
+  }
+
   window.setTimeout(() => {
     if (!els.sharedTreeView || els.sharedTreeView.classList.contains("hidden")) return;
     dispatchSharedTreeV2MotionEvent(SHARED_TREE_V2_GROWTH_WILL_CHANGE_EVENT, momentDetail);
+    els.sharedTreeView.dataset.v2VisualFrame = String(targetFrame);
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
         dispatchSharedTreeV2MotionEvent(SHARED_TREE_V2_GROWTH_DID_CHANGE_EVENT, momentDetail);
       });
     });
-  }, 260);
+  }, 520);
 }
 
 function sharedTreeV2SceneVisual(tree) {

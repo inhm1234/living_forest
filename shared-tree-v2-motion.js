@@ -1,4 +1,4 @@
-/* 오늘의숲 · 함께 키우는 나무 v2 운영 모션 v1.1
+/* 오늘의숲 · 함께 키우는 나무 v2 운영 모션 v1.2
    - 실제 growth_version=2 나무에만 적용
    - 돌봄 클릭이 아니라 저장 성공 이후에만 반응
    - 성장 프레임/단계가 바뀔 때 이전 장면과 새 장면을 조용히 교차 전환
@@ -133,7 +133,7 @@ function playGrowthTransition(view, detail) {
   view.classList.add(GROWTH_TRANSITION_CLASS);
   view.classList.remove(GROWTH_PREPARING_CLASS);
 
-  const duration = detail?.stageChanged ? 1120 : 900;
+  const duration = detail?.stageChanged ? 2250 : 1900;
   growthCleanupTimer = window.setTimeout(() => clearGrowthTransition(view), duration);
 }
 
@@ -147,7 +147,7 @@ function playSavedCareReaction(view) {
   careReactionTimer = window.setTimeout(() => {
     view.classList.remove(CARE_REACTION_CLASS);
     careReactionTimer = null;
-  }, 900);
+  }, 1180);
 }
 
 function installCareAndGrowthReactions(view) {
