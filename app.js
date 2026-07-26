@@ -770,6 +770,7 @@ const els = {
   togetherForestView: $("#togetherForestView"),
   togetherForestFriendName: $("#togetherForestFriendName"),
   togetherForestSummary: $("#togetherForestSummary"),
+  togetherForestLoop: $("#togetherForestLoop"),
   togetherForestCurrent: $("#togetherForestCurrent"),
   togetherForestCompletedList: $("#togetherForestCompletedList"),
   togetherForestCompletedCount: $("#togetherForestCompletedCount"),
@@ -810,6 +811,8 @@ const els = {
   sharedTreeV2DevReset: $("#sharedTreeV2DevReset"),
   sharedTreeRecordLightButton: $("#sharedTreeRecordLightButton"),
   sharedTreeMemoryNote: $("#sharedTreeMemoryNote"),
+  sharedTreeCompletionSummary: $("#sharedTreeCompletionSummary"),
+  sharedTreeCompletionLoop: $("#sharedTreeCompletionLoop"),
   sharedTreeMyNoteText: $("#sharedTreeMyNoteText"),
   sharedTreePartnerNoteLabel: $("#sharedTreePartnerNoteLabel"),
   sharedTreePartnerNoteText: $("#sharedTreePartnerNoteText"),
@@ -6864,6 +6867,19 @@ function sharedTreeV2SceneCopy(tree, friend) {
   return config.description;
 }
 
+function sharedTreeV2ThumbnailVisual(tree) {
+  const completed = sharedTreeIsComplete(tree);
+  const stage = completed
+    ? 5
+    : Math.min(4, Math.max(1, Number(tree?.currentStage || tree?.v2Detail?.currentStage || 1)));
+  const count = Number(tree?.stageEventCount ?? tree?.v2Detail?.stageEventCount ?? 0);
+  return {
+    src: `assets/garden/shared_tree_v2/stage${stage}-growth-qa.webp`,
+    stage,
+    frame: completed ? 2 : sharedTreeV2FrameForCount(count),
+  };
+}
+
 function togetherForestTreeCardMarkup(tree, { current = false, index = 0 } = {}) {
   const isV2 = Number(tree.growthVersion || 1) === 2;
   const startDate = formatSharedTreeLifecycleDate(tree.createdAt);
@@ -6872,16 +6888,23 @@ function togetherForestTreeCardMarkup(tree, { current = false, index = 0 } = {})
   let title;
   let meta;
   let kicker;
+  let thumbnail;
 
   if (isV2) {
     const config = sharedTreeV2Config(tree.currentStage || 1);
-    stage = sharedTreeV2ImageStage(tree);
+    const visual = sharedTreeV2ThumbnailVisual(tree);
+    stage = visual.stage;
     title = current ? config.title : (tree.finalName || `${completeDate || startDate}의 나무`);
     const stageNumber = Number(tree.currentStage || 1);
+    const progress = Math.min(20, Math.max(0, Number(tree.progressCount || 0)));
     meta = current
-      ? `${stageNumber === 4 ? "마지막 성장 중" : `${stageNumber}단계`} · ${startDate}에 시작`
+      ? `${stageNumber === 4 ? "마지막 성장 중" : `${stageNumber}단계`} · 손길 ${progress} / 20`
       : `${startDate}에 시작${completeDate ? ` · ${completeDate}에 완성` : ""}`;
     kicker = current ? "GROWING TOGETHER" : "OUR MEMORY TREE";
+    thumbnail = `
+      <span class="together-forest-v2-sprite" data-v2-thumb-frame="${visual.frame}" aria-hidden="true">
+        <img src="${escapeAttr(visual.src)}" alt="" />
+      </span>`;
   } else {
     const target = Math.max(1, Number(tree.targetSteps || 20));
     const progress = Math.min(target, Math.max(0, Number(tree.progressCount || 0)));
@@ -6891,13 +6914,14 @@ function togetherForestTreeCardMarkup(tree, { current = false, index = 0 } = {})
       ? `빛 ${progress} / ${target} · ${startDate}에 시작`
       : `${startDate}에 시작${completeDate ? ` · ${completeDate}에 완성` : ""}`;
     kicker = current ? "GROWING TOGETHER" : "OUR MEMORY TREE";
+    thumbnail = `<img src="${escapeAttr(sharedTreeImagePath(stage))}" alt="" />`;
   }
 
   const aria = current ? "현재 함께 키우는 공유나무 보기" : `${index + 1}번째 완성 공유나무 보기`;
   return `
     <button class="together-forest-tree-card${current ? " is-current" : " is-complete"}${isV2 ? " is-v2" : ""}" type="button" data-view-shared-tree="${escapeAttr(tree.id)}" aria-label="${escapeAttr(aria)}">
-      <span class="together-forest-tree-thumb" aria-hidden="true">
-        <img src="${escapeAttr(sharedTreeImagePath(stage))}" alt="" />
+      <span class="together-forest-tree-thumb${isV2 ? " has-v2-sprite" : ""}" aria-hidden="true">
+        ${thumbnail}
       </span>
       <span class="together-forest-tree-copy">
         <span class="together-forest-tree-kicker">${kicker}</span>
@@ -6948,6 +6972,54 @@ function togetherForestNextSeedMarkup(friend, invite) {
   `;
 }
 
+function renderTogetherForestLoop(friend, currentTrees, completedTrees, invite) {
+  if (!els.togetherForestLoop) return;
+  const latestCompleted = completedTrees[0] || null;
+  if (!latestCompleted) {
+    els.togetherForestLoop.innerHTML = "";
+    els.togetherForestLoop.classList.add("hidden");
+    return;
+  }
+
+  const currentTree = currentTrees[0] || null;
+  const completedCount = completedTrees.length;
+  let title = `${friend.name}와 완성한 시간이 ${completedCount}그루의 나무로 남아 있어요.`;
+  let body = "완성한 나무를 다시 열어 기록을 보고, 같은 친구와 다음 시간을 이어갈 수 있어요.";
+  let nextAction = "";
+
+  if (currentTree) {
+    title = `완성한 나무 곁에서 다음 나무가 자라고 있어요.`;
+    body = "이전 나무의 기록은 그대로 남고, 새 나무에는 두 사람의 새로운 하루가 쌓여요.";
+    nextAction = `<button type="button" data-view-shared-tree="${escapeAttr(currentTree.id)}">지금 자라는 나무 보기</button>`;
+  } else if (invite?.direction === "incoming") {
+    title = `${friend.name}님이 다음 씨앗을 건넸어요.`;
+    body = "완성한 나무를 잃지 않은 채, 원할 때 다음 나무를 함께 시작할 수 있어요.";
+    nextAction = `<button type="button" data-open-shared-tree-invite="${escapeAttr(invite.id)}">다음 씨앗 함께 심기</button>`;
+  } else if (invite?.direction === "outgoing") {
+    title = "다음 씨앗이 친구의 선택을 기다리고 있어요.";
+    body = "기다리는 동안에도 완성한 나무와 두 사람의 기록은 이 숲에 그대로 머물러요.";
+    nextAction = '<span class="together-forest-loop-waiting">친구의 답을 기다리는 중</span>';
+  } else if (!friend.isDevTest) {
+    nextAction = `<button type="button" data-invite-next-shared-tree="${escapeAttr(friend.id)}">다음 나무 제안하기</button>`;
+  }
+
+  els.togetherForestLoop.innerHTML = `
+    <div class="together-forest-loop-copy">
+      <p class="growth-note-kicker">THE STORY CONTINUES</p>
+      <strong>${escapeHTML(title)}</strong>
+      <p>${escapeHTML(body)}</p>
+      <div class="together-forest-loop-stats" aria-label="함께한 숲 기록">
+        <span><b>${completedCount}</b> 완성한 나무</span>
+        <span><b>${currentTree ? 1 : 0}</b> 지금 자라는 나무</span>
+      </div>
+    </div>
+    <div class="together-forest-loop-actions">
+      <button type="button" data-view-shared-tree="${escapeAttr(latestCompleted.id)}">최근 나무 다시 보기</button>
+      ${nextAction}
+    </div>`;
+  els.togetherForestLoop.classList.remove("hidden");
+}
+
 function renderTogetherForest(friendId = activeTogetherForestFriendId) {
   const friend = (state.friends || []).find((item) => item.id === friendId);
   if (!friend) return false;
@@ -6973,6 +7045,8 @@ function renderTogetherForest(friendId = activeTogetherForestFriendId) {
   } else {
     els.togetherForestSummary.textContent = "아직 이 숲에 머무는 나무가 없어요.";
   }
+
+  renderTogetherForestLoop(friend, currentTrees, completedTrees, invite);
 
   els.togetherForestCurrent.innerHTML = currentTrees.length
     ? togetherForestTreeCardMarkup(currentTrees[0], { current: true })
@@ -7102,8 +7176,146 @@ function renderSharedTreeV2Home(tree, friend) {
   }
 }
 
+function sharedTreeMemoryNoteState(tree) {
+  if (tree?.isDevPreview) {
+    const notes = tree?.v2Detail?.devNotes || { me: "", partner: "" };
+    return {
+      myNote: notes.me ? { body: notes.me } : null,
+      partnerNote: notes.partner ? { body: notes.partner } : null,
+    };
+  }
+  const notes = sharedTreeNotesForTree(tree?.id);
+  return {
+    myNote: notes.find((note) => note.isMine) || null,
+    partnerNote: notes.find((note) => !note.isMine) || null,
+  };
+}
+
+function sharedTreeCompletionHomeLabel(tree) {
+  const detail = tree?.v2Detail;
+  if (Number(tree?.growthVersion || 1) !== 2 || !detail) return "함께한 숲에 보관";
+  if (detail.bothWorldConsent) return "모두의 숲길 준비 완료";
+  if (tree?.isDevPreview) {
+    const actor = sharedTreeV2DevActor === "partner" ? "partner" : "me";
+    const choice = normalizeDevSharedTreeV2WorldChoice(detail.devWorldChoices?.[actor]);
+    if (choice === "world") return "내 숲길 동의 완료";
+    if (choice === "private") return "둘만의 숲에 보관";
+    return "머물 곳 선택 전";
+  }
+  if (detail.myMemberState?.worldConsent === true) return "내 숲길 동의 완료";
+  if (detail.myMemberState?.worldConsent === false) return "둘만의 숲에 보관";
+  return "머물 곳 선택 전";
+}
+
+function renderSharedTreeCompletionSummary(tree, friend, isComplete) {
+  if (!els.sharedTreeCompletionSummary) return;
+  if (!isComplete) {
+    els.sharedTreeCompletionSummary.innerHTML = "";
+    els.sharedTreeCompletionSummary.classList.add("hidden");
+    return;
+  }
+
+  const detail = tree?.v2Detail;
+  const notes = sharedTreeMemoryNoteState(tree);
+  const noteCount = Number(Boolean(notes.myNote)) + Number(Boolean(notes.partnerNote));
+  const finalName = String(tree?.finalName || detail?.profile?.finalName || "우리의 나무");
+  const started = formatSharedTreeLifecycleDate(tree?.createdAt);
+  const completed = formatSharedTreeLifecycleDate(tree?.completedAt);
+  const events = Array.isArray(detail?.recentEvents) ? detail.recentEvents : [];
+  const myCareCount = events.filter((event) => event.isMine).length;
+  const partnerCareCount = events.filter((event) => !event.isMine).length;
+  const splitKnown = events.length >= 20;
+  const careLabel = splitKnown
+    ? `내 손길 ${myCareCount}번 · ${friend.name}의 손길 ${partnerCareCount}번`
+    : "두 사람의 돌봄 20번";
+
+  let nextLabel = "기록이 모두 모였어요";
+  if (Number(tree?.growthVersion || 1) === 2 && !detail?.profile?.finalName) {
+    nextLabel = "이름 조각을 한 조각씩 남겨주세요";
+  } else if (!notes.myNote) {
+    nextLabel = "내 한마디를 남겨주세요";
+  } else if (Number(tree?.growthVersion || 1) === 2 && detail?.myMemberState?.worldConsent == null) {
+    nextLabel = "나무가 머물 곳을 골라주세요";
+  } else if (!notes.partnerNote) {
+    nextLabel = `${friend.name}의 한마디를 기다리는 중`;
+  }
+
+  els.sharedTreeCompletionSummary.innerHTML = `
+    <div class="shared-tree-completion-summary-head">
+      <span aria-hidden="true">🌳</span>
+      <div>
+        <p class="growth-note-kicker">A TREE WE MADE</p>
+        <strong>${escapeHTML(finalName)}</strong>
+        <p>${escapeHTML(started)}에 시작해 ${escapeHTML(completed)}에 완성했어요.</p>
+      </div>
+    </div>
+    <div class="shared-tree-completion-summary-grid">
+      <span><small>함께한 돌봄</small><b>${escapeHTML(careLabel)}</b></span>
+      <span><small>두 사람의 한마디</small><b>${noteCount} / 2</b></span>
+      <span><small>나무가 머물 곳</small><b>${escapeHTML(sharedTreeCompletionHomeLabel(tree))}</b></span>
+    </div>
+    <p class="shared-tree-completion-next"><span aria-hidden="true">›</span>${escapeHTML(nextLabel)}</p>`;
+  els.sharedTreeCompletionSummary.classList.remove("hidden");
+}
+
+function renderSharedTreeCompletionLoop(tree, friend, isComplete) {
+  if (!els.sharedTreeCompletionLoop) return;
+  if (!isComplete) {
+    els.sharedTreeCompletionLoop.innerHTML = "";
+    els.sharedTreeCompletionLoop.classList.add("hidden");
+    return;
+  }
+
+  const trees = sharedTreesForFriend(friend.id);
+  const nextGrowingTree = trees.find((item) => item.id !== tree.id && !sharedTreeIsComplete(item)) || null;
+  const invite = sharedTreeInviteForFriend(friend.id);
+  let nextMarkup = "";
+  let stateCopy = "완성된 나무를 함께한 숲에 남기고, 같은 친구와 다음 시간을 이어갈 수 있어요.";
+
+  if (nextGrowingTree) {
+    stateCopy = "완성한 나무 곁에서 두 사람의 다음 나무가 이미 자라고 있어요.";
+    nextMarkup = `<button type="button" class="is-primary" data-loop-view-shared-tree="${escapeAttr(nextGrowingTree.id)}">다음 나무 보러가기</button>`;
+  } else if (invite?.direction === "incoming") {
+    stateCopy = `${friend.name}님이 건넨 다음 씨앗이 기다리고 있어요.`;
+    nextMarkup = `<button type="button" class="is-primary" data-loop-open-invite="${escapeAttr(invite.id)}">다음 씨앗 함께 심기</button>`;
+  } else if (invite?.direction === "outgoing") {
+    stateCopy = "다음 씨앗을 건넸어요. 친구가 선택할 때까지 완성한 나무를 천천히 돌아볼 수 있어요.";
+    nextMarkup = '<span class="shared-tree-completion-loop-waiting">친구의 답을 기다리는 중</span>';
+  } else if (!friend.isDevTest) {
+    nextMarkup = `<button type="button" class="is-primary" data-loop-invite-next="${escapeAttr(friend.id)}">다음 나무 제안하기</button>`;
+  }
+
+  els.sharedTreeCompletionLoop.innerHTML = `
+    <div class="shared-tree-completion-loop-copy">
+      <p class="growth-note-kicker">KEEP OUR FOREST GROWING</p>
+      <strong>이 나무 다음에도 둘의 시간이 이어져요.</strong>
+      <p>${escapeHTML(stateCopy)}</p>
+    </div>
+    <div class="shared-tree-completion-loop-actions">
+      <button type="button" data-loop-view-forest="${escapeAttr(friend.id)}">함께한 숲 보기</button>
+      ${nextMarkup}
+    </div>`;
+  els.sharedTreeCompletionLoop.classList.remove("hidden");
+
+  els.sharedTreeCompletionLoop.querySelector('[data-loop-view-forest]')?.addEventListener("click", (event) => {
+    openTogetherForest(event.currentTarget.dataset.loopViewForest);
+  });
+  els.sharedTreeCompletionLoop.querySelector('[data-loop-view-shared-tree]')?.addEventListener("click", (event) => {
+    openSharedTree(event.currentTarget.dataset.loopViewSharedTree);
+  });
+  els.sharedTreeCompletionLoop.querySelector('[data-loop-open-invite]')?.addEventListener("click", (event) => {
+    openSharedTreeInvite(event.currentTarget.dataset.loopOpenInvite);
+  });
+  els.sharedTreeCompletionLoop.querySelector('[data-loop-invite-next]')?.addEventListener("click", (event) => {
+    void inviteSharedTree(event.currentTarget.dataset.loopInviteNext, { nextTree: true });
+  });
+}
+
 function renderSharedTreeMemoryNote(tree, friend, isComplete) {
   if (!els.sharedTreeMemoryNote) return;
+
+  renderSharedTreeCompletionSummary(tree, friend, isComplete);
+  renderSharedTreeCompletionLoop(tree, friend, isComplete);
 
   const isDevQa = Boolean(tree?.isDevPreview);
   const isV2 = Number(tree?.growthVersion || 1) === 2;
@@ -7115,17 +7327,9 @@ function renderSharedTreeMemoryNote(tree, friend, isComplete) {
     return;
   }
 
-  let myNote = null;
-  let partnerNote = null;
-  if (isDevQa) {
-    const qaNotes = tree.v2Detail?.devNotes || { me: "", partner: "" };
-    myNote = qaNotes.me ? { body: qaNotes.me } : null;
-    partnerNote = qaNotes.partner ? { body: qaNotes.partner } : null;
-  } else {
-    const notes = sharedTreeNotesForTree(tree.id);
-    myNote = notes.find((note) => note.isMine) || null;
-    partnerNote = notes.find((note) => !note.isMine) || null;
-  }
+  const noteState = sharedTreeMemoryNoteState(tree);
+  const myNote = noteState.myNote;
+  const partnerNote = noteState.partnerNote;
 
   els.sharedTreeMyNoteText.textContent = myNote?.body || "아직 한마디를 남기지 않았어요.";
   els.sharedTreeMyNoteText.classList.toggle("is-empty", !myNote);
@@ -7644,6 +7848,8 @@ function renderSharedTreeV2View(tree) {
     els.sharedTreeV2CareOptions.innerHTML = '<div class="shared-tree-v2-loading">오늘의 돌봄을 불러오는 중이에요.</div>';
     els.sharedTreeV2RecentStory.innerHTML = "";
     els.sharedTreeMemoryNote?.classList.add("hidden");
+    els.sharedTreeCompletionSummary?.classList.add("hidden");
+    els.sharedTreeCompletionLoop?.classList.add("hidden");
     void hydrateSharedTreeV2(tree.id, { silent: false });
     return true;
   }
@@ -7950,6 +8156,7 @@ async function leaveSharedTreeLight() {
 function openSharedTree(treeId, { updateUrl = true, scroll = true, silent = false } = {}) {
   activeSharedTreeId = treeId;
   const openingTree = (state.sharedTrees || []).find((item) => item.id === treeId);
+  if (openingTree?.partnerId) activeTogetherForestFriendId = openingTree.partnerId;
   if (openingTree?.isDevPreview) sharedTreeV2DevActor = "me";
   if (!renderSharedTreeView(treeId)) {
     activeSharedTreeId = "";
@@ -7973,6 +8180,7 @@ function returnToFriendsFromSharedTree() {
   activeSharedTreeId = "";
 
   if (activeTogetherForestFriendId && renderTogetherForest(activeTogetherForestFriendId)) {
+    setTogetherForestUrl(activeTogetherForestFriendId);
     els.gardenApp.classList.add("hidden");
     els.togetherForestView.classList.remove("hidden");
     window.scrollTo({ top: 0, behavior: "smooth" });
