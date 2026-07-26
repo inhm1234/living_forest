@@ -393,6 +393,32 @@ function resolveSharedTreeV2GrowthQa() {
   return Object.freeze({ stage, frame });
 }
 const SHARED_TREE_V2_GROWTH_QA = resolveSharedTreeV2GrowthQa();
+
+// PHASE 7.7 성장 순간 QA:
+// ?qa=1&growthQa=3&growthFrame=2&growthMoment=1&growthFrom=1
+// 실제 서버 기록을 바꾸지 않고 지정한 이전 프레임에서 현재 QA 프레임으로 한 번 전환합니다.
+const SHARED_TREE_V2_GROWTH_MOMENT_QA_PARAM = "growthMoment";
+const SHARED_TREE_V2_GROWTH_MOMENT_FROM_PARAM = "growthFrom";
+const SHARED_TREE_V2_GROWTH_WILL_CHANGE_EVENT = "todayforest:shared-tree-growth-will-change";
+const SHARED_TREE_V2_GROWTH_DID_CHANGE_EVENT = "todayforest:shared-tree-growth-did-change";
+const SHARED_TREE_V2_CARE_SAVED_EVENT = "todayforest:shared-tree-care-saved";
+function resolveSharedTreeV2GrowthMomentQa() {
+  if (!LOCAL_QA_MODE_ENABLED || !SHARED_TREE_V2_GROWTH_QA) return null;
+  const params = new URLSearchParams(window.location.search);
+  if (params.get(SHARED_TREE_V2_GROWTH_MOMENT_QA_PARAM) !== "1") return null;
+
+  const targetFrame = Number(SHARED_TREE_V2_GROWTH_QA.frame ?? 0);
+  const requestedFromRaw = params.get(SHARED_TREE_V2_GROWTH_MOMENT_FROM_PARAM);
+  const requestedFrom = requestedFromRaw === null ? Number.NaN : Number(requestedFromRaw);
+  const fromFrame = Number.isInteger(requestedFrom) && requestedFrom >= 0 && requestedFrom <= 2
+    ? requestedFrom
+    : Math.max(0, targetFrame - 1);
+  if (fromFrame === targetFrame) return null;
+  return Object.freeze({ fromFrame });
+}
+const SHARED_TREE_V2_GROWTH_MOMENT_QA = resolveSharedTreeV2GrowthMomentQa();
+let sharedTreeV2GrowthMomentQaPlayed = false;
+
 // DEV 공유나무 v2 로컬 검수에서 현재 선택한 행동 주체입니다. 서버에는 저장되지 않습니다.
 let sharedTreeV2DevActor = "me";
 // 공유나무를 보고 있을 때 새로고침해도 같은 나무로 돌아오기 위한 주소 상태입니다.
@@ -6604,6 +6630,134 @@ function sharedTreeV2FrameForCount(count) {
   return safeCount <= 0 ? 0 : safeCount <= 2 ? 1 : 2;
 }
 
+function sharedTreeV2VisualFrame(visual) {
+  if (Number.isInteger(visual?.visualFrame)) return visual.visualFrame;
+  if (Number.isInteger(visual?.growthQaFrame)) return visual.growthQaFrame;
+  return 0;
+}
+
+function sharedTreeV2VisualSignature(visual) {
+  if (!visual) return "";
+  return `${visual.src || ""}|${Number(visual.imageStage || 0)}|${sharedTreeV2VisualFrame(visual)}`;
+}
+
+function dispatchSharedTreeV2MotionEvent(type, detail) {
+  if (!els.sharedTreeView || typeof window.CustomEvent !== "function") return;
+  els.sharedTreeView.dispatchEvent(new CustomEvent(type, { detail }));
+}
+
+function preloadSharedTreeV2Visual(src, timeoutMs = 1400) {
+  if (!src) return Promise.resolve(false);
+  return new Promise((resolve) => {
+    const image = new Image();
+    let settled = false;
+    const finish = (ok) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      resolve(ok);
+    };
+    const timer = window.setTimeout(() => finish(false), timeoutMs);
+    image.onload = () => finish(true);
+    image.onerror = () => finish(false);
+    image.src = src;
+    if (image.complete && image.naturalWidth > 0) finish(true);
+  });
+}
+
+function sharedTreeV2GrowthMomentDetail(previousVisual, nextVisual, { stageCompleted = false, completed = false, qa = false } = {}) {
+  const previousFrame = sharedTreeV2VisualFrame(previousVisual);
+  const nextFrame = sharedTreeV2VisualFrame(nextVisual);
+  const previousStage = Number(previousVisual?.imageStage || 0);
+  const nextStage = Number(nextVisual?.imageStage || 0);
+  return {
+    previous: {
+      src: previousVisual?.src || "",
+      frame: previousFrame,
+      stage: previousStage,
+    },
+    next: {
+      src: nextVisual?.src || "",
+      frame: nextFrame,
+      stage: nextStage,
+    },
+    stageChanged: previousStage !== nextStage || Boolean(stageCompleted),
+    completed: Boolean(completed),
+    qa: Boolean(qa),
+  };
+}
+
+async function renderSharedTreeV2CareResult(updatedTree, previousVisual, result = {}) {
+  if (!updatedTree) return { visualChanged: false, stageChanged: false, completed: false };
+
+  const nextVisual = sharedTreeV2SceneVisual(updatedTree);
+  const visualChanged = sharedTreeV2VisualSignature(previousVisual) !== sharedTreeV2VisualSignature(nextVisual);
+  const completed = Boolean(updatedTree.completedAt);
+  const momentDetail = sharedTreeV2GrowthMomentDetail(previousVisual, nextVisual, {
+    stageCompleted: Boolean(result.stage_completed ?? result.stageCompleted),
+    completed,
+  });
+
+  // 다른 단계 자산으로 넘어갈 때만 먼저 받아 두어 빈 프레임이 번쩍이지 않게 합니다.
+  if (visualChanged && previousVisual?.src !== nextVisual?.src) {
+    await preloadSharedTreeV2Visual(nextVisual.src);
+  }
+  if (visualChanged) {
+    dispatchSharedTreeV2MotionEvent(SHARED_TREE_V2_GROWTH_WILL_CHANGE_EVENT, momentDetail);
+  }
+
+  renderSharedTreeV2View(updatedTree);
+
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      if (visualChanged) {
+        dispatchSharedTreeV2MotionEvent(SHARED_TREE_V2_GROWTH_DID_CHANGE_EVENT, momentDetail);
+      }
+      dispatchSharedTreeV2MotionEvent(SHARED_TREE_V2_CARE_SAVED_EVENT, {
+        visualChanged,
+        stageChanged: momentDetail.stageChanged,
+        completed,
+      });
+    });
+  });
+
+  return {
+    visualChanged,
+    stageChanged: momentDetail.stageChanged,
+    completed,
+  };
+}
+
+function queueSharedTreeV2GrowthMomentQa(tree) {
+  if (!SHARED_TREE_V2_GROWTH_MOMENT_QA || sharedTreeV2GrowthMomentQaPlayed || !tree) return;
+  const targetVisual = sharedTreeV2SceneVisual(tree);
+  const targetFrame = sharedTreeV2VisualFrame(targetVisual);
+  const previousVisual = {
+    ...targetVisual,
+    visualFrame: SHARED_TREE_V2_GROWTH_MOMENT_QA.fromFrame,
+    growthQaFrame: SHARED_TREE_V2_GROWTH_MOMENT_QA.fromFrame,
+  };
+  if (sharedTreeV2VisualSignature(previousVisual) === sharedTreeV2VisualSignature(targetVisual)) return;
+
+  sharedTreeV2GrowthMomentQaPlayed = true;
+  const momentDetail = sharedTreeV2GrowthMomentDetail(previousVisual, targetVisual, {
+    stageCompleted: false,
+    completed: Boolean(tree.completedAt),
+    qa: true,
+  });
+
+  // 모션 모듈과 현재 이미지가 모두 준비된 뒤 한 번만 재생합니다.
+  window.setTimeout(() => {
+    if (!els.sharedTreeView || els.sharedTreeView.classList.contains("hidden")) return;
+    dispatchSharedTreeV2MotionEvent(SHARED_TREE_V2_GROWTH_WILL_CHANGE_EVENT, momentDetail);
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        dispatchSharedTreeV2MotionEvent(SHARED_TREE_V2_GROWTH_DID_CHANGE_EVENT, momentDetail);
+      });
+    });
+  }, 260);
+}
+
 function sharedTreeV2SceneVisual(tree) {
   const growthQaVisual = sharedTreeV2GrowthQaVisual(tree);
   if (growthQaVisual) return growthQaVisual;
@@ -7443,6 +7597,7 @@ function renderSharedTreeV2View(tree) {
   els.sharedTreeView.classList.toggle("both-recorded-today", bothToday);
   els.sharedTreeView.classList.toggle("is-complete", complete);
   renderSharedTreeMemoryNote(tree, friend, complete);
+  queueSharedTreeV2GrowthMomentQa(tree);
   return true;
 }
 
@@ -7515,6 +7670,9 @@ async function recordSharedTreeV2Care(button) {
   const choiceKey = String(button?.dataset?.v2Choice || "");
   if (!careType || !choiceKey) return;
 
+  // RPC/로컬 저장이 끝난 뒤 실제 시각 상태가 달라졌는지 비교하기 위해 현재 장면을 먼저 고정합니다.
+  const previousVisual = sharedTreeV2SceneVisual(tree);
+
   const buttons = Array.from(els.sharedTreeV2CareOptions?.querySelectorAll("button") || []);
   buttons.forEach((item) => { item.disabled = true; });
   button.classList.add("is-saving");
@@ -7526,12 +7684,18 @@ async function recordSharedTreeV2Care(button) {
       renderSharedTreeV2View(tree);
       return;
     }
-    if (result.tree) renderSharedTreeV2View(result.tree);
-    if (result.stageCompleted) {
+    const growthMoment = result.tree
+      ? await renderSharedTreeV2CareResult(result.tree, previousVisual, result)
+      : { visualChanged: false, completed: false };
+    if (growthMoment.completed) {
+      showToast("우리가 함께한 시간이 한 그루의 나무가 되었어요.");
+    } else if (result.stageCompleted) {
       const stageConfig = sharedTreeV2Config(result.completedStage);
       showToast(result.cooperativeStage
         ? `두 주체의 손길이 이어졌어요. ${stageConfig.completeCopy}`
         : stageConfig.completeCopy);
+    } else if (growthMoment.visualChanged) {
+      showToast("우리 나무에 작은 변화가 하나 더 남았어요.");
     } else {
       showToast(`${devSharedTreeV2ActorLabel(friendForSharedTree(result.tree || tree), selectedActor)}을 로컬로 남겼어요.`);
     }
@@ -7548,13 +7712,19 @@ async function recordSharedTreeV2Care(button) {
     if (error) throw error;
     const result = normalizeRpcRow(data);
     const updatedTree = mergeSharedTreeV2Detail(result?.tree);
-    if (updatedTree) renderSharedTreeV2View(updatedTree);
+    const growthMoment = updatedTree
+      ? await renderSharedTreeV2CareResult(updatedTree, previousVisual, result || {})
+      : { visualChanged: false, completed: false };
 
-    if (result?.stage_completed) {
+    if (growthMoment.completed) {
+      showToast("우리가 함께한 시간이 한 그루의 나무가 되었어요.");
+    } else if (result?.stage_completed) {
       const stageConfig = sharedTreeV2Config(result.completed_stage);
       showToast(result.cooperative_stage
         ? `두 사람의 손길이 이어졌어요. ${stageConfig.completeCopy}`
         : stageConfig.completeCopy);
+    } else if (growthMoment.visualChanged) {
+      showToast("우리 나무에 작은 변화가 하나 더 남았어요.");
     } else {
       showToast("오늘의 돌봄이 나무에 조용히 남았어요.");
     }
