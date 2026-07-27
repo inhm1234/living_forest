@@ -1,0 +1,176 @@
+/* 오늘의숲 PHASE 8.6 · 친구 연결 구조와 초대 안전성 v1 */
+.friend-code-auth-note {
+  margin: 10px 0 0;
+  padding: 11px 12px;
+  border: 1px solid rgba(93, 126, 98, 0.2);
+  border-radius: 14px;
+  background: rgba(238, 247, 235, 0.84);
+  color: #536a58;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.friend-code-auth-note span { margin-right: 4px; }
+.friend-connection-entry-count {
+  flex: 0 0 auto;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #67836a;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.friend-connection-hub {
+  display: grid;
+  gap: 13px;
+  margin: 14px 0 16px;
+}
+.friend-connection-heading h3 { margin: 3px 0 5px; color: #344a3a; }
+.friend-connection-heading > p:last-child {
+  margin: 0;
+  color: #758079;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.friend-code-card,
+.friend-code-form,
+.friend-request-box {
+  border: 1px solid rgba(96, 124, 101, 0.18);
+  border-radius: 18px;
+  background: rgba(250, 252, 247, 0.96);
+}
+.friend-code-card {
+  display: grid;
+  gap: 12px;
+  padding: 15px;
+}
+.friend-code-card > div:first-child { display: grid; gap: 4px; }
+.friend-code-card span,
+.friend-request-head span {
+  color: #7b887f;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.friend-code-card strong {
+  color: #3e5945;
+  font-size: 22px;
+  letter-spacing: 0.09em;
+  font-variant-numeric: tabular-nums;
+}
+.friend-code-card small { color: #7d867f; line-height: 1.45; }
+.friend-code-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.friend-code-actions button,
+.friend-request-head button {
+  min-height: 38px;
+  border: 1px solid rgba(92, 121, 97, 0.23);
+  border-radius: 12px;
+  background: #fff;
+  color: #526c58;
+  font-weight: 700;
+}
+.friend-code-actions button:disabled { opacity: 0.48; }
+.friend-code-form { padding: 15px; }
+.friend-code-form label { display: block; margin-bottom: 8px; color: #4c6252; font-weight: 700; }
+.friend-code-form > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.friend-code-form input {
+  min-width: 0;
+  height: 44px;
+  border: 1px solid rgba(91, 119, 97, 0.24);
+  border-radius: 13px;
+  padding: 0 12px;
+  background: #fff;
+  color: #354a3a;
+  font-size: 15px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.friend-code-form button {
+  border: 0;
+  border-radius: 13px;
+  padding: 0 15px;
+  background: #66816b;
+  color: #fff;
+  font-weight: 700;
+}
+.friend-code-form p { margin: 8px 0 0; color: #8a918c; font-size: 11px; }
+.friend-request-box { overflow: hidden; }
+.friend-request-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 14px;
+  border-bottom: 1px solid rgba(96, 124, 101, 0.13);
+}
+.friend-request-head > div { display: grid; gap: 3px; }
+.friend-request-head b { color: #4c6252; font-size: 13px; }
+.friend-request-head button { min-height: 32px; padding: 0 10px; font-size: 11px; }
+.friend-request-list { display: grid; }
+.friend-request-empty { margin: 0; padding: 16px 14px; color: #8a918c; font-size: 12px; }
+.friend-request-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px;
+  border-bottom: 1px solid rgba(96, 124, 101, 0.1);
+}
+.friend-request-row:last-child { border-bottom: 0; }
+.friend-request-copy { min-width: 0; display: grid; gap: 3px; }
+.friend-request-copy b { color: #3f5546; font-size: 13px; overflow-wrap: anywhere; }
+.friend-request-copy small { color: #8b938d; font-size: 11px; line-height: 1.35; }
+.friend-request-actions { display: flex; gap: 6px; }
+.friend-request-actions button {
+  min-height: 34px;
+  border-radius: 11px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.friend-request-accept { border: 0; background: #67836b; color: #fff; }
+.friend-request-decline,
+.friend-request-cancel { border: 1px solid rgba(92, 121, 97, 0.2); background: #fff; color: #6f7e73; }
+.friend-connection-safety-note {
+  margin: 0;
+  display: flex;
+  gap: 7px;
+  align-items: flex-start;
+  color: #718079;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.friend-connection-safety-note span {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  background: #e8f2e6;
+  color: #58735d;
+  font-weight: 800;
+}
+.friend-invite-box-legacy { margin-top: 0; }
+.friend-invite-box-legacy::before {
+  content: "가까운 친구에게 바로 보내기";
+  display: block;
+  margin-bottom: 10px;
+  color: #8a938d;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.friend-code-modal-card { max-width: 360px; }
+.friend-code-modal-card.is-status .letter-confirm { display: none; }
+@media (max-width: 390px) {
+  .friend-code-form > div { grid-template-columns: 1fr; }
+  .friend-code-form button { min-height: 42px; }
+  .friend-request-row { grid-template-columns: 1fr; }
+  .friend-request-actions { justify-content: flex-start; }
+}

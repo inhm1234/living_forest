@@ -480,7 +480,18 @@ let invitePreviewHandled = false;
 let toastTimer = null;
 let authBusy = false;
 // 로그인하지 않은 방문자는 먼저 공개 소개 화면을 보고, 버튼을 눌렀을 때 로그인 화면으로 이동합니다.
-let publicEntryView = new URL(window.location.href).searchParams.get("sharedMemory") === "1"
+const initialEntryParams = new URL(window.location.href).searchParams;
+const initialSharedMemoryEntry = initialEntryParams.get("sharedMemory") === "1";
+
+// 완성 나무 공유 링크는 감상·서비스 소개 전용입니다.
+// 이전에 중단한 친구 초대/친구 코드 의도가 브라우저 세션에 남아 있어도
+// 공유 링크를 다시 여는 것만으로 관계 확인창이 뒤늦게 실행되지 않도록 분리합니다.
+if (initialSharedMemoryEntry) {
+  window.sessionStorage.removeItem("todayforest_pending_friend_invite");
+  window.sessionStorage.removeItem("todayforest_pending_friend_code");
+}
+
+let publicEntryView = initialSharedMemoryEntry
   ? "shared-memory"
   : "home";
 let activeFriendGardenId = "";
