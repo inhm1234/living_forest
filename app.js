@@ -482,6 +482,49 @@ let authBusy = false;
 // 로그인하지 않은 방문자는 먼저 공개 소개 화면을 보고, 버튼을 눌렀을 때 로그인 화면으로 이동합니다.
 const initialEntryParams = new URL(window.location.href).searchParams;
 const initialSharedMemoryEntry = initialEntryParams.get("sharedMemory") === "1";
+let sharedMemoryEntryContextActive = initialSharedMemoryEntry;
+const SHARED_MEMORY_START_INTENT_KEY = "todayforest_shared_memory_start_intent_v1";
+const SHARED_MEMORY_START_INTENT_TTL_MS = 2 * 60 * 60 * 1000;
+let sharedMemoryReturnNoticeShown = false;
+
+function rememberSharedMemoryStartIntent() {
+  try {
+    window.sessionStorage.setItem(SHARED_MEMORY_START_INTENT_KEY, JSON.stringify({
+      intent: "start-my-forest",
+      createdAt: Date.now(),
+    }));
+  } catch (error) {
+    console.warn("TodayForest shared-memory intent save skipped:", error);
+  }
+}
+
+function sharedMemoryStartIntentPending() {
+  try {
+    const raw = window.sessionStorage.getItem(SHARED_MEMORY_START_INTENT_KEY);
+    if (!raw) return false;
+    const saved = JSON.parse(raw);
+    const valid = saved?.intent === "start-my-forest"
+      && Number.isFinite(Number(saved?.createdAt))
+      && Date.now() - Number(saved.createdAt) <= SHARED_MEMORY_START_INTENT_TTL_MS;
+    if (!valid) window.sessionStorage.removeItem(SHARED_MEMORY_START_INTENT_KEY);
+    return valid;
+  } catch (error) {
+    try {
+      window.sessionStorage.removeItem(SHARED_MEMORY_START_INTENT_KEY);
+    } catch (_storageError) {
+      // 저장소 접근 자체가 막힌 브라우저에서도 공유 링크는 소개 화면으로만 남습니다.
+    }
+    return false;
+  }
+}
+
+function clearSharedMemoryStartIntent() {
+  try {
+    window.sessionStorage.removeItem(SHARED_MEMORY_START_INTENT_KEY);
+  } catch (error) {
+    console.warn("TodayForest shared-memory intent clear skipped:", error);
+  }
+}
 
 // 완성 나무 공유 링크는 감상·서비스 소개 전용입니다.
 // 이전에 중단한 친구 초대/친구 코드 의도가 브라우저 세션에 남아 있어도
@@ -2347,9 +2390,14 @@ async function hydrateGardenForCurrentUser() {
     setAuthError("");
     configureRetentionWindPolling();
 
+    const enteredFromSharedMemory = sharedMemoryEntryContextActive || sharedMemoryStartIntentPending();
+
     // 카카오 로그인 뒤 처음 만든 계정만 실제 손님맞이로 보냅니다.
-    // 이미 기록이나 성장이 있는 예전 사용자는 기존 정원으로 그대로 갑니다.
+    // 공유 카드에서 시작했더라도 친구·함께 나무를 만들지 않고,
+    // 기존 신규 계정용 “나무 이름 → 첫 마음” 흐름으로만 연결합니다.
     if (isFirstGardenOnboardingRequired()) {
+      sharedMemoryEntryContextActive = false;
+      clearSharedMemoryStartIntent();
       startWelcomeOnboarding();
       return;
     }
@@ -2359,6 +2407,17 @@ async function hydrateGardenForCurrentUser() {
     restoreSharedTreeFromUrl();
     await previewFriendInviteFromUrl();
     promptForFirstTreeNameIfNeeded();
+
+    // 이미 정원이 있는 사용자가 공유 링크를 다시 열면 기존 정원만 그대로 보여줍니다.
+    // 데이터 생성 없이 안내를 한 번만 노출하고 URL/세션 의도를 정리합니다.
+    if (enteredFromSharedMemory && !sharedMemoryReturnNoticeShown) {
+      sharedMemoryReturnNoticeShown = true;
+      sharedMemoryEntryContextActive = false;
+      clearSharedMemoryStartIntent();
+      window.setTimeout(() => {
+        showToast("내 정원으로 돌아왔어요. 친구와 나무 기록은 그대로예요.", 4200);
+      }, 180);
+    }
   } catch (error) {
     state = cloneDefault();
     renderAuthUI();
@@ -9765,6 +9824,8 @@ function clearSharedMemoryEntryFlag() {
 
 function openPublicHomeFromSharedMemory() {
   if (currentUser) return;
+  clearSharedMemoryStartIntent();
+  sharedMemoryEntryContextActive = false;
   clearSharedMemoryEntryFlag();
   publicEntryView = "home";
   renderAuthUI();
@@ -9802,6 +9863,14 @@ function renderAuthUI() {
 
 function openPublicLogin() {
   if (currentUser) return;
+  const startedFromSharedMemory = publicEntryView === "shared-memory" || sharedMemoryEntryRequested();
+  if (startedFromSharedMemory) {
+    // 공유 링크는 관계나 나무를 만들지 않고, 사용자가 누른 “내 숲 시작하기” 의도만
+    // OAuth 왕복 동안 최대 2시간 보관합니다.
+    rememberSharedMemoryStartIntent();
+  } else {
+    clearSharedMemoryStartIntent();
+  }
   publicEntryView = "auth";
   renderAuthUI();
   window.scrollTo({ top: 0, behavior: "auto" });
@@ -10201,6 +10270,7 @@ async function signOut() {
     showToast("로그아웃을 마치지 못했어요. 다시 시도해 주세요.");
     return;
   }
+  clearSharedMemoryStartIntent();
   currentUser = null;
   publicEntryView = "home";
   stopLettersAutoRefresh();

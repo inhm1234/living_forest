@@ -49,7 +49,7 @@
   <link rel="stylesheet" href="shared-tree-v2-forest-depth.css?v=shared-tree-v2-phase8-2-forest-depth-v1-0" />
   <link rel="stylesheet" href="shared-tree-v2-memory-view.css?v=shared-tree-v2-phase8-3-memory-view-v1-0" />
   <link rel="stylesheet" href="shared-tree-v2-keepsake.css?v=shared-tree-v2-phase8-4-keepsake-v1-0" />
-  <link rel="stylesheet" href="shared-tree-v2-shared-entry.css?v=shared-tree-v2-phase8-5-shared-entry-v1-0" />
+  <link rel="stylesheet" href="shared-tree-v2-shared-entry.css?v=shared-tree-v2-phase8-8-onboarding-safety-v1-0" />
   <link rel="stylesheet" href="friend-connection-safety.css?v=phase8-6-link-purpose-v1-2" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
@@ -289,7 +289,14 @@
             <button type="button" class="shared-memory-entry-primary" data-public-login>나도 내 숲 시작하기</button>
             <button type="button" class="shared-memory-entry-secondary" id="sharedMemoryExplore">오늘의숲 둘러보기</button>
           </div>
-          <p class="shared-memory-entry-privacy"><span aria-hidden="true">🍃</span> 이 링크에는 공유한 사람의 이름, 친구 정보, 비공개 기록이 들어 있지 않아요.</p>
+          <div class="shared-memory-entry-safety" role="note" aria-label="공유 링크 안전 안내">
+            <span class="shared-memory-entry-safety-icon" aria-hidden="true">✓</span>
+            <div>
+              <strong>이 링크는 오늘의숲을 소개하는 링크예요.</strong>
+              <p>다시 열거나 로그인해도 친구·함께 나무·기존 정원 기록은 자동으로 바뀌지 않아요.</p>
+            </div>
+          </div>
+          <p class="shared-memory-entry-privacy"><span aria-hidden="true">🍃</span> 공유한 사람의 이름, 친구 정보, 비공개 기록도 링크에 들어 있지 않아요.</p>
         </div>
         <div class="shared-memory-entry-visual" aria-label="꽃과 열매가 맺힌 완성 나무">
           <div class="shared-memory-entry-sky" aria-hidden="true">
@@ -1502,7 +1509,7 @@
   <div class="heart-fruit-ceremony-lock hidden" id="heartFruitCeremonyLock" aria-hidden="true"></div>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="app.js?v=phase8-6-link-purpose-v1-2"></script>
+  <script type="module" src="app.js?v=phase8-8-shared-onboarding-safety-v1-0"></script>
   <script type="module" src="friend-connection-safety.js?v=phase8-6-link-purpose-v1-2"></script>
   <script type="module" src="tree-animal-call.js?v=tree-discovery-v1-6"></script>
   <script type="module" src="forest-unicorn-preview.js?v=animal-preview-clean-v0-4"></script>
