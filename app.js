@@ -7218,6 +7218,104 @@ function togetherForestNextSeedMarkup(friend, invite, { hasCompleted = true } = 
 }
 
 
+function togetherForestPathPeriod() {
+  const hour = new Date().getHours();
+  if (hour >= 19 || hour < 6) return "night";
+  if (hour >= 16) return "sunset";
+  return "day";
+}
+
+function togetherForestPathTreeTitle(tree, { current = false } = {}) {
+  if (current) return "지금 자라는 나무";
+  const fallbackDate = formatSharedTreeLifecycleDate(tree.completedAt || tree.createdAt);
+  return tree.finalName || `${fallbackDate}의 나무`;
+}
+
+function togetherForestPathTreeVisual(tree) {
+  const isV2 = Number(tree?.growthVersion || 1) === 2;
+  const complete = sharedTreeIsComplete(tree);
+  if (isV2 || complete) {
+    const visual = isV2
+      ? sharedTreeV2ThumbnailVisual(tree)
+      : { src: "assets/garden/shared_tree_v2/stage5-growth-qa.webp", frame: 2 };
+    return { ...visual, triptych: true };
+  }
+
+  const target = Math.max(1, Number(tree?.targetSteps || 20));
+  const progress = Math.min(target, Math.max(0, Number(tree?.progressCount || 0)));
+  const stage = sharedTreeStageForProgress(progress, target);
+  return {
+    src: sharedTreeImagePath(stage),
+    frame: 0,
+    triptych: false,
+  };
+}
+
+function togetherForestPathTreeMarkup(tree, slot, { current = false, labelVisible = false } = {}) {
+  const visual = togetherForestPathTreeVisual(tree);
+  const title = togetherForestPathTreeTitle(tree, { current });
+  const stateLabel = current ? "지금 자라는 중" : (labelVisible ? title : "완성된 기억");
+  const classNames = [
+    "together-forest-path-tree",
+    current ? "is-current" : "is-complete",
+    labelVisible ? "has-visible-label" : "is-deep",
+  ].join(" ");
+  const style = `--forest-x:${slot.x}%;--forest-y:${slot.y}%;--forest-scale:${slot.scale};--forest-z:${slot.z}`;
+  const spriteClass = visual.triptych ? " is-triptych" : "";
+  const frameAttr = visual.triptych ? ` data-v2-thumb-frame="${visual.frame}"` : "";
+  const aria = current ? `${title} 보기` : `${title}의 완성 기록 보기`;
+
+  return `
+    <button class="${classNames}" type="button" data-view-shared-tree="${escapeAttr(tree.id)}" style="${style}" aria-label="${escapeAttr(aria)}">
+      <span class="together-forest-path-tree-glow" aria-hidden="true"></span>
+      <span class="together-forest-path-tree-sprite${spriteClass}"${frameAttr} aria-hidden="true">
+        <img src="${escapeAttr(visual.src)}" alt="" />
+      </span>
+      <span class="together-forest-path-tree-label">${escapeHTML(stateLabel)}</span>
+    </button>`;
+}
+
+function togetherForestPathSceneMarkup(currentTree, completedTrees) {
+  const completedSlots = [
+    { x: 23, y: 67, scale: 1.02, z: 14 },
+    { x: 77, y: 68, scale: 1.02, z: 15 },
+    { x: 39, y: 51, scale: .82, z: 10 },
+    { x: 67, y: 49, scale: .78, z: 9 },
+    { x: 27, y: 41, scale: .62, z: 7 },
+    { x: 82, y: 42, scale: .60, z: 6 },
+  ];
+  const visibleLimit = currentTree ? 5 : 6;
+  const visibleCompleted = completedTrees.slice(0, visibleLimit);
+  const hiddenCount = Math.max(0, completedTrees.length - visibleCompleted.length);
+  const completedMarkup = visibleCompleted
+    .map((tree, index) => togetherForestPathTreeMarkup(tree, completedSlots[index], {
+      labelVisible: index < 2,
+    }))
+    .join("");
+  const currentMarkup = currentTree
+    ? togetherForestPathTreeMarkup(currentTree, { x: 50, y: 81, scale: 1.14, z: 18 }, {
+      current: true,
+      labelVisible: true,
+    })
+    : `
+      <span class="together-forest-path-next-place" aria-label="다음 씨앗이 머물 자리">
+        <span aria-hidden="true">🌱</span>
+        <small>다음 씨앗 자리</small>
+      </span>`;
+  const hiddenMarkup = hiddenCount
+    ? `<span class="together-forest-path-deeper">숲 안쪽에 ${hiddenCount}그루 더 있어요</span>`
+    : "";
+
+  return `
+    <div class="together-forest-path-scene" data-forest-period="${togetherForestPathPeriod()}" aria-label="완성한 나무들이 숲길을 따라 놓인 함께한 숲">
+      <span class="together-forest-path-haze" aria-hidden="true"></span>
+      <span class="together-forest-path-guide" aria-hidden="true">나무를 눌러 기억을 다시 만나보세요</span>
+      ${completedMarkup}
+      ${currentMarkup}
+      ${hiddenMarkup}
+    </div>`;
+}
+
 function renderTogetherForestLoop(friend, currentTrees, completedTrees, invite) {
   if (!els.togetherForestLoop) return;
   const latestCompleted = completedTrees[0] || null;
@@ -7248,32 +7346,29 @@ function renderTogetherForestLoop(friend, currentTrees, completedTrees, invite) 
     status = "씨앗을 건네는 중";
   }
 
-  const continuityEnd = currentTree
-    ? "지금 자라는 나무"
-    : invite?.direction === "incoming"
-      ? "도착한 다음 씨앗"
-      : invite?.direction === "outgoing" || busy
-        ? "기다리는 다음 씨앗"
-        : "다음 씨앗을 위한 자리";
-
   els.togetherForestLoop.innerHTML = `
-    <div class="together-forest-loop-copy">
-      <p class="growth-note-kicker">OUR FOREST GROWS DEEPER</p>
-      <strong>${escapeHTML(depth.title)}</strong>
-      <p>${escapeHTML(body)}</p>
-      <div class="together-forest-loop-stats" aria-label="함께한 숲 기록">
-        <span><b>${completedCount}</b> 완성한 나무</span>
-        <span><b>${timeline.days}</b>일 이어온 숲</span>
+    <div class="together-forest-path-head">
+      <div>
+        <p class="growth-note-kicker">OUR FOREST PATH</p>
+        <strong>둘이 완성한 시간이 숲길을 따라 남아 있어요.</strong>
       </div>
-      <div class="together-forest-continuity" data-forest-depth="${depth.level}" aria-label="완성한 나무에서 현재 시간으로 이어지는 숲의 흐름">
-        <span><b>완성된 기록</b><small>${completedCount}그루가 그대로 머물러요</small></span>
-        <i aria-hidden="true"><em></em></i>
-        <span><b>${escapeHTML(continuityEnd)}</b><small>지난 시간 곁에서 다음 이야기가 이어져요</small></span>
-      </div>
+      <span>${completedCount}그루</span>
     </div>
-    <div class="together-forest-loop-actions">
-      <button type="button" data-view-shared-tree="${escapeAttr(latestCompleted.id)}">최근 나무 다시 보기</button>
-      <span class="together-forest-loop-next-state${busy ? " is-busy" : ""}" aria-live="polite">${escapeHTML(status)}</span>
+    ${togetherForestPathSceneMarkup(currentTree, completedTrees)}
+    <div class="together-forest-path-footer">
+      <div class="together-forest-loop-copy">
+        <p class="growth-note-kicker">OUR FOREST GROWS DEEPER</p>
+        <strong>${escapeHTML(depth.title)}</strong>
+        <p>${escapeHTML(body)}</p>
+        <div class="together-forest-loop-stats" aria-label="함께한 숲 기록">
+          <span><b>${completedCount}</b> 완성한 나무</span>
+          <span><b>${timeline.days}</b>일 이어온 숲</span>
+        </div>
+      </div>
+      <div class="together-forest-loop-actions">
+        <button type="button" data-view-shared-tree="${escapeAttr(latestCompleted.id)}">최근 나무 다시 보기</button>
+        <span class="together-forest-loop-next-state${busy ? " is-busy" : ""}" aria-live="polite">${escapeHTML(status)}</span>
+      </div>
     </div>`;
   els.togetherForestLoop.classList.remove("hidden");
 }
