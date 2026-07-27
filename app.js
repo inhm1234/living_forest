@@ -7305,7 +7305,16 @@ function togetherForestPathTreeMarkup(tree, slot, { current = false, labelVisibl
     current ? "is-current" : "is-complete",
     labelVisible ? "has-visible-label" : "is-deep",
   ].join(" ");
-  const style = `--forest-x:${slot.x}%;--forest-y:${slot.y}%;--forest-scale:${slot.scale};--forest-z:${slot.z}`;
+  const flip = Number(slot.flip) === -1 ? -1 : 1;
+  const rotate = Number.isFinite(Number(slot.rotate)) ? Number(slot.rotate) : 0;
+  const style = [
+    `--forest-x:${slot.x}%`,
+    `--forest-y:${slot.y}%`,
+    `--forest-scale:${slot.scale}`,
+    `--forest-z:${slot.z}`,
+    `--forest-flip:${flip}`,
+    `--forest-rotate:${rotate}deg`,
+  ].join(";");
   const spriteClass = visual.triptych ? " is-triptych" : "";
   const frameAttr = visual.triptych ? ` data-v2-thumb-frame="${visual.frame}"` : "";
   const aria = current ? `${title} 보기` : `${title}의 완성 기록 보기`;
@@ -7318,6 +7327,82 @@ function togetherForestPathTreeMarkup(tree, slot, { current = false, labelVisibl
       </span>
       <span class="together-forest-path-tree-label">${escapeHTML(stateLabel)}</span>
     </button>`;
+}
+
+function togetherForestPathSlots(pageState) {
+  const count = Math.max(1, Math.min(TOGETHER_FOREST_PATH_PAGE_SIZE, pageState.trees.length));
+  const entrancePresets = {
+    1: [
+      { x: 23, y: 67, scale: 1.03, z: 14, flip: 1, rotate: -1 },
+    ],
+    2: [
+      { x: 23, y: 67, scale: 1.03, z: 14, flip: 1, rotate: -1 },
+      { x: 77, y: 68, scale: 1.02, z: 15, flip: -1, rotate: 1 },
+    ],
+    3: [
+      { x: 23, y: 67, scale: 1.03, z: 14, flip: 1, rotate: -1 },
+      { x: 77, y: 68, scale: 1.02, z: 15, flip: -1, rotate: 1 },
+      { x: 49, y: 52, scale: .84, z: 10, flip: 1, rotate: .5 },
+    ],
+    4: [
+      { x: 23, y: 67, scale: 1.03, z: 14, flip: 1, rotate: -1 },
+      { x: 77, y: 68, scale: 1.02, z: 15, flip: -1, rotate: 1 },
+      { x: 39, y: 51, scale: .82, z: 10, flip: -1, rotate: -1 },
+      { x: 67, y: 49, scale: .78, z: 9, flip: 1, rotate: 1 },
+    ],
+    5: [
+      { x: 23, y: 67, scale: 1.03, z: 14, flip: 1, rotate: -1 },
+      { x: 77, y: 68, scale: 1.02, z: 15, flip: -1, rotate: 1 },
+      { x: 39, y: 51, scale: .82, z: 10, flip: -1, rotate: -1 },
+      { x: 67, y: 49, scale: .78, z: 9, flip: 1, rotate: 1 },
+      { x: 27, y: 41, scale: .62, z: 7, flip: 1, rotate: .5 },
+    ],
+    6: [
+      { x: 23, y: 67, scale: 1.03, z: 14, flip: 1, rotate: -1 },
+      { x: 77, y: 68, scale: 1.02, z: 15, flip: -1, rotate: 1 },
+      { x: 39, y: 51, scale: .82, z: 10, flip: -1, rotate: -1 },
+      { x: 67, y: 49, scale: .78, z: 9, flip: 1, rotate: 1 },
+      { x: 27, y: 41, scale: .62, z: 7, flip: 1, rotate: .5 },
+      { x: 82, y: 42, scale: .60, z: 6, flip: -1, rotate: -.5 },
+    ],
+  };
+  const deeperPresets = {
+    1: [
+      { x: 51, y: 66, scale: 1.12, z: 15, flip: 1, rotate: 0 },
+    ],
+    2: [
+      { x: 37, y: 67, scale: 1.05, z: 15, flip: 1, rotate: -1 },
+      { x: 66, y: 66, scale: 1.04, z: 14, flip: -1, rotate: 1 },
+    ],
+    3: [
+      { x: 24, y: 69, scale: 1.00, z: 15, flip: 1, rotate: -1 },
+      { x: 51, y: 59, scale: .94, z: 13, flip: -1, rotate: .5 },
+      { x: 78, y: 69, scale: 1.00, z: 14, flip: -1, rotate: 1 },
+    ],
+    4: [
+      { x: 24, y: 70, scale: 1.01, z: 15, flip: 1, rotate: -1 },
+      { x: 78, y: 70, scale: 1.00, z: 14, flip: -1, rotate: 1 },
+      { x: 41, y: 54, scale: .82, z: 11, flip: -1, rotate: -1 },
+      { x: 65, y: 52, scale: .79, z: 10, flip: 1, rotate: 1 },
+    ],
+    5: [
+      { x: 22, y: 70, scale: 1.01, z: 15, flip: 1, rotate: -1 },
+      { x: 79, y: 70, scale: 1.00, z: 14, flip: -1, rotate: 1 },
+      { x: 40, y: 55, scale: .83, z: 11, flip: -1, rotate: -1 },
+      { x: 66, y: 53, scale: .78, z: 10, flip: 1, rotate: 1 },
+      { x: 52, y: 41, scale: .63, z: 7, flip: 1, rotate: .5 },
+    ],
+    6: [
+      { x: 21, y: 70, scale: 1.02, z: 15, flip: 1, rotate: -1 },
+      { x: 79, y: 70, scale: 1.00, z: 14, flip: -1, rotate: 1 },
+      { x: 40, y: 56, scale: .83, z: 11, flip: -1, rotate: -1 },
+      { x: 66, y: 53, scale: .78, z: 10, flip: 1, rotate: 1 },
+      { x: 24, y: 42, scale: .63, z: 7, flip: 1, rotate: .5 },
+      { x: 82, y: 40, scale: .58, z: 6, flip: -1, rotate: -.5 },
+    ],
+  };
+
+  return (pageState.page === 0 ? entrancePresets : deeperPresets)[count];
 }
 
 function togetherForestPathPageState(friendId, currentTree, completedTrees) {
@@ -7341,6 +7426,7 @@ function togetherForestPathPageState(friendId, currentTree, completedTrees) {
     start,
     end: start + trees.length,
     trees,
+    isLastPage: page === totalPages - 1,
     showCurrent: page === 0 && Boolean(currentTree),
     showNextPlace: page === 0 && !currentTree,
   };
@@ -7349,14 +7435,26 @@ function togetherForestPathPageState(friendId, currentTree, completedTrees) {
 function togetherForestPathNavigationMarkup(pageState) {
   if (pageState.totalPages <= 1) return "";
 
-  const pageTitle = pageState.page === 0 ? "숲 입구" : `숲 안쪽 ${pageState.page}`;
+  const pageTitle = pageState.page === 0
+    ? "숲 입구"
+    : pageState.isLastPage
+      ? "숲의 가장 깊은 곳"
+      : `숲 안쪽 ${pageState.page}`;
   const pageCopy = pageState.page === 0
     ? "가장 최근의 나무들이 머물러 있어요"
-    : pageState.trees.length === 1
-      ? "조금 더 오래된 나무 한 그루가 조용히 머물러 있어요"
-      : `조금 더 오래된 나무 ${pageState.trees.length}그루가 머물러 있어요`;
+    : pageState.isLastPage
+      ? pageState.trees.length === 1
+        ? "가장 오래된 나무 한 그루가 이곳을 지키고 있어요"
+        : `가장 오래된 나무 ${pageState.trees.length}그루가 이곳에 머물러 있어요`
+      : pageState.trees.length === 1
+        ? "조금 더 오래된 나무 한 그루가 조용히 머물러 있어요"
+        : `조금 더 오래된 나무 ${pageState.trees.length}그루가 머물러 있어요`;
   const previousLabel = pageState.page === 1 ? "숲 입구로" : "입구 쪽으로";
-  const nextLabel = pageState.page + 1 === pageState.totalPages - 1 ? "가장 깊은 곳으로" : "더 안쪽으로";
+  const nextLabel = pageState.isLastPage
+    ? "여기가 가장 깊어요"
+    : pageState.page + 1 === pageState.totalPages - 1
+      ? "가장 깊은 곳으로"
+      : "더 안쪽으로";
 
   return `
     <div class="together-forest-path-navigation" aria-label="함께한 숲 깊이 이동">
@@ -7369,39 +7467,24 @@ function togetherForestPathNavigationMarkup(pageState) {
         <span>${pageCopy}</span>
         <small>${pageState.page + 1} / ${pageState.totalPages}</small>
       </div>
-      <button type="button" data-forest-path-page="${pageState.page + 1}"${pageState.page >= pageState.totalPages - 1 ? " disabled" : ""} aria-label="${nextLabel}">
+      <button type="button" data-forest-path-page="${pageState.page + 1}"${pageState.isLastPage ? " disabled" : ""} aria-label="${nextLabel}">
         <b>${nextLabel}</b>
-        <span aria-hidden="true">→</span>
+        ${pageState.isLastPage ? "" : '<span aria-hidden="true">→</span>'}
       </button>
     </div>`;
 }
 
 function togetherForestPathSceneMarkup(friendId, currentTree, completedTrees) {
-  const entranceSlots = [
-    { x: 23, y: 67, scale: 1.02, z: 14 },
-    { x: 77, y: 68, scale: 1.02, z: 15 },
-    { x: 39, y: 51, scale: .82, z: 10 },
-    { x: 67, y: 49, scale: .78, z: 9 },
-    { x: 27, y: 41, scale: .62, z: 7 },
-    { x: 82, y: 42, scale: .60, z: 6 },
-  ];
-  const deeperSlots = [
-    { x: 21, y: 70, scale: 1.02, z: 15 },
-    { x: 79, y: 70, scale: 1.00, z: 14 },
-    { x: 40, y: 56, scale: .83, z: 11 },
-    { x: 66, y: 53, scale: .78, z: 10 },
-    { x: 24, y: 42, scale: .63, z: 7 },
-    { x: 82, y: 40, scale: .58, z: 6 },
-  ];
   const pageState = togetherForestPathPageState(friendId, currentTree, completedTrees);
-  const slots = pageState.page === 0 ? entranceSlots : deeperSlots;
+  const slots = togetherForestPathSlots(pageState);
+  const sparsePage = pageState.page > 0 && pageState.trees.length <= 3;
   const completedMarkup = pageState.trees
     .map((tree, index) => togetherForestPathTreeMarkup(tree, slots[index], {
-      labelVisible: index < 2,
+      labelVisible: pageState.trees.length <= 3 || index < 2,
     }))
     .join("");
   const currentMarkup = pageState.showCurrent
-    ? togetherForestPathTreeMarkup(currentTree, { x: 50, y: 81, scale: 1.14, z: 18 }, {
+    ? togetherForestPathTreeMarkup(currentTree, { x: 50, y: 81, scale: 1.14, z: 18, flip: 1, rotate: 0 }, {
       current: true,
       labelVisible: true,
     })
@@ -7415,21 +7498,51 @@ function togetherForestPathSceneMarkup(friendId, currentTree, completedTrees) {
     : "";
   const guideCopy = pageState.page === 0
     ? "나무를 눌러 기억을 다시 만나보세요"
-    : "조금 더 오래된 시간 속을 걷고 있어요";
+    : pageState.isLastPage
+      ? "이 숲의 가장 오래된 시간에 닿았어요"
+      : "조금 더 오래된 시간 속을 걷고 있어요";
   const depthRatio = pageState.totalPages > 1
     ? Math.min(1, pageState.page / (pageState.totalPages - 1))
     : 0;
-  const depthVeil = 0.03 + (depthRatio * 0.10);
-  const depthEdge = depthRatio * 0.08;
-  const hazeOpacity = 1 - (depthRatio * 0.20);
+  const emptySlots = Math.max(0, TOGETHER_FOREST_PATH_PAGE_SIZE - pageState.trees.length);
+  const depthVeil = 0.03 + (depthRatio * 0.12);
+  const depthEdge = depthRatio * 0.11;
+  const hazeOpacity = 1 - (depthRatio * 0.22);
+  const groundRestoration = pageState.page > 0
+    ? Math.min(.48, .11 + (emptySlots * .055) + (pageState.isLastPage ? .04 : 0))
+    : 0;
+  const foregroundOpacity = pageState.page > 0 ? .05 + (depthRatio * .13) : 0;
+  const backgroundSize = 100 + (depthRatio * 7.5);
+  const backgroundX = 50 + ((pageState.page % 2 === 0 ? 1 : -1) * depthRatio * 1.8);
+  const backgroundY = 50 + (depthRatio * 1.5);
   const sceneLabel = pageState.page === 0
     ? "최근 나무들이 놓인 함께한 숲 입구"
-    : `오래된 나무들이 놓인 함께한 숲 안쪽 ${pageState.page}`;
+    : pageState.isLastPage
+      ? "가장 오래된 나무들이 머무는 함께한 숲의 가장 깊은 곳"
+      : `오래된 나무들이 놓인 함께한 숲 안쪽 ${pageState.page}`;
+  const sceneClasses = [
+    "together-forest-path-scene",
+    pageState.page > 0 ? "is-deeper" : "is-entrance",
+    pageState.isLastPage && pageState.page > 0 ? "is-last-depth" : "",
+    sparsePage ? "is-sparse" : "",
+  ].filter(Boolean).join(" ");
+  const sceneStyle = [
+    `--forest-depth-veil:${depthVeil.toFixed(3)}`,
+    `--forest-depth-edge:${depthEdge.toFixed(3)}`,
+    `--forest-haze-opacity:${hazeOpacity.toFixed(3)}`,
+    `--forest-ground-restoration:${groundRestoration.toFixed(3)}`,
+    `--forest-foreground-opacity:${foregroundOpacity.toFixed(3)}`,
+    `--forest-bg-size:${backgroundSize.toFixed(2)}%`,
+    `--forest-bg-x:${backgroundX.toFixed(2)}%`,
+    `--forest-bg-y:${backgroundY.toFixed(2)}%`,
+  ].join(";");
 
   return `
-    <div class="together-forest-path-scene${pageState.page > 0 ? " is-deeper" : " is-entrance"}" data-forest-period="${togetherForestPathPeriod()}" data-forest-depth-page="${pageState.page}" style="--forest-depth-veil:${depthVeil.toFixed(3)};--forest-depth-edge:${depthEdge.toFixed(3)};--forest-haze-opacity:${hazeOpacity.toFixed(3)}" aria-label="${sceneLabel}">
+    <div class="${sceneClasses}" data-forest-period="${togetherForestPathPeriod()}" data-forest-depth-page="${pageState.page}" data-forest-tree-count="${pageState.trees.length}" style="${sceneStyle}" aria-label="${sceneLabel}">
       <span class="together-forest-path-haze" aria-hidden="true"></span>
+      <span class="together-forest-path-ground-restoration" aria-hidden="true"></span>
       <span class="together-forest-path-depth-veil" aria-hidden="true"></span>
+      <span class="together-forest-path-foreground" aria-hidden="true"></span>
       <span class="together-forest-path-guide" aria-hidden="true">${guideCopy}</span>
       ${completedMarkup}
       ${currentMarkup}
