@@ -1,0 +1,72 @@
+/* 오늘의숲 · 함께 키우는 나무 v2 PHASE 8.1
+   완성 기록 뒤 다음 씨앗을 한 번만 안전하게 건네고,
+   함께한 숲 안에서는 하나의 명확한 다음 행동만 보이게 정리합니다. */
+
+.together-forest-loop-next-state {
+  display: grid;
+  min-height: 36px;
+  place-items: center;
+  padding: 8px 10px;
+  border-radius: 13px;
+  background: rgba(239, 243, 238, .86);
+  color: #869188;
+  font-size: 9px;
+  font-weight: 850;
+  line-height: 1.4;
+  text-align: center;
+  word-break: keep-all;
+}
+
+.together-forest-loop-next-state.is-busy,
+.together-forest-next-seed.is-busy .together-forest-next-seed-state {
+  background: rgba(244, 247, 238, .96);
+  color: #738476;
+}
+
+.together-forest-next-seed-button:disabled,
+.together-forest-loop-actions button:disabled,
+.shared-tree-completion-loop-actions button:disabled,
+#acceptSharedTreeInviteButton:disabled {
+  cursor: wait;
+  opacity: .68;
+  transform: none !important;
+}
+
+.together-forest-next-seed-button[aria-busy="true"],
+.shared-tree-completion-loop-actions button[aria-busy="true"],
+#acceptSharedTreeInviteButton[aria-busy="true"] {
+  background:
+    linear-gradient(90deg, rgba(236, 245, 232, .94), rgba(250, 248, 234, .94), rgba(236, 245, 232, .94));
+  background-size: 200% 100%;
+  animation: shared-tree-next-cycle-wait 1.4s ease-in-out infinite;
+}
+
+/* 과거 v1 완성 기록도 목록에서는 승인된 v2 완성 나무로 통일합니다.
+   상세 기록과 서버 growthVersion은 바꾸지 않고 썸네일 표현만 교체합니다. */
+.together-forest-tree-card.has-approved-completion-thumb .together-forest-tree-thumb {
+  background:
+    radial-gradient(circle at 50% 75%, rgba(255,255,255,.97), rgba(237,244,218,.58) 62%, transparent 63%);
+}
+
+.together-forest-tree-card.has-approved-completion-thumb .together-forest-v2-sprite img {
+  filter: none;
+}
+
+@keyframes shared-tree-next-cycle-wait {
+  0%, 100% { background-position: 0 0; }
+  50% { background-position: 100% 0; }
+}
+
+@media (max-width: 560px) {
+  .together-forest-loop-next-state {
+    min-height: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .together-forest-next-seed-button[aria-busy="true"],
+  .shared-tree-completion-loop-actions button[aria-busy="true"],
+  #acceptSharedTreeInviteButton[aria-busy="true"] {
+    animation: none !important;
+  }
+}
