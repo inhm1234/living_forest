@@ -435,6 +435,15 @@ function resolveTogetherForestDepthQa() {
   return Object.freeze({ completedCount: requestedCount });
 }
 const TOGETHER_FOREST_DEPTH_QA = resolveTogetherForestDepthQa();
+// PHASE 9.3: 실제 시각을 기다리지 않고 낮·노을·밤의 숲 숨결을 검수하는 QA 전용 값입니다.
+// ?qa=1&forestQaPeriod=day|sunset|night 에서만 적용되며 운영 데이터에는 저장되지 않습니다.
+const TOGETHER_FOREST_AMBIENCE_QA_PERIOD_PARAM = "forestQaPeriod";
+function resolveTogetherForestAmbienceQaPeriod() {
+  if (!LOCAL_QA_MODE_ENABLED) return "";
+  const requestedPeriod = new URLSearchParams(window.location.search).get(TOGETHER_FOREST_AMBIENCE_QA_PERIOD_PARAM);
+  return ["day", "sunset", "night"].includes(requestedPeriod) ? requestedPeriod : "";
+}
+const TOGETHER_FOREST_AMBIENCE_QA_PERIOD = resolveTogetherForestAmbienceQaPeriod();
 // 새 공유나무가 시작된 순간은 참여자마다 한 번만, 약 2초 동안 조용히 보여줍니다.
 const SHARED_TREE_START_MOMENT_DURATION_MS = 2200;
 // 오래된 편지 정책을 실제 시간으로 기다리지 않고 안전하게 검수하기 위한 DEV 전용 테스트입니다.
@@ -7238,6 +7247,7 @@ function togetherForestNextSeedMarkup(friend, invite, { hasCompleted = true } = 
 
 
 function togetherForestPathPeriod() {
+  if (TOGETHER_FOREST_AMBIENCE_QA_PERIOD) return TOGETHER_FOREST_AMBIENCE_QA_PERIOD;
   const hour = new Date().getHours();
   if (hour >= 19 || hour < 6) return "night";
   if (hour >= 16) return "sunset";
@@ -7647,8 +7657,57 @@ function togetherForestPathNavigationMarkup(pageState) {
     </div>`;
 }
 
+// PHASE 9.3: 함께한 숲은 사용자가 멈춰 있어도 아주 작은 공기의 흐름을 가집니다.
+// 장식이 화면을 지배하지 않도록 페이지당 3~4개만 만들고, 친구·깊이·시간대 조합으로
+// 위치와 속도를 고정해 두 참여자에게 같은 장면을 보여줍니다.
+function togetherForestAmbienceMarkup(friendId, pageState, period) {
+  const isDeepest = pageState.page > 0 && pageState.isLastPage;
+  const particleCount = isDeepest ? 4 : 3;
+  const kind = period === "night" ? "firefly" : period === "sunset" ? "glow-seed" : "petal";
+  const particles = Array.from({ length: particleCount }, (_, index) => {
+    const seed = togetherForestStableHash(`${friendId}|${pageState.page}|${period}|ambience|${index}`);
+    const x = 12 + (seed % 76);
+    const y = 17 + ((seed >>> 7) % 43);
+    const size = period === "night"
+      ? 4 + ((seed >>> 12) % 4)
+      : 5 + ((seed >>> 12) % 4);
+    const direction = ((seed >>> 16) % 2) === 0 ? -1 : 1;
+    const driftX = direction * (36 + ((seed >>> 17) % 48));
+    const driftY = period === "day"
+      ? 24 + ((seed >>> 23) % 28)
+      : -14 + ((seed >>> 23) % 31);
+    const duration = period === "night"
+      ? 10 + ((seed >>> 4) % 8)
+      : 14 + ((seed >>> 4) % 8);
+    const delay = -1 * (1 + ((seed >>> 9) % Math.max(2, duration - 1)));
+    const rotate = -18 + ((seed >>> 25) % 37);
+    const opacity = period === "night"
+      ? .58 + (((seed >>> 20) % 24) / 100)
+      : .30 + (((seed >>> 20) % 23) / 100);
+    const style = [
+      `--ambience-x:${x}%`,
+      `--ambience-y:${y}%`,
+      `--ambience-size:${size}px`,
+      `--ambience-drift-x:${driftX}px`,
+      `--ambience-drift-y:${driftY}px`,
+      `--ambience-duration:${duration}s`,
+      `--ambience-delay:${delay}s`,
+      `--ambience-rotate:${rotate}deg`,
+      `--ambience-opacity:${opacity.toFixed(2)}`,
+    ].join(";");
+    return `<i class="together-forest-ambience-particle" style="${style}"></i>`;
+  }).join("");
+
+  return `
+    <span class="together-forest-ambience is-${kind}${isDeepest ? " is-deepest" : ""}" aria-hidden="true">
+      <span class="together-forest-ambience-breath"></span>
+      ${particles}
+    </span>`;
+}
+
 function togetherForestPathSceneMarkup(friendId, currentTree, completedTrees) {
   const pageState = togetherForestPathPageState(friendId, currentTree, completedTrees);
+  const period = togetherForestPathPeriod();
   const slots = togetherForestPathSlots(pageState);
   const sparsePage = pageState.page > 0 && pageState.trees.length <= 3;
   const completedMarkup = pageState.trees
@@ -7712,10 +7771,11 @@ function togetherForestPathSceneMarkup(friendId, currentTree, completedTrees) {
   ].join(";");
 
   return `
-    <div class="${sceneClasses}" data-forest-period="${togetherForestPathPeriod()}" data-forest-depth-page="${pageState.page}" data-forest-tree-count="${pageState.trees.length}" style="${sceneStyle}" aria-label="${sceneLabel}">
+    <div class="${sceneClasses}" data-forest-period="${period}" data-forest-depth-page="${pageState.page}" data-forest-tree-count="${pageState.trees.length}" style="${sceneStyle}" aria-label="${sceneLabel}">
       <span class="together-forest-path-haze" aria-hidden="true"></span>
       <span class="together-forest-path-ground-restoration" aria-hidden="true"></span>
       <span class="together-forest-path-depth-veil" aria-hidden="true"></span>
+      ${togetherForestAmbienceMarkup(friendId, pageState, period)}
       <span class="together-forest-path-foreground" aria-hidden="true"></span>
       <span class="together-forest-path-guide" aria-hidden="true">${guideCopy}</span>
       ${completedMarkup}

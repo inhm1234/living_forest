@@ -1,0 +1,153 @@
+/* 오늘의숲 · PHASE 9.3
+   함께한 숲의 숨결 v1.
+   낮에는 작은 꽃잎, 노을에는 빛씨앗, 밤에는 반딧불이 아주 드물게 지나갑니다.
+   기능·보상·수집 요소가 아닌 배경의 생명감이며 모든 레이어는 입력을 받지 않습니다. */
+
+.together-forest-ambience {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.together-forest-ambience-breath {
+  position: absolute;
+  top: 5%;
+  left: -32%;
+  width: 42%;
+  height: 88%;
+  background: linear-gradient(104deg, transparent 0 20%, rgba(255, 255, 255, .12) 48%, transparent 74%);
+  opacity: 0;
+  filter: blur(10px);
+  transform: skewX(-9deg);
+  animation: together-forest-breath-pass 18s -7s ease-in-out infinite;
+}
+
+.together-forest-ambience.is-deepest .together-forest-ambience-breath {
+  opacity: .01;
+  animation-duration: 21s;
+}
+
+.together-forest-ambience-particle {
+  position: absolute;
+  left: var(--ambience-x);
+  top: var(--ambience-y);
+  display: block;
+  width: var(--ambience-size);
+  height: var(--ambience-size);
+  opacity: 0;
+  will-change: opacity, transform;
+}
+
+/* 낮: 배경 꽃과 섞이는 작은 꽃잎. 계속 날리지 않고 한 주기의 절반 이상은 보이지 않습니다. */
+.together-forest-ambience.is-petal .together-forest-ambience-particle {
+  border-radius: 70% 20% 70% 24%;
+  background: linear-gradient(145deg, rgba(255,255,255,.95), rgba(247,191,212,.78));
+  box-shadow: 0 1px 2px rgba(118, 100, 104, .10);
+  animation: together-forest-petal-drift var(--ambience-duration) var(--ambience-delay) linear infinite;
+}
+
+/* 노을: 꽃잎보다 더 작고 부드러운 빛씨앗. */
+.together-forest-ambience.is-glow-seed .together-forest-ambience-particle {
+  border-radius: 50%;
+  background: rgba(255, 232, 169, .92);
+  box-shadow: 0 0 7px rgba(255, 204, 127, .58), 0 0 14px rgba(255, 188, 116, .22);
+  animation: together-forest-glow-seed-float var(--ambience-duration) var(--ambience-delay) ease-in-out infinite;
+}
+
+/* 밤: 크기를 키우지 않고 빛의 호흡만으로 발견되는 반딧불. */
+.together-forest-ambience.is-firefly .together-forest-ambience-particle {
+  border-radius: 50%;
+  background: rgba(246, 238, 157, .96);
+  box-shadow: 0 0 6px rgba(245, 233, 125, .78), 0 0 13px rgba(197, 219, 125, .46);
+  animation: together-forest-firefly-wander var(--ambience-duration) var(--ambience-delay) ease-in-out infinite;
+}
+
+.together-forest-path-scene.is-deeper .together-forest-ambience {
+  filter: saturate(.94);
+}
+
+.together-forest-path-scene.is-last-depth .together-forest-ambience {
+  filter: saturate(.90) brightness(.98);
+}
+
+@keyframes together-forest-breath-pass {
+  0%, 56% { left: -36%; opacity: 0; }
+  62% { opacity: .16; }
+  76% { opacity: .08; }
+  88%, 100% { left: 108%; opacity: 0; }
+}
+
+@keyframes together-forest-petal-drift {
+  0%, 9% {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0) rotate(var(--ambience-rotate)) scale(.78);
+  }
+  17% { opacity: var(--ambience-opacity); }
+  48% { opacity: .24; }
+  67% {
+    opacity: 0;
+    transform: translate3d(var(--ambience-drift-x), var(--ambience-drift-y), 0) rotate(calc(var(--ambience-rotate) + 170deg)) scale(1.02);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--ambience-drift-x), var(--ambience-drift-y), 0) rotate(calc(var(--ambience-rotate) + 170deg)) scale(1.02);
+  }
+}
+
+@keyframes together-forest-glow-seed-float {
+  0%, 14% {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0) scale(.72);
+  }
+  24% { opacity: var(--ambience-opacity); }
+  43% { opacity: .18; }
+  56% { opacity: var(--ambience-opacity); }
+  72% {
+    opacity: 0;
+    transform: translate3d(var(--ambience-drift-x), var(--ambience-drift-y), 0) scale(1.02);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--ambience-drift-x), var(--ambience-drift-y), 0) scale(1.02);
+  }
+}
+
+@keyframes together-forest-firefly-wander {
+  0%, 13% {
+    opacity: 0;
+    transform: translate3d(0, 5px, 0) scale(.72);
+  }
+  23% { opacity: var(--ambience-opacity); }
+  35% { opacity: .15; }
+  47% { opacity: var(--ambience-opacity); }
+  61% { opacity: .20; }
+  73% {
+    opacity: 0;
+    transform: translate3d(var(--ambience-drift-x), var(--ambience-drift-y), 0) scale(1.06);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--ambience-drift-x), var(--ambience-drift-y), 0) scale(1.06);
+  }
+}
+
+@media (max-width: 560px) {
+  .together-forest-ambience-breath {
+    filter: blur(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .together-forest-ambience-breath {
+    display: none;
+  }
+
+  .together-forest-ambience-particle {
+    opacity: .18;
+    animation: none !important;
+    transform: rotate(var(--ambience-rotate)) scale(.82);
+  }
+}
