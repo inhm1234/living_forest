@@ -1,5 +1,5 @@
-/* 오늘의숲 · PHASE 9.3
-   함께한 숲의 숨결 v1.
+/* 오늘의숲 · PHASE 9.3.1
+   함께한 숲의 숨결 v1 · 낮 꽃잎 발견성 보정.
    낮에는 작은 꽃잎, 노을에는 빛씨앗, 밤에는 반딧불이 아주 드물게 지나갑니다.
    기능·보상·수집 요소가 아닌 배경의 생명감이며 모든 레이어는 입력을 받지 않습니다. */
 
@@ -41,12 +41,43 @@
   will-change: opacity, transform;
 }
 
-/* 낮: 배경 꽃과 섞이는 작은 꽃잎. 계속 날리지 않고 한 주기의 절반 이상은 보이지 않습니다. */
+/* 낮: 밝은 배경에서도 한 번은 알아볼 수 있는 작은 꽃잎.
+   아이콘처럼 튀지 않도록 면적은 작게 유지하고, 분홍 가장자리와 짧은 그림자만 보강합니다. */
 .together-forest-ambience.is-petal .together-forest-ambience-particle {
-  border-radius: 70% 20% 70% 24%;
-  background: linear-gradient(145deg, rgba(255,255,255,.95), rgba(247,191,212,.78));
-  box-shadow: 0 1px 2px rgba(118, 100, 104, .10);
-  animation: together-forest-petal-drift var(--ambience-duration) var(--ambience-delay) linear infinite;
+  height: calc(var(--ambience-size) * .64);
+  border: 1px solid rgba(164, 70, 106, .56);
+  border-radius: 76% 18% 72% 26%;
+  background:
+    radial-gradient(circle at 28% 24%, rgba(255,255,255,.98) 0 18%, transparent 42%),
+    linear-gradient(145deg, rgba(255, 250, 252, .99), rgba(232, 118, 163, .94));
+  box-shadow:
+    0 1px 3px rgba(91, 57, 70, .25),
+    0 0 5px rgba(255, 255, 255, .72);
+  filter: drop-shadow(0 1px 1px rgba(91, 55, 68, .22));
+  transform-origin: 44% 48%;
+  animation: together-forest-petal-drift var(--ambience-duration) var(--ambience-delay) cubic-bezier(.32,.08,.54,.98) infinite;
+}
+
+.together-forest-ambience.is-petal .together-forest-ambience-particle.is-lead {
+  box-shadow:
+    0 1px 4px rgba(91, 52, 67, .30),
+    0 0 6px rgba(255, 255, 255, .82);
+}
+
+/* 첫 발견만 두 장의 아주 작은 꽃잎이 함께 지나가도록 해,
+   입자를 크게 키우지 않고도 사용자가 자연스럽게 움직임을 알아차립니다. */
+.together-forest-ambience.is-petal .together-forest-ambience-particle.is-lead::after {
+  content: "";
+  position: absolute;
+  width: 62%;
+  height: 78%;
+  left: -72%;
+  top: 36%;
+  border: 1px solid rgba(164, 70, 106, .48);
+  border-radius: 68% 24% 76% 18%;
+  background: linear-gradient(145deg, rgba(255, 249, 252, .98), rgba(236, 132, 171, .92));
+  box-shadow: 0 1px 2px rgba(91, 57, 70, .20), 0 0 4px rgba(255, 255, 255, .64);
+  transform: rotate(-58deg);
 }
 
 /* 노을: 꽃잎보다 더 작고 부드러운 빛씨앗. */
@@ -81,19 +112,26 @@
 }
 
 @keyframes together-forest-petal-drift {
-  0%, 9% {
+  0%, 8% {
     opacity: 0;
-    transform: translate3d(0, -8px, 0) rotate(var(--ambience-rotate)) scale(.78);
+    transform: translate3d(0, -7px, 0) rotate(var(--ambience-rotate)) scale(.80);
   }
-  17% { opacity: var(--ambience-opacity); }
-  48% { opacity: .24; }
-  67% {
+  14% { opacity: var(--ambience-opacity); }
+  28% {
+    opacity: calc(var(--ambience-opacity) * .92);
+    transform: translate3d(calc(var(--ambience-drift-x) * .34), calc(var(--ambience-drift-y) * .28), 0) rotate(calc(var(--ambience-rotate) + 62deg)) scale(.94);
+  }
+  45% {
+    opacity: calc(var(--ambience-opacity) * .72);
+    transform: translate3d(calc(var(--ambience-drift-x) * .67), calc(var(--ambience-drift-y) * .64), 0) rotate(calc(var(--ambience-rotate) + 126deg)) scale(1);
+  }
+  58% {
     opacity: 0;
-    transform: translate3d(var(--ambience-drift-x), var(--ambience-drift-y), 0) rotate(calc(var(--ambience-rotate) + 170deg)) scale(1.02);
+    transform: translate3d(var(--ambience-drift-x), var(--ambience-drift-y), 0) rotate(calc(var(--ambience-rotate) + 188deg)) scale(1.03);
   }
   100% {
     opacity: 0;
-    transform: translate3d(var(--ambience-drift-x), var(--ambience-drift-y), 0) rotate(calc(var(--ambience-rotate) + 170deg)) scale(1.02);
+    transform: translate3d(var(--ambience-drift-x), var(--ambience-drift-y), 0) rotate(calc(var(--ambience-rotate) + 188deg)) scale(1.03);
   }
 }
 
@@ -149,5 +187,9 @@
     opacity: .18;
     animation: none !important;
     transform: rotate(var(--ambience-rotate)) scale(.82);
+  }
+
+  .together-forest-ambience.is-petal .together-forest-ambience-particle {
+    opacity: .22;
   }
 }

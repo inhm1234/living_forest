@@ -7657,45 +7657,64 @@ function togetherForestPathNavigationMarkup(pageState) {
     </div>`;
 }
 
-// PHASE 9.3: 함께한 숲은 사용자가 멈춰 있어도 아주 작은 공기의 흐름을 가집니다.
-// 장식이 화면을 지배하지 않도록 페이지당 3~4개만 만들고, 친구·깊이·시간대 조합으로
-// 위치와 속도를 고정해 두 참여자에게 같은 장면을 보여줍니다.
+// PHASE 9.3.1: 낮 꽃잎은 은은함을 유지하되 첫 진입 후 3~5초 안에 한 번은 발견됩니다.
+// 낮에는 밝은 하늘을 피하고 나무선~잔디 구간을 지나도록 경로를 좁혔으며,
+// 양의 지연값으로 입자들이 순서대로 나타나 한꺼번에 장식처럼 날리지 않게 합니다.
 function togetherForestAmbienceMarkup(friendId, pageState, period) {
   const isDeepest = pageState.page > 0 && pageState.isLastPage;
   const particleCount = isDeepest ? 4 : 3;
   const kind = period === "night" ? "firefly" : period === "sunset" ? "glow-seed" : "petal";
   const particles = Array.from({ length: particleCount }, (_, index) => {
     const seed = togetherForestStableHash(`${friendId}|${pageState.page}|${period}|ambience|${index}`);
-    const x = 12 + (seed % 76);
-    const y = 17 + ((seed >>> 7) % 43);
+    const isDay = period === "day";
+    const x = isDay
+      ? index === 0
+        ? 30 + ((seed >>> 2) % 35)
+        : 13 + (seed % 70)
+      : 12 + (seed % 76);
+    const y = isDay
+      ? index === 0
+        ? 32 + ((seed >>> 7) % 14)
+        : 33 + ((seed >>> 7) % 25)
+      : 17 + ((seed >>> 7) % 43);
     const size = period === "night"
       ? 4 + ((seed >>> 12) % 4)
-      : 5 + ((seed >>> 12) % 4);
+      : isDay
+        ? Math.min(15, 12 + ((seed >>> 12) % 4) + (index === 0 ? 1 : 0))
+        : 5 + ((seed >>> 12) % 4);
     const direction = ((seed >>> 16) % 2) === 0 ? -1 : 1;
-    const driftX = direction * (36 + ((seed >>> 17) % 48));
-    const driftY = period === "day"
-      ? 24 + ((seed >>> 23) % 28)
+    const driftX = direction * (isDay
+      ? 54 + ((seed >>> 17) % 47)
+      : 36 + ((seed >>> 17) % 48));
+    const driftY = isDay
+      ? 34 + ((seed >>> 23) % 27)
       : -14 + ((seed >>> 23) % 31);
     const duration = period === "night"
       ? 10 + ((seed >>> 4) % 8)
-      : 14 + ((seed >>> 4) % 8);
-    const delay = -1 * (1 + ((seed >>> 9) % Math.max(2, duration - 1)));
-    const rotate = -18 + ((seed >>> 25) % 37);
+      : isDay
+        ? 15 + (((seed >>> 4) % 5) / 2)
+        : 14 + ((seed >>> 4) % 8);
+    const delay = isDay
+      ? 1.15 + (index * 5.85) + (pageState.page * .18)
+      : -1 * (1 + ((seed >>> 9) % Math.max(2, Math.floor(duration) - 1)));
+    const rotate = -22 + ((seed >>> 25) % 45);
     const opacity = period === "night"
       ? .58 + (((seed >>> 20) % 24) / 100)
-      : .30 + (((seed >>> 20) % 23) / 100);
+      : isDay
+        ? .78 + (((seed >>> 20) % 11) / 100) + (index === 0 ? .04 : 0)
+        : .30 + (((seed >>> 20) % 23) / 100);
     const style = [
       `--ambience-x:${x}%`,
       `--ambience-y:${y}%`,
       `--ambience-size:${size}px`,
       `--ambience-drift-x:${driftX}px`,
       `--ambience-drift-y:${driftY}px`,
-      `--ambience-duration:${duration}s`,
-      `--ambience-delay:${delay}s`,
+      `--ambience-duration:${duration.toFixed(1)}s`,
+      `--ambience-delay:${delay.toFixed(2)}s`,
       `--ambience-rotate:${rotate}deg`,
-      `--ambience-opacity:${opacity.toFixed(2)}`,
+      `--ambience-opacity:${Math.min(.92, opacity).toFixed(2)}`,
     ].join(";");
-    return `<i class="together-forest-ambience-particle" style="${style}"></i>`;
+    return `<i class="together-forest-ambience-particle${isDay && index === 0 ? " is-lead" : ""}" style="${style}"></i>`;
   }).join("");
 
   return `
