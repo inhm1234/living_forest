@@ -7380,6 +7380,13 @@ function sharedTreeMemoryNoteState(tree) {
   };
 }
 
+function sharedTreeMemoryDuration(tree) {
+  const startedAt = tree?.createdAt ? new Date(tree.createdAt).getTime() : Number.NaN;
+  const endedAt = tree?.completedAt ? new Date(tree.completedAt).getTime() : Number.NaN;
+  if (!Number.isFinite(startedAt) || !Number.isFinite(endedAt)) return "";
+  return `${Math.max(1, Math.floor((endedAt - startedAt) / 86400000) + 1)}일`;
+}
+
 function sharedTreeCompletionHomeLabel(tree) {
   const detail = tree?.v2Detail;
   if (Number(tree?.growthVersion || 1) !== 2 || !detail) return "함께한 숲에 보관";
@@ -7410,15 +7417,22 @@ function renderSharedTreeCompletionSummary(tree, friend, isComplete) {
   const finalName = String(tree?.finalName || detail?.profile?.finalName || "우리의 나무");
   const started = formatSharedTreeLifecycleDate(tree?.createdAt);
   const completed = formatSharedTreeLifecycleDate(tree?.completedAt);
+  const duration = sharedTreeMemoryDuration(tree);
   const events = Array.isArray(detail?.recentEvents) ? detail.recentEvents : [];
+  const totalCareCount = Math.max(
+    events.length,
+    Number(tree?.progressCount || 0),
+    Number(tree?.targetSteps || 0),
+    20
+  );
   const myCareCount = events.filter((event) => event.isMine).length;
   const partnerCareCount = events.filter((event) => !event.isMine).length;
-  const splitKnown = events.length >= 20;
+  const splitKnown = events.length >= totalCareCount;
   const careLabel = splitKnown
-    ? `내 손길 ${myCareCount}번 · ${friend.name}의 손길 ${partnerCareCount}번`
-    : "두 사람의 돌봄 20번";
+    ? `나 ${myCareCount}번 · ${friend.name} ${partnerCareCount}번`
+    : `두 사람의 손길 ${totalCareCount}번`;
 
-  let nextLabel = "기록이 모두 모였어요";
+  let nextLabel = "이 나무의 기억이 모두 모였어요";
   if (Number(tree?.growthVersion || 1) === 2 && !detail?.profile?.finalName) {
     nextLabel = "이름 조각을 한 조각씩 남겨주세요";
   } else if (!notes.myNote) {
@@ -7430,18 +7444,22 @@ function renderSharedTreeCompletionSummary(tree, friend, isComplete) {
   }
 
   els.sharedTreeCompletionSummary.innerHTML = `
-    <div class="shared-tree-completion-summary-head">
-      <span aria-hidden="true">🌳</span>
+    <div class="shared-tree-memory-overview-head">
+      <span class="shared-tree-memory-overview-icon" aria-hidden="true">🌳</span>
       <div>
-        <p class="growth-note-kicker">A TREE WE MADE</p>
+        <p class="growth-note-kicker">A TREE WE REMEMBER</p>
         <strong>${escapeHTML(finalName)}</strong>
         <p>${escapeHTML(started)}에 시작해 ${escapeHTML(completed)}에 완성했어요.</p>
       </div>
     </div>
-    <div class="shared-tree-completion-summary-grid">
-      <span><small>함께한 돌봄</small><b>${escapeHTML(careLabel)}</b></span>
+    <div class="shared-tree-memory-overview-stats">
+      <span><small>함께한 기간</small><b>${escapeHTML(duration || "기록 중")}</b></span>
+      <span><small>함께한 돌봄</small><b>${totalCareCount}번</b></span>
       <span><small>두 사람의 한마디</small><b>${noteCount} / 2</b></span>
-      <span><small>나무가 머물 곳</small><b>${escapeHTML(sharedTreeCompletionHomeLabel(tree))}</b></span>
+    </div>
+    <div class="shared-tree-memory-overview-foot">
+      <span>${escapeHTML(careLabel)}</span>
+      <span>${escapeHTML(sharedTreeCompletionHomeLabel(tree))}</span>
     </div>
     <p class="shared-tree-completion-next"><span aria-hidden="true">›</span>${escapeHTML(nextLabel)}</p>`;
   els.sharedTreeCompletionSummary.classList.remove("hidden");
@@ -7520,6 +7538,19 @@ function renderSharedTreeMemoryNote(tree, friend, isComplete) {
   const noteState = sharedTreeMemoryNoteState(tree);
   const myNote = noteState.myNote;
   const partnerNote = noteState.partnerNote;
+  const noteCount = Number(Boolean(myNote)) + Number(Boolean(partnerNote));
+  const memoryHeading = els.sharedTreeMemoryNote.querySelector(".shared-tree-memory-heading h2");
+  const memoryIntro = els.sharedTreeMemoryNote.querySelector(".shared-tree-memory-heading > p:last-child");
+  if (memoryHeading) {
+    memoryHeading.textContent = noteCount === 2
+      ? "두 사람이 이 나무에 남긴 말"
+      : "이 나무에 한마디를 남겨볼까요?";
+  }
+  if (memoryIntro) {
+    memoryIntro.textContent = noteCount === 2
+      ? "완성한 날의 마음을 언제든 다시 읽을 수 있어요."
+      : "함께 보낸 시간을 짧게 남겨둘 수 있어요.";
+  }
 
   els.sharedTreeMyNoteText.textContent = myNote?.body || "아직 한마디를 남기지 않았어요.";
   els.sharedTreeMyNoteText.classList.toggle("is-empty", !myNote);
@@ -7630,6 +7661,11 @@ function renderSharedTreeV1View(treeId = activeSharedTreeId) {
   const tree = (state.sharedTrees || []).find((item) => item.id === treeId);
   if (!tree) return false;
 
+  els.sharedTreeView.classList.remove("is-memory-view");
+  if (els.returnToFriendsFromSharedTree) {
+    els.returnToFriendsFromSharedTree.textContent = "← 친구";
+    els.returnToFriendsFromSharedTree.setAttribute("aria-label", "친구 목록으로 돌아가기");
+  }
   els.sharedTreeLegacyProgress?.classList.remove("hidden");
   els.sharedTreeV2Panel?.classList.add("hidden");
   els.sharedTreeV2DevTools?.classList.add("hidden");
@@ -8020,6 +8056,11 @@ function renderSharedTreeV2View(tree) {
 
   const detail = tree.v2Detail;
   if (!detail) {
+    els.sharedTreeView.classList.remove("is-memory-view");
+    if (els.returnToFriendsFromSharedTree) {
+      els.returnToFriendsFromSharedTree.textContent = "← 친구";
+      els.returnToFriendsFromSharedTree.setAttribute("aria-label", "친구 목록으로 돌아가기");
+    }
     els.sharedTreePartnerName.textContent = `${friend.name}와 함께 키우는 나무`;
     applySharedTreeV2SceneState(tree);
     els.sharedTreeStageCopy.textContent = "나무가 두 사람의 돌봄을 불러오는 중이에요.";
@@ -8046,7 +8087,16 @@ function renderSharedTreeV2View(tree) {
 
   const config = sharedTreeV2Config(detail.currentStage);
   const complete = Boolean(tree.completedAt);
+  const memoryReady = Boolean(complete && detail?.profile?.finalName);
   const bothToday = detail.myCaredToday && detail.partnerCaredToday;
+  els.sharedTreeView.classList.toggle("is-memory-view", memoryReady);
+  if (els.returnToFriendsFromSharedTree) {
+    els.returnToFriendsFromSharedTree.textContent = complete ? "← 함께한 숲" : "← 친구";
+    els.returnToFriendsFromSharedTree.setAttribute(
+      "aria-label",
+      complete ? `${friend.name}와의 함께한 숲으로 돌아가기` : "친구 목록으로 돌아가기"
+    );
+  }
   els.sharedTreePartnerName.textContent = complete
     ? (detail.profile.finalName || `${friend.name}와 함께 완성한 나무`)
     : `${friend.name}와 함께 키우는 나무`;
@@ -8100,8 +8150,14 @@ function renderSharedTreeV2View(tree) {
   els.sharedTreeV2CareOptions.innerHTML = sharedTreeV2CareMarkup(tree, friend);
   bindSharedTreeV2CareButtons();
 
-  const storyEvents = detail.recentEvents.slice(0, 6);
+  const storyEvents = complete ? detail.recentEvents.slice() : detail.recentEvents.slice(0, 6);
   els.sharedTreeV2Story.classList.toggle("hidden", !storyEvents.length);
+  const storySummary = els.sharedTreeV2Story.querySelector("summary");
+  if (storySummary) {
+    storySummary.textContent = complete
+      ? `함께 돌본 ${storyEvents.length}번의 기록 보기`
+      : "최근 성장 기록 보기";
+  }
   els.sharedTreeV2RecentStory.innerHTML = storyEvents.length
     ? storyEvents.map((event) => {
       const who = event.isMine ? "나" : friend.name;

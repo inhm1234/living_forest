@@ -1,0 +1,219 @@
+/* 오늘의숲 · 함께 키우는 나무 v2 PHASE 8.3
+   완성 나무 상세를 '성장 화면'이 아니라 다시 찾아보는 기억 화면으로 정리합니다.
+   서버 저장·성장 계산·기존 기록 데이터에는 관여하지 않습니다. */
+
+.shared-tree-view.is-memory-view .shared-tree-header .eyebrow {
+  color: #829584;
+}
+
+.shared-tree-view.is-memory-view .shared-tree-stage {
+  box-shadow: 0 20px 44px rgba(76, 102, 83, .10);
+}
+
+.shared-tree-view.is-memory-view .shared-tree-progress-card {
+  background:
+    radial-gradient(circle at 88% 4%, rgba(255, 242, 190, .25), transparent 30%),
+    rgba(255, 255, 255, .92);
+}
+
+.shared-tree-view.is-memory-view .shared-tree-v2-heading .growth-note-kicker {
+  font-size: 0;
+}
+
+.shared-tree-view.is-memory-view .shared-tree-v2-heading .growth-note-kicker::after {
+  content: "OUR TREE MEMORY";
+  font-size: 9px;
+}
+
+.shared-tree-view.is-memory-view .shared-tree-v2-handoff,
+.shared-tree-view.is-memory-view .shared-tree-v2-care {
+  display: none !important;
+}
+
+.shared-tree-view.is-memory-view .shared-tree-v2-trace {
+  margin-bottom: 2px;
+}
+
+.shared-tree-view.is-memory-view .shared-tree-v2-story {
+  margin-top: 15px;
+  padding: 13px;
+  border: 1px solid rgba(126, 153, 125, .17);
+  border-radius: 16px;
+  background: rgba(249, 251, 248, .82);
+}
+
+.shared-tree-view.is-memory-view .shared-tree-v2-story summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 28px;
+  color: #647a69;
+  font-size: 10px;
+}
+
+.shared-tree-view.is-memory-view .shared-tree-v2-story summary::after {
+  margin-left: auto;
+}
+
+.shared-tree-view.is-memory-view .shared-tree-v2-story > div {
+  max-height: 420px;
+  overflow: auto;
+  padding-right: 3px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(126, 153, 125, .32) transparent;
+}
+
+.shared-tree-view.is-memory-view .shared-tree-v2-story p {
+  background: rgba(255, 255, 255, .82);
+}
+
+/* 기억 개요 */
+.shared-tree-memory-overview-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+.shared-tree-memory-overview-icon {
+  display: grid;
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 15px;
+  background: linear-gradient(145deg, #edf6e9, #fff7df);
+  box-shadow: inset 0 0 0 1px rgba(126, 153, 125, .10);
+  font-size: 20px;
+}
+
+.shared-tree-memory-overview-head strong {
+  display: block;
+  margin-top: 3px;
+  color: #506957;
+  font-size: 17px;
+  line-height: 1.35;
+  letter-spacing: -.025em;
+  word-break: keep-all;
+}
+
+.shared-tree-memory-overview-head p:last-child {
+  margin: 4px 0 0;
+  color: #89958c;
+  font-size: 9px;
+  font-weight: 720;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
+.shared-tree-memory-overview-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 14px;
+}
+
+.shared-tree-memory-overview-stats > span {
+  min-width: 0;
+  padding: 11px 9px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .78);
+  text-align: center;
+}
+
+.shared-tree-memory-overview-stats small,
+.shared-tree-memory-overview-stats b {
+  display: block;
+}
+
+.shared-tree-memory-overview-stats small {
+  color: #9ba49d;
+  font-size: 8px;
+  font-weight: 850;
+}
+
+.shared-tree-memory-overview-stats b {
+  margin-top: 4px;
+  color: #5f7564;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.shared-tree-memory-overview-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 9px;
+}
+
+.shared-tree-memory-overview-foot span {
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(239, 246, 235, .82);
+  color: #728275;
+  font-size: 8px;
+  font-weight: 820;
+}
+
+/* 두 사람의 말은 기억의 중심으로 보이되 작성 기능은 그대로 유지합니다. */
+.shared-tree-view.is-memory-view .shared-tree-memory-note {
+  border-color: rgba(126, 153, 125, .19);
+  background:
+    radial-gradient(circle at 94% 5%, rgba(255, 237, 185, .22), transparent 28%),
+    rgba(255, 255, 255, .90);
+  box-shadow: 0 13px 30px rgba(77, 104, 84, .07);
+}
+
+.shared-tree-view.is-memory-view .shared-tree-memory-words {
+  gap: 9px;
+}
+
+.shared-tree-view.is-memory-view .shared-tree-memory-word {
+  min-height: 92px;
+  background: linear-gradient(145deg, rgba(250, 253, 247, .95), rgba(255, 249, 238, .82));
+}
+
+.shared-tree-view.is-memory-view .shared-tree-memory-word p:not(.is-empty) {
+  color: #586f5e;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.shared-tree-view.is-memory-view .shared-tree-completion-loop {
+  margin-bottom: 4px;
+}
+
+@media (max-width: 560px) {
+  .shared-tree-memory-overview-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .shared-tree-memory-overview-stats > span {
+    padding-inline: 5px;
+  }
+
+  .shared-tree-memory-overview-stats b {
+    font-size: 10px;
+  }
+
+  .shared-tree-view.is-memory-view .shared-tree-v2-story > div {
+    max-height: 360px;
+  }
+}
+
+@media (max-width: 370px) {
+  .shared-tree-memory-overview-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .shared-tree-memory-overview-stats > span:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shared-tree-view.is-memory-view *,
+  .shared-tree-view.is-memory-view *::before,
+  .shared-tree-view.is-memory-view *::after {
+    scroll-behavior: auto !important;
+  }
+}
