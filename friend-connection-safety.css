@@ -1,4 +1,4 @@
-/* 오늘의숲 PHASE 8.6 · 친구 추가 진입 발견성 보정 v1.1 */
+/* 오늘의숲 PHASE 8.6 · 링크 목적 통합 v1.2 */
 .friend-code-auth-note {
   margin: 10px 0 0;
   padding: 11px 12px;
@@ -63,7 +63,7 @@
   font-variant-numeric: tabular-nums;
 }
 .friend-code-card small { color: #7d867f; line-height: 1.45; }
-.friend-code-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.friend-code-actions { display: grid; grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr); gap: 8px; }
 .friend-code-actions button,
 .friend-request-head button {
   min-height: 38px;
@@ -72,6 +72,9 @@
   background: #fff;
   color: #526c58;
   font-weight: 700;
+  padding: 8px 10px;
+  line-height: 1.25;
+  white-space: normal;
 }
 .friend-code-actions button:disabled { opacity: 0.48; }
 .friend-code-form { padding: 15px; }
@@ -156,6 +159,10 @@
   color: #58735d;
   font-weight: 800;
 }
+
+/* 기존 1회용 초대 링크는 이미 공유된 주소의 수락 호환성만 유지하고, 새 링크 생성 UI에서는 숨깁니다. */
+.friend-invite-box-legacy { display: none !important; }
+
 .friend-invite-box-legacy { margin-top: 0; }
 .friend-invite-box-legacy::before {
   content: "가까운 친구에게 바로 보내기";
@@ -169,6 +176,7 @@
 .friend-code-modal-card { max-width: 360px; }
 .friend-code-modal-card.is-status .letter-confirm { display: none; }
 @media (max-width: 390px) {
+  .friend-code-actions { grid-template-columns: 1fr; }
   .friend-code-form > div { grid-template-columns: 1fr; }
   .friend-code-form button { min-height: 42px; }
   .friend-request-row { grid-template-columns: 1fr; }

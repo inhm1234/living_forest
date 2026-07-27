@@ -1,4 +1,4 @@
-// 오늘의숲 PHASE 8.6 · 친구 연결 구조와 초대 안전성 v1.1
+// 오늘의숲 PHASE 8.6 · 링크 목적 통합 v1.2
 const supabase = window.__todayForestSupabase;
 const showToast = (...args) => window.__todayForestShowToast?.(...args);
 const FRIEND_CODE_SESSION_KEY = "todayforest_pending_friend_code";
@@ -66,9 +66,9 @@ function markFeatureUnavailable() {
   featureReady = false;
   $("#friendConnectionHub")?.classList.add("hidden");
   const hint = $("#friendConnectionEntryHint");
-  if (hint) hint.textContent = "한 번만 쓰는 초대 링크로 친구를 추가해요";
+  if (hint) hint.textContent = "친구 코드 기능을 준비하지 못했어요";
   const preview = $("#friendConnectionEntryCode");
-  if (preview) preview.textContent = "초대 링크 만들기";
+  if (preview) preview.textContent = "잠시 뒤 다시 확인해 주세요";
 }
 
 async function sessionUser() {
@@ -186,7 +186,7 @@ async function loadFriendRequests() {
   }
   if (hint) hint.textContent = incomingCount
     ? `받은 친구 신청 ${incomingCount}개 · 눌러서 확인`
-    : "코드 입력 · 내 코드 복사 · 초대 링크";
+    : "코드 입력 · 내 코드 복사 · 친구 초대 링크";
   const summary = $("#friendRequestSummary");
   if (summary) summary.textContent = rows.length
     ? `받은 신청 ${incomingCount}개 · 보낸 신청 ${rows.length - incomingCount}개`
@@ -366,7 +366,7 @@ function bindFriendConnectionEvents() {
     const code = event.currentTarget.dataset.code || "";
     const url = new URL(window.location.origin + window.location.pathname);
     url.searchParams.set(FRIEND_CODE_PARAM, code);
-    void copyText(url.toString(), "친구 연결 링크를 복사했어요.");
+    void copyText(url.toString(), "친구 초대 링크를 복사했어요. 상대가 링크를 열어 신청을 보내면 내가 수락할 수 있어요.");
   });
   $("#sendFriendCodeRequest")?.addEventListener("click", () => { void sendFriendRequestFromCode(); });
   $("#closeFriendCodeModal")?.addEventListener("click", () => closeFriendCodeModal());

@@ -10565,7 +10565,9 @@ function bindEvents() {
   els.openFriends.addEventListener("click", openFriendsSheet);
   els.openFriendInvitePanel?.addEventListener("click", () => {
     showFriendInvitePanel();
-    window.setTimeout(() => els.createInviteButton?.focus(), 0);
+    // 새 친구 연결의 대표 진입은 친구 코드/친구 초대 링크입니다.
+    // 화면에서 숨긴 기존 1회용 링크 생성 버튼으로 포커스가 이동하지 않도록 합니다.
+    window.setTimeout(() => $("#friendCodeInput")?.focus(), 0);
   });
   els.backToFriendsList?.addEventListener("click", () => {
     showFriendsOverview();

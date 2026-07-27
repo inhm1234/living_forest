@@ -50,7 +50,7 @@
   <link rel="stylesheet" href="shared-tree-v2-memory-view.css?v=shared-tree-v2-phase8-3-memory-view-v1-0" />
   <link rel="stylesheet" href="shared-tree-v2-keepsake.css?v=shared-tree-v2-phase8-4-keepsake-v1-0" />
   <link rel="stylesheet" href="shared-tree-v2-shared-entry.css?v=shared-tree-v2-phase8-5-shared-entry-v1-0" />
-  <link rel="stylesheet" href="friend-connection-safety.css?v=phase8-6-friend-entry-v1-1" />
+  <link rel="stylesheet" href="friend-connection-safety.css?v=phase8-6-link-purpose-v1-2" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
     // 운영 루트(/)에 같은 파일을 반영하면 G-YC872G7MH1로 자동 전송됩니다.
@@ -1243,7 +1243,7 @@
         <span class="friend-invite-entry-icon" aria-hidden="true">＋</span>
         <span class="friend-invite-entry-copy">
           <b>친구 추가하기</b>
-          <small id="friendConnectionEntryHint">코드 입력 · 내 코드 복사 · 초대 링크</small>
+          <small id="friendConnectionEntryHint">코드 입력 · 내 코드 복사 · 친구 초대 링크</small>
           <span class="friend-connection-entry-preview" id="friendConnectionEntryCode">내 친구 코드 확인하기</span>
         </span>
         <span class="friend-connection-entry-count hidden" id="friendConnectionEntryCount" aria-label="받은 친구 신청"></span>
@@ -1266,19 +1266,19 @@
       <section class="friend-connection-hub" id="friendConnectionHub" aria-labelledby="friendConnectionHubTitle">
         <div class="friend-connection-heading">
           <p class="sheet-kicker">SAFE FRIEND CONNECTION</p>
-          <h3 id="friendConnectionHubTitle">친구 코드를 주고받아요</h3>
-          <p>게임에서 만난 사람과도 코드를 주고받은 뒤, 상대가 직접 수락해야 친구가 돼요.</p>
+          <h3 id="friendConnectionHubTitle">코드나 링크로 친구를 추가해요</h3>
+          <p>친구 코드를 입력하거나 친구 초대 링크를 보내세요. 어느 방법도 자동 등록되지 않고, 상대가 직접 수락해야 친구가 돼요.</p>
         </div>
 
         <div class="friend-code-card">
           <div>
             <span>내 친구 코드</span>
             <strong id="myFriendCode">코드를 준비하고 있어요</strong>
-            <small>코드는 여러 번 보여줘도 괜찮지만, 친구 등록은 항상 상대의 신청과 내 수락을 거쳐요.</small>
+            <small>코드와 링크는 같은 친구 신청 방식이에요. 여러 번 열어도 신청이나 친구가 중복 생성되지 않아요.</small>
           </div>
           <div class="friend-code-actions">
             <button type="button" id="copyMyFriendCode" disabled>코드 복사</button>
-            <button type="button" id="copyMyFriendLink" disabled>링크 복사</button>
+            <button type="button" id="copyMyFriendLink" title="내 친구 코드를 담은 친구 초대 링크를 복사해요" disabled>친구 초대 링크 복사</button>
           </div>
         </div>
 
@@ -1304,10 +1304,10 @@
           </div>
         </div>
 
-        <p class="friend-connection-safety-note"><span aria-hidden="true">✓</span> 같은 코드나 링크를 다시 열어도 친구·나무·정원 데이터가 중복 생성되지 않아요.</p>
+        <p class="friend-connection-safety-note"><span aria-hidden="true">✓</span> 친구 코드는 직접 입력하는 방법이고, 친구 초대 링크는 같은 코드를 주소로 보내는 방법이에요. 둘 다 상대의 수락 전에는 친구나 나무를 만들지 않아요.</p>
       </section>
 
-      <div class="friend-invite-box friend-invite-box-legacy">
+      <div class="friend-invite-box friend-invite-box-legacy hidden" hidden aria-hidden="true">
         <div class="friend-invite-copy">
           <span class="friend-invite-icon" aria-hidden="true">🌿</span>
           <div>
@@ -1502,8 +1502,8 @@
   <div class="heart-fruit-ceremony-lock hidden" id="heartFruitCeremonyLock" aria-hidden="true"></div>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="app.js?v=phase8-6-friend-entry-v1-1"></script>
-  <script type="module" src="friend-connection-safety.js?v=phase8-6-friend-entry-v1-1"></script>
+  <script type="module" src="app.js?v=phase8-6-link-purpose-v1-2"></script>
+  <script type="module" src="friend-connection-safety.js?v=phase8-6-link-purpose-v1-2"></script>
   <script type="module" src="tree-animal-call.js?v=tree-discovery-v1-6"></script>
   <script type="module" src="forest-unicorn-preview.js?v=animal-preview-clean-v0-4"></script>
   <script type="module" src="forest-friend-cinematic.js?v=operation-special-friend-v1"></script>
