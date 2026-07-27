@@ -575,6 +575,10 @@ let pendingSharedTreeInvite = null;
 const sharedTreeNextCycleBusyFriendIds = new Set();
 // 함께한 숲의 과거 나무 목록은 친구별로 필요할 때만 펼칩니다.
 const expandedTogetherForestFriendIds = new Set();
+// PHASE 9.1: 함께한 숲의 공간형 화면에서 친구별로 현재 보고 있는 숲 깊이를 기억합니다.
+// 서버 기록이 아니라 한 번의 화면 탐색 안에서만 유지되는 가벼운 UI 상태입니다.
+const togetherForestPathPageByFriendId = new Map();
+const TOGETHER_FOREST_PATH_PAGE_SIZE = 6;
 const sharedTreeV2DetailRequests = new Map();
 let sharedTreeStartMomentPlaying = false;
 let sharedTreeStartMomentTimer = null;
@@ -7275,8 +7279,64 @@ function togetherForestPathTreeMarkup(tree, slot, { current = false, labelVisibl
     </button>`;
 }
 
-function togetherForestPathSceneMarkup(currentTree, completedTrees) {
-  const completedSlots = [
+function togetherForestPathPageState(friendId, currentTree, completedTrees) {
+  const frontCapacity = currentTree ? TOGETHER_FOREST_PATH_PAGE_SIZE - 1 : TOGETHER_FOREST_PATH_PAGE_SIZE;
+  const remainingCount = Math.max(0, completedTrees.length - frontCapacity);
+  const totalPages = Math.max(1, 1 + Math.ceil(remainingCount / TOGETHER_FOREST_PATH_PAGE_SIZE));
+  const requestedPage = Math.max(0, Number(togetherForestPathPageByFriendId.get(friendId) || 0));
+  const page = Math.min(totalPages - 1, requestedPage);
+
+  if (page !== requestedPage) togetherForestPathPageByFriendId.set(friendId, page);
+
+  const start = page === 0
+    ? 0
+    : frontCapacity + ((page - 1) * TOGETHER_FOREST_PATH_PAGE_SIZE);
+  const capacity = page === 0 ? frontCapacity : TOGETHER_FOREST_PATH_PAGE_SIZE;
+  const trees = completedTrees.slice(start, start + capacity);
+
+  return {
+    page,
+    totalPages,
+    start,
+    end: start + trees.length,
+    trees,
+    showCurrent: page === 0 && Boolean(currentTree),
+    showNextPlace: page === 0 && !currentTree,
+  };
+}
+
+function togetherForestPathNavigationMarkup(pageState) {
+  if (pageState.totalPages <= 1) return "";
+
+  const pageTitle = pageState.page === 0 ? "숲 입구" : `숲 안쪽 ${pageState.page}`;
+  const pageCopy = pageState.page === 0
+    ? "가장 최근의 나무들이 머물러 있어요"
+    : pageState.trees.length === 1
+      ? "조금 더 오래된 나무 한 그루가 조용히 머물러 있어요"
+      : `조금 더 오래된 나무 ${pageState.trees.length}그루가 머물러 있어요`;
+  const previousLabel = pageState.page === 1 ? "숲 입구로" : "입구 쪽으로";
+  const nextLabel = pageState.page + 1 === pageState.totalPages - 1 ? "가장 깊은 곳으로" : "더 안쪽으로";
+
+  return `
+    <div class="together-forest-path-navigation" aria-label="함께한 숲 깊이 이동">
+      <button type="button" data-forest-path-page="${pageState.page - 1}"${pageState.page === 0 ? " disabled" : ""} aria-label="${previousLabel}">
+        <span aria-hidden="true">←</span>
+        <b>${previousLabel}</b>
+      </button>
+      <div class="together-forest-path-location" aria-live="polite">
+        <strong>${pageTitle}</strong>
+        <span>${pageCopy}</span>
+        <small>${pageState.page + 1} / ${pageState.totalPages}</small>
+      </div>
+      <button type="button" data-forest-path-page="${pageState.page + 1}"${pageState.page >= pageState.totalPages - 1 ? " disabled" : ""} aria-label="${nextLabel}">
+        <b>${nextLabel}</b>
+        <span aria-hidden="true">→</span>
+      </button>
+    </div>`;
+}
+
+function togetherForestPathSceneMarkup(friendId, currentTree, completedTrees) {
+  const entranceSlots = [
     { x: 23, y: 67, scale: 1.02, z: 14 },
     { x: 77, y: 68, scale: 1.02, z: 15 },
     { x: 39, y: 51, scale: .82, z: 10 },
@@ -7284,36 +7344,57 @@ function togetherForestPathSceneMarkup(currentTree, completedTrees) {
     { x: 27, y: 41, scale: .62, z: 7 },
     { x: 82, y: 42, scale: .60, z: 6 },
   ];
-  const visibleLimit = currentTree ? 5 : 6;
-  const visibleCompleted = completedTrees.slice(0, visibleLimit);
-  const hiddenCount = Math.max(0, completedTrees.length - visibleCompleted.length);
-  const completedMarkup = visibleCompleted
-    .map((tree, index) => togetherForestPathTreeMarkup(tree, completedSlots[index], {
+  const deeperSlots = [
+    { x: 21, y: 70, scale: 1.02, z: 15 },
+    { x: 79, y: 70, scale: 1.00, z: 14 },
+    { x: 40, y: 56, scale: .83, z: 11 },
+    { x: 66, y: 53, scale: .78, z: 10 },
+    { x: 24, y: 42, scale: .63, z: 7 },
+    { x: 82, y: 40, scale: .58, z: 6 },
+  ];
+  const pageState = togetherForestPathPageState(friendId, currentTree, completedTrees);
+  const slots = pageState.page === 0 ? entranceSlots : deeperSlots;
+  const completedMarkup = pageState.trees
+    .map((tree, index) => togetherForestPathTreeMarkup(tree, slots[index], {
       labelVisible: index < 2,
     }))
     .join("");
-  const currentMarkup = currentTree
+  const currentMarkup = pageState.showCurrent
     ? togetherForestPathTreeMarkup(currentTree, { x: 50, y: 81, scale: 1.14, z: 18 }, {
       current: true,
       labelVisible: true,
     })
-    : `
+    : "";
+  const nextPlaceMarkup = pageState.showNextPlace
+    ? `
       <span class="together-forest-path-next-place" aria-label="다음 씨앗이 머물 자리">
         <span aria-hidden="true">🌱</span>
         <small>다음 씨앗 자리</small>
-      </span>`;
-  const hiddenMarkup = hiddenCount
-    ? `<span class="together-forest-path-deeper">숲 안쪽에 ${hiddenCount}그루 더 있어요</span>`
+      </span>`
     : "";
+  const guideCopy = pageState.page === 0
+    ? "나무를 눌러 기억을 다시 만나보세요"
+    : "조금 더 오래된 시간 속을 걷고 있어요";
+  const depthRatio = pageState.totalPages > 1
+    ? Math.min(1, pageState.page / (pageState.totalPages - 1))
+    : 0;
+  const depthVeil = 0.03 + (depthRatio * 0.10);
+  const depthEdge = depthRatio * 0.08;
+  const hazeOpacity = 1 - (depthRatio * 0.20);
+  const sceneLabel = pageState.page === 0
+    ? "최근 나무들이 놓인 함께한 숲 입구"
+    : `오래된 나무들이 놓인 함께한 숲 안쪽 ${pageState.page}`;
 
   return `
-    <div class="together-forest-path-scene" data-forest-period="${togetherForestPathPeriod()}" aria-label="완성한 나무들이 숲길을 따라 놓인 함께한 숲">
+    <div class="together-forest-path-scene${pageState.page > 0 ? " is-deeper" : " is-entrance"}" data-forest-period="${togetherForestPathPeriod()}" data-forest-depth-page="${pageState.page}" style="--forest-depth-veil:${depthVeil.toFixed(3)};--forest-depth-edge:${depthEdge.toFixed(3)};--forest-haze-opacity:${hazeOpacity.toFixed(3)}" aria-label="${sceneLabel}">
       <span class="together-forest-path-haze" aria-hidden="true"></span>
-      <span class="together-forest-path-guide" aria-hidden="true">나무를 눌러 기억을 다시 만나보세요</span>
+      <span class="together-forest-path-depth-veil" aria-hidden="true"></span>
+      <span class="together-forest-path-guide" aria-hidden="true">${guideCopy}</span>
       ${completedMarkup}
       ${currentMarkup}
-      ${hiddenMarkup}
-    </div>`;
+      ${nextPlaceMarkup}
+    </div>
+    ${togetherForestPathNavigationMarkup(pageState)}`;
 }
 
 function renderTogetherForestLoop(friend, currentTrees, completedTrees, invite) {
@@ -7354,7 +7435,7 @@ function renderTogetherForestLoop(friend, currentTrees, completedTrees, invite) 
       </div>
       <span>${completedCount}그루</span>
     </div>
-    ${togetherForestPathSceneMarkup(currentTree, completedTrees)}
+    ${togetherForestPathSceneMarkup(friend.id, currentTree, completedTrees)}
     <div class="together-forest-path-footer">
       <div class="together-forest-loop-copy">
         <p class="growth-note-kicker">OUR FOREST GROWS DEEPER</p>
@@ -7445,10 +7526,24 @@ function renderTogetherForest(friendId = activeTogetherForestFriendId) {
       renderTogetherForest(targetFriendId);
     });
   });
+  els.togetherForestView.querySelectorAll('[data-forest-path-page]').forEach((button) => {
+    button.addEventListener("click", () => {
+      if (button.disabled) return;
+      const targetPage = Number(button.dataset.forestPathPage);
+      if (!Number.isInteger(targetPage) || targetPage < 0) return;
+      togetherForestPathPageByFriendId.set(friendId, targetPage);
+      renderTogetherForest(friendId);
+      const pathScene = els.togetherForestLoop?.querySelector(".together-forest-path-scene");
+      pathScene?.focus?.({ preventScroll: true });
+      pathScene?.scrollIntoView?.({ behavior: "smooth", block: "nearest" });
+    });
+  });
   return true;
 }
 
 function openTogetherForest(friendId, { updateUrl = true, scroll = true, silent = false } = {}) {
+  // 함께한 숲에 새로 들어올 때는 늘 최근 나무가 있는 입구에서 시작합니다.
+  togetherForestPathPageByFriendId.set(friendId, 0);
   activeTogetherForestFriendId = friendId;
   if (!renderTogetherForest(friendId)) {
     activeTogetherForestFriendId = "";
