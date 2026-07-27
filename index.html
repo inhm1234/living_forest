@@ -49,6 +49,7 @@
   <link rel="stylesheet" href="shared-tree-v2-forest-depth.css?v=shared-tree-v2-phase8-2-forest-depth-v1-0" />
   <link rel="stylesheet" href="shared-tree-v2-memory-view.css?v=shared-tree-v2-phase8-3-memory-view-v1-0" />
   <link rel="stylesheet" href="shared-tree-v2-keepsake.css?v=shared-tree-v2-phase8-4-keepsake-v1-0" />
+  <link rel="stylesheet" href="shared-tree-v2-shared-entry.css?v=shared-tree-v2-phase8-5-shared-entry-v1-0" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
     // 운영 루트(/)에 같은 파일을 반영하면 G-YC872G7MH1로 자동 전송됩니다.
@@ -264,6 +265,44 @@
       </nav>
       <p class="public-footer-copy">© 2026 TodayForest. 오늘의숲은 지금도 천천히 자라고 있어요.</p>
     </footer>
+  </section>
+
+  <!-- PHASE 8.5: 완성 나무 기록 카드를 받은 비로그인 방문자에게만 보이는 가벼운 소개 화면입니다.
+       공유 링크에는 사용자·친구·나무 식별자나 한마디 원문을 포함하지 않습니다. -->
+  <section class="shared-memory-entry hidden" id="sharedMemoryEntry" aria-labelledby="sharedMemoryEntryTitle">
+    <div class="shared-memory-entry-glow shared-memory-entry-glow-one" aria-hidden="true"></div>
+    <div class="shared-memory-entry-glow shared-memory-entry-glow-two" aria-hidden="true"></div>
+    <header class="shared-memory-entry-header">
+      <a class="shared-memory-entry-brand" href="/" aria-label="오늘의숲 첫 화면으로 이동">
+        <span aria-hidden="true">🌳</span>
+        <strong>오늘의숲</strong>
+      </a>
+    </header>
+    <main class="shared-memory-entry-main">
+      <section class="shared-memory-entry-card">
+        <div class="shared-memory-entry-copy">
+          <p class="shared-memory-entry-kicker">A TREE SOMEONE REMEMBERED</p>
+          <h1 id="sharedMemoryEntryTitle">누군가 함께 키운<br /><span>한 그루의 시간을 받았어요.</span></h1>
+          <p>오늘의숲에서는 짧은 마음과 서로의 돌봄이 천천히 나무로 자라요. 완성된 나무는 한 장의 기록으로 남아, 함께한 시간을 오래 기억하게 해줍니다.</p>
+          <div class="shared-memory-entry-actions">
+            <button type="button" class="shared-memory-entry-primary" data-public-login>나도 내 숲 시작하기</button>
+            <button type="button" class="shared-memory-entry-secondary" id="sharedMemoryExplore">오늘의숲 둘러보기</button>
+          </div>
+          <p class="shared-memory-entry-privacy"><span aria-hidden="true">🍃</span> 이 링크에는 공유한 사람의 이름, 친구 정보, 비공개 기록이 들어 있지 않아요.</p>
+        </div>
+        <div class="shared-memory-entry-visual" aria-label="꽃과 열매가 맺힌 완성 나무">
+          <div class="shared-memory-entry-sky" aria-hidden="true">
+            <span class="shared-memory-entry-light is-left"></span>
+            <span class="shared-memory-entry-light is-right"></span>
+            <div class="shared-memory-entry-tree"></div>
+          </div>
+          <div class="shared-memory-entry-caption">
+            <span>OUR LITTLE TREE</span>
+            <strong>함께한 시간이<br />한 그루로 남는 곳</strong>
+          </div>
+        </div>
+      </section>
+    </main>
   </section>
 
   <!-- WELCOME PREVIEW v12: ?welcomePreview=1 에서만 보이는 손님맞이 장면입니다.
@@ -1399,7 +1438,7 @@
   <div class="heart-fruit-ceremony-lock hidden" id="heartFruitCeremonyLock" aria-hidden="true"></div>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="app.js?v=shared-tree-v2-phase8-4-keepsake-v1-0"></script>
+  <script type="module" src="app.js?v=shared-tree-v2-phase8-5-shared-entry-v1-0"></script>
   <script type="module" src="tree-animal-call.js?v=tree-discovery-v1-6"></script>
   <script type="module" src="forest-unicorn-preview.js?v=animal-preview-clean-v0-4"></script>
   <script type="module" src="forest-friend-cinematic.js?v=operation-special-friend-v1"></script>

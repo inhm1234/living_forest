@@ -1,0 +1,345 @@
+/* PHASE 8.5 · 완성 나무 카드 공유 → 오늘의숲 발견 */
+.shared-memory-entry {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  color: #365447;
+  background:
+    radial-gradient(circle at 13% 10%, rgba(255, 242, 199, .74), transparent 31rem),
+    radial-gradient(circle at 88% 84%, rgba(217, 236, 255, .76), transparent 32rem),
+    linear-gradient(145deg, #f1efff 0%, #fffaf0 52%, #edf8f0 100%);
+}
+
+.shared-memory-entry-glow {
+  position: absolute;
+  width: 24rem;
+  height: 24rem;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(12px);
+  opacity: .52;
+}
+
+.shared-memory-entry-glow-one {
+  top: -13rem;
+  right: -8rem;
+  background: rgba(255, 224, 139, .72);
+}
+
+.shared-memory-entry-glow-two {
+  bottom: -14rem;
+  left: -8rem;
+  background: rgba(205, 222, 255, .76);
+}
+
+.shared-memory-entry-header {
+  position: relative;
+  z-index: 2;
+  width: min(1120px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 24px 0 0;
+}
+
+.shared-memory-entry-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #355546;
+  text-decoration: none;
+  font-size: 15px;
+  letter-spacing: -.02em;
+}
+
+.shared-memory-entry-brand span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, .72);
+  box-shadow: 0 8px 24px rgba(74, 95, 83, .10);
+}
+
+.shared-memory-entry-main {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: min(1120px, calc(100% - 40px));
+  min-height: calc(100dvh - 70px);
+  margin: 0 auto;
+  padding: 34px 0 56px;
+}
+
+.shared-memory-entry-card {
+  display: grid;
+  grid-template-columns: minmax(0, .92fr) minmax(360px, 1.08fr);
+  align-items: stretch;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, .84);
+  border-radius: 42px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, .76);
+  box-shadow: 0 30px 80px rgba(79, 92, 83, .15);
+  backdrop-filter: blur(18px);
+}
+
+.shared-memory-entry-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(42px, 6.2vw, 78px);
+}
+
+.shared-memory-entry-kicker {
+  margin: 0 0 16px;
+  color: #89998f;
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: .16em;
+}
+
+.shared-memory-entry-copy h1 {
+  margin: 0;
+  color: #345443;
+  font-size: clamp(38px, 4.7vw, 62px);
+  line-height: 1.12;
+  letter-spacing: -.055em;
+}
+
+.shared-memory-entry-copy h1 span {
+  color: #6b826f;
+}
+
+.shared-memory-entry-copy > p:not(.shared-memory-entry-kicker):not(.shared-memory-entry-privacy) {
+  max-width: 31rem;
+  margin: 24px 0 0;
+  color: #697c70;
+  font-size: 16px;
+  line-height: 1.8;
+  word-break: keep-all;
+}
+
+.shared-memory-entry-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 32px;
+}
+
+.shared-memory-entry-actions button {
+  min-height: 52px;
+  padding: 0 23px;
+  border-radius: 17px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+.shared-memory-entry-actions button:hover {
+  transform: translateY(-1px);
+}
+
+.shared-memory-entry-primary {
+  border: 1px solid #456653;
+  color: #fff;
+  background: #456653;
+  box-shadow: 0 12px 28px rgba(69, 102, 83, .20);
+}
+
+.shared-memory-entry-secondary {
+  border: 1px solid rgba(76, 104, 87, .18);
+  color: #496454;
+  background: rgba(247, 250, 246, .84);
+}
+
+.shared-memory-entry-privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 24px 0 0;
+  color: #8a978f;
+  font-size: 12px;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.shared-memory-entry-visual {
+  position: relative;
+  min-height: 650px;
+  overflow: hidden;
+  background: linear-gradient(155deg, rgba(238, 234, 255, .94), rgba(255, 244, 229, .92) 50%, rgba(231, 247, 232, .94));
+}
+
+.shared-memory-entry-sky {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.shared-memory-entry-sky::after {
+  content: "";
+  position: absolute;
+  right: -12%;
+  bottom: -8%;
+  left: -12%;
+  height: 31%;
+  border-radius: 50% 50% 0 0 / 35% 35% 0 0;
+  background: rgba(199, 234, 196, .62);
+}
+
+.shared-memory-entry-light {
+  position: absolute;
+  z-index: 2;
+  top: 60%;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 8px rgba(255,255,255,.18), 0 0 28px currentColor;
+}
+
+.shared-memory-entry-light.is-left {
+  left: 22%;
+  color: #ffe17f;
+  background: #fff1a9;
+}
+
+.shared-memory-entry-light.is-right {
+  right: 18%;
+  color: #d7b5ff;
+  background: #e9d8ff;
+}
+
+.shared-memory-entry-tree {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: -1%;
+  width: min(100%, 650px);
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  background-image: url("assets/garden/shared_tree_v2/stage5-growth-qa.webp");
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+  background-position: 100% 50%;
+  filter: drop-shadow(0 18px 30px rgba(84, 104, 78, .12));
+}
+
+.shared-memory-entry-caption {
+  position: absolute;
+  z-index: 3;
+  top: 32px;
+  right: 32px;
+  left: 32px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.shared-memory-entry-caption span {
+  color: #8b998f;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .15em;
+}
+
+.shared-memory-entry-caption strong {
+  color: #466151;
+  font-size: 18px;
+  line-height: 1.45;
+  text-align: right;
+}
+
+body.is-shared-memory-entry {
+  overflow-x: hidden;
+  background: #f1efff;
+}
+
+@media (max-width: 820px) {
+  .shared-memory-entry-header,
+  .shared-memory-entry-main {
+    width: min(100% - 24px, 680px);
+  }
+
+  .shared-memory-entry-header {
+    padding-top: 14px;
+  }
+
+  .shared-memory-entry-main {
+    min-height: auto;
+    padding: 20px 0 34px;
+  }
+
+  .shared-memory-entry-card {
+    grid-template-columns: 1fr;
+    border-radius: 30px;
+  }
+
+  .shared-memory-entry-copy {
+    padding: 38px 28px 30px;
+  }
+
+  .shared-memory-entry-copy h1 {
+    font-size: clamp(36px, 9.5vw, 50px);
+  }
+
+  .shared-memory-entry-copy > p:not(.shared-memory-entry-kicker):not(.shared-memory-entry-privacy) {
+    margin-top: 18px;
+    font-size: 15px;
+  }
+
+  .shared-memory-entry-actions {
+    margin-top: 26px;
+  }
+
+  .shared-memory-entry-actions button {
+    flex: 1 1 180px;
+  }
+
+  .shared-memory-entry-visual {
+    min-height: min(122vw, 540px);
+    border-top: 1px solid rgba(255, 255, 255, .72);
+  }
+
+  .shared-memory-entry-tree {
+    width: min(114%, 610px);
+    bottom: -5%;
+  }
+}
+
+@media (max-width: 480px) {
+  .shared-memory-entry-copy {
+    padding: 32px 22px 26px;
+  }
+
+  .shared-memory-entry-kicker {
+    font-size: 10px;
+  }
+
+  .shared-memory-entry-actions {
+    display: grid;
+  }
+
+  .shared-memory-entry-actions button {
+    width: 100%;
+  }
+
+  .shared-memory-entry-caption {
+    top: 23px;
+    right: 22px;
+    left: 22px;
+  }
+
+  .shared-memory-entry-caption strong {
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shared-memory-entry-actions button {
+    transition: none;
+  }
+}

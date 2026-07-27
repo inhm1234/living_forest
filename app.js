@@ -480,7 +480,9 @@ let invitePreviewHandled = false;
 let toastTimer = null;
 let authBusy = false;
 // 로그인하지 않은 방문자는 먼저 공개 소개 화면을 보고, 버튼을 눌렀을 때 로그인 화면으로 이동합니다.
-let publicEntryView = "home";
+let publicEntryView = new URL(window.location.href).searchParams.get("sharedMemory") === "1"
+  ? "shared-memory"
+  : "home";
 let activeFriendGardenId = "";
 let activeFriendFruitRecords = [];
 let activeFriendFruitName = "";
@@ -603,6 +605,8 @@ const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 const els = {
   publicHome: $("#publicHome"),
+  sharedMemoryEntry: $("#sharedMemoryEntry"),
+  sharedMemoryExplore: $("#sharedMemoryExplore"),
   backToPublicHome: $("#backToPublicHome"),
   gardenStage: $("#gardenStage"),
   gardenWorld: $("#gardenWorld"),
@@ -7395,6 +7399,7 @@ let sharedTreeKeepsakeCache = {
   key: "",
   blob: null,
   filename: "",
+  data: null,
   preparing: null,
 };
 
@@ -7701,6 +7706,7 @@ function prepareSharedTreeKeepsake(data) {
     key,
     blob: null,
     filename: sharedTreeKeepsakeFilename(data.finalName),
+    data,
     preparing: null,
   };
   setSharedTreeKeepsakeReady(false, "기록 카드를 준비하고 있어요.");
@@ -7785,10 +7791,37 @@ function saveSharedTreeKeepsakeImage() {
   showToast("완성 나무 기록 카드를 저장했어요.");
 }
 
+function sharedTreeDiscoveryUrl() {
+  const url = new URL("/", window.location.origin);
+  url.searchParams.set("sharedMemory", "1");
+  return url.toString();
+}
+
+function sharedTreeShareCopy(entry) {
+  const name = String(entry?.data?.finalName || "우리의 나무").trim() || "우리의 나무";
+  return {
+    title: `오늘의숲 · ${name}`,
+    text: "함께 돌본 시간이 한 그루의 나무로 남았어요. 오늘의숲에서 작은 기록 정원을 만나보세요.",
+    url: sharedTreeDiscoveryUrl(),
+  };
+}
+
+async function copySharedTreeDiscoveryUrl(url) {
+  if (!navigator.clipboard?.writeText) return false;
+  try {
+    await navigator.clipboard.writeText(url);
+    return true;
+  } catch (error) {
+    console.warn("TodayForest shared-tree discovery link copy skipped:", error);
+    return false;
+  }
+}
+
 async function shareSharedTreeKeepsakeImage() {
   const entry = currentSharedTreeKeepsakeEntry();
   if (!entry) return;
 
+  const copy = sharedTreeShareCopy(entry);
   const file = typeof File === "function"
     ? new File([entry.blob], entry.filename, { type: "image/png" })
     : null;
@@ -7799,22 +7832,34 @@ async function shareSharedTreeKeepsakeImage() {
     navigator.canShare({ files: [file] })
   );
 
-  if (!canShareFile) {
-    downloadSharedTreeKeepsake(entry.blob, entry.filename);
-    showToast("이 기기에서는 이미지 공유가 지원되지 않아 카드로 저장했어요.");
-    return;
-  }
-
   try {
-    await navigator.share({
-      files: [file],
-      title: "오늘의숲 · 완성 나무",
-      text: "함께 돌본 시간이 한 그루의 나무로 남았어요.",
-    });
+    if (canShareFile) {
+      await navigator.share({
+        files: [file],
+        title: copy.title,
+        text: `${copy.text}\n${copy.url}`,
+      });
+      return;
+    }
+
+    if (typeof navigator.share === "function") {
+      await navigator.share(copy);
+      showToast("오늘의숲 소개 주소를 공유했어요. 기록 카드는 이미지로 저장해 함께 보낼 수 있어요.");
+      return;
+    }
+
+    downloadSharedTreeKeepsake(entry.blob, entry.filename);
+    const copied = await copySharedTreeDiscoveryUrl(copy.url);
+    showToast(copied
+      ? "기록 카드를 저장하고 오늘의숲 소개 주소를 복사했어요."
+      : "이 기기에서는 공유가 지원되지 않아 기록 카드로 저장했어요.");
   } catch (error) {
     if (error?.name === "AbortError") return;
     console.warn("TodayForest shared-tree keepsake share error:", error);
-    showToast("공유를 열지 못했어요. 이미지로 저장해 다시 시도해 주세요.");
+    const copied = await copySharedTreeDiscoveryUrl(copy.url);
+    showToast(copied
+      ? "공유를 열지 못해 오늘의숲 소개 주소를 복사했어요."
+      : "공유를 열지 못했어요. 이미지로 저장해 다시 시도해 주세요.");
   }
 }
 
@@ -9696,15 +9741,37 @@ function setAuthError(message = "") {
   els.authError.classList.toggle("hidden", !message);
 }
 
+function sharedMemoryEntryRequested() {
+  return new URL(window.location.href).searchParams.get("sharedMemory") === "1";
+}
+
+function clearSharedMemoryEntryFlag() {
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has("sharedMemory")) return;
+  url.searchParams.delete("sharedMemory");
+  window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
+}
+
+function openPublicHomeFromSharedMemory() {
+  if (currentUser) return;
+  clearSharedMemoryEntryFlag();
+  publicEntryView = "home";
+  renderAuthUI();
+  window.scrollTo({ top: 0, behavior: "auto" });
+}
+
 function renderAuthUI() {
   const isSignedIn = Boolean(currentUser);
   const onboardingVisible = welcomeFlowMode === "onboarding";
   const welcomeSurfaceVisible = onboardingVisible || welcomeFlowMode === "transitioning";
-  const showPublicHome = !isSignedIn && publicEntryView !== "auth";
+  const showSharedMemoryEntry = !isSignedIn && publicEntryView === "shared-memory";
+  const showPublicHome = !isSignedIn && publicEntryView === "home";
   const showAuthScreen = !isSignedIn && publicEntryView === "auth";
 
+  els.sharedMemoryEntry?.classList.toggle("hidden", !showSharedMemoryEntry);
   els.publicHome?.classList.toggle("hidden", !showPublicHome);
   els.authScreen.classList.toggle("hidden", !showAuthScreen);
+  document.body.classList.toggle("is-shared-memory-entry", showSharedMemoryEntry);
   document.body.classList.toggle("is-public-home", showPublicHome);
   document.body.classList.toggle("is-auth-entry", showAuthScreen);
 
@@ -9732,7 +9799,7 @@ function openPublicLogin() {
 
 function returnToPublicHome() {
   if (currentUser) return;
-  publicEntryView = "home";
+  publicEntryView = sharedMemoryEntryRequested() ? "shared-memory" : "home";
   setAuthError("");
   renderAuthUI();
   window.scrollTo({ top: 0, behavior: "auto" });
@@ -10400,6 +10467,7 @@ function bindEvents() {
   });
   document.addEventListener("keydown", blockHeartFruitCeremonyInput, true);
   $$("[data-public-login]").forEach((button) => button.addEventListener("click", openPublicLogin));
+  els.sharedMemoryExplore?.addEventListener("click", openPublicHomeFromSharedMemory);
   els.backToPublicHome?.addEventListener("click", returnToPublicHome);
   els.signInKakao?.addEventListener("click", beginKakaoLogin);
   syncSpecialFriendShortcutVisibility();
@@ -11288,6 +11356,9 @@ async function init() {
     return;
   }
 
+  // 공유 카드 소개 주소로 들어온 기존 사용자는 공개 화면을 거치지 않고 자신의 정원으로 돌아옵니다.
+  clearSharedMemoryEntryFlag();
+
   // 전체 정원 데이터는 주기적으로 다시 읽지 않습니다.
   // 편지 배송 상태는 편지함을 열었을 때만 refreshLettersWhileOpen()이 갱신합니다.
 
@@ -11314,7 +11385,7 @@ async function init() {
     }
 
     if (!currentUser) {
-      publicEntryView = "home";
+      publicEntryView = sharedMemoryEntryRequested() ? "shared-memory" : "home";
       stopLettersAutoRefresh();
       configureRetentionWindPolling();
       state = cloneDefault();
