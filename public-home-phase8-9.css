@@ -57,6 +57,11 @@
   background-image: url("assets/garden/shared_tree_v2/stage5-growth-qa.webp");
 }
 
+.public-how-visual {
+  display: block;
+  min-height: 0;
+}
+
 .public-growth-story {
   position: relative;
   display: grid;
