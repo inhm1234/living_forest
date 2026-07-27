@@ -590,6 +590,10 @@ const expandedTogetherForestFriendIds = new Set();
 // 서버 기록이 아니라 한 번의 화면 탐색 안에서만 유지되는 가벼운 UI 상태입니다.
 const togetherForestPathPageByFriendId = new Map();
 const TOGETHER_FOREST_PATH_PAGE_SIZE = 6;
+// PHASE 9.2: 숲의 작은 흔적 말풍선은 한 번에 하나만 조용히 열립니다.
+let activeTogetherForestTraceButton = null;
+let togetherForestTraceMessageTimer = null;
+const TOGETHER_FOREST_TRACE_MESSAGE_DURATION_MS = 3200;
 const sharedTreeV2DetailRequests = new Map();
 let sharedTreeStartMomentPlaying = false;
 let sharedTreeStartMomentTimer = null;
@@ -7329,6 +7333,169 @@ function togetherForestPathTreeMarkup(tree, slot, { current = false, labelVisibl
     </button>`;
 }
 
+
+// PHASE 9.2: 완성된 나무의 고유 정보에서만 흔적을 만들기 때문에
+// 새로고침하거나 두 참여자가 각각 들어와도 같은 종류와 위치가 유지됩니다.
+function togetherForestStableHash(value) {
+  let hash = 2166136261;
+  const source = String(value || "");
+  for (let index = 0; index < source.length; index += 1) {
+    hash ^= source.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function togetherForestTraceTreeKey(tree) {
+  return [
+    tree?.id || "tree",
+    tree?.completedAt || tree?.createdAt || "time",
+    tree?.finalName || "name",
+  ].join("|");
+}
+
+const TOGETHER_FOREST_TRACE_CATALOG = Object.freeze([
+  Object.freeze({
+    type: "footsteps",
+    label: "작은 발자국",
+    message: "작은 발자국이 이 숲을 지나갔어요.",
+    icon: `
+      <svg viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+        <g fill="currentColor">
+          <ellipse cx="10.1" cy="16.8" rx="3.2" ry="4.7" transform="rotate(-24 10.1 16.8)"></ellipse>
+          <circle cx="5.8" cy="11.1" r="1.45"></circle>
+          <circle cx="8.4" cy="8.9" r="1.35"></circle>
+          <circle cx="11.3" cy="8.4" r="1.25"></circle>
+          <ellipse cx="18.4" cy="11.5" rx="3.1" ry="4.6" transform="rotate(24 18.4 11.5)"></ellipse>
+          <circle cx="17.1" cy="5.3" r="1.25"></circle>
+          <circle cx="20" cy="5.9" r="1.35"></circle>
+          <circle cx="22.2" cy="8.1" r="1.45"></circle>
+        </g>
+      </svg>`,
+  }),
+  Object.freeze({
+    type: "leaf",
+    label: "떨어진 잎",
+    message: "바람이 두고 간 잎 하나가 나무 곁에 머물렀어요.",
+    icon: `
+      <svg viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+        <path d="M22.7 5.4C15.9 5.5 8.4 8.8 7 15.4c-.9 4.1 2.3 7 6.1 5.8 6-1.9 8.5-8.5 9.6-15.8Z" fill="currentColor"></path>
+        <path d="M6.2 22.8c3.1-4.8 7.3-8.4 12.7-11.1" fill="none" stroke="rgba(255,255,255,.72)" stroke-width="1.3" stroke-linecap="round"></path>
+      </svg>`,
+  }),
+  Object.freeze({
+    type: "wildflower",
+    label: "조그만 들꽃",
+    message: "두 사람이 없는 동안 들꽃 하나가 피어났어요.",
+    icon: `
+      <svg viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+        <path d="M14 14.2c-.2 3.4-.2 6.3.2 9" fill="none" stroke="#64826a" stroke-width="1.8" stroke-linecap="round"></path>
+        <path d="M14 19.6c-2.8-.1-4.4-1.2-5.3-3.1 2.8-.2 4.6.8 5.3 3.1Zm.1-2.4c2.7-.2 4.5-1.3 5.5-3.2-2.8-.1-4.7.9-5.5 3.2Z" fill="#83a983"></path>
+        <g fill="currentColor">
+          <ellipse cx="14" cy="8.1" rx="2.3" ry="4"></ellipse>
+          <ellipse cx="14" cy="8.1" rx="2.3" ry="4" transform="rotate(72 14 8.1)"></ellipse>
+          <ellipse cx="14" cy="8.1" rx="2.3" ry="4" transform="rotate(144 14 8.1)"></ellipse>
+          <ellipse cx="14" cy="8.1" rx="2.3" ry="4" transform="rotate(216 14 8.1)"></ellipse>
+          <ellipse cx="14" cy="8.1" rx="2.3" ry="4" transform="rotate(288 14 8.1)"></ellipse>
+        </g>
+        <circle cx="14" cy="8.1" r="2.1" fill="#f3cf72"></circle>
+      </svg>`,
+  }),
+]);
+
+function togetherForestTraceSelection(pageState, slots) {
+  const traceCount = pageState.trees.length >= 4 ? 2 : 1;
+  const candidates = pageState.trees.map((tree, index) => {
+    const key = togetherForestTraceTreeKey(tree);
+    return {
+      tree,
+      slot: slots[index],
+      key,
+      score: togetherForestStableHash(`${key}|trace-pick`),
+    };
+  }).sort((a, b) => a.score - b.score);
+
+  if (candidates.length <= traceCount) return candidates;
+
+  const selected = [candidates[0]];
+  if (traceCount === 1) return selected;
+
+  const first = candidates[0].slot;
+  const separated = candidates.find((candidate, index) => {
+    if (index === 0) return false;
+    const dx = candidate.slot.x - first.x;
+    const dy = (candidate.slot.y - first.y) * 1.15;
+    return Math.hypot(dx, dy) >= 24;
+  });
+  selected.push(separated || candidates[1]);
+  return selected;
+}
+
+function togetherForestTraceMarkup(pageState, slots) {
+  if (!pageState.trees.length) return "";
+
+  return togetherForestTraceSelection(pageState, slots).map((entry, traceIndex) => {
+    const seed = togetherForestStableHash(`${entry.key}|trace-detail`);
+    const trace = TOGETHER_FOREST_TRACE_CATALOG[seed % TOGETHER_FOREST_TRACE_CATALOG.length];
+    let direction = seed % 2 === 0 ? -1 : 1;
+    if (entry.slot.x < 27) direction = 1;
+    if (entry.slot.x > 73) direction = -1;
+
+    const offsetX = direction * (9 + ((seed >>> 3) % 5));
+    const offsetY = 6 + ((seed >>> 8) % 4);
+    const x = Math.max(8, Math.min(92, entry.slot.x + offsetX));
+    const y = Math.max(35, Math.min(84, entry.slot.y + offsetY));
+    const rotate = -11 + ((seed >>> 12) % 23);
+    const scale = .88 + (((seed >>> 17) % 18) / 100);
+    const sideClass = x < 28 ? "is-near-left" : x > 72 ? "is-near-right" : "is-centered";
+    const style = [
+      `--trace-x:${x}%`,
+      `--trace-y:${y}%`,
+      `--trace-rotate:${rotate}deg`,
+      `--trace-scale:${scale.toFixed(2)}`,
+      `--trace-delay:${(.16 + traceIndex * .11).toFixed(2)}s`,
+    ].join(";");
+    const traceId = `${pageState.page}-${traceIndex}-${seed}`;
+
+    return `
+      <button class="together-forest-trace is-${trace.type} ${sideClass}" type="button" data-forest-trace="${escapeAttr(traceId)}" style="${style}" aria-label="${escapeAttr(trace.label)} 살펴보기" aria-expanded="false">
+        <span class="together-forest-trace-touch" aria-hidden="true"></span>
+        <span class="together-forest-trace-icon" aria-hidden="true">${trace.icon}</span>
+        <span class="together-forest-trace-message" role="status" aria-hidden="true">${escapeHTML(trace.message)}</span>
+      </button>`;
+  }).join("");
+}
+
+function closeTogetherForestTraceMessage() {
+  if (togetherForestTraceMessageTimer) {
+    window.clearTimeout(togetherForestTraceMessageTimer);
+    togetherForestTraceMessageTimer = null;
+  }
+  if (activeTogetherForestTraceButton) {
+    activeTogetherForestTraceButton.classList.remove("is-revealed");
+    activeTogetherForestTraceButton.setAttribute("aria-expanded", "false");
+    activeTogetherForestTraceButton.querySelector(".together-forest-trace-message")?.setAttribute("aria-hidden", "true");
+    activeTogetherForestTraceButton = null;
+  }
+}
+
+function revealTogetherForestTraceMessage(button) {
+  if (!button) return;
+  if (activeTogetherForestTraceButton === button && button.classList.contains("is-revealed")) {
+    closeTogetherForestTraceMessage();
+    return;
+  }
+
+  closeTogetherForestTraceMessage();
+  activeTogetherForestTraceButton = button;
+  button.classList.add("is-revealed");
+  button.setAttribute("aria-expanded", "true");
+  button.querySelector(".together-forest-trace-message")?.setAttribute("aria-hidden", "false");
+  togetherForestTraceMessageTimer = window.setTimeout(() => {
+    closeTogetherForestTraceMessage();
+  }, TOGETHER_FOREST_TRACE_MESSAGE_DURATION_MS);
+}
+
 function togetherForestPathSlots(pageState) {
   const count = Math.max(1, Math.min(TOGETHER_FOREST_PATH_PAGE_SIZE, pageState.trees.length));
   const entrancePresets = {
@@ -7496,6 +7663,7 @@ function togetherForestPathSceneMarkup(friendId, currentTree, completedTrees) {
         <small>다음 씨앗 자리</small>
       </span>`
     : "";
+  const tracesMarkup = togetherForestTraceMarkup(pageState, slots);
   const guideCopy = pageState.page === 0
     ? "나무를 눌러 기억을 다시 만나보세요"
     : pageState.isLastPage
@@ -7547,6 +7715,7 @@ function togetherForestPathSceneMarkup(friendId, currentTree, completedTrees) {
       ${completedMarkup}
       ${currentMarkup}
       ${nextPlaceMarkup}
+      ${tracesMarkup}
     </div>
     ${togetherForestPathNavigationMarkup(pageState)}`;
 }
@@ -7612,6 +7781,7 @@ function renderTogetherForestLoop(friend, currentTrees, completedTrees, invite) 
 
 
 function renderTogetherForest(friendId = activeTogetherForestFriendId) {
+  closeTogetherForestTraceMessage();
   const friend = (state.friends || []).find((item) => item.id === friendId);
   if (!friend) return false;
 
@@ -7680,6 +7850,13 @@ function renderTogetherForest(friendId = activeTogetherForestFriendId) {
         expandedTogetherForestFriendIds.add(targetFriendId);
       }
       renderTogetherForest(targetFriendId);
+    });
+  });
+  els.togetherForestView.querySelectorAll('[data-forest-trace]').forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      revealTogetherForestTraceMessage(button);
     });
   });
   els.togetherForestView.querySelectorAll('[data-forest-path-page]').forEach((button) => {

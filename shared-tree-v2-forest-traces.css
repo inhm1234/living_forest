@@ -1,0 +1,219 @@
+/* 오늘의숲 · PHASE 9.2
+   함께 완성한 나무 곁에 서버 저장 없이 고정되는 작은 흔적을 남깁니다.
+   페이지마다 최대 두 개만 보이며, 눌렀을 때 짧은 문장만 조용히 드러납니다. */
+
+.together-forest-trace {
+  position: absolute;
+  left: var(--trace-x);
+  top: var(--trace-y);
+  z-index: 21;
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #8d7957;
+  cursor: pointer;
+  opacity: 0;
+  filter: drop-shadow(0 3px 3px rgba(67, 89, 66, .14));
+  transform: translate(-50%, -50%) rotate(var(--trace-rotate)) scale(calc(var(--trace-scale) * .94));
+  animation: together-forest-trace-arrive .52s var(--trace-delay) ease forwards;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.together-forest-trace.is-footsteps { color: #8a7657; }
+.together-forest-trace.is-leaf { color: #76906c; }
+.together-forest-trace.is-wildflower { color: #d18faf; }
+
+.together-forest-trace-touch {
+  position: absolute;
+  inset: -5px;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, .25), transparent 68%);
+  opacity: 0;
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.together-forest-trace-icon {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 22px;
+  height: 22px;
+  opacity: .82;
+  transition: opacity .18s ease, transform .18s ease, filter .18s ease;
+}
+
+.together-forest-trace-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.together-forest-trace:hover .together-forest-trace-touch,
+.together-forest-trace:focus-visible .together-forest-trace-touch,
+.together-forest-trace.is-revealed .together-forest-trace-touch {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+.together-forest-trace:hover .together-forest-trace-icon,
+.together-forest-trace:focus-visible .together-forest-trace-icon,
+.together-forest-trace.is-revealed .together-forest-trace-icon {
+  opacity: 1;
+  filter: drop-shadow(0 2px 3px rgba(255, 255, 255, .58));
+  transform: translateY(-1px) scale(1.08);
+}
+
+.together-forest-trace:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, .82);
+  outline-offset: 1px;
+}
+
+.together-forest-trace-message {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 7px);
+  z-index: 40;
+  width: max-content;
+  max-width: min(190px, 50vw);
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, .82);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .90);
+  color: #617267;
+  font-size: 8px;
+  font-weight: 820;
+  line-height: 1.45;
+  text-align: center;
+  white-space: normal;
+  box-shadow: 0 8px 20px rgba(61, 86, 67, .13);
+  opacity: 0;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+  transform: translate(-50%, 5px) scale(.98) rotate(calc(var(--trace-rotate) * -1));
+  transform-origin: 50% 100%;
+  transition: opacity .20s ease, transform .24s ease;
+}
+
+.together-forest-trace-message::after {
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  width: 9px;
+  height: 9px;
+  border-right: 1px solid rgba(255, 255, 255, .82);
+  border-bottom: 1px solid rgba(255, 255, 255, .82);
+  background: rgba(255, 255, 255, .90);
+  content: "";
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.together-forest-trace.is-near-left .together-forest-trace-message {
+  left: -2px;
+  transform: translate(0, 5px) scale(.98) rotate(calc(var(--trace-rotate) * -1));
+  transform-origin: 12px 100%;
+}
+
+.together-forest-trace.is-near-left .together-forest-trace-message::after {
+  left: 14px;
+}
+
+.together-forest-trace.is-near-right .together-forest-trace-message {
+  right: -2px;
+  left: auto;
+  transform: translate(0, 5px) scale(.98) rotate(calc(var(--trace-rotate) * -1));
+  transform-origin: calc(100% - 12px) 100%;
+}
+
+.together-forest-trace.is-near-right .together-forest-trace-message::after {
+  right: 10px;
+  left: auto;
+  transform: rotate(45deg);
+}
+
+.together-forest-trace.is-revealed {
+  z-index: 30;
+}
+
+.together-forest-trace.is-revealed .together-forest-trace-message {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1) rotate(calc(var(--trace-rotate) * -1));
+}
+
+.together-forest-trace.is-near-left.is-revealed .together-forest-trace-message,
+.together-forest-trace.is-near-right.is-revealed .together-forest-trace-message {
+  transform: translate(0, 0) scale(1) rotate(calc(var(--trace-rotate) * -1));
+}
+
+.together-forest-path-scene[data-forest-period="sunset"] .together-forest-trace.is-footsteps,
+.together-forest-path-scene[data-forest-period="night"] .together-forest-trace.is-footsteps {
+  color: #b09a75;
+}
+
+.together-forest-path-scene[data-forest-period="night"] .together-forest-trace.is-leaf {
+  color: #98ad91;
+}
+
+.together-forest-path-scene[data-forest-period="night"] .together-forest-trace.is-wildflower {
+  color: #d8acd1;
+}
+
+.together-forest-path-scene[data-forest-period="night"] .together-forest-trace-message {
+  border-color: rgba(229, 232, 255, .72);
+  background: rgba(244, 244, 255, .88);
+  color: #666b83;
+}
+
+.together-forest-path-scene[data-forest-period="night"] .together-forest-trace-message::after {
+  border-color: rgba(229, 232, 255, .72);
+  background: rgba(244, 244, 255, .88);
+}
+
+@keyframes together-forest-trace-arrive {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -45%) rotate(var(--trace-rotate)) scale(calc(var(--trace-scale) * .88));
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--trace-rotate)) scale(var(--trace-scale));
+  }
+}
+
+@media (max-width: 560px) {
+  .together-forest-trace {
+    width: 27px;
+    height: 27px;
+  }
+
+  .together-forest-trace-icon {
+    width: 19px;
+    height: 19px;
+  }
+
+  .together-forest-trace-message {
+    max-width: min(170px, 54vw);
+    padding: 6px 8px;
+    font-size: 7.5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .together-forest-trace {
+    opacity: 1;
+    animation: none;
+    transform: translate(-50%, -50%) rotate(var(--trace-rotate)) scale(var(--trace-scale));
+  }
+
+  .together-forest-trace-touch,
+  .together-forest-trace-icon,
+  .together-forest-trace-message {
+    transition: none;
+  }
+}
