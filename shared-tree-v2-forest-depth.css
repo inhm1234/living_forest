@@ -1,0 +1,134 @@
+/* 오늘의숲 · 함께 키우는 나무 v2 PHASE 8.2
+   완성한 나무의 수와 이어온 시간을 한눈에 남기고,
+   기록이 많아져도 함께한 숲이 길고 복잡한 목록처럼 보이지 않게 정리합니다. */
+
+.together-forest-loop {
+  align-items: start;
+}
+
+.together-forest-continuity {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 58px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 11px 12px;
+  border: 1px solid rgba(119, 148, 121, .13);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .58);
+}
+
+.together-forest-continuity > span {
+  min-width: 0;
+}
+
+.together-forest-continuity b,
+.together-forest-continuity small {
+  display: block;
+}
+
+.together-forest-continuity b {
+  color: #657a69;
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1.4;
+}
+
+.together-forest-continuity small {
+  margin-top: 3px;
+  color: #9aa39c;
+  font-size: 8px;
+  font-weight: 720;
+  line-height: 1.45;
+  word-break: keep-all;
+}
+
+.together-forest-continuity > i {
+  position: relative;
+  display: block;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(140, 170, 133, .22), rgba(128, 164, 119, .62), rgba(140, 170, 133, .22));
+}
+
+.together-forest-continuity > i::before,
+.together-forest-continuity > i::after,
+.together-forest-continuity > i > em {
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #dce9d5;
+  box-shadow: 0 0 0 3px rgba(248, 251, 245, .92);
+  transform: translateY(-50%);
+  content: "";
+}
+
+.together-forest-continuity > i::before { left: 0; }
+.together-forest-continuity > i::after { right: 0; }
+.together-forest-continuity > i > em {
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  background: #b9d2ad;
+  transform: translate(-50%, -50%);
+}
+
+.together-forest-continuity[data-forest-depth="3"] > i > em,
+.together-forest-continuity[data-forest-depth="4"] > i > em,
+.together-forest-continuity[data-forest-depth="5"] > i > em {
+  background: #9fbd91;
+}
+
+.together-forest-tree-card.is-archive-hidden {
+  display: none;
+}
+
+.together-forest-archive-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 42px;
+  margin-top: 1px;
+  border: 1px dashed rgba(118, 147, 124, .22);
+  border-radius: 15px;
+  background: rgba(248, 251, 247, .72);
+  color: #7f8e83;
+  font-size: 10px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.together-forest-archive-toggle span {
+  color: #91a495;
+  font-size: 12px;
+}
+
+.together-forest-archive-toggle:hover {
+  background: rgba(242, 248, 239, .92);
+}
+
+.together-forest-archive-toggle:focus-visible {
+  outline: 3px solid rgba(117, 155, 119, .18);
+  outline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  .together-forest-continuity {
+    grid-template-columns: minmax(0, 1fr) 34px minmax(0, 1fr);
+    gap: 6px;
+    padding: 10px;
+  }
+
+  .together-forest-continuity small {
+    font-size: 7.5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .together-forest-archive-toggle:hover {
+    transform: none;
+  }
+}

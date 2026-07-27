@@ -517,6 +517,8 @@ let activeSharedTreeId = "";
 let activeTogetherForestFriendId = "";
 let pendingSharedTreeInvite = null;
 const sharedTreeNextCycleBusyFriendIds = new Set();
+// 함께한 숲의 과거 나무 목록은 친구별로 필요할 때만 펼칩니다.
+const expandedTogetherForestFriendIds = new Set();
 const sharedTreeV2DetailRequests = new Map();
 let sharedTreeStartMomentPlaying = false;
 let sharedTreeStartMomentTimer = null;
@@ -5951,6 +5953,55 @@ function formatSharedTreeLifecycleDate(iso) {
   }).format(date);
 }
 
+function sharedTreeForestTimeline(trees) {
+  const safeTrees = (trees || []).filter(Boolean);
+  const starts = safeTrees
+    .map((tree) => tree.createdAt ? new Date(tree.createdAt).getTime() : Number.NaN)
+    .filter(Number.isFinite);
+  if (!starts.length) return { days: 0, startedAt: null, active: false };
+
+  const active = safeTrees.some((tree) => !sharedTreeIsComplete(tree));
+  const ends = safeTrees
+    .map((tree) => {
+      const value = tree.completedAt || tree.createdAt;
+      return value ? new Date(value).getTime() : Number.NaN;
+    })
+    .filter(Number.isFinite);
+  const startedAt = Math.min(...starts);
+  const endedAt = active ? Date.now() : Math.max(...ends, startedAt);
+  const days = Math.max(1, Math.floor((endedAt - startedAt) / 86400000) + 1);
+  return { days, startedAt, active };
+}
+
+function sharedTreeForestDepth(completedCount, hasCurrent) {
+  if (completedCount >= 7) {
+    return {
+      level: 5,
+      title: "오래 이어온 시간이 둘만의 깊은 숲이 되었어요.",
+      body: hasCurrent ? "완성한 나무들 사이에서 지금의 나무가 또 하나의 계절을 이어가고 있어요." : "여러 시절의 나무가 한곳에 머물며 두 사람만의 풍경을 만들고 있어요.",
+    };
+  }
+  if (completedCount >= 4) {
+    return {
+      level: 4,
+      title: "함께한 시간이 제법 깊은 숲으로 자랐어요.",
+      body: hasCurrent ? "지난 나무의 기록은 남고, 지금의 나무가 그 곁에서 다음 시간을 쌓고 있어요." : "완성한 나무들이 서로의 곁을 채우며 한층 깊어진 숲을 만들고 있어요.",
+    };
+  }
+  if (completedCount >= 2) {
+    return {
+      level: 3,
+      title: "나무 사이에 두 사람만의 작은 숲길이 생겼어요.",
+      body: hasCurrent ? "완성한 나무에서 이어진 시간이 지금 자라는 나무로 천천히 건너가고 있어요." : "서로 다른 시절의 나무가 나란히 머물며 함께한 시간을 이어주고 있어요.",
+    };
+  }
+  return {
+    level: 2,
+    title: "첫 나무가 이 숲의 자리를 만들었어요.",
+    body: hasCurrent ? "첫 번째 완성 기록 곁에서 지금의 나무가 두 사람의 다음 시간을 키우고 있어요." : "첫 번째 완성 나무가 다음 씨앗을 기다리며 두 사람의 시간을 지키고 있어요.",
+  };
+}
+
 function sharedTreesForFriend(friendId) {
   return (state.sharedTrees || [])
     .filter((tree) => tree.partnerId === friendId)
@@ -6976,7 +7027,7 @@ function sharedTreeV2ThumbnailVisual(tree) {
   };
 }
 
-function togetherForestTreeCardMarkup(tree, { current = false, index = 0 } = {}) {
+function togetherForestTreeCardMarkup(tree, { current = false, index = 0, archiveHidden = false } = {}) {
   const isV2 = Number(tree.growthVersion || 1) === 2;
   const startDate = formatSharedTreeLifecycleDate(tree.createdAt);
   const completeDate = tree.completedAt ? formatSharedTreeLifecycleDate(tree.completedAt) : "";
@@ -7026,7 +7077,7 @@ function togetherForestTreeCardMarkup(tree, { current = false, index = 0 } = {})
 
   const aria = current ? "현재 함께 키우는 공유나무 보기" : `${index + 1}번째 완성 공유나무 보기`;
   return `
-    <button class="together-forest-tree-card${current ? " is-current" : " is-complete"}${isV2 ? " is-v2" : ""}${usesApprovedSprite && !isV2 ? " has-approved-completion-thumb" : ""}" type="button" data-view-shared-tree="${escapeAttr(tree.id)}" aria-label="${escapeAttr(aria)}">
+    <button class="together-forest-tree-card${current ? " is-current" : " is-complete"}${isV2 ? " is-v2" : ""}${usesApprovedSprite && !isV2 ? " has-approved-completion-thumb" : ""}${archiveHidden ? " is-archive-hidden" : ""}" type="button" data-view-shared-tree="${escapeAttr(tree.id)}" aria-label="${escapeAttr(aria)}">
       <span class="together-forest-tree-thumb${usesApprovedSprite ? " has-v2-sprite" : ""}" aria-hidden="true">
         ${thumbnail}
       </span>
@@ -7095,36 +7146,45 @@ function renderTogetherForestLoop(friend, currentTrees, completedTrees, invite) 
   const currentTree = currentTrees[0] || null;
   const completedCount = completedTrees.length;
   const busy = sharedTreeNextCycleBusy(friend.id);
-  let title = `${friend.name}와 완성한 시간이 ${completedCount}그루의 나무로 남아 있어요.`;
-  let body = "완성한 나무를 다시 열어 기록을 보고, 아래에서 두 사람의 다음 시간을 이어갈 수 있어요.";
+  const timeline = sharedTreeForestTimeline([...currentTrees, ...completedTrees]);
+  const depth = sharedTreeForestDepth(completedCount, Boolean(currentTree));
+  let body = depth.body;
   let status = "다음 나무를 시작할 수 있어요";
 
   if (currentTree) {
-    title = "완성한 나무 곁에서 다음 나무가 자라고 있어요.";
-    body = "이전 나무의 기록은 그대로 남고, 새 나무에는 두 사람의 새로운 하루가 쌓여요.";
     status = "아래에 지금 자라는 나무가 있어요";
   } else if (invite?.direction === "incoming") {
-    title = `${friend.name}님이 다음 씨앗을 건넸어요.`;
-    body = "완성한 나무를 잃지 않은 채, 아래에서 씨앗을 확인하고 다음 나무를 시작할 수 있어요.";
+    body = `${depth.body} ${friend.name}님이 건넨 다음 씨앗도 아래에서 확인할 수 있어요.`;
     status = "받은 씨앗을 확인해 주세요";
   } else if (invite?.direction === "outgoing") {
-    title = "다음 씨앗이 친구의 선택을 기다리고 있어요.";
-    body = "기다리는 동안에도 완성한 나무와 두 사람의 기록은 이 숲에 그대로 머물러요.";
+    body = `${depth.body} 지금은 다음 씨앗이 친구의 선택을 조용히 기다리고 있어요.`;
     status = "친구의 답을 기다리는 중";
   } else if (busy) {
-    title = "다음 씨앗을 친구에게 건네고 있어요.";
-    body = "한 번만 안전하게 전달한 뒤 이 화면의 상태를 새로 불러와요.";
+    body = "완성한 나무는 그대로 남아 있고, 다음 씨앗을 한 번만 안전하게 건네고 있어요.";
     status = "씨앗을 건네는 중";
   }
 
+  const continuityEnd = currentTree
+    ? "지금 자라는 나무"
+    : invite?.direction === "incoming"
+      ? "도착한 다음 씨앗"
+      : invite?.direction === "outgoing" || busy
+        ? "기다리는 다음 씨앗"
+        : "다음 씨앗을 위한 자리";
+
   els.togetherForestLoop.innerHTML = `
     <div class="together-forest-loop-copy">
-      <p class="growth-note-kicker">THE STORY CONTINUES</p>
-      <strong>${escapeHTML(title)}</strong>
+      <p class="growth-note-kicker">OUR FOREST GROWS DEEPER</p>
+      <strong>${escapeHTML(depth.title)}</strong>
       <p>${escapeHTML(body)}</p>
       <div class="together-forest-loop-stats" aria-label="함께한 숲 기록">
         <span><b>${completedCount}</b> 완성한 나무</span>
-        <span><b>${currentTree ? 1 : 0}</b> 지금 자라는 나무</span>
+        <span><b>${timeline.days}</b>일 이어온 숲</span>
+      </div>
+      <div class="together-forest-continuity" data-forest-depth="${depth.level}" aria-label="완성한 나무에서 현재 시간으로 이어지는 숲의 흐름">
+        <span><b>완성된 기록</b><small>${completedCount}그루가 그대로 머물러요</small></span>
+        <i aria-hidden="true"><em></em></i>
+        <span><b>${escapeHTML(continuityEnd)}</b><small>지난 시간 곁에서 다음 이야기가 이어져요</small></span>
       </div>
     </div>
     <div class="together-forest-loop-actions">
@@ -7145,6 +7205,7 @@ function renderTogetherForest(friendId = activeTogetherForestFriendId) {
     .filter((tree) => sharedTreeIsComplete(tree))
     .sort((a, b) => new Date(b.completedAt || b.createdAt || 0).getTime() - new Date(a.completedAt || a.createdAt || 0).getTime());
   const invite = sharedTreeInviteForFriend(friendId);
+  const forestTimeline = sharedTreeForestTimeline(trees);
 
   els.togetherForestFriendName.textContent = `${friend.name}와의 함께한 숲`;
   els.togetherForestCompletedCount.textContent = completedTrees.length
@@ -7152,11 +7213,11 @@ function renderTogetherForest(friendId = activeTogetherForestFriendId) {
     : "아직 완성한 나무가 없어요";
 
   if (currentTrees.length && completedTrees.length) {
-    els.togetherForestSummary.textContent = `지금 자라는 나무와, 함께 완성한 ${completedTrees.length}그루의 나무가 같은 숲에 머물러 있어요.`;
+    els.togetherForestSummary.textContent = `첫 씨앗 이후 ${forestTimeline.days}일, 완성한 ${completedTrees.length}그루 곁에서 지금의 나무가 함께 자라고 있어요.`;
   } else if (currentTrees.length) {
-    els.togetherForestSummary.textContent = "두 사람의 빛을 기다리는 나무가 이 숲에서 조용히 자라고 있어요.";
+    els.togetherForestSummary.textContent = `첫 씨앗을 심은 뒤 ${forestTimeline.days}일째, 두 사람의 나무가 이 숲에서 조용히 자라고 있어요.`;
   } else if (completedTrees.length) {
-    els.togetherForestSummary.textContent = "함께 보낸 한 시절의 나무가 사라지지 않고 이 숲에 머물러 있어요.";
+    els.togetherForestSummary.textContent = `첫 씨앗부터 ${forestTimeline.days}일 동안 함께 완성한 ${completedTrees.length}그루가 이 숲에 그대로 머물러 있어요.`;
   } else {
     els.togetherForestSummary.textContent = "아직 이 숲에 머무는 나무가 없어요.";
   }
@@ -7167,8 +7228,19 @@ function renderTogetherForest(friendId = activeTogetherForestFriendId) {
     ? togetherForestTreeCardMarkup(currentTrees[0], { current: true })
     : togetherForestNextSeedMarkup(friend, invite, { hasCompleted: completedTrees.length > 0 });
 
+  const archiveExpanded = expandedTogetherForestFriendIds.has(friendId);
+  const archiveVisibleLimit = 3;
+  const archiveHiddenCount = Math.max(0, completedTrees.length - archiveVisibleLimit);
   els.togetherForestCompletedList.innerHTML = completedTrees.length
-    ? completedTrees.map((tree, index) => togetherForestTreeCardMarkup(tree, { index })).join("")
+    ? `${completedTrees.map((tree, index) => togetherForestTreeCardMarkup(tree, {
+        index,
+        archiveHidden: !archiveExpanded && index >= archiveVisibleLimit,
+      })).join("")}
+      ${archiveHiddenCount > 0 ? `
+        <button class="together-forest-archive-toggle" type="button" data-toggle-forest-archive="${escapeAttr(friendId)}" aria-expanded="${archiveExpanded ? "true" : "false"}">
+          <span aria-hidden="true">${archiveExpanded ? "⌃" : "⌄"}</span>
+          ${archiveExpanded ? "지난 나무 접기" : `지난 나무 ${archiveHiddenCount}그루 더 보기`}
+        </button>` : ""}`
     : '<div class="together-forest-empty-list">첫 번째 나무가 완성되면 이곳에 두 사람의 시간으로 남아요.</div>';
 
   els.togetherForestView.querySelectorAll('[data-view-shared-tree]').forEach((button) => {
@@ -7181,6 +7253,18 @@ function renderTogetherForest(friendId = activeTogetherForestFriendId) {
   });
   els.togetherForestView.querySelectorAll('[data-open-shared-tree-invite]').forEach((button) => {
     button.addEventListener("click", () => openSharedTreeInvite(button.dataset.openSharedTreeInvite));
+  });
+  els.togetherForestView.querySelectorAll('[data-toggle-forest-archive]').forEach((button) => {
+    button.addEventListener("click", () => {
+      const targetFriendId = button.dataset.toggleForestArchive;
+      if (!targetFriendId) return;
+      if (expandedTogetherForestFriendIds.has(targetFriendId)) {
+        expandedTogetherForestFriendIds.delete(targetFriendId);
+      } else {
+        expandedTogetherForestFriendIds.add(targetFriendId);
+      }
+      renderTogetherForest(targetFriendId);
+    });
   });
   return true;
 }
