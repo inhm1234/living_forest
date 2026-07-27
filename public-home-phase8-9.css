@@ -1,0 +1,336 @@
+/* =========================================================
+   PHASE 8.9 — 공개 랜딩 핵심 경험 전달 개선
+   로그인·데이터·정원 기능에는 관여하지 않고 공개 홈만 보정합니다.
+   ========================================================= */
+
+.public-hero-copy h1 {
+  max-width: 700px;
+}
+
+.public-hero-copy h1 span {
+  display: inline-block;
+}
+
+.public-hero-lead strong {
+  color: #466f5c;
+  font-weight: 900;
+}
+
+.public-hero-points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.public-hero-points li {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  padding: 0 12px;
+  border: 1px solid rgba(78, 119, 97, 0.13);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.67);
+  color: #617a6f;
+  box-shadow: 0 7px 18px rgba(70, 98, 82, 0.06);
+  font-size: 11.5px;
+  font-weight: 850;
+}
+
+.public-feature-tree {
+  width: 100%;
+  height: 150px;
+  margin-bottom: 12px;
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: 300% 100%;
+  filter: drop-shadow(0 12px 12px rgba(55, 82, 64, 0.11));
+}
+
+.public-feature-tree-growing {
+  background-image: url("assets/garden/shared_tree_v2/stage3-growth-qa.webp");
+}
+
+.public-feature-tree-together {
+  background-image: url("assets/garden/shared_tree_v2/stage5-growth-qa.webp");
+}
+
+.public-growth-story {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  align-self: stretch;
+  align-items: stretch;
+}
+
+.public-growth-story::before {
+  content: "";
+  position: absolute;
+  top: 46%;
+  right: 12%;
+  left: 12%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(111, 149, 127, 0.3), rgba(111, 149, 127, 0.3), transparent);
+}
+
+.public-growth-story-card {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  min-width: 0;
+  align-content: end;
+  justify-items: center;
+  padding: 12px 8px 16px;
+  border: 1px solid rgba(78, 111, 93, 0.1);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.65);
+  box-shadow: 0 13px 32px rgba(66, 91, 75, 0.07);
+  text-align: center;
+}
+
+.public-growth-sprite {
+  width: 100%;
+  max-width: 210px;
+  aspect-ratio: 1 / 1;
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: 300% 100%;
+  filter: drop-shadow(0 14px 13px rgba(53, 78, 61, 0.1));
+}
+
+.public-growth-sprite.is-first {
+  background-image: url("assets/garden/shared_tree_v2/stage2-growth-qa.webp");
+}
+
+.public-growth-sprite.is-growing {
+  background-image: url("assets/garden/shared_tree_v2/stage3-growth-qa.webp");
+}
+
+.public-growth-sprite.is-complete {
+  background-image: url("assets/garden/shared_tree_v2/stage5-growth-qa.webp");
+}
+
+.public-growth-story-card > span {
+  display: inline-flex;
+  min-height: 27px;
+  align-items: center;
+  margin-top: -8px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: #edf4eb;
+  color: #66806f;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: 0.02em;
+}
+
+.public-growth-story-card strong {
+  margin-top: 8px;
+  color: #3f5e50;
+  font-size: 13px;
+  line-height: 1.35;
+  word-break: keep-all;
+}
+
+.public-growth-story-card small {
+  margin-top: 5px;
+  color: #84958e;
+  font-size: 10.5px;
+  line-height: 1.45;
+  word-break: keep-all;
+}
+
+.public-maker-story {
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+  gap: clamp(28px, 6vw, 76px);
+  align-items: center;
+  margin: 118px 0 24px;
+  padding: clamp(34px, 6vw, 66px);
+  border: 1px solid rgba(81, 113, 95, 0.1);
+  border-radius: 38px;
+  background:
+    radial-gradient(circle at 8% 10%, rgba(255, 231, 215, 0.7), transparent 34%),
+    radial-gradient(circle at 94% 92%, rgba(217, 235, 215, 0.75), transparent 35%),
+    rgba(255, 255, 255, 0.64);
+  box-shadow: 0 22px 55px rgba(65, 89, 75, 0.08);
+}
+
+.public-maker-story-mark {
+  display: grid;
+  width: min(100%, 300px);
+  aspect-ratio: 1 / 0.72;
+  place-items: center;
+  justify-self: center;
+  border-radius: 150px 150px 38px 38px;
+  background: linear-gradient(180deg, rgba(223, 237, 218, 0.9), rgba(247, 235, 218, 0.92));
+  color: #5a7d69;
+  font-family: Georgia, serif;
+  font-size: clamp(62px, 9vw, 104px);
+  font-style: italic;
+  box-shadow: inset 0 0 0 1px rgba(83, 117, 97, 0.08);
+}
+
+.public-maker-story-copy h2 {
+  margin: 0;
+  color: #345447;
+  font-size: clamp(32px, 4.4vw, 52px);
+  font-weight: 950;
+  line-height: 1.1;
+  letter-spacing: -0.07em;
+  word-break: keep-all;
+}
+
+.public-maker-story-copy blockquote {
+  margin: 22px 0 0;
+  color: #647b70;
+  font-size: 16px;
+  line-height: 1.9;
+  word-break: keep-all;
+}
+
+.public-maker-story-copy blockquote p {
+  margin: 0;
+}
+
+.public-maker-story-copy blockquote p + p {
+  margin-top: 10px;
+}
+
+.public-feature-card .public-feature-privacy {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 12px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.66);
+  color: #6b7f76;
+  font-size: 10.5px;
+  font-weight: 850;
+}
+
+@media (max-width: 980px) {
+  .public-growth-story-card {
+    padding-right: 5px;
+    padding-left: 5px;
+  }
+
+  .public-growth-story-card small {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .public-hero-points {
+    justify-content: center;
+  }
+
+  .public-how-visual {
+    min-height: 0;
+  }
+
+  .public-growth-story {
+    min-height: 340px;
+  }
+
+  .public-maker-story {
+    grid-template-columns: 1fr;
+    margin-top: 86px;
+    border-radius: 30px;
+  }
+
+  .public-maker-story-mark {
+    width: min(70%, 260px);
+  }
+}
+
+@media (max-width: 520px) {
+  .public-hero-copy h1 {
+    font-size: 38px;
+    line-height: 1.1;
+  }
+
+  .public-hero-points {
+    gap: 6px;
+  }
+
+  .public-hero-points li {
+    min-height: 29px;
+    padding: 0 10px;
+    font-size: 10.5px;
+  }
+
+  .public-feature-tree {
+    height: 135px;
+  }
+
+  .public-growth-story {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    min-height: 0;
+  }
+
+  .public-growth-story::before {
+    display: none;
+  }
+
+  .public-growth-story-card {
+    grid-template-columns: 118px minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    align-items: center;
+    justify-items: start;
+    min-height: 130px;
+    padding: 8px 14px 8px 5px;
+    text-align: left;
+  }
+
+  .public-growth-sprite {
+    grid-row: 1 / 4;
+    width: 125px;
+  }
+
+  .public-growth-story-card > span {
+    margin-top: 0;
+  }
+
+  .public-growth-story-card strong {
+    font-size: 13px;
+  }
+
+  .public-growth-story-card small {
+    display: block;
+    font-size: 10.5px;
+  }
+
+  .public-maker-story {
+    margin-top: 72px;
+    padding: 30px 22px;
+    border-radius: 27px;
+  }
+
+  .public-maker-story-mark {
+    width: 68%;
+  }
+
+  .public-maker-story-copy h2 {
+    font-size: 34px;
+  }
+
+  .public-maker-story-copy blockquote {
+    font-size: 14.5px;
+    line-height: 1.8;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-growth-story-card,
+  .public-growth-sprite,
+  .public-feature-tree {
+    animation: none;
+    transition: none;
+  }
+}
