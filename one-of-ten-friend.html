@@ -12,7 +12,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="one-of-ten-friend.css?v=1.5.1-candidates" />
+  <link rel="stylesheet" href="one-of-ten-friend.css?v=phase8-7-postmatch-friend-v1-0" />
   <link rel="stylesheet" href="oot-notifications.css?v=oot-push-v0-5" />
 </head>
 <body>
@@ -314,6 +314,17 @@
         <strong id="resultSeriesStatus">같은 친구와 이어서 플레이할 수 있어요.</strong>
         <p id="resultRematchStatus">두 사람 모두 다시 한 판을 선택하면 같은 방에서 이어져요.</p>
       </div>
+      <section class="ootf-result-friend is-hidden" id="resultFriendPanel" aria-live="polite">
+        <div class="ootf-result-friend-copy">
+          <span aria-hidden="true">🌱</span>
+          <div>
+            <strong id="resultFriendTitle">대전에서 만난 사람과 이어질까요?</strong>
+            <p id="resultFriendDescription">친구 신청은 상대가 직접 수락해야 연결돼요.</p>
+          </div>
+        </div>
+        <button id="resultFriendButton" type="button">친구 신청 보내기</button>
+        <a class="is-hidden" id="resultFriendGardenLink" href="index.html">내 정원 친구 메뉴에서 확인하기</a>
+      </section>
       <button class="ootf-result-primary" id="resultRematchButton" type="button">다시 한 판</button>
       <button class="ootf-result-secondary ootf-result-button" id="resultLobbyButton" type="button">대전 목록으로</button>
       <a class="ootf-result-secondary" id="resultGardenLink" href="index.html">내 정원으로 돌아가기</a>
@@ -355,6 +366,6 @@
 
   <div class="ootf-toast is-hidden" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="oot-notifications.js?v=oot-push-v0-6-opt"></script>
-  <script type="module" src="one-of-ten-friend.js?v=friend-relationship-end-v1-7"></script>
+  <script type="module" src="one-of-ten-friend.js?v=phase8-7-postmatch-friend-v1-0"></script>
 </body>
 </html>

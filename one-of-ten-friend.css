@@ -531,3 +531,42 @@ body.ootf-random-waiting { overflow: hidden; }
 #randomMatchOverlay.is-timeout .ootf-random-wait-stats > div:first-child strong {
   color: #8d7650;
 }
+
+
+/* TodayForest PHASE 8.7 · 랜덤 대전 뒤 친구 신청 */
+.ootf-result-friend {
+  margin-top: 11px;
+  padding: 12px;
+  border: 1px solid rgba(80, 112, 87, .16);
+  border-radius: 16px;
+  background: linear-gradient(145deg, #f3f8f1, #fffaf0);
+  text-align: left;
+}
+.ootf-result-friend-copy { display: flex; align-items: flex-start; gap: 9px; }
+.ootf-result-friend-copy > span { flex: 0 0 auto; font-size: 21px; line-height: 1; }
+.ootf-result-friend-copy strong { display: block; color: var(--f-green-dark); font-size: 11px; line-height: 1.45; }
+.ootf-result-friend-copy p { margin: 3px 0 0; color: var(--f-muted); font-size: 9px; line-height: 1.55; }
+.ootf-result-friend button,
+.ootf-result-friend a {
+  width: 100%;
+  min-height: 39px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  border-radius: 13px;
+  font-size: 10px;
+  font-weight: 950;
+  text-decoration: none;
+}
+.ootf-result-friend button { border: 0; background: #55765f; color: #fff; cursor: pointer; }
+.ootf-result-friend button:disabled { cursor: default; background: #e9eee8; color: #748179; }
+.ootf-result-friend a { border: 1px solid var(--f-line); background: #fff; color: #607369; }
+.ootf-result-friend.is-pending { background: #f8f6ec; border-color: #e7dfbf; }
+.ootf-result-friend.is-friend { background: #edf5ed; border-color: #d8e6d8; }
+.ootf-result-friend.is-cooldown { background: #f7f3f1; border-color: #eaded8; }
+@media (max-width: 520px) {
+  .ootf-result-friend { padding: 11px; }
+  .ootf-result-friend button,
+  .ootf-result-friend a { min-height: 41px; }
+}

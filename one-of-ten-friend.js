@@ -87,7 +87,7 @@ const els = {
   currentValue: $("#currentValue"), selectedOperation: $("#selectedOperation"), selectedNumber: $("#selectedNumber"), arenaMessage: $("#arenaMessage"), calculationNote: $("#calculationNote"), operationCards: $("#operationCards"),
   actionPanel: $("#actionPanel"), stopButton: $("#stopButton"), drawButton: $("#drawButton"), myHand: $("#myHand"), deckCount: $("#deckCount"), handHelp: $("#handHelp"),
   leaveMatchButton: $("#leaveMatchButton"), connectionStatus: $("#connectionStatus"),
-  resultOverlay: $("#resultOverlay"), resultSymbol: $("#resultSymbol"), resultTitle: $("#resultTitle"), resultDescription: $("#resultDescription"), resultHistory: $("#resultHistory"), resultValue: $("#resultValue"), myTarget: $("#myTarget"), myDistance: $("#myDistance"), opponentTargetLabel: $("#opponentTargetLabel"), opponentTarget: $("#opponentTarget"), opponentDistance: $("#opponentDistance"), resultRematchBox: $("#resultRematchBox"), resultSeriesStatus: $("#resultSeriesStatus"), resultRematchStatus: $("#resultRematchStatus"), resultRematchButton: $("#resultRematchButton"), resultLobbyButton: $("#resultLobbyButton"), resultGardenLink: $("#resultGardenLink"),
+  resultOverlay: $("#resultOverlay"), resultSymbol: $("#resultSymbol"), resultTitle: $("#resultTitle"), resultDescription: $("#resultDescription"), resultHistory: $("#resultHistory"), resultValue: $("#resultValue"), myTarget: $("#myTarget"), myDistance: $("#myDistance"), opponentTargetLabel: $("#opponentTargetLabel"), opponentTarget: $("#opponentTarget"), opponentDistance: $("#opponentDistance"), resultRematchBox: $("#resultRematchBox"), resultSeriesStatus: $("#resultSeriesStatus"), resultRematchStatus: $("#resultRematchStatus"), resultFriendPanel: $("#resultFriendPanel"), resultFriendTitle: $("#resultFriendTitle"), resultFriendDescription: $("#resultFriendDescription"), resultFriendButton: $("#resultFriendButton"), resultFriendGardenLink: $("#resultFriendGardenLink"), resultRematchButton: $("#resultRematchButton"), resultLobbyButton: $("#resultLobbyButton"), resultGardenLink: $("#resultGardenLink"),
   resultPointPanel: $("#resultPointPanel"), resultPointMode: $("#resultPointMode"), resultPointDelta: $("#resultPointDelta"), resultPointBefore: $("#resultPointBefore"), resultPointAfter: $("#resultPointAfter"), resultPointMessage: $("#resultPointMessage"), resultTierMessage: $("#resultTierMessage"),
   chatToggleButton: $("#matchChatToggle"), chatUnreadBadge: $("#matchChatUnread"), chatBackdrop: $("#matchChatBackdrop"), chatPanel: $("#matchChatPanel"), chatCloseButton: $("#matchChatClose"), chatOpponentName: $("#matchChatOpponent"), chatMessages: $("#matchChatMessages"), chatEmpty: $("#matchChatEmpty"), chatForm: $("#matchChatForm"), chatInput: $("#matchChatInput"), chatSendButton: $("#matchChatSend"), chatStatus: $("#matchChatStatus"), chatCounter: $("#matchChatCounter"),
   toast: $("#toast"),
@@ -115,6 +115,8 @@ const state = {
   readyActionBusy: false,
   rematchBusy: false,
   rematchNavigating: false,
+  resultFriendBusy: false,
+  resultFriendMatchId: "",
   chatChannel: null, chatPollInterval: null, chatSeriesId: "", chatCurrentMatchId: "",
   chatMessages: [], chatLoaded: false, chatOpen: false, chatBusy: false, chatAvailable: false,
   chatUnread: 0, chatMaxLength: 120,
@@ -1503,7 +1505,7 @@ async function openMatch(matchId) {
   await stopInviteRealtime();
   setMatchUrl(normalizedMatchId);
   state.selectedOperation = null; state.selectedNumber = null; state.historyExpanded = false; state.renderResultForMatchId = null;
-  state.readyStartRequested = false; state.readyActionBusy = false; state.rematchBusy = false; stopReadyCountdown();
+  state.readyStartRequested = false; state.readyActionBusy = false; state.rematchBusy = false; state.resultFriendBusy = false; state.resultFriendMatchId = ""; stopReadyCountdown();
   els.resultOverlay.classList.add("is-hidden");
   showView("match");
   const loaded = await loadMatch({ force: true });
@@ -1520,7 +1522,7 @@ async function openMatch(matchId) {
 async function returnToLobby() {
   clearActionTimer(); stopTimer(); stopReadyCountdown(); stopMatchPolling(); await stopRealtime(); await stopMatchChat();
   state.match = null; state.selectedOperation = null; state.selectedNumber = null; state.renderResultForMatchId = null;
-  state.readyStartRequested = false; state.readyActionBusy = false; state.rematchBusy = false; state.rematchNavigating = false;
+  state.readyStartRequested = false; state.readyActionBusy = false; state.rematchBusy = false; state.rematchNavigating = false; state.resultFriendBusy = false; state.resultFriendMatchId = "";
   els.matchReadyOverlay.classList.add("is-hidden");
   state.autoOpeningMatchId = null;
   els.resultOverlay.classList.add("is-hidden");
@@ -2011,6 +2013,183 @@ function renderPointResult(match) {
     els.resultPointAfter.textContent = String(after);
   }
 }
+
+function normalizeSingleRow(data) {
+  return Array.isArray(data) ? (data[0] || null) : (data || null);
+}
+
+function currentOotNickname() {
+  return String(
+    state.user?.user_metadata?.nickname
+    || state.user?.user_metadata?.name
+    || state.user?.email?.split("@")[0]
+    || "새 친구"
+  ).trim().slice(0, 40) || "새 친구";
+}
+
+function resultFriendQaStatus() {
+  const url = new URL(location.href);
+  if (url.searchParams.get("qa") !== "1") return "";
+  const value = String(url.searchParams.get("ootFriendQa") || "").trim();
+  return ["ready", "outgoing_pending", "incoming_pending", "already_friend", "cooldown"].includes(value) ? value : "";
+}
+
+function setResultFriendState(status, match, { silent = false } = {}) {
+  if (!els.resultFriendPanel || !els.resultFriendButton || !els.resultFriendTitle || !els.resultFriendDescription || !els.resultFriendGardenLink) return;
+  const opponentName = match?.opponentNickname || "대전에서 만난 사람";
+  const qaStatus = resultFriendQaStatus();
+  const isQa = Boolean(qaStatus);
+  const nextStatus = qaStatus || status || "loading";
+
+  els.resultFriendPanel.classList.remove("is-hidden", "is-pending", "is-friend", "is-cooldown");
+  els.resultFriendButton.classList.remove("is-hidden");
+  els.resultFriendGardenLink.classList.add("is-hidden");
+  els.resultFriendButton.disabled = true;
+
+  if (nextStatus === "loading") {
+    els.resultFriendTitle.textContent = `${opponentName}님과 다시 만날 길을 확인하고 있어요.`;
+    els.resultFriendDescription.textContent = "친구 관계와 기다리는 신청을 안전하게 확인하는 중이에요.";
+    els.resultFriendButton.textContent = "친구 관계 확인 중…";
+    return;
+  }
+
+  if (nextStatus === "ready") {
+    els.resultFriendTitle.textContent = `${opponentName}님과 다음에도 만나고 싶나요?`;
+    els.resultFriendDescription.textContent = "신청을 보내도 바로 친구가 되지는 않아요. 상대가 직접 수락해야 연결됩니다.";
+    els.resultFriendButton.textContent = isQa ? "QA · 친구 신청 보내기" : "친구 신청 보내기";
+    els.resultFriendButton.disabled = false;
+    return;
+  }
+
+  if (nextStatus === "outgoing_pending") {
+    els.resultFriendPanel.classList.add("is-pending");
+    els.resultFriendTitle.textContent = `${opponentName}님에게 친구 신청을 보냈어요.`;
+    els.resultFriendDescription.textContent = "상대가 수락하기 전까지 친구나 나무 데이터는 만들어지지 않아요.";
+    els.resultFriendButton.textContent = "상대의 선택을 기다리는 중";
+    return;
+  }
+
+  if (nextStatus === "incoming_pending") {
+    els.resultFriendPanel.classList.add("is-pending");
+    els.resultFriendTitle.textContent = `${opponentName}님이 먼저 친구 신청을 보냈어요.`;
+    els.resultFriendDescription.textContent = "내 정원의 친구 메뉴에서 직접 수락하거나 거절할 수 있어요.";
+    els.resultFriendButton.classList.add("is-hidden");
+    els.resultFriendGardenLink.classList.remove("is-hidden");
+    els.resultFriendGardenLink.textContent = "내 정원에서 신청 확인하기";
+    return;
+  }
+
+  if (nextStatus === "already_friend") {
+    els.resultFriendPanel.classList.add("is-friend");
+    els.resultFriendTitle.textContent = `${opponentName}님은 이미 함께 자라는 친구예요.`;
+    els.resultFriendDescription.textContent = "친구 신청을 다시 만들지 않고 기존 친구 관계를 그대로 이어가요.";
+    els.resultFriendButton.textContent = "이미 친구예요";
+    return;
+  }
+
+  if (nextStatus === "cooldown") {
+    els.resultFriendPanel.classList.add("is-cooldown");
+    els.resultFriendTitle.textContent = "지금은 친구 신청을 다시 보낼 수 없어요.";
+    els.resultFriendDescription.textContent = "상대의 선택을 존중해 잠시 쉬었다가, 다른 대전에서 다시 만났을 때 생각해 볼 수 있어요.";
+    els.resultFriendButton.textContent = "친구 신청 쉬는 중";
+    return;
+  }
+
+  if (!silent) els.resultFriendPanel.classList.add("is-hidden");
+}
+
+async function prepareResultFriendConnection(match) {
+  if (!els.resultFriendPanel) return;
+  const matchId = extractMatchId(match?.matchId);
+  const opponentId = matchOpponentId(match);
+  state.resultFriendMatchId = matchId;
+
+  if (!matchId || match?.matchSource !== "random" || !currentMatchIsFinished() || !opponentId) {
+    els.resultFriendPanel.classList.add("is-hidden");
+    return;
+  }
+
+  setResultFriendState("loading", match);
+  const qaStatus = resultFriendQaStatus();
+  if (qaStatus) {
+    setResultFriendState(qaStatus, match);
+    return;
+  }
+
+  try {
+    const [friendsData, requestsData] = await Promise.all([
+      rpc("list_my_garden_friends"),
+      rpc("list_my_garden_friend_requests"),
+    ]);
+    if (state.resultFriendMatchId !== matchId || extractMatchId(state.match?.matchId) !== matchId) return;
+
+    const friends = normalizeRows(friendsData);
+    if (friends.some((friend) => String(friend.friend_id || friend.friendId || "") === opponentId)) {
+      setResultFriendState("already_friend", match);
+      return;
+    }
+
+    const requests = normalizeRows(requestsData);
+    const pending = requests.find((request) => String(request.other_user_id || request.otherUserId || "") === opponentId);
+    if (pending) {
+      setResultFriendState(pending.direction === "incoming" ? "incoming_pending" : "outgoing_pending", match);
+      return;
+    }
+    setResultFriendState("ready", match);
+  } catch (error) {
+    console.warn("OneOfTen post-match friend status skipped", error);
+    els.resultFriendPanel.classList.add("is-hidden");
+  }
+}
+
+async function sendResultFriendRequest() {
+  const match = state.match;
+  const matchId = extractMatchId(match?.matchId);
+  if (!matchId || match?.matchSource !== "random" || !currentMatchIsFinished() || state.resultFriendBusy) return;
+
+  if (resultFriendQaStatus()) {
+    showToast("QA 화면에서는 실제 친구 신청을 보내지 않아요.");
+    return;
+  }
+
+  state.resultFriendBusy = true;
+  els.resultFriendButton.disabled = true;
+  els.resultFriendButton.textContent = "친구 신청을 보내는 중…";
+  try {
+    const data = await rpc("create_garden_friend_request_from_oot_match", {
+      p_match_id: matchId,
+      p_nickname: currentOotNickname(),
+    });
+    const row = normalizeSingleRow(data);
+    const status = String(row?.request_status || "outgoing_pending");
+    const uiStatus = status === "recently_declined" ? "cooldown" : status;
+    setResultFriendState(uiStatus, match);
+    trackOneOfTenOnce("oneoften_postmatch_friend_request", `friend-request-${matchId}`, {
+      mode: analyticsBattleMode(match.battleMode, match.matchSource),
+      request_status: status,
+    });
+    showToast(status === "already_friend"
+      ? "이미 함께 자라는 친구예요."
+      : status === "incoming_pending"
+        ? "상대가 먼저 보낸 신청이 있어요. 내 정원에서 확인해 주세요."
+        : status === "recently_declined"
+          ? "지금은 친구 신청을 다시 보낼 수 없어요."
+          : "친구 신청을 보냈어요. 상대가 수락하면 연결돼요.");
+  } catch (error) {
+    console.warn("OneOfTen post-match friend request error", error);
+    const message = String(error?.message || "");
+    if (message.includes("Could not find the function") || message.includes("PGRST202")) {
+      showToast("친구 신청 기능을 아직 준비하지 못했어요.");
+      els.resultFriendPanel.classList.add("is-hidden");
+    } else {
+      showToast(friendlyError(error));
+      await prepareResultFriendConnection(match);
+    }
+  } finally {
+    state.resultFriendBusy = false;
+  }
+}
+
 function rematchTimeLabel(iso) {
   const ms = Date.parse(iso) - (Date.now() + state.serverOffset);
   if (!Number.isFinite(ms) || ms <= 0) return "";
@@ -2175,6 +2354,7 @@ function renderResult(match) {
   renderPointResult(match);
   renderRematchState(match);
   els.resultOverlay.classList.remove("is-hidden");
+  void prepareResultFriendConnection(match);
 
   const result = draw ? "draw" : won ? "win" : "lose";
   const pointResult = match.pointResult || null;
@@ -2193,7 +2373,7 @@ function closeHelp() { els.helpOverlay.classList.add("is-hidden"); }
 function applyViewport() { if (state.match) renderHistory(state.match); }
 
 async function initialize() {
-  console.info("TodayForest OneOfTen Player v1.5.3 · Realtime-safe optimization");
+  console.info("TodayForest OneOfTen Player PHASE 8.7 · post-match friend connection v1.0");
   showView("loading");
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error || !session?.user) {
@@ -2242,7 +2422,7 @@ els.randomToSquirrelLink.addEventListener("click", async (event) => {
 els.refreshLobbyButton.addEventListener("click", () => loadLobby()); els.historyToggle.addEventListener("click", () => { state.historyExpanded = !state.historyExpanded; renderHistory(state.match); });
 els.selectedOperation.addEventListener("click", cancelOperation); els.stopButton.addEventListener("click", stopMatch); els.drawButton.addEventListener("click", drawCard);
 els.matchReadyButton.addEventListener("click", toggleMatchReady); els.cancelWaitingMatchButton.addEventListener("click", cancelWaitingMatch);
-els.leaveMatchButton.addEventListener("click", leaveCurrentMatch); els.resultRematchButton.addEventListener("click", requestRematch); els.resultLobbyButton.addEventListener("click", leaveResultToLobby); els.resultGardenLink.addEventListener("click", leaveResultToGarden);
+els.leaveMatchButton.addEventListener("click", leaveCurrentMatch); els.resultRematchButton.addEventListener("click", requestRematch); els.resultFriendButton?.addEventListener("click", sendResultFriendRequest); els.resultLobbyButton.addEventListener("click", leaveResultToLobby); els.resultGardenLink.addEventListener("click", leaveResultToGarden);
 els.chatToggleButton.addEventListener("click", () => state.chatOpen ? closeMatchChat() : openMatchChat()); els.chatCloseButton.addEventListener("click", closeMatchChat); els.chatBackdrop.addEventListener("click", closeMatchChat); els.chatForm.addEventListener("submit", sendMatchChat); els.chatInput.addEventListener("input", updateChatCounter);
 window.addEventListener("resize", applyViewport); window.addEventListener("popstate", () => getMatchIdFromUrl() ? openMatch(getMatchIdFromUrl()) : returnToLobby());
 window.addEventListener("oot-game-ready-changed", () => loadLobby({ silent: true }));
