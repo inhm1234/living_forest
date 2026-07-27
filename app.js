@@ -424,6 +424,17 @@ let sharedTreeV2DevActor = "me";
 // 공유나무를 보고 있을 때 새로고침해도 같은 나무로 돌아오기 위한 주소 상태입니다.
 const SHARED_TREE_URL_PARAM = "sharedTree";
 const TOGETHER_FOREST_URL_PARAM = "togetherForest";
+// PHASE 9.1 숲 깊이 이동은 실제 나무가 충분히 쌓이기 전에도 운영 화면에서 안전하게 검수할 수 있습니다.
+// ?qa=1&forestQaTrees=13 처럼 사용하며, 실제 공유나무·친구·서버 기록은 전혀 바꾸지 않습니다.
+const TOGETHER_FOREST_DEPTH_QA_TREES_PARAM = "forestQaTrees";
+function resolveTogetherForestDepthQa() {
+  if (!LOCAL_QA_MODE_ENABLED) return null;
+  const params = new URLSearchParams(window.location.search);
+  const requestedCount = Number(params.get(TOGETHER_FOREST_DEPTH_QA_TREES_PARAM));
+  if (!Number.isInteger(requestedCount) || requestedCount < 1 || requestedCount > 30) return null;
+  return Object.freeze({ completedCount: requestedCount });
+}
+const TOGETHER_FOREST_DEPTH_QA = resolveTogetherForestDepthQa();
 // 새 공유나무가 시작된 순간은 참여자마다 한 번만, 약 2초 동안 조용히 보여줍니다.
 const SHARED_TREE_START_MOMENT_DURATION_MS = 2200;
 // 오래된 편지 정책을 실제 시간으로 기다리지 않고 안전하게 검수하기 위한 DEV 전용 테스트입니다.
@@ -7229,6 +7240,36 @@ function togetherForestPathPeriod() {
   return "day";
 }
 
+function togetherForestDepthQaCompletedTrees(completedTrees) {
+  const requestedCount = TOGETHER_FOREST_DEPTH_QA?.completedCount;
+  if (!requestedCount || !completedTrees.length) return completedTrees;
+
+  const newestTree = completedTrees[0];
+  const parsedNewestTime = new Date(newestTree.completedAt || newestTree.createdAt || Date.now()).getTime();
+  const newestTime = Number.isFinite(parsedNewestTime) ? parsedNewestTime : Date.now();
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  return Array.from({ length: requestedCount }, (_, index) => {
+    const realTree = completedTrees[index];
+    if (realTree) return realTree;
+
+    const sourceTree = completedTrees[index % completedTrees.length] || newestTree;
+    const completedAt = new Date(newestTime - (index * 14 * dayMs)).toISOString();
+    const createdAt = new Date(newestTime - ((index * 14 + 28) * dayMs)).toISOString();
+
+    return {
+      ...sourceTree,
+      // QA 나무를 눌러도 실제 최근 완성 기록이 열리도록 원본 ID를 유지합니다.
+      id: sourceTree.id,
+      finalName: `QA ${index + 1}번째 나무`,
+      createdAt,
+      completedAt,
+      updatedAt: completedAt,
+      forestDepthQaPreview: true,
+    };
+  });
+}
+
 function togetherForestPathTreeTitle(tree, { current = false } = {}) {
   if (current) return "지금 자라는 나무";
   const fallbackDate = formatSharedTreeLifecycleDate(tree.completedAt || tree.createdAt);
@@ -7399,6 +7440,7 @@ function togetherForestPathSceneMarkup(friendId, currentTree, completedTrees) {
 
 function renderTogetherForestLoop(friend, currentTrees, completedTrees, invite) {
   if (!els.togetherForestLoop) return;
+  const pathCompletedTrees = togetherForestDepthQaCompletedTrees(completedTrees);
   const latestCompleted = completedTrees[0] || null;
   if (!latestCompleted) {
     els.togetherForestLoop.innerHTML = "";
@@ -7407,7 +7449,8 @@ function renderTogetherForestLoop(friend, currentTrees, completedTrees, invite) 
   }
 
   const currentTree = currentTrees[0] || null;
-  const completedCount = completedTrees.length;
+  const completedCount = pathCompletedTrees.length;
+  const depthQaActive = Boolean(TOGETHER_FOREST_DEPTH_QA);
   const busy = sharedTreeNextCycleBusy(friend.id);
   const timeline = sharedTreeForestTimeline([...currentTrees, ...completedTrees]);
   const depth = sharedTreeForestDepth(completedCount, Boolean(currentTree));
@@ -7433,9 +7476,9 @@ function renderTogetherForestLoop(friend, currentTrees, completedTrees, invite) 
         <p class="growth-note-kicker">OUR FOREST PATH</p>
         <strong>둘이 완성한 시간이 숲길을 따라 남아 있어요.</strong>
       </div>
-      <span>${completedCount}그루</span>
+      <span>${depthQaActive ? `QA · 가상 ${completedCount}그루` : `${completedCount}그루`}</span>
     </div>
-    ${togetherForestPathSceneMarkup(friend.id, currentTree, completedTrees)}
+    ${togetherForestPathSceneMarkup(friend.id, currentTree, pathCompletedTrees)}
     <div class="together-forest-path-footer">
       <div class="together-forest-loop-copy">
         <p class="growth-note-kicker">OUR FOREST GROWS DEEPER</p>
