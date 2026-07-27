@@ -7447,10 +7447,13 @@ function togetherForestTraceMarkup(pageState, slots) {
     const y = Math.max(35, Math.min(84, entry.slot.y + offsetY));
     const rotate = -11 + ((seed >>> 12) % 23);
     const scale = .88 + (((seed >>> 17) % 18) / 100);
-    const sideClass = x < 28 ? "is-near-left" : x > 72 ? "is-near-right" : "is-centered";
-    // PHASE 9.2.1: 아래쪽 흔적은 말풍선을 아이콘 아래로 내려
-    // 완성 나무의 날짜/이름 라벨을 가리지 않도록 합니다.
-    const verticalClass = y >= 64 ? "is-message-below" : "is-message-above";
+    // PHASE 9.2.2: 화면 아래쪽 흔적은 말풍선을 다시 위로 열되,
+    // 가까운 나무 라벨을 피하도록 화면 안쪽 방향으로 정렬합니다.
+    const isLowerZone = y >= 65;
+    const sideClass = isLowerZone
+      ? (x < 45 ? "is-near-left" : x > 55 ? "is-near-right" : "is-centered")
+      : (x < 28 ? "is-near-left" : x > 72 ? "is-near-right" : "is-centered");
+    const verticalClass = `is-message-above${isLowerZone ? " is-lower-zone" : ""}`;
     const style = [
       `--trace-x:${x}%`,
       `--trace-y:${y}%`,
