@@ -50,7 +50,7 @@
   <link rel="stylesheet" href="shared-tree-v2-memory-view.css?v=shared-tree-v2-phase8-3-memory-view-v1-0" />
   <link rel="stylesheet" href="shared-tree-v2-keepsake.css?v=shared-tree-v2-phase8-4-keepsake-v1-0" />
   <link rel="stylesheet" href="shared-tree-v2-shared-entry.css?v=shared-tree-v2-phase8-5-shared-entry-v1-0" />
-  <link rel="stylesheet" href="friend-connection-safety.css?v=phase8-6-friend-connection-v1-0" />
+  <link rel="stylesheet" href="friend-connection-safety.css?v=phase8-6-friend-entry-v1-1" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
     // 운영 루트(/)에 같은 파일을 반영하면 G-YC872G7MH1로 자동 전송됩니다.
@@ -1239,6 +1239,17 @@
     </div>
 
     <div class="friends-overview" id="friendsOverview">
+      <button class="friend-invite-entry friend-invite-entry-primary" id="openFriendInvitePanel" type="button">
+        <span class="friend-invite-entry-icon" aria-hidden="true">＋</span>
+        <span class="friend-invite-entry-copy">
+          <b>친구 추가하기</b>
+          <small id="friendConnectionEntryHint">코드 입력 · 내 코드 복사 · 초대 링크</small>
+          <span class="friend-connection-entry-preview" id="friendConnectionEntryCode">내 친구 코드 확인하기</span>
+        </span>
+        <span class="friend-connection-entry-count hidden" id="friendConnectionEntryCount" aria-label="받은 친구 신청"></span>
+        <span class="friend-invite-entry-arrow" aria-hidden="true">›</span>
+      </button>
+
       <div class="friends-section-head">
         <div>
           <p class="sheet-kicker">MY FRIENDS</p>
@@ -1247,16 +1258,6 @@
         <span class="friends-total" id="friendsTotal">0명</span>
       </div>
       <div class="friends-list" id="friendsList" aria-live="polite"></div>
-
-      <button class="friend-invite-entry" id="openFriendInvitePanel" type="button">
-        <span class="friend-invite-entry-icon" aria-hidden="true">＋</span>
-        <span class="friend-invite-entry-copy">
-          <b>친구 연결하기</b>
-          <small id="friendConnectionEntryHint">친구 코드·링크로 정원을 안전하게 이어요</small>
-        </span>
-        <span class="friend-connection-entry-count hidden" id="friendConnectionEntryCount" aria-label="받은 친구 신청"></span>
-        <span class="friend-invite-entry-arrow" aria-hidden="true">›</span>
-      </button>
     </div>
 
     <div class="friend-invite-panel hidden" id="friendInvitePanel">
@@ -1501,8 +1502,8 @@
   <div class="heart-fruit-ceremony-lock hidden" id="heartFruitCeremonyLock" aria-hidden="true"></div>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="app.js?v=phase8-6-friend-connection-safety-v1-0"></script>
-  <script type="module" src="friend-connection-safety.js?v=phase8-6-friend-connection-v1-0"></script>
+  <script type="module" src="app.js?v=phase8-6-friend-entry-v1-1"></script>
+  <script type="module" src="friend-connection-safety.js?v=phase8-6-friend-entry-v1-1"></script>
   <script type="module" src="tree-animal-call.js?v=tree-discovery-v1-6"></script>
   <script type="module" src="forest-unicorn-preview.js?v=animal-preview-clean-v0-4"></script>
   <script type="module" src="forest-friend-cinematic.js?v=operation-special-friend-v1"></script>

@@ -1,4 +1,4 @@
-/* 오늘의숲 PHASE 8.6 · 친구 연결 구조와 초대 안전성 v1 */
+/* 오늘의숲 PHASE 8.6 · 친구 추가 진입 발견성 보정 v1.1 */
 .friend-code-auth-note {
   margin: 10px 0 0;
   padding: 11px 12px;
@@ -174,3 +174,50 @@
   .friend-request-row { grid-template-columns: 1fr; }
   .friend-request-actions { justify-content: flex-start; }
 }
+
+/* PHASE 8.6 v1.1 · 친구 추가 입구를 목록 위에서 바로 발견하도록 보정 */
+.friend-invite-entry-primary {
+  margin: 2px 0 18px;
+  padding: 15px 14px;
+  border-color: rgba(112, 166, 128, 0.32);
+  background: linear-gradient(135deg, rgba(238, 249, 236, 0.98), rgba(249, 247, 255, 0.98));
+  box-shadow: 0 9px 20px rgba(91, 126, 101, 0.07);
+}
+.friend-invite-entry-primary .friend-invite-entry-icon {
+  width: 40px;
+  height: 40px;
+  background: #dff3e1;
+  color: #5d9270;
+  font-size: 26px;
+}
+.friend-invite-entry-primary .friend-invite-entry-copy b {
+  color: #456854;
+  font-size: 14px;
+}
+.friend-invite-entry-primary .friend-invite-entry-copy small {
+  color: #768b7e;
+  font-weight: 700;
+}
+.friend-connection-entry-preview {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 7px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.76);
+  color: #62806a;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+.friend-invite-entry-primary + .friends-section-head {
+  margin-top: 0;
+}
+@media (max-width: 390px) {
+  .friend-invite-entry-primary { align-items: flex-start; }
+  .friend-invite-entry-primary .friend-invite-entry-arrow { margin-top: 8px; }
+  .friend-connection-entry-preview { white-space: normal; }
+}
+

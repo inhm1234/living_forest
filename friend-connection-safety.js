@@ -1,4 +1,4 @@
-// 오늘의숲 PHASE 8.6 · 친구 연결 구조와 초대 안전성 v1
+// 오늘의숲 PHASE 8.6 · 친구 연결 구조와 초대 안전성 v1.1
 const supabase = window.__todayForestSupabase;
 const showToast = (...args) => window.__todayForestShowToast?.(...args);
 const FRIEND_CODE_SESSION_KEY = "todayforest_pending_friend_code";
@@ -66,7 +66,9 @@ function markFeatureUnavailable() {
   featureReady = false;
   $("#friendConnectionHub")?.classList.add("hidden");
   const hint = $("#friendConnectionEntryHint");
-  if (hint) hint.textContent = "한 번만 쓰는 초대 링크로 정원을 이어요";
+  if (hint) hint.textContent = "한 번만 쓰는 초대 링크로 친구를 추가해요";
+  const preview = $("#friendConnectionEntryCode");
+  if (preview) preview.textContent = "초대 링크 만들기";
 }
 
 async function sessionUser() {
@@ -107,6 +109,10 @@ async function ensureMyFriendCode(user) {
   const code = normalizeFriendCode(row?.friend_code || "");
   const label = $("#myFriendCode");
   if (label) label.textContent = code ? formatFriendCode(code) : "코드를 준비하지 못했어요";
+  const entryCode = $("#friendConnectionEntryCode");
+  if (entryCode) entryCode.textContent = code
+    ? `내 코드 ${formatFriendCode(code)}`
+    : "내 친구 코드 확인하기";
   const copyCode = $("#copyMyFriendCode");
   const copyLink = $("#copyMyFriendLink");
   if (copyCode) {
@@ -179,8 +185,8 @@ async function loadFriendRequests() {
     count.classList.toggle("hidden", incomingCount === 0);
   }
   if (hint) hint.textContent = incomingCount
-    ? `받은 친구 신청 ${incomingCount}개를 확인해요`
-    : "친구 코드·링크로 정원을 안전하게 이어요";
+    ? `받은 친구 신청 ${incomingCount}개 · 눌러서 확인`
+    : "코드 입력 · 내 코드 복사 · 초대 링크";
   const summary = $("#friendRequestSummary");
   if (summary) summary.textContent = rows.length
     ? `받은 신청 ${incomingCount}개 · 보낸 신청 ${rows.length - incomingCount}개`
@@ -383,19 +389,21 @@ async function initializeFriendConnection() {
   bindFriendConnectionEvents();
   const user = await sessionUser();
   if (user) {
-    await loadFriendRequests();
+    await Promise.all([ensureMyFriendCode(user), loadFriendRequests()]);
     await processFriendCodeIntent();
   } else if (getFriendCodeIntent()) {
     showFriendAuthIntent();
   }
 
   window.addEventListener("todayforest:garden-session-ready", () => {
+    void sessionUser().then((readyUser) => readyUser && ensureMyFriendCode(readyUser));
     void loadFriendRequests();
     void processFriendCodeIntent();
   });
   supabase.auth.onAuthStateChange((_event, session) => {
     if (session?.user) {
       window.setTimeout(() => {
+        void ensureMyFriendCode(session.user);
         void loadFriendRequests();
         void processFriendCodeIntent();
       }, 250);
