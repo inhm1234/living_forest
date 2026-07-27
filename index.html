@@ -48,6 +48,7 @@
   <link rel="stylesheet" href="shared-tree-v2-next-cycle.css?v=shared-tree-v2-phase8-1-next-cycle-v1-0" />
   <link rel="stylesheet" href="shared-tree-v2-forest-depth.css?v=shared-tree-v2-phase8-2-forest-depth-v1-0" />
   <link rel="stylesheet" href="shared-tree-v2-memory-view.css?v=shared-tree-v2-phase8-3-memory-view-v1-0" />
+  <link rel="stylesheet" href="shared-tree-v2-keepsake.css?v=shared-tree-v2-phase8-4-keepsake-v1-0" />
   <script>
     // DEV 주소에서는 실제 GA4로 전송하지 않아 운영 통계를 섞지 않습니다.
     // 운영 루트(/)에 같은 파일을 반영하면 G-YC872G7MH1로 자동 전송됩니다.
@@ -913,6 +914,39 @@
       </section>
     </section>
 
+    <section class="shared-tree-keepsake hidden" id="sharedTreeKeepsake" aria-labelledby="sharedTreeKeepsakeTitle">
+      <div class="shared-tree-keepsake-heading">
+        <p class="growth-note-kicker">KEEP THIS MEMORY</p>
+        <h2 id="sharedTreeKeepsakeTitle">한 장의 기억으로 남겨요.</h2>
+        <p>완성한 나무와 함께한 시간을 이미지로 저장하거나 모바일에서 바로 공유할 수 있어요.</p>
+      </div>
+
+      <div class="shared-tree-keepsake-preview" aria-hidden="true">
+        <div class="shared-tree-keepsake-preview-scene">
+          <img id="sharedTreeKeepsakePreviewImage" src="assets/garden/tree_growth/tree_stage6_sunset.png" alt="" />
+        </div>
+        <div class="shared-tree-keepsake-preview-copy">
+          <small id="sharedTreeKeepsakePreviewMeta">함께한 시간 · 20번의 돌봄</small>
+          <strong id="sharedTreeKeepsakePreviewTitle">우리의 나무</strong>
+          <p id="sharedTreeKeepsakePreviewNote">함께 돌본 시간이 한 장의 기록으로 남아요.</p>
+        </div>
+      </div>
+
+      <label class="shared-tree-keepsake-partner-option hidden" id="sharedTreeKeepsakePartnerOption">
+        <input type="checkbox" id="sharedTreeKeepsakeIncludePartner" />
+        <span>
+          <b>친구의 한마디도 카드에 담기</b>
+          <small>친구의 말은 기본적으로 제외돼요. 둘이 외부 공유에 동의한 경우에만 직접 켜주세요.</small>
+        </span>
+      </label>
+
+      <div class="shared-tree-keepsake-actions">
+        <button type="button" id="sharedTreeKeepsakeSave" disabled>이미지로 저장</button>
+        <button type="button" class="is-primary" id="sharedTreeKeepsakeShare" disabled>공유하기</button>
+      </div>
+      <p class="shared-tree-keepsake-status" id="sharedTreeKeepsakeStatus" aria-live="polite">기록 카드를 준비하고 있어요.</p>
+    </section>
+
     <section class="shared-tree-completion-loop hidden" id="sharedTreeCompletionLoop" aria-label="완성 이후 이어가기"></section>
 
     <section class="shared-tree-note" aria-label="공유나무 안내">
@@ -1365,7 +1399,7 @@
   <div class="heart-fruit-ceremony-lock hidden" id="heartFruitCeremonyLock" aria-hidden="true"></div>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="app.js?v=shared-tree-v2-phase8-3-memory-view-v1-0"></script>
+  <script type="module" src="app.js?v=shared-tree-v2-phase8-4-keepsake-v1-0"></script>
   <script type="module" src="tree-animal-call.js?v=tree-discovery-v1-6"></script>
   <script type="module" src="forest-unicorn-preview.js?v=animal-preview-clean-v0-4"></script>
   <script type="module" src="forest-friend-cinematic.js?v=operation-special-friend-v1"></script>

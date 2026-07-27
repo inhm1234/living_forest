@@ -816,6 +816,16 @@ const els = {
   sharedTreeMemoryNote: $("#sharedTreeMemoryNote"),
   sharedTreeCompletionSummary: $("#sharedTreeCompletionSummary"),
   sharedTreeCompletionLoop: $("#sharedTreeCompletionLoop"),
+  sharedTreeKeepsake: $("#sharedTreeKeepsake"),
+  sharedTreeKeepsakePreviewImage: $("#sharedTreeKeepsakePreviewImage"),
+  sharedTreeKeepsakePreviewTitle: $("#sharedTreeKeepsakePreviewTitle"),
+  sharedTreeKeepsakePreviewMeta: $("#sharedTreeKeepsakePreviewMeta"),
+  sharedTreeKeepsakePreviewNote: $("#sharedTreeKeepsakePreviewNote"),
+  sharedTreeKeepsakePartnerOption: $("#sharedTreeKeepsakePartnerOption"),
+  sharedTreeKeepsakeIncludePartner: $("#sharedTreeKeepsakeIncludePartner"),
+  sharedTreeKeepsakeSave: $("#sharedTreeKeepsakeSave"),
+  sharedTreeKeepsakeShare: $("#sharedTreeKeepsakeShare"),
+  sharedTreeKeepsakeStatus: $("#sharedTreeKeepsakeStatus"),
   sharedTreeMyNoteText: $("#sharedTreeMyNoteText"),
   sharedTreePartnerNoteLabel: $("#sharedTreePartnerNoteLabel"),
   sharedTreePartnerNoteText: $("#sharedTreePartnerNoteText"),
@@ -7380,6 +7390,434 @@ function sharedTreeMemoryNoteState(tree) {
   };
 }
 
+
+let sharedTreeKeepsakeCache = {
+  key: "",
+  blob: null,
+  filename: "",
+  preparing: null,
+};
+
+function sharedTreeKeepsakeVisual(tree) {
+  if (Number(tree?.growthVersion || 1) === 2) {
+    return {
+      src: "assets/garden/shared_tree_v2/stage5-growth-qa.webp",
+      sx: 1280,
+      sy: 0,
+      sw: 640,
+      sh: 640,
+      sprite: true,
+    };
+  }
+  return {
+    src: sharedTreeImagePath(6),
+    sx: 0,
+    sy: 0,
+    sw: 0,
+    sh: 0,
+    sprite: false,
+  };
+}
+
+function sharedTreeKeepsakeData(tree, friend, includePartner = false) {
+  const notes = sharedTreeMemoryNoteState(tree);
+  const detail = tree?.v2Detail;
+  const finalName = String(tree?.finalName || detail?.profile?.finalName || "우리의 나무").trim() || "우리의 나무";
+  const started = formatSharedTreeLifecycleDate(tree?.createdAt);
+  const completed = formatSharedTreeLifecycleDate(tree?.completedAt);
+  const duration = sharedTreeMemoryDuration(tree) || "함께한 시간";
+  const totalCareCount = Math.max(
+    Number(tree?.progressCount || 0),
+    Number(tree?.targetSteps || 0),
+    Array.isArray(detail?.recentEvents) ? detail.recentEvents.length : 0,
+    20
+  );
+  return {
+    treeId: String(tree?.id || ""),
+    finalName,
+    started,
+    completed,
+    duration,
+    totalCareCount,
+    myNote: String(notes.myNote?.body || "").trim(),
+    partnerNote: includePartner ? String(notes.partnerNote?.body || "").trim() : "",
+    hasPartnerNote: Boolean(notes.partnerNote?.body),
+    friendName: String(friend?.name || "친구"),
+    visual: sharedTreeKeepsakeVisual(tree),
+  };
+}
+
+function sharedTreeKeepsakeFilename(name) {
+  const safeName = String(name || "우리의-나무")
+    .normalize("NFKC")
+    .replace(/[\\/:*?"<>|]+/g, "")
+    .replace(/\s+/g, "-")
+    .slice(0, 40) || "우리의-나무";
+  return `오늘의숲-${safeName}.png`;
+}
+
+function sharedTreeKeepsakeRoundRect(ctx, x, y, width, height, radius) {
+  const r = Math.max(0, Math.min(radius, width / 2, height / 2));
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + width, y, x + width, y + height, r);
+  ctx.arcTo(x + width, y + height, x, y + height, r);
+  ctx.arcTo(x, y + height, x, y, r);
+  ctx.arcTo(x, y, x + width, y, r);
+  ctx.closePath();
+}
+
+function sharedTreeKeepsakeFillRoundRect(ctx, x, y, width, height, radius, fill) {
+  sharedTreeKeepsakeRoundRect(ctx, x, y, width, height, radius);
+  ctx.fillStyle = fill;
+  ctx.fill();
+}
+
+function sharedTreeKeepsakeWrappedLines(ctx, text, maxWidth, maxLines = 3) {
+  const chars = Array.from(String(text || ""));
+  const lines = [];
+  let current = "";
+  for (const char of chars) {
+    const next = current + char;
+    if (current && ctx.measureText(next).width > maxWidth) {
+      lines.push(current.trim());
+      current = char;
+      if (lines.length >= maxLines) break;
+    } else {
+      current = next;
+    }
+  }
+  if (lines.length < maxLines && current.trim()) lines.push(current.trim());
+  if (lines.length === maxLines && chars.join("").length > lines.join("").length) {
+    let last = lines[maxLines - 1];
+    while (last && ctx.measureText(`${last}…`).width > maxWidth) last = last.slice(0, -1);
+    lines[maxLines - 1] = `${last}…`;
+  }
+  return lines;
+}
+
+function sharedTreeKeepsakeDrawLines(ctx, lines, x, y, lineHeight, align = "left") {
+  ctx.textAlign = align;
+  lines.forEach((line, index) => ctx.fillText(line, x, y + index * lineHeight));
+}
+
+function sharedTreeKeepsakeLoadImage(src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.decoding = "async";
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("완성 나무 이미지를 불러오지 못했어요."));
+    image.src = src;
+    if (image.complete && image.naturalWidth) resolve(image);
+  });
+}
+
+async function createSharedTreeKeepsakeBlob(data) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1080;
+  canvas.height = 1350;
+  const ctx = canvas.getContext("2d", { alpha: false });
+  if (!ctx) throw new Error("기록 카드를 만들 수 없는 브라우저예요.");
+
+  const background = ctx.createLinearGradient(0, 0, 1080, 1350);
+  background.addColorStop(0, "#f1efff");
+  background.addColorStop(.54, "#fff9ed");
+  background.addColorStop(1, "#eaf6ee");
+  ctx.fillStyle = background;
+  ctx.fillRect(0, 0, 1080, 1350);
+
+  ctx.globalAlpha = .30;
+  ctx.fillStyle = "#ffe8a5";
+  ctx.beginPath();
+  ctx.arc(980, 110, 175, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#dfe8ff";
+  ctx.beginPath();
+  ctx.arc(60, 1230, 220, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  ctx.shadowColor = "rgba(76, 92, 81, .12)";
+  ctx.shadowBlur = 30;
+  ctx.shadowOffsetY = 12;
+  sharedTreeKeepsakeFillRoundRect(ctx, 48, 48, 984, 1254, 44, "rgba(255,255,255,.92)");
+  ctx.shadowColor = "transparent";
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
+
+  ctx.fillStyle = "#82958a";
+  ctx.font = '800 20px system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif';
+  ctx.textAlign = "left";
+  ctx.fillText("OUR LITTLE TREE · 오늘의숲", 100, 112);
+
+  ctx.fillStyle = "#3f5b4a";
+  ctx.font = '850 56px system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif';
+  const titleLines = sharedTreeKeepsakeWrappedLines(ctx, data.finalName, 820, 2);
+  sharedTreeKeepsakeDrawLines(ctx, titleLines, 100, 188, 68);
+
+  const titleEndY = 188 + Math.max(0, titleLines.length - 1) * 68;
+  ctx.fillStyle = "#87958b";
+  ctx.font = '700 22px system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif';
+  ctx.fillText(`${data.started} 시작 · ${data.completed} 완성`, 100, titleEndY + 45);
+
+  const sceneY = titleEndY + 78;
+  const sceneH = Math.max(500, 850 - sceneY);
+  const sceneGradient = ctx.createLinearGradient(100, sceneY, 980, sceneY + sceneH);
+  sceneGradient.addColorStop(0, "#eeeaff");
+  sceneGradient.addColorStop(.48, "#fff2e8");
+  sceneGradient.addColorStop(1, "#e9f7e9");
+  sharedTreeKeepsakeFillRoundRect(ctx, 100, sceneY, 880, sceneH, 34, sceneGradient);
+
+  ctx.save();
+  sharedTreeKeepsakeRoundRect(ctx, 100, sceneY, 880, sceneH, 34);
+  ctx.clip();
+  ctx.globalAlpha = .55;
+  ctx.fillStyle = "#fff7c7";
+  ctx.beginPath();
+  ctx.arc(245, sceneY + sceneH * .67, 28, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#eadcff";
+  ctx.beginPath();
+  ctx.arc(840, sceneY + sceneH * .69, 24, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  const image = await sharedTreeKeepsakeLoadImage(data.visual.src);
+  if (data.visual.sprite) {
+    const size = Math.min(660, sceneH + 75);
+    const dx = 540 - size / 2;
+    const dy = sceneY + sceneH - size + 18;
+    ctx.drawImage(
+      image,
+      data.visual.sx,
+      data.visual.sy,
+      data.visual.sw,
+      data.visual.sh,
+      dx,
+      dy,
+      size,
+      size
+    );
+  } else {
+    const maxWidth = 720;
+    const maxHeight = sceneH - 18;
+    const scale = Math.min(maxWidth / image.naturalWidth, maxHeight / image.naturalHeight);
+    const width = image.naturalWidth * scale;
+    const height = image.naturalHeight * scale;
+    ctx.drawImage(image, 540 - width / 2, sceneY + sceneH - height + 5, width, height);
+  }
+  ctx.restore();
+
+  const statsY = 890;
+  const statGap = 14;
+  const statWidth = (880 - statGap * 2) / 3;
+  const stats = [
+    ["함께한 기간", data.duration],
+    ["함께한 돌봄", `${data.totalCareCount}번`],
+    ["완성된 기록", "한 그루"],
+  ];
+  stats.forEach(([label, value], index) => {
+    const x = 100 + index * (statWidth + statGap);
+    sharedTreeKeepsakeFillRoundRect(ctx, x, statsY, statWidth, 92, 24, "rgba(244,248,241,.88)");
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#9aa69d";
+    ctx.font = '750 17px system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif';
+    ctx.fillText(label, x + statWidth / 2, statsY + 31);
+    ctx.fillStyle = "#57705f";
+    ctx.font = '850 25px system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif';
+    ctx.fillText(value, x + statWidth / 2, statsY + 66);
+  });
+
+  const quotes = [];
+  if (data.myNote) quotes.push({ label: "나의 한마디", body: data.myNote });
+  if (data.partnerNote) quotes.push({ label: "친구의 한마디", body: data.partnerNote });
+  const quoteY = 1010;
+  if (quotes.length) {
+    const gap = 16;
+    const width = quotes.length > 1 ? (880 - gap) / 2 : 880;
+    quotes.forEach((quote, index) => {
+      const x = 100 + index * (width + gap);
+      sharedTreeKeepsakeFillRoundRect(ctx, x, quoteY, width, 180, 26, "rgba(255,250,241,.92)");
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#a08472";
+      ctx.font = '800 17px system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif';
+      ctx.fillText(quote.label, x + 26, quoteY + 38);
+      ctx.fillStyle = "#566d5d";
+      ctx.font = '800 27px system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif';
+      const lines = sharedTreeKeepsakeWrappedLines(ctx, quote.body, width - 52, 3);
+      sharedTreeKeepsakeDrawLines(ctx, lines, x + 26, quoteY + 82, 37);
+    });
+  } else {
+    sharedTreeKeepsakeFillRoundRect(ctx, 100, quoteY, 880, 180, 26, "rgba(255,250,241,.92)");
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#627768";
+    ctx.font = '800 27px system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif';
+    ctx.fillText("함께 돌본 시간이 이 나무에 오래 남아 있어요.", 540, quoteY + 93);
+  }
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#7d8f83";
+  ctx.font = '750 19px system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif';
+  ctx.fillText("함께한 시간이 사라지지 않고 한 그루의 나무로 남았어요.", 540, 1242);
+  ctx.fillStyle = "#9ba89f";
+  ctx.font = '700 16px system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans KR", sans-serif';
+  ctx.fillText("todayforest.pages.dev", 540, 1276);
+
+  return await new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob);
+      else reject(new Error("기록 카드 이미지 변환에 실패했어요."));
+    }, "image/png", .96);
+  });
+}
+
+function sharedTreeKeepsakeKey(data) {
+  return [
+    data.treeId,
+    data.finalName,
+    data.started,
+    data.completed,
+    data.myNote,
+    data.partnerNote,
+    data.visual.src,
+  ].join("|");
+}
+
+function setSharedTreeKeepsakeReady(ready, message = "") {
+  if (els.sharedTreeKeepsakeSave) els.sharedTreeKeepsakeSave.disabled = !ready;
+  if (els.sharedTreeKeepsakeShare) els.sharedTreeKeepsakeShare.disabled = !ready;
+  if (els.sharedTreeKeepsakeStatus) els.sharedTreeKeepsakeStatus.textContent = message;
+}
+
+function prepareSharedTreeKeepsake(data) {
+  const key = sharedTreeKeepsakeKey(data);
+  if (sharedTreeKeepsakeCache.key === key && sharedTreeKeepsakeCache.blob) {
+    setSharedTreeKeepsakeReady(true, "저장하거나 공유할 준비가 되었어요.");
+    return;
+  }
+  if (sharedTreeKeepsakeCache.key === key && sharedTreeKeepsakeCache.preparing) return;
+
+  sharedTreeKeepsakeCache = {
+    key,
+    blob: null,
+    filename: sharedTreeKeepsakeFilename(data.finalName),
+    preparing: null,
+  };
+  setSharedTreeKeepsakeReady(false, "기록 카드를 준비하고 있어요.");
+  const preparing = createSharedTreeKeepsakeBlob(data)
+    .then((blob) => {
+      if (sharedTreeKeepsakeCache.key !== key) return;
+      sharedTreeKeepsakeCache.blob = blob;
+      sharedTreeKeepsakeCache.preparing = null;
+      setSharedTreeKeepsakeReady(true, "저장하거나 공유할 준비가 되었어요.");
+    })
+    .catch((error) => {
+      console.warn("TodayForest shared-tree keepsake build error:", error);
+      if (sharedTreeKeepsakeCache.key !== key) return;
+      sharedTreeKeepsakeCache.preparing = null;
+      setSharedTreeKeepsakeReady(false, "카드를 준비하지 못했어요. 화면을 새로고침해 주세요.");
+    });
+  sharedTreeKeepsakeCache.preparing = preparing;
+}
+
+function renderSharedTreeKeepsake(tree, friend, visible) {
+  if (!els.sharedTreeKeepsake) return;
+  els.sharedTreeKeepsake.classList.toggle("hidden", !visible);
+  if (!visible) return;
+
+  const treeChanged = els.sharedTreeKeepsake.dataset.treeId !== String(tree?.id || "");
+  els.sharedTreeKeepsake.dataset.treeId = String(tree?.id || "");
+  if (treeChanged && els.sharedTreeKeepsakeIncludePartner) {
+    els.sharedTreeKeepsakeIncludePartner.checked = false;
+  }
+
+  const noteState = sharedTreeMemoryNoteState(tree);
+  const hasPartnerNote = Boolean(noteState.partnerNote?.body);
+  if (els.sharedTreeKeepsakePartnerOption) {
+    els.sharedTreeKeepsakePartnerOption.classList.toggle("hidden", !hasPartnerNote);
+  }
+  if (!hasPartnerNote && els.sharedTreeKeepsakeIncludePartner) {
+    els.sharedTreeKeepsakeIncludePartner.checked = false;
+  }
+
+  const includePartner = Boolean(hasPartnerNote && els.sharedTreeKeepsakeIncludePartner?.checked);
+  const data = sharedTreeKeepsakeData(tree, friend, includePartner);
+  if (els.sharedTreeKeepsakePreviewTitle) els.sharedTreeKeepsakePreviewTitle.textContent = data.finalName;
+  if (els.sharedTreeKeepsakePreviewMeta) {
+    els.sharedTreeKeepsakePreviewMeta.textContent = `${data.duration} · ${data.totalCareCount}번의 돌봄`;
+  }
+  if (els.sharedTreeKeepsakePreviewNote) {
+    els.sharedTreeKeepsakePreviewNote.textContent = includePartner
+      ? "두 사람의 한마디까지 함께 담겨요."
+      : data.myNote || "함께 돌본 시간이 한 장의 기록으로 남아요.";
+  }
+  if (els.sharedTreeKeepsakePreviewImage) {
+    els.sharedTreeKeepsakePreviewImage.src = data.visual.src;
+    els.sharedTreeKeepsakePreviewImage.classList.toggle("is-sprite", data.visual.sprite);
+  }
+  prepareSharedTreeKeepsake(data);
+}
+
+function downloadSharedTreeKeepsake(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.rel = "noopener";
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+function currentSharedTreeKeepsakeEntry() {
+  if (!sharedTreeKeepsakeCache.blob) {
+    showToast("기록 카드를 준비하는 중이에요. 잠시 후 다시 눌러 주세요.");
+    return null;
+  }
+  return sharedTreeKeepsakeCache;
+}
+
+function saveSharedTreeKeepsakeImage() {
+  const entry = currentSharedTreeKeepsakeEntry();
+  if (!entry) return;
+  downloadSharedTreeKeepsake(entry.blob, entry.filename);
+  showToast("완성 나무 기록 카드를 저장했어요.");
+}
+
+async function shareSharedTreeKeepsakeImage() {
+  const entry = currentSharedTreeKeepsakeEntry();
+  if (!entry) return;
+
+  const file = typeof File === "function"
+    ? new File([entry.blob], entry.filename, { type: "image/png" })
+    : null;
+  const canShareFile = Boolean(
+    file &&
+    typeof navigator.share === "function" &&
+    typeof navigator.canShare === "function" &&
+    navigator.canShare({ files: [file] })
+  );
+
+  if (!canShareFile) {
+    downloadSharedTreeKeepsake(entry.blob, entry.filename);
+    showToast("이 기기에서는 이미지 공유가 지원되지 않아 카드로 저장했어요.");
+    return;
+  }
+
+  try {
+    await navigator.share({
+      files: [file],
+      title: "오늘의숲 · 완성 나무",
+      text: "함께 돌본 시간이 한 그루의 나무로 남았어요.",
+    });
+  } catch (error) {
+    if (error?.name === "AbortError") return;
+    console.warn("TodayForest shared-tree keepsake share error:", error);
+    showToast("공유를 열지 못했어요. 이미지로 저장해 다시 시도해 주세요.");
+  }
+}
+
 function sharedTreeMemoryDuration(tree) {
   const startedAt = tree?.createdAt ? new Date(tree.createdAt).getTime() : Number.NaN;
   const endedAt = tree?.completedAt ? new Date(tree.completedAt).getTime() : Number.NaN;
@@ -7529,6 +7967,7 @@ function renderSharedTreeMemoryNote(tree, friend, isComplete) {
   const isV2 = Number(tree?.growthVersion || 1) === 2;
   const nameReady = Boolean(tree?.v2Detail?.profile?.finalName);
   const visible = Boolean(isComplete && (!isV2 || nameReady));
+  renderSharedTreeKeepsake(tree, friend, visible);
   els.sharedTreeMemoryNote.classList.toggle("hidden", !visible);
   if (!visible) {
     renderSharedTreeV2Home(tree, friend);
@@ -7662,10 +8101,6 @@ function renderSharedTreeV1View(treeId = activeSharedTreeId) {
   if (!tree) return false;
 
   els.sharedTreeView.classList.remove("is-memory-view");
-  if (els.returnToFriendsFromSharedTree) {
-    els.returnToFriendsFromSharedTree.textContent = "← 친구";
-    els.returnToFriendsFromSharedTree.setAttribute("aria-label", "친구 목록으로 돌아가기");
-  }
   els.sharedTreeLegacyProgress?.classList.remove("hidden");
   els.sharedTreeV2Panel?.classList.add("hidden");
   els.sharedTreeV2DevTools?.classList.add("hidden");
@@ -7679,6 +8114,14 @@ function renderSharedTreeV1View(treeId = activeSharedTreeId) {
   const reachedTarget = progress >= target;
   const complete = serverComplete || reachedTarget;
   const stage = sharedTreeStageForProgress(progress, target);
+  els.sharedTreeView.classList.toggle("is-memory-view", serverComplete);
+  if (els.returnToFriendsFromSharedTree) {
+    els.returnToFriendsFromSharedTree.textContent = serverComplete ? "← 함께한 숲" : "← 친구";
+    els.returnToFriendsFromSharedTree.setAttribute(
+      "aria-label",
+      serverComplete ? `${friend.name}와의 함께한 숲으로 돌아가기` : "친구 목록으로 돌아가기"
+    );
+  }
 
   els.sharedTreePartnerName.textContent = serverComplete
     ? `${friend.name}와 함께 완성한 나무`
@@ -8080,6 +8523,7 @@ function renderSharedTreeV2View(tree) {
     els.sharedTreeV2RecentStory.innerHTML = "";
     els.sharedTreeMemoryNote?.classList.add("hidden");
     els.sharedTreeCompletionSummary?.classList.add("hidden");
+    els.sharedTreeKeepsake?.classList.add("hidden");
     els.sharedTreeCompletionLoop?.classList.add("hidden");
     void hydrateSharedTreeV2(tree.id, { silent: false });
     return true;
@@ -10301,6 +10745,13 @@ function bindEvents() {
   });
   els.sharedTreeNoteForm?.addEventListener("submit", (event) => { void saveSharedTreeMemoryNote(event); });
   els.sharedTreeNoteInput?.addEventListener("input", updateSharedTreeNoteCount);
+  els.sharedTreeKeepsakeIncludePartner?.addEventListener("change", () => {
+    const tree = (state.sharedTrees || []).find((item) => item.id === activeSharedTreeId);
+    if (!tree || !tree.completedAt) return;
+    renderSharedTreeKeepsake(tree, friendForSharedTree(tree), true);
+  });
+  els.sharedTreeKeepsakeSave?.addEventListener("click", saveSharedTreeKeepsakeImage);
+  els.sharedTreeKeepsakeShare?.addEventListener("click", () => { void shareSharedTreeKeepsakeImage(); });
   window.addEventListener("focus", async () => {
     if (!currentUser) return;
     try {
