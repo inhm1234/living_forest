@@ -7448,6 +7448,9 @@ function togetherForestTraceMarkup(pageState, slots) {
     const rotate = -11 + ((seed >>> 12) % 23);
     const scale = .88 + (((seed >>> 17) % 18) / 100);
     const sideClass = x < 28 ? "is-near-left" : x > 72 ? "is-near-right" : "is-centered";
+    // PHASE 9.2.1: 아래쪽 흔적은 말풍선을 아이콘 아래로 내려
+    // 완성 나무의 날짜/이름 라벨을 가리지 않도록 합니다.
+    const verticalClass = y >= 64 ? "is-message-below" : "is-message-above";
     const style = [
       `--trace-x:${x}%`,
       `--trace-y:${y}%`,
@@ -7458,7 +7461,7 @@ function togetherForestTraceMarkup(pageState, slots) {
     const traceId = `${pageState.page}-${traceIndex}-${seed}`;
 
     return `
-      <button class="together-forest-trace is-${trace.type} ${sideClass}" type="button" data-forest-trace="${escapeAttr(traceId)}" style="${style}" aria-label="${escapeAttr(trace.label)} 살펴보기" aria-expanded="false">
+      <button class="together-forest-trace is-${trace.type} ${sideClass} ${verticalClass}" type="button" data-forest-trace="${escapeAttr(traceId)}" style="${style}" aria-label="${escapeAttr(trace.label)} 살펴보기" aria-expanded="false">
         <span class="together-forest-trace-touch" aria-hidden="true"></span>
         <span class="together-forest-trace-icon" aria-hidden="true">${trace.icon}</span>
         <span class="together-forest-trace-message" role="status" aria-hidden="true">${escapeHTML(trace.message)}</span>
