@@ -7657,9 +7657,9 @@ function togetherForestPathNavigationMarkup(pageState) {
     </div>`;
 }
 
-// PHASE 9.3.2: 낮 꽃잎을 둥근 단일 도형에서 2~3장의 비대칭 꽃잎 묶음으로 교체합니다.
-// 꽃잎마다 크기와 흔들림 박자를 다르게 하여 젤리·사탕처럼 보이던 인상을 없애고,
-// 첫 진입 발견성은 유지하되 한 묶음씩 느슨하게 흩날리도록 합니다.
+// PHASE 9.3.3: 노을 빛씨앗을 작은 원형 점에서 형태가 있는 발광 씨앗으로 재설계합니다.
+// 첫 진입 후 하나가 먼저 떠오르고 나머지는 시차를 두어 나타나며,
+// 작은 씨앗 몸체·빛무리·잔광이 함께 움직여 배경 반짝임과 구분되도록 합니다.
 function togetherForestAmbienceMarkup(friendId, pageState, period) {
   const isDeepest = pageState.page > 0 && pageState.isLastPage;
   const particleCount = isDeepest ? 4 : 3;
@@ -7667,58 +7667,75 @@ function togetherForestAmbienceMarkup(friendId, pageState, period) {
   const particles = Array.from({ length: particleCount }, (_, index) => {
     const seed = togetherForestStableHash(`${friendId}|${pageState.page}|${period}|ambience|${index}`);
     const isDay = period === "day";
+    const isSunset = period === "sunset";
     const x = isDay
       ? index === 0
         ? 30 + ((seed >>> 2) % 35)
         : 13 + (seed % 70)
-      : 12 + (seed % 76);
+      : isSunset
+        ? index === 0
+          ? 45 + ((seed >>> 2) % 15)
+          : 18 + (seed % 64)
+        : 12 + (seed % 76);
     const y = isDay
       ? index === 0
         ? 32 + ((seed >>> 7) % 14)
         : 33 + ((seed >>> 7) % 25)
-      : 17 + ((seed >>> 7) % 43);
+      : isSunset
+        ? index === 0
+          ? 58 + ((seed >>> 7) % 9)
+          : 35 + ((seed >>> 7) % 30)
+        : 17 + ((seed >>> 7) % 43);
     const size = period === "night"
       ? 4 + ((seed >>> 12) % 4)
       : isDay
         ? 34 + ((seed >>> 12) % 6) + (index === 0 ? 2 : 0)
-        : 5 + ((seed >>> 12) % 4);
+        : 20 + ((seed >>> 12) % 5) + (index === 0 ? 3 : 0);
     const direction = ((seed >>> 16) % 2) === 0 ? -1 : 1;
     const driftX = direction * (isDay
       ? 82 + ((seed >>> 17) % 55)
-      : 36 + ((seed >>> 17) % 48));
+      : isSunset
+        ? 42 + ((seed >>> 17) % 44)
+        : 36 + ((seed >>> 17) % 48));
     const driftY = isDay
       ? 66 + ((seed >>> 23) % 34)
-      : -14 + ((seed >>> 23) % 31);
+      : isSunset
+        ? -58 - ((seed >>> 23) % 36)
+        : -14 + ((seed >>> 23) % 31);
     const duration = period === "night"
       ? 10 + ((seed >>> 4) % 8)
       : isDay
         ? 14 + (((seed >>> 4) % 7) / 2)
-        : 14 + ((seed >>> 4) % 8);
+        : 12.5 + (((seed >>> 4) % 7) / 2);
     const delay = isDay
       ? 1.15 + (index * 5.85) + (pageState.page * .18)
-      : -1 * (1 + ((seed >>> 9) % Math.max(2, Math.floor(duration) - 1)));
+      : isSunset
+        ? 1.35 + (index * 5.15) + (pageState.page * .16)
+        : -1 * (1 + ((seed >>> 9) % Math.max(2, Math.floor(duration) - 1)));
     const rotate = -22 + ((seed >>> 25) % 45);
     const opacity = period === "night"
       ? .58 + (((seed >>> 20) % 24) / 100)
       : isDay
         ? .66 + (((seed >>> 20) % 10) / 100) + (index === 0 ? .04 : 0)
-        : .30 + (((seed >>> 20) % 23) / 100);
+        : .72 + (((seed >>> 20) % 12) / 100) + (index === 0 ? .05 : 0);
     const style = [
       `--ambience-x:${x}%`,
       `--ambience-y:${y}%`,
       `--ambience-size:${size}px`,
       `--ambience-drift-x:${driftX}px`,
       `--ambience-drift-y:${driftY}px`,
-      `--ambience-sway:${isDay ? 8 + ((seed >>> 13) % 9) : 0}px`,
+      `--ambience-sway:${isDay ? 8 + ((seed >>> 13) % 9) : isSunset ? 7 + ((seed >>> 13) % 8) : 0}px`,
       `--ambience-duration:${duration.toFixed(1)}s`,
       `--ambience-delay:${delay.toFixed(2)}s`,
       `--ambience-rotate:${rotate}deg`,
-      `--ambience-opacity:${Math.min(.92, opacity).toFixed(2)}`,
+      `--ambience-opacity:${Math.min(.94, opacity).toFixed(2)}`,
     ].join(";");
-    const petalPieces = isDay
+    const innerMarkup = isDay
       ? `<span class="together-forest-petal-piece"></span><span class="together-forest-petal-piece"></span>${((seed >>> 29) % 3) === 0 ? "" : '<span class="together-forest-petal-piece"></span>'}`
-      : "";
-    return `<i class="together-forest-ambience-particle${isDay && index === 0 ? " is-lead" : ""}" style="${style}">${petalPieces}</i>`;
+      : isSunset
+        ? '<span class="together-forest-glow-seed-aura"></span><span class="together-forest-glow-seed-body"></span><span class="together-forest-glow-seed-spark"></span>'
+        : "";
+    return `<i class="together-forest-ambience-particle${(isDay || isSunset) && index === 0 ? " is-lead" : ""}" style="${style}">${innerMarkup}</i>`;
   }).join("");
 
   return `

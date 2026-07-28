@@ -1,5 +1,5 @@
-/* 오늘의숲 · PHASE 9.3.2
-   함께한 숲의 숨결 v1 · 낮 꽃잎 형태·흩날림 재설계.
+/* 오늘의숲 · PHASE 9.3.3
+   함께한 숲의 숨결 v1 · 노을 빛씨앗 발견성·형태 재설계.
    낮에는 작은 꽃잎, 노을에는 빛씨앗, 밤에는 반딧불이 아주 드물게 지나갑니다.
    기능·보상·수집 요소가 아닌 배경의 생명감이며 모든 레이어는 입력을 받지 않습니다. */
 
@@ -84,12 +84,54 @@
   animation: together-forest-petal-flutter-c 1.62s -1.18s ease-in-out infinite alternate;
 }
 
-/* 노을: 꽃잎보다 더 작고 부드러운 빛씨앗. */
+/* 노을: 배경의 흰 반짝임과 구분되는, 몸체가 있는 작은 빛씨앗.
+   한 점을 크게 번쩍이게 하지 않고 씨앗 몸체·빛무리·잔광을 나누어 표현합니다. */
 .together-forest-ambience.is-glow-seed .together-forest-ambience-particle {
+  width: var(--ambience-size);
+  height: calc(var(--ambience-size) * 1.34);
+  transform-origin: 50% 62%;
+  animation: together-forest-glow-seed-float var(--ambience-duration) var(--ambience-delay) cubic-bezier(.34,.05,.38,.98) infinite;
+}
+
+.together-forest-glow-seed-aura,
+.together-forest-glow-seed-body,
+.together-forest-glow-seed-spark {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+}
+
+.together-forest-glow-seed-aura {
+  inset: -25% -38%;
   border-radius: 50%;
-  background: rgba(255, 232, 169, .92);
-  box-shadow: 0 0 7px rgba(255, 204, 127, .58), 0 0 14px rgba(255, 188, 116, .22);
-  animation: together-forest-glow-seed-float var(--ambience-duration) var(--ambience-delay) ease-in-out infinite;
+  background: radial-gradient(circle, rgba(255, 249, 211, .42) 0 12%, rgba(255, 218, 132, .19) 30%, rgba(255, 178, 95, .06) 52%, transparent 72%);
+  animation: together-forest-glow-seed-aura 2.6s -.7s ease-in-out infinite;
+}
+
+.together-forest-glow-seed-body {
+  top: 5%;
+  left: 18%;
+  width: 64%;
+  height: 82%;
+  background: url("assets/effects/forest-glow-seed-sunset-v1.svg") center / contain no-repeat;
+  filter: drop-shadow(0 0 1px rgba(255, 252, 224, .96)) drop-shadow(0 0 3px rgba(255, 183, 76, .58));
+  transform-origin: 50% 66%;
+  animation: together-forest-glow-seed-turn 2.35s -.4s ease-in-out infinite alternate;
+}
+
+.together-forest-glow-seed-spark {
+  top: 6%;
+  right: 4%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(255, 253, 222, .96);
+  box-shadow: 0 0 4px rgba(255, 242, 175, .88), 0 0 8px rgba(255, 201, 107, .48);
+  animation: together-forest-glow-seed-spark 2.1s -1.1s ease-in-out infinite;
+}
+
+.together-forest-ambience.is-glow-seed .together-forest-ambience-particle.is-lead .together-forest-glow-seed-aura {
+  inset: -31% -44%;
 }
 
 /* 밤: 크기를 키우지 않고 빛의 호흡만으로 발견되는 반딧불. */
@@ -162,21 +204,51 @@
 }
 
 @keyframes together-forest-glow-seed-float {
-  0%, 14% {
+  0%, 8% {
     opacity: 0;
-    transform: translate3d(0, 8px, 0) scale(.72);
+    transform: translate3d(0, 10px, 0) rotate(calc(var(--ambience-rotate) - 5deg)) scale(.76);
   }
-  24% { opacity: var(--ambience-opacity); }
-  43% { opacity: .18; }
-  56% { opacity: var(--ambience-opacity); }
-  72% {
+  16% {
+    opacity: var(--ambience-opacity);
+    transform: translate3d(0, 0, 0) rotate(var(--ambience-rotate)) scale(.92);
+  }
+  31% {
+    opacity: calc(var(--ambience-opacity) * .92);
+    transform: translate3d(calc((var(--ambience-drift-x) * .24) + var(--ambience-sway)), calc(var(--ambience-drift-y) * .22), 0) rotate(calc(var(--ambience-rotate) + 8deg)) scale(.97);
+  }
+  49% {
+    opacity: calc(var(--ambience-opacity) * .78);
+    transform: translate3d(calc((var(--ambience-drift-x) * .52) - var(--ambience-sway)), calc(var(--ambience-drift-y) * .53), 0) rotate(calc(var(--ambience-rotate) - 6deg)) scale(1);
+  }
+  68% {
+    opacity: calc(var(--ambience-opacity) * .54);
+    transform: translate3d(calc((var(--ambience-drift-x) * .78) + (var(--ambience-sway) * .35)), calc(var(--ambience-drift-y) * .80), 0) rotate(calc(var(--ambience-rotate) + 6deg)) scale(1.02);
+  }
+  82% {
     opacity: 0;
-    transform: translate3d(var(--ambience-drift-x), var(--ambience-drift-y), 0) scale(1.02);
+    transform: translate3d(var(--ambience-drift-x), var(--ambience-drift-y), 0) rotate(calc(var(--ambience-rotate) - 2deg)) scale(1.04);
   }
   100% {
     opacity: 0;
-    transform: translate3d(var(--ambience-drift-x), var(--ambience-drift-y), 0) scale(1.02);
+    transform: translate3d(var(--ambience-drift-x), var(--ambience-drift-y), 0) rotate(calc(var(--ambience-rotate) - 2deg)) scale(1.04);
   }
+}
+
+@keyframes together-forest-glow-seed-aura {
+  0%, 100% { opacity: .46; transform: scale(.88); }
+  50% { opacity: .92; transform: scale(1.08); }
+}
+
+@keyframes together-forest-glow-seed-turn {
+  0% { transform: rotate(-13deg) scaleX(.72); }
+  46% { transform: rotate(4deg) scaleX(1); }
+  100% { transform: rotate(17deg) scaleX(.66); }
+}
+
+@keyframes together-forest-glow-seed-spark {
+  0%, 36%, 100% { opacity: .16; transform: scale(.62); }
+  52% { opacity: .96; transform: scale(1.18); }
+  70% { opacity: .34; transform: scale(.82); }
 }
 
 @keyframes together-forest-firefly-wander {
@@ -219,7 +291,10 @@
     opacity: .18;
   }
 
-  .together-forest-petal-piece {
+  .together-forest-petal-piece,
+  .together-forest-glow-seed-aura,
+  .together-forest-glow-seed-body,
+  .together-forest-glow-seed-spark {
     animation: none !important;
   }
 }

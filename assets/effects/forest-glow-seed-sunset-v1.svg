@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 52" role="img" aria-label="">
+  <defs>
+    <linearGradient id="wing" x1="5" y1="7" x2="29" y2="43" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fffbe4" stop-opacity=".94"/>
+      <stop offset=".52" stop-color="#ffe49a" stop-opacity=".82"/>
+      <stop offset="1" stop-color="#f4a94e" stop-opacity=".50"/>
+    </linearGradient>
+    <linearGradient id="core" x1="15" y1="8" x2="21" y2="43" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fffef0"/>
+      <stop offset=".38" stop-color="#ffe475"/>
+      <stop offset="1" stop-color="#e98b32"/>
+    </linearGradient>
+  </defs>
+  <path d="M18 3.8C11.5 8.3 7.2 15.8 8.1 23.7c.9 7.6 5.5 12.7 9.9 18.8 4.4-6.1 9-11.2 9.9-18.8.9-7.9-3.4-15.4-9.9-19.9Z" fill="url(#wing)" stroke="#e9a34d" stroke-width=".72" stroke-opacity=".72"/>
+  <path d="M18 7.1c-2.8 4.5-4.1 10.3-3.4 16 .7 6 2.1 11.4 3.4 18.8 1.3-7.4 2.7-12.8 3.4-18.8.7-5.7-.6-11.5-3.4-16Z" fill="url(#core)" stroke="#fff3b8" stroke-width=".48" stroke-opacity=".88"/>
+  <path d="M18 9.4c.2 8.8.1 20.2 0 31.5" fill="none" stroke="#fffde2" stroke-width="1.15" stroke-linecap="round" stroke-opacity=".92"/>
+  <path d="M12.2 18.8c2.1-2.2 3.9-4.9 5.2-8.1M23.8 18.8c-2.1-2.2-3.9-4.9-5.2-8.1" fill="none" stroke="#fff7cc" stroke-width=".85" stroke-linecap="round" stroke-opacity=".68"/>
+  <circle cx="18" cy="5.1" r="1.7" fill="#fffef0" stroke="#f0bd61" stroke-width=".45"/>
+</svg>
