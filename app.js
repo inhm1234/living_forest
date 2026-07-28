@@ -7657,9 +7657,9 @@ function togetherForestPathNavigationMarkup(pageState) {
     </div>`;
 }
 
-// PHASE 9.3.1: 낮 꽃잎은 은은함을 유지하되 첫 진입 후 3~5초 안에 한 번은 발견됩니다.
-// 낮에는 밝은 하늘을 피하고 나무선~잔디 구간을 지나도록 경로를 좁혔으며,
-// 양의 지연값으로 입자들이 순서대로 나타나 한꺼번에 장식처럼 날리지 않게 합니다.
+// PHASE 9.3.2: 낮 꽃잎을 둥근 단일 도형에서 2~3장의 비대칭 꽃잎 묶음으로 교체합니다.
+// 꽃잎마다 크기와 흔들림 박자를 다르게 하여 젤리·사탕처럼 보이던 인상을 없애고,
+// 첫 진입 발견성은 유지하되 한 묶음씩 느슨하게 흩날리도록 합니다.
 function togetherForestAmbienceMarkup(friendId, pageState, period) {
   const isDeepest = pageState.page > 0 && pageState.isLastPage;
   const particleCount = isDeepest ? 4 : 3;
@@ -7680,19 +7680,19 @@ function togetherForestAmbienceMarkup(friendId, pageState, period) {
     const size = period === "night"
       ? 4 + ((seed >>> 12) % 4)
       : isDay
-        ? Math.min(15, 12 + ((seed >>> 12) % 4) + (index === 0 ? 1 : 0))
+        ? 34 + ((seed >>> 12) % 6) + (index === 0 ? 2 : 0)
         : 5 + ((seed >>> 12) % 4);
     const direction = ((seed >>> 16) % 2) === 0 ? -1 : 1;
     const driftX = direction * (isDay
-      ? 54 + ((seed >>> 17) % 47)
+      ? 82 + ((seed >>> 17) % 55)
       : 36 + ((seed >>> 17) % 48));
     const driftY = isDay
-      ? 34 + ((seed >>> 23) % 27)
+      ? 66 + ((seed >>> 23) % 34)
       : -14 + ((seed >>> 23) % 31);
     const duration = period === "night"
       ? 10 + ((seed >>> 4) % 8)
       : isDay
-        ? 15 + (((seed >>> 4) % 5) / 2)
+        ? 14 + (((seed >>> 4) % 7) / 2)
         : 14 + ((seed >>> 4) % 8);
     const delay = isDay
       ? 1.15 + (index * 5.85) + (pageState.page * .18)
@@ -7701,7 +7701,7 @@ function togetherForestAmbienceMarkup(friendId, pageState, period) {
     const opacity = period === "night"
       ? .58 + (((seed >>> 20) % 24) / 100)
       : isDay
-        ? .78 + (((seed >>> 20) % 11) / 100) + (index === 0 ? .04 : 0)
+        ? .66 + (((seed >>> 20) % 10) / 100) + (index === 0 ? .04 : 0)
         : .30 + (((seed >>> 20) % 23) / 100);
     const style = [
       `--ambience-x:${x}%`,
@@ -7709,12 +7709,16 @@ function togetherForestAmbienceMarkup(friendId, pageState, period) {
       `--ambience-size:${size}px`,
       `--ambience-drift-x:${driftX}px`,
       `--ambience-drift-y:${driftY}px`,
+      `--ambience-sway:${isDay ? 8 + ((seed >>> 13) % 9) : 0}px`,
       `--ambience-duration:${duration.toFixed(1)}s`,
       `--ambience-delay:${delay.toFixed(2)}s`,
       `--ambience-rotate:${rotate}deg`,
       `--ambience-opacity:${Math.min(.92, opacity).toFixed(2)}`,
     ].join(";");
-    return `<i class="together-forest-ambience-particle${isDay && index === 0 ? " is-lead" : ""}" style="${style}"></i>`;
+    const petalPieces = isDay
+      ? `<span class="together-forest-petal-piece"></span><span class="together-forest-petal-piece"></span>${((seed >>> 29) % 3) === 0 ? "" : '<span class="together-forest-petal-piece"></span>'}`
+      : "";
+    return `<i class="together-forest-ambience-particle${isDay && index === 0 ? " is-lead" : ""}" style="${style}">${petalPieces}</i>`;
   }).join("");
 
   return `

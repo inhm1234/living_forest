@@ -1,5 +1,5 @@
-/* 오늘의숲 · PHASE 9.3.1
-   함께한 숲의 숨결 v1 · 낮 꽃잎 발견성 보정.
+/* 오늘의숲 · PHASE 9.3.2
+   함께한 숲의 숨결 v1 · 낮 꽃잎 형태·흩날림 재설계.
    낮에는 작은 꽃잎, 노을에는 빛씨앗, 밤에는 반딧불이 아주 드물게 지나갑니다.
    기능·보상·수집 요소가 아닌 배경의 생명감이며 모든 레이어는 입력을 받지 않습니다. */
 
@@ -41,43 +41,47 @@
   will-change: opacity, transform;
 }
 
-/* 낮: 밝은 배경에서도 한 번은 알아볼 수 있는 작은 꽃잎.
-   아이콘처럼 튀지 않도록 면적은 작게 유지하고, 분홍 가장자리와 짧은 그림자만 보강합니다. */
+/* 낮: 둥근 CSS 도형 대신 비대칭 꽃잎 SVG를 사용합니다.
+   한 입자는 2~3장의 작은 꽃잎 묶음이며, 서로 다른 크기와 박자로 뒤집히듯 흔들립니다. */
 .together-forest-ambience.is-petal .together-forest-ambience-particle {
-  height: calc(var(--ambience-size) * .64);
-  border: 1px solid rgba(164, 70, 106, .56);
-  border-radius: 76% 18% 72% 26%;
-  background:
-    radial-gradient(circle at 28% 24%, rgba(255,255,255,.98) 0 18%, transparent 42%),
-    linear-gradient(145deg, rgba(255, 250, 252, .99), rgba(232, 118, 163, .94));
-  box-shadow:
-    0 1px 3px rgba(91, 57, 70, .25),
-    0 0 5px rgba(255, 255, 255, .72);
-  filter: drop-shadow(0 1px 1px rgba(91, 55, 68, .22));
-  transform-origin: 44% 48%;
-  animation: together-forest-petal-drift var(--ambience-duration) var(--ambience-delay) cubic-bezier(.32,.08,.54,.98) infinite;
+  width: var(--ambience-size);
+  height: calc(var(--ambience-size) * .82);
+  transform-origin: 50% 50%;
+  animation: together-forest-petal-cluster-drift var(--ambience-duration) var(--ambience-delay) cubic-bezier(.30,.06,.48,.98) infinite;
 }
 
-.together-forest-ambience.is-petal .together-forest-ambience-particle.is-lead {
-  box-shadow:
-    0 1px 4px rgba(91, 52, 67, .30),
-    0 0 6px rgba(255, 255, 255, .82);
-}
-
-/* 첫 발견만 두 장의 아주 작은 꽃잎이 함께 지나가도록 해,
-   입자를 크게 키우지 않고도 사용자가 자연스럽게 움직임을 알아차립니다. */
-.together-forest-ambience.is-petal .together-forest-ambience-particle.is-lead::after {
-  content: "";
+.together-forest-petal-piece {
   position: absolute;
-  width: 62%;
-  height: 78%;
-  left: -72%;
-  top: 36%;
-  border: 1px solid rgba(164, 70, 106, .48);
-  border-radius: 68% 24% 76% 18%;
-  background: linear-gradient(145deg, rgba(255, 249, 252, .98), rgba(236, 132, 171, .92));
-  box-shadow: 0 1px 2px rgba(91, 57, 70, .20), 0 0 4px rgba(255, 255, 255, .64);
-  transform: rotate(-58deg);
+  display: block;
+  width: 46%;
+  aspect-ratio: 42 / 30;
+  background: url("assets/effects/forest-petal-day-v1.svg") center / contain no-repeat;
+  filter: saturate(.88) drop-shadow(0 1px 1px rgba(83, 60, 69, .10));
+  transform-origin: 22% 54%;
+  will-change: transform;
+}
+
+.together-forest-petal-piece:nth-child(1) {
+  top: 0;
+  left: 3%;
+  width: 53%;
+  animation: together-forest-petal-flutter-a 1.75s -.22s ease-in-out infinite alternate;
+}
+
+.together-forest-petal-piece:nth-child(2) {
+  top: 27%;
+  left: 48%;
+  width: 43%;
+  opacity: .88;
+  animation: together-forest-petal-flutter-b 2.05s -.92s ease-in-out infinite alternate;
+}
+
+.together-forest-petal-piece:nth-child(3) {
+  top: 55%;
+  left: 20%;
+  width: 35%;
+  opacity: .76;
+  animation: together-forest-petal-flutter-c 1.62s -1.18s ease-in-out infinite alternate;
 }
 
 /* 노을: 꽃잎보다 더 작고 부드러운 빛씨앗. */
@@ -111,28 +115,50 @@
   88%, 100% { left: 108%; opacity: 0; }
 }
 
-@keyframes together-forest-petal-drift {
-  0%, 8% {
+@keyframes together-forest-petal-cluster-drift {
+  0%, 7% {
     opacity: 0;
-    transform: translate3d(0, -7px, 0) rotate(var(--ambience-rotate)) scale(.80);
+    transform: translate3d(0, -8px, 0) rotate(calc(var(--ambience-rotate) - 8deg)) scale(.88);
   }
-  14% { opacity: var(--ambience-opacity); }
-  28% {
-    opacity: calc(var(--ambience-opacity) * .92);
-    transform: translate3d(calc(var(--ambience-drift-x) * .34), calc(var(--ambience-drift-y) * .28), 0) rotate(calc(var(--ambience-rotate) + 62deg)) scale(.94);
+  12% { opacity: var(--ambience-opacity); }
+  24% {
+    opacity: calc(var(--ambience-opacity) * .94);
+    transform: translate3d(calc(var(--ambience-drift-x) * .22), calc(var(--ambience-drift-y) * .17), 0) rotate(calc(var(--ambience-rotate) + 4deg)) scale(.94);
   }
-  45% {
-    opacity: calc(var(--ambience-opacity) * .72);
-    transform: translate3d(calc(var(--ambience-drift-x) * .67), calc(var(--ambience-drift-y) * .64), 0) rotate(calc(var(--ambience-rotate) + 126deg)) scale(1);
+  37% {
+    opacity: calc(var(--ambience-opacity) * .88);
+    transform: translate3d(calc((var(--ambience-drift-x) * .45) + var(--ambience-sway)), calc(var(--ambience-drift-y) * .39), 0) rotate(calc(var(--ambience-rotate) - 7deg)) scale(.98);
   }
-  58% {
+  50% {
+    opacity: calc(var(--ambience-opacity) * .68);
+    transform: translate3d(calc((var(--ambience-drift-x) * .70) - var(--ambience-sway)), calc(var(--ambience-drift-y) * .68), 0) rotate(calc(var(--ambience-rotate) + 10deg)) scale(1);
+  }
+  63% {
     opacity: 0;
-    transform: translate3d(var(--ambience-drift-x), var(--ambience-drift-y), 0) rotate(calc(var(--ambience-rotate) + 188deg)) scale(1.03);
+    transform: translate3d(var(--ambience-drift-x), var(--ambience-drift-y), 0) rotate(calc(var(--ambience-rotate) - 3deg)) scale(1.02);
   }
   100% {
     opacity: 0;
-    transform: translate3d(var(--ambience-drift-x), var(--ambience-drift-y), 0) rotate(calc(var(--ambience-rotate) + 188deg)) scale(1.03);
+    transform: translate3d(var(--ambience-drift-x), var(--ambience-drift-y), 0) rotate(calc(var(--ambience-rotate) - 3deg)) scale(1.02);
   }
+}
+
+@keyframes together-forest-petal-flutter-a {
+  0% { transform: rotate(-24deg) scaleX(.76) translateY(0); }
+  48% { transform: rotate(8deg) scaleX(1) translateY(2px); }
+  100% { transform: rotate(32deg) scaleX(.58) translateY(-1px); }
+}
+
+@keyframes together-forest-petal-flutter-b {
+  0% { transform: rotate(42deg) scaleX(.64) translateY(1px); }
+  55% { transform: rotate(8deg) scaleX(.96) translateY(-2px); }
+  100% { transform: rotate(-28deg) scaleX(.55) translateY(1px); }
+}
+
+@keyframes together-forest-petal-flutter-c {
+  0% { transform: rotate(-58deg) scaleX(.58) translateY(0); }
+  50% { transform: rotate(-16deg) scaleX(.94) translateY(2px); }
+  100% { transform: rotate(23deg) scaleX(.52) translateY(-1px); }
 }
 
 @keyframes together-forest-glow-seed-float {
@@ -190,6 +216,10 @@
   }
 
   .together-forest-ambience.is-petal .together-forest-ambience-particle {
-    opacity: .22;
+    opacity: .18;
+  }
+
+  .together-forest-petal-piece {
+    animation: none !important;
   }
 }
