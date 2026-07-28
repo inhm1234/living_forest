@@ -9,6 +9,16 @@ const INVITE_ACK_STORAGE_KEY = "todayForestOotAcknowledgedInvites";
 const INVITE_TARGET_STORAGE_KEY = "todayForestOotPendingInvite";
 const INVITE_SUPPRESS_STORAGE_KEY = "todayForestOotSuppressedInvitePopups";
 const IS_PLAYER_MATCH_PAGE = location.pathname.toLowerCase().endsWith("one-of-ten-friend.html");
+const ootPageParams = new URLSearchParams(window.location.search);
+let FIRST_DAY_QA_MODE = Boolean(ootPageParams.get("firstDayQa"));
+try {
+  FIRST_DAY_QA_MODE = FIRST_DAY_QA_MODE && (
+    ootPageParams.get("qa") === "1"
+    || window.localStorage.getItem("todayforest-local-qa-mode-v1") === "1"
+  );
+} catch {
+  FIRST_DAY_QA_MODE = false;
+}
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: "pkce" },
@@ -560,6 +570,7 @@ function bindGameReadyButton() {
 
 async function initialize() {
   console.info("TodayForest OneOfTen Notifications v0.7 · Push toggle");
+  if (FIRST_DAY_QA_MODE) return;
   bindInviteNavigation();
   bindNotificationButtons();
   bindGameReadyButton();

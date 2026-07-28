@@ -8,6 +8,15 @@
    - 나무를 찾아 눌러야만 시작하는 구조는 사용하지 않음
    ------------------------------------------------------------------------- */
 const liveParams = new URLSearchParams(window.location.search);
+let isFirstDayQa = Boolean(liveParams.get("firstDayQa"));
+try {
+  isFirstDayQa = isFirstDayQa && (
+    liveParams.get("qa") === "1"
+    || window.localStorage.getItem("todayforest-local-qa-mode-v1") === "1"
+  );
+} catch {
+  isFirstDayQa = false;
+}
 const statePreviewMode = liveParams.get("specialFriendStatePreview") || "";
 const isStatePreviewMode = ["1", "2", "ready", "resume", "after-save", "met"].includes(statePreviewMode);
 const isAnimalPreview = ["bird", "rabbit", "squirrel", "hedgehog"].includes(String(liveParams.get("animalPreview") || "").trim());
@@ -16,7 +25,8 @@ const isSpecialFriendPreview = isAnimalPreview
   || liveParams.has("forestFriendCinematic")
   || liveParams.has("firstMeeting")
   || liveParams.has("welcomePreview")
-  || liveParams.has("tutorialPreview");
+  || liveParams.has("tutorialPreview")
+  || isFirstDayQa;
 
 if (!isSpecialFriendPreview) {
   const TARGET_COUNT = 3;

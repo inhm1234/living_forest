@@ -1,4 +1,16 @@
 // 오늘의숲 PHASE 8.6 · 링크 목적 통합 v1.2
+// 신규 첫날 QA에서는 친구 코드 생성·신청·수락 RPC를 전부 멈춥니다.
+const firstDayQaParams = new URLSearchParams(window.location.search);
+let FIRST_DAY_QA_MODE = Boolean(firstDayQaParams.get("firstDayQa"));
+try {
+  FIRST_DAY_QA_MODE = FIRST_DAY_QA_MODE && (
+    firstDayQaParams.get("qa") === "1"
+    || window.localStorage.getItem("todayforest-local-qa-mode-v1") === "1"
+  );
+} catch {
+  FIRST_DAY_QA_MODE = false;
+}
+
 const supabase = window.__todayForestSupabase;
 const showToast = (...args) => window.__todayForestShowToast?.(...args);
 const FRIEND_CODE_SESSION_KEY = "todayforest_pending_friend_code";
@@ -236,6 +248,10 @@ function closeFriendCodeModal({ clearIntent = true } = {}) {
 }
 
 async function previewFriendCode(code, { fromIntent = false } = {}) {
+  if (FIRST_DAY_QA_MODE) {
+    showToast("신규 첫날 QA에서는 친구 코드를 조회하지 않아요.");
+    return;
+  }
   const normalized = normalizeFriendCode(code);
   if (!normalized) {
     showToast("친구 코드 12자리를 확인해 주세요.");
@@ -264,6 +280,10 @@ async function previewFriendCode(code, { fromIntent = false } = {}) {
 }
 
 async function sendFriendRequestFromCode() {
+  if (FIRST_DAY_QA_MODE) {
+    showToast("신규 첫날 QA에서는 친구 신청을 보내지 않아요.");
+    return;
+  }
   if (!activeFriendCode || !activeFriendCodePreview) return;
   const user = await sessionUser();
   if (!user) return;
@@ -293,6 +313,10 @@ async function sendFriendRequestFromCode() {
 }
 
 async function respondFriendRequest(requestId, accept) {
+  if (FIRST_DAY_QA_MODE) {
+    showToast("신규 첫날 QA에서는 친구 신청에 응답하지 않아요.");
+    return;
+  }
   if (!requestId) return;
   const selector = accept ? `[data-accept-friend-request="${CSS.escape(requestId)}"]` : `[data-decline-friend-request="${CSS.escape(requestId)}"]`;
   const button = document.querySelector(selector);
@@ -316,6 +340,10 @@ async function respondFriendRequest(requestId, accept) {
 }
 
 async function cancelFriendRequest(requestId) {
+  if (FIRST_DAY_QA_MODE) {
+    showToast("신규 첫날 QA에서는 친구 신청을 취소하지 않아요.");
+    return;
+  }
   if (!requestId) return;
   const { error } = await supabase.rpc("cancel_my_garden_friend_request", { p_request_id: requestId });
   if (error) {
@@ -387,6 +415,20 @@ function bindFriendConnectionEvents() {
 async function initializeFriendConnection() {
   if (!supabase) return;
   bindFriendConnectionEvents();
+  if (FIRST_DAY_QA_MODE) {
+    const code = $("#myFriendCode");
+    const entryCode = $("#friendConnectionEntryCode");
+    const hint = $("#friendConnectionEntryHint");
+    const summary = $("#friendRequestSummary");
+    const list = $("#friendRequestList");
+    if (code) code.textContent = "QA에서는 실제 코드를 만들지 않아요";
+    if (entryCode) entryCode.textContent = "친구 연결 QA 비활성";
+    if (hint) hint.textContent = "실제 친구 데이터와 연결되지 않아요";
+    if (summary) summary.textContent = "새 신청이 없어요";
+    if (list) list.innerHTML = '<p class="friend-request-empty">신규 첫날 QA에서는 친구 신청을 불러오지 않아요.</p>';
+    [$("#copyMyFriendCode"), $("#copyMyFriendLink")].forEach((button) => { if (button) button.disabled = true; });
+    return;
+  }
   const user = await sessionUser();
   if (user) {
     await Promise.all([ensureMyFriendCode(user), loadFriendRequests()]);

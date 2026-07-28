@@ -8,7 +8,17 @@ const CHARGE_RESET_MS = 10_000;
 const ARRIVAL_EFFECT_MS = 3_000;
 const STATUS_REFRESH_MS = 30_000;
 const TREE_INTERACTION_DISCOVERY_STORAGE_PREFIX = "todayforest-tree-interaction-discovered-v1";
-const TREE_INTERACTION_PREVIEW_MODE = new URL(window.location.href).searchParams.get("interactionPreview") === "tree";
+const treeCallParams = new URL(window.location.href).searchParams;
+let FIRST_DAY_QA_MODE = Boolean(treeCallParams.get("firstDayQa"));
+try {
+  FIRST_DAY_QA_MODE = FIRST_DAY_QA_MODE && (
+    treeCallParams.get("qa") === "1"
+    || window.localStorage.getItem("todayforest-local-qa-mode-v1") === "1"
+  );
+} catch {
+  FIRST_DAY_QA_MODE = false;
+}
+const TREE_INTERACTION_PREVIEW_MODE = treeCallParams.get("interactionPreview") === "tree" || FIRST_DAY_QA_MODE;
 
 let supabase = null;
 let treeWrap = null;
@@ -449,6 +459,14 @@ async function refreshAuth() {
 async function refreshStatus({ silent = false } = {}) {
   if (!supabase) return;
   await refreshAuth();
+  if (FIRST_DAY_QA_MODE) {
+    cooldownUntilMs = 0;
+    pendingArrivesAtMs = 0;
+    serverHasActiveVisit = false;
+    latestVisits = [];
+    renderState();
+    return;
+  }
   if (!authenticated || document.hidden) return;
   try {
     const { data, error } = await supabase.rpc(TREE_CALL_STATUS_RPC);

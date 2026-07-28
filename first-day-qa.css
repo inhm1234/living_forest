@@ -1,0 +1,96 @@
+/* 오늘의숲 · 신규 첫날 QA 작업대 v1
+   firstDayQa 파라미터가 있을 때만 app.js가 도구막대를 삽입합니다. */
+html.first-day-qa-mode body {
+  padding-bottom: 108px;
+}
+
+.first-day-qa-toolbar {
+  position: fixed;
+  z-index: 9999;
+  left: 50%;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  width: min(calc(100% - 20px), 720px);
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px solid rgba(83, 102, 91, 0.2);
+  border-radius: 16px;
+  background: rgba(250, 252, 248, 0.96);
+  box-shadow: 0 8px 30px rgba(56, 67, 61, 0.18);
+  color: #33453a;
+  font-size: 12px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.first-day-qa-toolbar strong {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.first-day-qa-toolbar > span {
+  color: #6c7a72;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.first-day-qa-toolbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.first-day-qa-toolbar button,
+.first-day-qa-toolbar a {
+  appearance: none;
+  border: 1px solid rgba(83, 102, 91, 0.18);
+  border-radius: 999px;
+  background: #fff;
+  color: #42544a;
+  padding: 6px 9px;
+  font: inherit;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.first-day-qa-toolbar button:hover,
+.first-day-qa-toolbar a:hover,
+.first-day-qa-toolbar button:focus-visible,
+.first-day-qa-toolbar a:focus-visible {
+  border-color: rgba(69, 115, 86, 0.5);
+  outline: 2px solid rgba(86, 139, 103, 0.2);
+  outline-offset: 1px;
+}
+
+.first-day-qa-toolbar button.is-active {
+  border-color: #4f8161;
+  background: #4f8161;
+  color: #fff;
+}
+
+@media (max-width: 620px) {
+  html.first-day-qa-mode body {
+    padding-bottom: 142px;
+  }
+
+  .first-day-qa-toolbar {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 9px;
+    text-align: center;
+  }
+
+  .first-day-qa-toolbar > span {
+    text-align: center;
+    white-space: normal;
+  }
+}

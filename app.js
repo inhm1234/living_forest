@@ -16,8 +16,44 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
 window.__todayForestSupabase = supabase;
 window.__todayForestShowToast = (...args) => showToast(...args);
 
-// 특별친구 모듈이 로그인한 정원의 데이터 준비 완료 시점을 안전하게 알 수 있도록 합니다.
+// 운영 루트의 로컬 QA 접근 키는 여러 독립 모듈이 같은 안전 규칙을 공유합니다.
+const LOCAL_QA_MODE_STORAGE_KEY = "todayforest-local-qa-mode-v1";
+const FIRST_DAY_QA_PARAM = "firstDayQa";
+const FIRST_DAY_QA_MODES = new Set(["before", "after", "day2"]);
+function normalizeFirstDayQaMode(value) {
+  const raw = String(value || "").trim().toLowerCase();
+  return {
+    "0": "before",
+    "zero": "before",
+    "before": "before",
+    "1": "after",
+    "after": "after",
+    "complete": "after",
+    "2": "day2",
+    "day2": "day2",
+    "return": "day2",
+  }[raw] || "";
+}
+function hasLocalQaAccess() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("qa") === "1") return true;
+  try {
+    return window.localStorage.getItem(LOCAL_QA_MODE_STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+function requestedFirstDayQaMode() {
+  return normalizeFirstDayQaMode(new URL(window.location.href).searchParams.get(FIRST_DAY_QA_PARAM));
+}
+function firstDayQaRequested() {
+  return hasLocalQaAccess() && FIRST_DAY_QA_MODES.has(requestedFirstDayQaMode());
+}
+window.__todayForestFirstDayQaRequested = firstDayQaRequested;
+
+// 특별친구·친구코드 같은 외부 모듈은 신규 첫날 QA에서 서버 동기화를 시작하지 않습니다.
 function publishGardenSessionReady(origin = "garden") {
+  if (firstDayQaRequested()) return;
   window.dispatchEvent(new CustomEvent("todayforest:garden-session-ready", {
     detail: {
       origin,
@@ -345,7 +381,6 @@ const DEV_SHARED_TREE_STORAGE_PREFIX = "todayforest-dev-shared-tree-preview-v1";
 // 운영 화면에서는 QA 기능을 기본적으로 숨깁니다.
 // 이 브라우저에서 주소에 ?qa=1을 한 번 붙였을 때만 로컬 저장소에 활성화됩니다.
 // ?qa=0을 붙이면 다시 숨깁니다.
-const LOCAL_QA_MODE_STORAGE_KEY = "todayforest-local-qa-mode-v1";
 function resolveLocalQaMode() {
   const params = new URLSearchParams(window.location.search);
   const requested = params.get("qa");
@@ -371,7 +406,10 @@ function resolveLocalQaMode() {
   }
 }
 const LOCAL_QA_MODE_ENABLED = resolveLocalQaMode();
+let firstDayQaMode = LOCAL_QA_MODE_ENABLED ? requestedFirstDayQaMode() : "";
 document.documentElement.classList.toggle("local-qa-mode", LOCAL_QA_MODE_ENABLED);
+document.documentElement.classList.toggle("first-day-qa-mode", Boolean(firstDayQaMode));
+if (firstDayQaMode) document.documentElement.dataset.firstDayQa = firstDayQaMode;
 
 // PHASE 7.6 성장 카메라 QA는 운영 루트의 로컬 QA 모드에서만 동작합니다.
 // 실제 나무의 단계·서버 기록·돌봄 상태는 바꾸지 않고, 장면 이미지 한 장만 강제로 교체합니다.
@@ -971,6 +1009,149 @@ const els = {
 
 function cloneDefault() {
   return JSON.parse(JSON.stringify(DEFAULT_STATE));
+}
+
+function isFirstDayQaMode() {
+  return Boolean(firstDayQaMode);
+}
+
+function firstDayQaIso(daysAgo = 0, hour = 12) {
+  const date = new Date();
+  date.setDate(date.getDate() - daysAgo);
+  date.setHours(hour, 0, 0, 0);
+  return date.toISOString();
+}
+
+function buildFirstDayQaState(mode = firstDayQaMode) {
+  const next = cloneDefault();
+  next.profileName = "새 친구";
+  next.treeName = "내 마음 나무";
+
+  if (mode === "after") {
+    next.growth = 1;
+    next.records = [{
+      id: "first-day-qa-record-today",
+      mood: "good",
+      oneLine: "오늘의 첫 마음을 남겼어요.",
+      detail: "",
+      isPublic: false,
+      createdAt: firstDayQaIso(0),
+    }];
+  }
+
+  if (mode === "day2") {
+    next.growth = 1;
+    next.records = [{
+      id: "first-day-qa-record-yesterday",
+      mood: "calm",
+      oneLine: "작은 시작을 숲에 남겼어요.",
+      detail: "",
+      isPublic: false,
+      createdAt: firstDayQaIso(1),
+    }];
+    next.foundItems = [{
+      id: "first-day-qa-found-yesterday",
+      recordId: "first-day-qa-record-yesterday",
+      itemKey: "pink_wildflower",
+      placementSlot: "front_bed_left",
+      foundAt: firstDayQaIso(1, 13),
+    }];
+  }
+
+  return next;
+}
+
+function clearFirstDayQaTransientState() {
+  clearAnimalVisitArrivalTimer();
+  activeAnimalVisit = null;
+  activeAnimalV2Visits = [];
+  selectedAnimalV2VisitId = "";
+  closeAnimalEncounterCard();
+  gardenDecorateMode = false;
+  gardenDecorateSaving = false;
+  gardenDecorateDraftPositions = new Map();
+  tutorialSandbox.recorded = false;
+  tutorialSandbox.found = false;
+  gardenTutorialPhase = "";
+  firstWalkCompletionFoundItemId = "";
+}
+
+function setFirstDayQaUrlMode(mode) {
+  const normalized = normalizeFirstDayQaMode(mode);
+  if (!normalized) return;
+  const url = new URL(window.location.href);
+  url.searchParams.set(FIRST_DAY_QA_PARAM, normalized);
+  url.searchParams.delete("tutorialPreview");
+  url.searchParams.delete("welcomePreview");
+  window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
+}
+
+function applyFirstDayQaMode(mode = firstDayQaMode, { announce = false } = {}) {
+  const normalized = normalizeFirstDayQaMode(mode);
+  if (!LOCAL_QA_MODE_ENABLED || !normalized) return false;
+
+  firstDayQaMode = normalized;
+  setFirstDayQaUrlMode(normalized);
+  document.documentElement.classList.add("first-day-qa-mode");
+  document.documentElement.dataset.firstDayQa = normalized;
+  clearFirstDayQaTransientState();
+  state = buildFirstDayQaState(normalized);
+  selectedMood = "good";
+  selectedLetterRecipientId = "";
+  closeAllSheets({ force: true });
+  returnToMyGarden();
+  renderAuthUI();
+  renderAll();
+  renderFirstDayQaToolbar();
+
+  if (announce) {
+    const labels = { before: "첫 마음 전", after: "첫 마음 완료 직후", day2: "2일차 재방문" };
+    showToast(`신규 첫날 QA · ${labels[normalized]} 상태예요. 실제 데이터는 바뀌지 않아요.`, 4200);
+  }
+  return true;
+}
+
+function renderFirstDayQaToolbar() {
+  let toolbar = document.querySelector("#firstDayQaToolbar");
+  if (!isFirstDayQaMode()) {
+    toolbar?.remove();
+    return;
+  }
+
+  if (!toolbar) {
+    toolbar = document.createElement("aside");
+    toolbar.id = "firstDayQaToolbar";
+    toolbar.className = "first-day-qa-toolbar";
+    toolbar.setAttribute("aria-label", "신규 첫날 QA 상태 전환");
+    toolbar.innerHTML = `
+      <strong>FIRST DAY QA</strong>
+      <div class="first-day-qa-toolbar-actions">
+        <button type="button" data-first-day-qa-mode="before">0일차</button>
+        <button type="button" data-first-day-qa-mode="after">첫 마음 후</button>
+        <button type="button" data-first-day-qa-mode="day2">2일차</button>
+        <a data-first-day-qa-welcome href="?welcomePreview=1">손님맞이</a>
+        <a data-first-day-qa-exit href="?qa=0">QA 종료</a>
+      </div>
+      <span>서버 저장·방문자·친구 동기화 없음</span>
+    `;
+    toolbar.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-first-day-qa-mode]");
+      if (!button) return;
+      event.preventDefault();
+      applyFirstDayQaMode(button.dataset.firstDayQaMode, { announce: true });
+    });
+    document.body.appendChild(toolbar);
+  }
+
+  toolbar.querySelectorAll("[data-first-day-qa-mode]").forEach((button) => {
+    const active = button.dataset.firstDayQaMode === firstDayQaMode;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  const welcomeLink = toolbar.querySelector("[data-first-day-qa-welcome]");
+  if (welcomeLink) welcomeLink.href = `${window.location.pathname}?welcomePreview=1`;
+  const exitLink = toolbar.querySelector("[data-first-day-qa-exit]");
+  if (exitLink) exitLink.href = `${window.location.pathname}?qa=0`;
 }
 
 function pwaStorageKey(prefix) {
@@ -2151,6 +2332,7 @@ async function loadMyGardenRecords() {
 }
 
 async function loadGardenState() {
+  if (isFirstDayQaMode()) return;
   if (!currentUser) {
     state = cloneDefault();
     publishSpecialFriendJourneyState();
@@ -2411,6 +2593,18 @@ function promptForFirstTreeNameIfNeeded() {
 
 async function hydrateGardenForCurrentUser() {
   if (!currentUser) return;
+
+  // 신규 첫날 QA는 로그인 세션만 빌리고, 프로필·기록·동물·친구 서버를 전혀 읽거나 쓰지 않습니다.
+  if (isFirstDayQaMode()) {
+    clearFirstDayQaTransientState();
+    state = buildFirstDayQaState(firstDayQaMode);
+    setAuthError("");
+    renderAuthUI();
+    renderAll();
+    renderFirstDayQaToolbar();
+    return;
+  }
+
   try {
     await ensureGardenProfile();
     await loadGardenState();
@@ -2813,6 +3007,12 @@ function reconcileAnimalV2Selection() {
 }
 
 async function syncMyGardenAnimalVisit({ silent = false, rerender = false } = {}) {
+  if (isFirstDayQaMode()) {
+    activeAnimalVisit = null;
+    activeAnimalV2Visits = [];
+    selectedAnimalV2VisitId = "";
+    return activeAnimalV2Visits;
+  }
   if (!currentUser || animalVisitSyncBusy || document.hidden) return activeAnimalV2Visits;
 
   animalVisitSyncBusy = true;
@@ -3720,6 +3920,11 @@ function foundItemForRecord(recordId) {
 }
 
 function canDiscoverFoundItem() {
+  // 신규 첫날 QA는 합성 기록·장식만 사용하며 실제 DB에는 어떤 요청도 보내지 않습니다.
+  if (isFirstDayQaMode()) {
+    const todayRecord = todayGardenRecord();
+    return Boolean(todayRecord && !foundItemForRecord(todayRecord.id));
+  }
   // 첫날 튜토리얼 미리보기는 실제 기록·장식 DB와 분리된 한 번의 가상 발견만 보여줍니다.
   if (isTutorialSandboxPreview()) return tutorialSandbox.recorded && !tutorialSandbox.found;
 
@@ -4035,6 +4240,11 @@ function endFoundItemDrag(event) {
 }
 
 async function saveGardenDecorateMode() {
+  if (isFirstDayQaMode()) {
+    cancelGardenDecorateMode();
+    showToast("신규 첫날 QA에서는 장식 배치를 서버에 저장하지 않아요.");
+    return;
+  }
   if (!currentUser || !gardenDecorateMode || gardenDecorateSaving) return;
   const positions = (state.foundItems || [])
     .filter((item) => foundItemCatalog[item.itemKey])
@@ -4091,6 +4301,23 @@ async function saveGardenDecorateMode() {
 }
 
 async function claimFoundItem() {
+  if (isFirstDayQaMode()) {
+    const record = todayGardenRecord();
+    if (!record || foundItemForRecord(record.id)) return;
+    const item = {
+      id: `first-day-qa-found-${record.id}`,
+      recordId: record.id,
+      itemKey: "pink_wildflower",
+      placementSlot: "front_bed_left",
+      foundAt: new Date().toISOString(),
+    };
+    state.foundItems.push(item);
+    renderFoundItems();
+    showFirstWalkCompletion({ foundItemId: item.id });
+    renderFirstDayQaToolbar();
+    return;
+  }
+
   if (isTutorialSandboxPreview()) {
     if (!tutorialSandbox.recorded || tutorialSandbox.found) return;
     tutorialSandbox.found = true;
@@ -10099,6 +10326,10 @@ function openSupportSheet() {
 
 async function submitGardenFeedback(event) {
   event.preventDefault();
+  if (isFirstDayQaMode()) {
+    showToast("신규 첫날 QA에서는 의견을 서버에 전송하지 않아요.");
+    return;
+  }
   if (!currentUser) {
     showToast("내 정원을 먼저 로그인해 주세요.");
     return;
@@ -10147,6 +10378,56 @@ async function saveRecord(event) {
   const oneLine = els.oneLine.value.trim();
   const detail = els.detailText.value.trim();
   const submitButton = els.recordForm.querySelector('button[type="submit"]');
+
+  if (isFirstDayQaMode()) {
+    if (hasSavedToday()) {
+      closeAllSheets({ force: true });
+      renderGarden();
+      showToast("신규 첫날 QA에서는 오늘 마음을 이미 남긴 상태예요.");
+      return;
+    }
+    if (!oneLine) {
+      showToast("QA 화면에서도 오늘 마음에 남은 한 줄을 적어보세요.");
+      els.oneLine.focus();
+      return;
+    }
+
+    submitButton.disabled = true;
+    submitButton.textContent = "가상 마음을 나무에 남기는 중이에요";
+    await new Promise((resolve) => window.setTimeout(resolve, 420));
+
+    const recordId = `first-day-qa-record-${Date.now()}`;
+    state.records.unshift({
+      id: recordId,
+      mood: selectedMood,
+      oneLine,
+      detail,
+      isPublic: false,
+      createdAt: new Date().toISOString(),
+    });
+    state.growth = Math.max(Number(state.growth || 0) + 1, state.records.length);
+    if (firstDayQaMode === "before") {
+      firstDayQaMode = "after";
+      setFirstDayQaUrlMode("after");
+      document.documentElement.dataset.firstDayQa = "after";
+    }
+
+    submitButton.disabled = false;
+    submitButton.textContent = "나무에 마음 남기기";
+    els.recordForm.reset();
+    selectedMood = "good";
+    renderMoodSelection();
+    els.detailWrap.classList.add("hidden");
+    els.toggleDetail.innerHTML = '조금 더 적기 <span aria-hidden="true">⌄</span>';
+    closeAllSheets({ force: true });
+    renderAll();
+    renderFirstDayQaToolbar();
+    els.treeWrap.classList.remove("tree-pulse");
+    void els.treeWrap.offsetWidth;
+    els.treeWrap.classList.add("tree-pulse");
+    showToast("가상 첫 마음이 나무에 닿았어요. 실제 기록은 저장되지 않았어요.", 4200);
+    return;
+  }
 
   if (isTutorialSandboxPreview()) {
     if (!oneLine) {
@@ -10340,6 +10621,10 @@ async function acceptFriendInvite() {
 }
 
 async function createFriendInvite() {
+  if (isFirstDayQaMode()) {
+    showToast("신규 첫날 QA에서는 친구 초대를 만들지 않아요.");
+    return;
+  }
   if (!currentUser) return;
   const button = els.createInviteButton;
   button.disabled = true;
@@ -10526,6 +10811,7 @@ function isTutorialSandboxPreview() {
 
 function firstWalkGuideIsAvailable() {
   const preview = tutorialPreviewPhase();
+  if (isFirstDayQaMode()) return firstDayQaMode === "before" && !hasSavedToday();
   if (isTutorialSandboxPreview()) return !tutorialSandbox.recorded && !tutorialSandbox.found;
   if (preview === "record") return true;
   return Boolean(currentUser)
@@ -10536,6 +10822,7 @@ function firstWalkGuideIsAvailable() {
 
 function firstDiscoveryGuideIsAvailable() {
   const preview = tutorialPreviewPhase();
+  if (isFirstDayQaMode()) return firstDayQaMode === "after" && canDiscoverFoundItem();
   if (isTutorialSandboxPreview()) return tutorialSandbox.recorded && !tutorialSandbox.found;
   if (preview === "discovery") return true;
   return Boolean(currentUser)
@@ -10809,6 +11096,7 @@ function renderAll() {
   renderLetters();
   renderFriends();
   renderFirstWalkTutorial();
+  renderFirstDayQaToolbar();
 }
 
 async function beginKakaoLogin() {
@@ -10935,6 +11223,7 @@ function stopLettersAutoRefresh() {
 
 function startLettersAutoRefresh() {
   stopLettersAutoRefresh();
+  if (isFirstDayQaMode()) return;
   if (!currentUser || !isLettersSheetOpen()) return;
 
   lettersRefreshTimer = window.setInterval(() => {
@@ -10943,6 +11232,7 @@ function startLettersAutoRefresh() {
 }
 
 async function refreshLettersWhileOpen() {
+  if (isFirstDayQaMode()) return;
   if (!currentUser || !isLettersSheetOpen() || document.hidden || lettersRefreshBusy) return;
 
   const refreshUserId = currentUser.id;
@@ -11107,6 +11397,10 @@ function openTreeNameSheet() {
 
 async function saveTreeName(event) {
   event.preventDefault();
+  if (isFirstDayQaMode()) {
+    showToast("신규 첫날 QA에서는 나무 이름을 서버에 저장하지 않아요.");
+    return;
+  }
   if (!currentUser || !isTreeNameSetupRequired()) return;
 
   const treeName = els.treeNameInput.value.trim();
@@ -11203,19 +11497,19 @@ function bindEvents() {
       clearAnimalVisitArrivalTimer();
       return;
     }
-    if (currentUser) {
+    if (currentUser && !isFirstDayQaMode()) {
       void syncMyGardenAnimalVisit({ beginWhenReady: true, silent: true, rerender: true });
       // 편지함을 보고 있다가 다시 돌아오면 배송 상태만 한 번 최신으로 맞춥니다.
       if (isLettersSheetOpen()) void refreshLettersWhileOpen();
     }
   });
   window.addEventListener("online", () => {
-    if (currentUser && !document.hidden) {
+    if (currentUser && !document.hidden && !isFirstDayQaMode()) {
       void syncMyGardenAnimalVisit({ silent: true, rerender: true });
     }
   });
   window.addEventListener("todayforest:tree-animal-call-sync", () => {
-    void syncMyGardenAnimalVisit({ silent: true, rerender: true });
+    if (!isFirstDayQaMode()) void syncMyGardenAnimalVisit({ silent: true, rerender: true });
   });
   els.signOutButton?.addEventListener("click", signOut);
   els.accountButton?.addEventListener("click", openAccountMenu);
@@ -11277,6 +11571,10 @@ function bindEvents() {
   // 비워진 첫 자리는 원오브텐 바로가기로 사용합니다.
   els.openFeedback?.addEventListener("click", openFeedbackSheet);
   $("#openOneOfTenShortcut")?.addEventListener("click", () => {
+    if (isFirstDayQaMode()) {
+      showToast("신규 첫날 QA에서는 원오브텐으로 이동하지 않아요.");
+      return;
+    }
     window.location.href = "one-of-ten.html";
   });
   $("#openSpecialFriendShortcut")?.addEventListener("click", (event) => {
