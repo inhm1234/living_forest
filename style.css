@@ -9457,3 +9457,50 @@ body.animal-preview-clean-mode .ff-cinematic {
 }
 
 .garden-extra-nav .secondary-action-subcopy[hidden] { display: none; }
+
+/* ==========================================================================
+   KAKAO ADFIT — 정원 하단 단일 광고 v1.1
+   오늘 마음 완료 뒤 4+3 기능 카드 아래에만 나타납니다.
+   정원·기록의 핵심 행동과 분리하고, 고정·팝업·새로고침 광고는 사용하지 않습니다.
+   ========================================================================== */
+.garden-adfit {
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  margin: 30px auto 6px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(119, 145, 130, .12);
+}
+
+.garden-adfit-label {
+  margin: 0 0 9px;
+  color: #9aa8a1;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: .08em;
+}
+
+.garden-adfit-frame {
+  display: grid;
+  width: 320px;
+  min-width: 320px;
+  min-height: 100px;
+  place-items: center;
+  overflow: hidden;
+  background: transparent;
+}
+
+.garden-adfit-frame .kakao_ad_area {
+  display: block;
+  width: 320px;
+  height: 100px;
+}
+
+@media (max-width: 340px) {
+  .garden-adfit {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+  }
+}
