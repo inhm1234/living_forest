@@ -9265,3 +9265,142 @@ body.animal-preview-clean-mode .ff-cinematic {
     animation: none !important;
   }
 }
+
+
+/* ==========================================================================
+   NEW USER FLOW v1.1
+   1) 손님맞이 첫 행동을 5.2초부터 허용하고, 사용자가 직접 연출을 앞당길 수 있습니다.
+   2) 잠긴 특별친구도 같은 자리에 남겨 3일차 기대를 미리 보여줍니다.
+   ========================================================================== */
+
+.welcome-arrival-advance {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: max(34px, calc(28px + env(safe-area-inset-bottom)));
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 999px;
+  color: rgba(55, 83, 65, .86);
+  background: rgba(255, 255, 250, .62);
+  box-shadow: 0 7px 20px rgba(48, 78, 56, .10), inset 0 1px 0 rgba(255,255,255,.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 780;
+  letter-spacing: -.025em;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(8px);
+  animation: welcome-arrival-advance-reveal 1s ease 1.6s forwards;
+}
+
+@keyframes welcome-arrival-advance-reveal {
+  to { opacity: .88; pointer-events: auto; transform: translateX(-50%) translateY(0); }
+}
+
+.welcome-preview.is-arrival-action-ready .welcome-actions,
+.welcome-preview.is-arrival-fast-forward .welcome-actions {
+  animation: none;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+  transition: opacity .35s ease, transform .35s ease;
+}
+
+.welcome-preview.is-arrival-action-ready .welcome-arrival-advance,
+.welcome-preview.is-arrival-fast-forward .welcome-arrival-advance,
+.welcome-preview.is-seeded .welcome-arrival-advance,
+.welcome-preview.is-naming .welcome-arrival-advance,
+.welcome-preview.is-walk .welcome-arrival-advance,
+.welcome-preview.is-tree-birth .welcome-arrival-advance {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(6px);
+  transition: opacity .22s ease, transform .22s ease;
+}
+
+.welcome-preview.is-arrival-fast-forward .welcome-still-art {
+  animation: none;
+  transform: scale(1.075) translate3d(0, -.7%, 0);
+  transition: transform .62s cubic-bezier(.18,.78,.24,1);
+}
+.welcome-preview.is-arrival-fast-forward .welcome-clearing-glow {
+  animation: none;
+  opacity: .42;
+  transform: translate(-50%, -50%) scale(1);
+  filter: blur(4px) saturate(1.05);
+  transition: opacity .42s ease, transform .62s cubic-bezier(.18,.78,.24,1), filter .42s ease;
+}
+.welcome-preview.is-arrival-fast-forward .welcome-clearing-glow::before,
+.welcome-preview.is-arrival-fast-forward .welcome-clearing-glow::after {
+  animation: none;
+  opacity: 0;
+}
+.welcome-preview.is-arrival-fast-forward .welcome-traveler-light {
+  animation: none;
+  opacity: .92;
+  transform: translate3d(38vw, 23.5vh, 0) scale(1);
+  transition: opacity .35s ease, transform .62s cubic-bezier(.18,.78,.24,1);
+}
+.welcome-preview.is-arrival-fast-forward .welcome-light-core {
+  animation: welcome-light-rest 1.9s ease-in-out infinite alternate;
+}
+
+.garden-extra-nav .secondary-action-subcopy {
+  display: block;
+  min-height: 11px;
+  color: #819087;
+  font-size: 9px;
+  font-weight: 680;
+  line-height: 1.15;
+  letter-spacing: -.025em;
+  white-space: nowrap;
+}
+
+.garden-extra-nav #openSpecialFriendShortcut.is-locked {
+  cursor: pointer;
+  border-color: rgba(139, 120, 174, .13);
+  background: rgba(249, 247, 252, .76);
+  color: #7b7a82;
+  box-shadow: 0 7px 16px rgba(73, 70, 88, .04);
+}
+.garden-extra-nav #openSpecialFriendShortcut.is-locked .secondary-action-icon-special {
+  opacity: .72;
+  filter: grayscale(.15);
+}
+.garden-extra-nav #openSpecialFriendShortcut.is-ready {
+  border-color: rgba(139, 120, 174, .28);
+  background: linear-gradient(180deg, rgba(249,246,255,.94), rgba(242,237,250,.9));
+  color: #75618f;
+}
+.garden-extra-nav #openSpecialFriendShortcut.is-ready .secondary-action-icon-special {
+  opacity: 1;
+  animation: special-friend-ready-breathe 1.8s ease-in-out infinite alternate;
+}
+@keyframes special-friend-ready-breathe {
+  from { transform: scale(.96); box-shadow: inset 0 1px 0 rgba(255,255,255,.72), 0 0 0 rgba(151,124,190,0); }
+  to { transform: scale(1.04); box-shadow: inset 0 1px 0 rgba(255,255,255,.72), 0 0 14px rgba(151,124,190,.18); }
+}
+
+@media (max-width: 420px) {
+  .welcome-arrival-advance { bottom: max(28px, calc(23px + env(safe-area-inset-bottom))); }
+  .garden-extra-nav .secondary-action-subcopy { font-size: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-arrival-advance,
+  .garden-extra-nav #openSpecialFriendShortcut.is-ready .secondary-action-icon-special {
+    animation: none;
+  }
+}
+
+/* welcomePreview에서는 메뉴 이동은 막되, 마지막 발견 반짝임만 실제처럼 누를 수 있습니다. */
+.garden-app.welcome-sandbox-garden #foundItemSparkle {
+  pointer-events: auto;
+}
+
+.garden-extra-nav .secondary-action-subcopy[hidden] { display: none; }

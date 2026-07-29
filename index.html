@@ -132,7 +132,7 @@
         <div class="public-hero-copy">
           <p class="public-kicker">A SMALL FOREST FOR YOUR DAY</p>
           <h1 id="publicHeroTitle">물 주기 대신,<br /><span>오늘을 남겨 키우는 나무</span></h1>
-          <p class="public-hero-lead">하루의 마음을 한 줄 남겨보세요. <strong>쌓인 기록은 나무가 되고</strong>, 오래 돌본 시간은 나만의 숲으로 남아요.</p>
+          <p class="public-hero-lead">하루의 마음을 한 줄 남겨보세요. <strong>쌓인 기록은 나무가 되고</strong>, 오래 돌본 시간은 마음 열매와 정원의 흔적으로 남아요.</p>
           <ul class="public-hero-points" aria-label="오늘의숲 핵심 특징">
             <li>하루 한 번</li>
             <li>1분 마음 기록</li>
@@ -177,7 +177,7 @@
             <div class="public-feature-fruit" aria-hidden="true"><span>●</span><span>●</span><span>●</span></div>
             <p class="public-feature-number">03</p>
             <h3>한 그루가 남기는 기억</h3>
-            <p>완성된 나무에서는 지나온 마음과 시간을 다시 돌아볼 수 있어요. 한 그루씩 쌓인 기록은 나만의 숲이 됩니다.</p>
+            <p>완성된 나무에서는 지나온 마음과 시간을 다시 돌아볼 수 있어요. 하루하루 남긴 기록은 나무와 마음 열매로 이어집니다.</p>
           </article>
           <article class="public-feature-card">
             <div class="public-feature-tree public-feature-tree-together" role="img" aria-label="친구 한 명과 함께 완성한 꽃과 열매가 열린 나무"></div>
@@ -252,7 +252,7 @@
           <h2 id="publicMakerStoryTitle">오늘의숲을<br />만든 이유</h2>
           <blockquote>
             <p>매일 반복해서 누르는 돌봄보다, 오늘을 돌아본 한 줄이 오래 남으면 좋겠다고 생각했어요.</p>
-            <p>오늘의숲은 그렇게 기록한 시간이 나무가 되고, 한 그루 한 그루가 천천히 나만의 숲으로 남는 곳입니다.</p>
+            <p>오늘의숲은 그렇게 기록한 시간이 나무가 되고, 하루하루의 마음이 정원에 작은 흔적으로 남는 곳입니다.</p>
           </blockquote>
         </div>
       </section>
@@ -386,6 +386,7 @@
       <p class="welcome-tree-birth-copy" id="welcomeTreeBirthCopy" aria-live="polite">첫 마음이 작은 나무가 되었어요.</p>
     </div>
     <p class="welcome-brand">오늘의숲</p>
+    <button type="button" class="welcome-arrival-advance" id="welcomeArrivalAdvance">빛을 따라 조금 빠르게 가기</button>
     <div class="welcome-actions welcome-plant-actions">
       <button type="button" class="welcome-start-button" id="welcomePlantButton" aria-label="빛이 공터에 닿은 뒤 나타나는 내 나무 심기 버튼">내 나무 심기</button>
     </div>
@@ -402,7 +403,7 @@
         <span class="welcome-sheet-sprout" aria-hidden="true">🌱</span>
         <p class="welcome-sheet-kicker">작은 씨앗에게</p>
         <h2>어떤 이름으로<br />불러줄까요?</h2>
-        <p class="welcome-sheet-copy">이름은 나중에 언제든 바꿀 수 있어요.</p>
+        <p class="welcome-sheet-copy">한 번 정한 나무 이름은 바꿀 수 없어요.</p>
         <form id="welcomeNameForm" novalidate>
           <label class="sr-only" for="welcomeNameInput">나무 이름</label>
           <input id="welcomeNameInput" maxlength="18" autocomplete="off" placeholder="예: 별빛나무" />
@@ -672,9 +673,10 @@
           </a>
         </div>
       </div>
-      <button type="button" class="secondary-action hidden" id="openSpecialFriendShortcut" aria-hidden="true">
+      <button type="button" class="secondary-action is-locked" id="openSpecialFriendShortcut" aria-hidden="false" data-special-friend-unlocked="false">
         <span class="secondary-action-icon secondary-action-icon-special" aria-hidden="true"><span>✦</span></span>
         <span class="secondary-action-label">특별친구</span>
+        <small class="secondary-action-subcopy" id="specialFriendLockHint">마음 3일째 만나요</small>
       </button>
       <button type="button" class="secondary-action" id="openMoreMenu" aria-haspopup="menu" aria-expanded="false" aria-controls="moreMenuPanel">
         <span class="secondary-action-icon secondary-action-icon-more" aria-hidden="true"><span>•••</span></span>
@@ -1551,7 +1553,7 @@
   <div class="heart-fruit-ceremony-lock hidden" id="heartFruitCeremonyLock" aria-hidden="true"></div>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="app.js?v=first-day-qa-v1-0"></script>
+  <script type="module" src="app.js?v=new-user-flow-v1-1"></script>
   <script type="module" src="friend-connection-safety.js?v=first-day-qa-v1-0"></script>
   <script type="module" src="tree-animal-call.js?v=first-day-qa-v1-0"></script>
   <script type="module" src="forest-unicorn-preview.js?v=animal-preview-clean-v0-4"></script>

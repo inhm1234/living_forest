@@ -120,6 +120,14 @@ const TODAYFOREST_SHEETS_EVENT_NAMES = new Set([
   "garden_mood_saved",
   "garden_letter_sent",
   "garden_friend_connected",
+  "onboarding_started",
+  "onboarding_arrival_advanced",
+  "onboarding_seed_planted",
+  "onboarding_tree_named",
+  "onboarding_first_record_saved",
+  "onboarding_garden_entered",
+  "onboarding_first_discovery_completed",
+  "onboarding_completed",
 ]);
 
 function sheetsSafeValue(value) {
@@ -976,6 +984,7 @@ const els = {
   toast: $("#toast"),
   authScreen: $("#authScreen"),
   welcomePreview: $("#welcomePreview"),
+  welcomeArrivalAdvance: $("#welcomeArrivalAdvance"),
   welcomePlantButton: $("#welcomePlantButton"),
   welcomeKakaoButton: $("#welcomeKakaoButton"),
   welcomeReplay: $("#welcomeReplay"),
@@ -4365,6 +4374,8 @@ async function claimFoundItem() {
 
   renderFoundItems();
   if (wasFirstWalkDiscovery) {
+    trackTodayForestOperationalEvent("onboarding_first_discovery_completed", { item_key: nextItem.itemKey });
+    trackTodayForestOperationalEvent("onboarding_completed", { completion: "first_discovery" });
     // 첫 산책의 끝은 별도 토스트 없이 마무리 카드가 맡아, 발견의 여운을 남깁니다.
     showFirstWalkCompletion({ foundItemId: nextItem.id });
     return;
@@ -11455,11 +11466,36 @@ function blockHeartFruitCeremonyInput(event) {
 
 function syncSpecialFriendShortcutVisibility(liveState = window.__todayForestSpecialFriendLiveState || null) {
   const button = $("#openSpecialFriendShortcut");
+  const hint = $("#specialFriendLockHint");
   if (!button) return;
+
+  const progressCount = Math.max(0, Number(liveState?.progressCount || 0));
+  const targetCount = Math.max(1, Number(liveState?.targetCount || 3));
+  const isReady = Boolean(liveState?.isReady);
   const isUnlocked = Boolean(liveState?.isMet);
-  button.classList.toggle("hidden", !isUnlocked);
-  button.setAttribute("aria-hidden", String(!isUnlocked));
-  button.closest(".garden-extra-nav")?.classList.toggle("special-friend-locked", !isUnlocked);
+  const remaining = Math.max(0, targetCount - progressCount);
+
+  button.classList.remove("hidden");
+  button.classList.toggle("is-locked", !isUnlocked);
+  button.classList.toggle("is-ready", isReady && !isUnlocked);
+  button.setAttribute("aria-hidden", "false");
+  button.dataset.specialFriendUnlocked = String(isUnlocked);
+  button.dataset.specialFriendReady = String(isReady);
+  button.dataset.specialFriendRemaining = String(remaining);
+
+  if (hint) {
+    hint.hidden = isUnlocked;
+    hint.textContent = isReady
+      ? "오늘 나무에서 만나요"
+      : (progressCount === 0 ? `마음 ${targetCount}일째 만나요` : `마음 ${remaining}번 더`);
+  }
+  button.setAttribute(
+    "aria-label",
+    isUnlocked
+      ? "특별친구 보기"
+      : (isReady ? "특별친구가 오늘 나무에 찾아와요" : `특별친구는 마음을 ${remaining || targetCount}번 더 남기면 만날 수 있어요`)
+  );
+  button.closest(".garden-extra-nav")?.classList.remove("special-friend-locked");
 }
 
 function bindEvents() {
@@ -11578,6 +11614,17 @@ function bindEvents() {
     window.location.href = "one-of-ten.html";
   });
   $("#openSpecialFriendShortcut")?.addEventListener("click", (event) => {
+    const button = event.currentTarget;
+    const isUnlocked = button?.dataset.specialFriendUnlocked === "true";
+    if (!isUnlocked) {
+      event.stopPropagation();
+      const isReady = button?.dataset.specialFriendReady === "true";
+      const remaining = Math.max(0, Number(button?.dataset.specialFriendRemaining || 0));
+      showToast(isReady
+        ? "특별친구가 오늘 나무 가까이에 찾아오고 있어요."
+        : `마음을 ${remaining || 3}번 더 남기면 특별친구를 만날 수 있어요.`);
+      return;
+    }
     // 정보창을 연 직후 document의 바깥 클릭 감지기가 같은 클릭을 받아
     // 곧바로 닫아버리지 않도록 여기서 전파를 멈춥니다.
     event.stopPropagation();
@@ -11866,6 +11913,7 @@ function bindEvents() {
 }
 
 let welcomeSeedTimer = null;
+let welcomeArrivalActionTimer = null;
 let welcomeWalkTimer = null;
 let welcomeGardenTransitionTimer = null;
 let welcomeGardenArrivalTimer = null;
@@ -11874,12 +11922,15 @@ let welcomeTreeName = "내 나무";
 // preview는 URL 검수 전용, onboarding은 카카오 로그인 뒤 신규 계정의 실제 첫 나무 흐름입니다.
 let welcomeFlowMode = "idle";
 let welcomeHandlersBound = false;
+let welcomeSandboxDiscoveryPending = false;
+let welcomeOnboardingAnalyticsStarted = false;
 
 function clearWelcomePreviewTimers() {
-  [welcomeSeedTimer, welcomeWalkTimer, welcomeGardenTransitionTimer, welcomeGardenArrivalTimer].forEach((timer) => {
+  [welcomeSeedTimer, welcomeArrivalActionTimer, welcomeWalkTimer, welcomeGardenTransitionTimer, welcomeGardenArrivalTimer].forEach((timer) => {
     if (timer) window.clearTimeout(timer);
   });
   welcomeSeedTimer = null;
+  welcomeArrivalActionTimer = null;
   welcomeWalkTimer = null;
   welcomeGardenTransitionTimer = null;
   welcomeGardenArrivalTimer = null;
@@ -11896,13 +11947,16 @@ function resetWelcomeOnboardingSurface() {
     preview?.classList.add("hidden");
     preview?.classList.remove(
       "is-seeded", "is-seed-ready", "is-handoff", "is-naming", "is-walk",
-      "is-record-previewed", "is-tree-birth", "is-entering-garden", "is-leaving"
+      "is-record-previewed", "is-tree-birth", "is-entering-garden", "is-leaving",
+      "is-arrival-action-ready", "is-arrival-fast-forward"
     );
     els.welcomeNameSheet?.classList.add("hidden");
     els.welcomeWalkLayer?.classList.add("hidden");
     document.body.classList.remove("is-welcome-preview", "is-welcome-live-entry");
   }
   welcomeFlowMode = "idle";
+  welcomeSandboxDiscoveryPending = false;
+  welcomeOnboardingAnalyticsStarted = false;
 }
 
 function resetWelcomeSandboxGarden() {
@@ -11924,11 +11978,13 @@ function resetWelcomePreview() {
   clearWelcomePreviewTimers();
   welcomeSelectedMood = "";
   welcomeTreeName = "내 나무";
+  welcomeSandboxDiscoveryPending = false;
   resetWelcomeSandboxGarden();
 
   preview.classList.remove(
     "is-seeded", "is-seed-ready", "is-handoff", "is-naming", "is-walk",
-    "is-record-previewed", "is-tree-birth", "is-entering-garden", "is-leaving"
+    "is-record-previewed", "is-tree-birth", "is-entering-garden", "is-leaving",
+    "is-arrival-action-ready", "is-arrival-fast-forward"
   );
   preview.dataset.phase = "intro";
   els.welcomeNameSheet?.classList.add("hidden");
@@ -11946,6 +12002,54 @@ function resetWelcomePreview() {
   preview.classList.add("is-resetting");
   void preview.offsetWidth;
   preview.classList.remove("is-resetting");
+}
+
+function makeWelcomeArrivalActionable({ fastForward = false, source = "timer" } = {}) {
+  const preview = els.welcomePreview;
+  if (!preview || preview.classList.contains("is-seeded")) return;
+  const wasFastForwarded = preview.classList.contains("is-arrival-fast-forward");
+  preview.classList.add("is-arrival-action-ready");
+  if (fastForward) preview.classList.add("is-arrival-fast-forward");
+  if (welcomeArrivalActionTimer) {
+    window.clearTimeout(welcomeArrivalActionTimer);
+    welcomeArrivalActionTimer = null;
+  }
+  const userAdvanced = source === "advance_button" || source === "scene_tap";
+  if (fastForward && !wasFastForwarded && userAdvanced && isLiveWelcomeOnboarding()) {
+    trackTodayForestOperationalEvent("onboarding_arrival_advanced", { source });
+  }
+}
+
+function scheduleWelcomeArrivalAction() {
+  if (welcomeArrivalActionTimer) window.clearTimeout(welcomeArrivalActionTimer);
+  const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  if (reducedMotion) {
+    makeWelcomeArrivalActionable({ fastForward: true, source: "reduced_motion" });
+    return;
+  }
+  welcomeArrivalActionTimer = window.setTimeout(() => {
+    welcomeArrivalActionTimer = null;
+    makeWelcomeArrivalActionable({ fastForward: true, source: "auto_ready" });
+  }, 5200);
+}
+
+function welcomeArrivalCanAdvance() {
+  const preview = els.welcomePreview;
+  if (!preview || preview.classList.contains("is-seeded") || preview.classList.contains("is-arrival-fast-forward")) return false;
+  return ["intro", ""].includes(preview.dataset.phase || "intro");
+}
+
+function claimWelcomeSandboxDiscovery() {
+  if (!welcomeSandboxDiscoveryPending || !els.foundItemsLayer) return;
+  welcomeSandboxDiscoveryPending = false;
+  if (els.foundItemSparkle) els.foundItemSparkle.hidden = true;
+  if (els.foundItemHint) els.foundItemHint.hidden = true;
+  const itemId = "welcome-sandbox-pink-wildflower";
+  els.foundItemsLayer.innerHTML = `
+    <div class="found-item found-item-front_bed_left welcome-sandbox-found-item" data-found-item-id="${itemId}" aria-label="분홍 들꽃">
+      <img src="assets/decorations/pink-wildflower.png" alt="" />
+    </div>`;
+  showFirstWalkCompletion({ foundItemId: itemId });
 }
 
 function openWelcomeNameSheet() {
@@ -12008,18 +12112,21 @@ function prepareWelcomeSandboxGarden() {
   if (els.firstWalkTutorial) els.firstWalkTutorial.classList.add("hidden");
   if (els.gardenDecorateControls) els.gardenDecorateControls.hidden = false;
 
-  // 실제 정원에서 쓰는 발견물 레이어를 그대로 사용합니다.
-  if (els.foundItemsLayer) {
-    els.foundItemsLayer.innerHTML = `
-      <div class="found-item found-item-tree_base_right welcome-sandbox-found-item" aria-hidden="true">
-        <img src="assets/decorations/pink-wildflower.png" alt="" />
-      </div>`;
+  // 미리보기에서도 실제 신규 계정과 같은 마지막 발견 단계를 거칩니다.
+  welcomeSandboxDiscoveryPending = true;
+  if (els.foundItemsLayer) els.foundItemsLayer.replaceChildren();
+  if (els.foundItemSparkle) {
+    els.foundItemSparkle.hidden = false;
+    els.foundItemSparkle.disabled = false;
+    els.foundItemSparkle.setAttribute("aria-label", "풀숲에서 반짝이는 작은 것 찾기");
   }
+  if (els.foundItemHint) els.foundItemHint.hidden = false;
 
   // welcomePreview 모드에서는 일반 init()을 건너뛰므로, 실제 정원과 같은 좌표 비율만 직접 맞춥니다.
   window.requestAnimationFrame(() => {
     syncGardenWorldScale();
     app.classList.add("is-welcome-garden-visible");
+    showFirstWalkTutorialScene("discovery", { animateGuide: false });
   });
 }
 
@@ -12030,6 +12137,7 @@ function finishWelcomeOnboarding() {
   // 실제 저장이 끝난 뒤에만 화면을 넘깁니다. 정원은 아래에서 먼저 렌더링하고,
   // 손님맞이 장면은 기존 CSS 전환 시간만큼 부드럽게 사라집니다.
   welcomeFlowMode = "transitioning";
+  trackTodayForestOperationalEvent("onboarding_garden_entered", { first_record_count: state.records?.length || 0 });
   preview.classList.add("is-leaving");
   preview.dataset.phase = "my-garden";
   renderAuthUI();
@@ -12122,6 +12230,10 @@ async function beginWelcomeKakaoLogin() {
 
 function startWelcomeOnboarding() {
   if (!isFirstGardenOnboardingRequired()) return false;
+  if (!welcomeOnboardingAnalyticsStarted) {
+    welcomeOnboardingAnalyticsStarted = true;
+    trackTodayForestOperationalEvent("onboarding_started", { entry: "new_garden" });
+  }
   initWelcomePreview({ onboarding: true });
   return true;
 }
@@ -12142,6 +12254,7 @@ async function saveWelcomeOnboardingTreeName(treeName) {
 
     const row = normalizeRpcRow(data);
     state.treeName = row?.saved_tree_name || row?.tree_name || treeName;
+    trackTodayForestOperationalEvent("onboarding_tree_named", { name_length: state.treeName.length });
     if (els.welcomeNameError) els.welcomeNameError.textContent = "";
     startWelcomeFirstWalk(state.treeName);
   } catch (error) {
@@ -12215,6 +12328,10 @@ async function saveWelcomeOnboardingFirstRecord() {
       mood: welcomeMoodToRecordMood(welcomeSelectedMood),
       detail_added: "no",
     });
+    trackTodayForestOperationalEvent("onboarding_first_record_saved", {
+      mood: welcomeMoodToRecordMood(welcomeSelectedMood),
+      line_length: oneLine.length,
+    });
     if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "";
     els.welcomePreview?.classList.add("is-record-previewed");
     els.welcomePreview.dataset.phase = "recorded";
@@ -12261,18 +12378,35 @@ function initWelcomePreview({ liveEntry = false, onboarding = false } = {}) {
     if (els.welcomePreviewHandoff) els.welcomePreviewHandoff.classList.add("hidden");
     if (nameCopy) nameCopy.textContent = "한 번 정한 나무 이름은 바꿀 수 없어요.";
   } else {
-    if (els.welcomeKakaoButton) els.welcomeKakaoButton.textContent = "카카오로 내 숲 시작하기";
-    els.welcomePreviewHandoff?.classList.toggle("hidden", liveEntry);
-    if (nameCopy) nameCopy.textContent = "이름은 나중에 언제든 바꿀 수 있어요.";
+    // welcomePreview는 로그인 버튼에서 멈추지 않고 실제 신규 흐름 전체를 안전하게 검수합니다.
+    if (els.welcomeKakaoButton) els.welcomeKakaoButton.textContent = "이름 정하기";
+    els.welcomePreviewHandoff?.classList.add("hidden");
+    if (nameCopy) nameCopy.textContent = "한 번 정한 나무 이름은 바꿀 수 없어요.";
   }
   if (preview.dataset.previewMode === "still") return;
 
   resetWelcomePreview();
+  scheduleWelcomeArrivalAction();
   if (welcomeHandlersBound) return;
   welcomeHandlersBound = true;
 
+  els.welcomeArrivalAdvance?.addEventListener("click", () => {
+    if (!welcomeArrivalCanAdvance()) return;
+    makeWelcomeArrivalActionable({ fastForward: true, source: "advance_button" });
+    els.welcomePlantButton?.focus();
+  });
+
+  preview.addEventListener("pointerup", (event) => {
+    if (!welcomeArrivalCanAdvance()) return;
+    if (event.target?.closest?.("button, input, textarea, form")) return;
+    makeWelcomeArrivalActionable({ fastForward: true, source: "scene_tap" });
+  });
+
   els.welcomePlantButton?.addEventListener("click", () => {
     if (preview.classList.contains("is-seeded")) return;
+    if (isLiveWelcomeOnboarding()) {
+      trackTodayForestOperationalEvent("onboarding_seed_planted", { source: "welcome_button" });
+    }
     preview.classList.add("is-seeded");
     preview.dataset.phase = "seed";
     welcomeSeedTimer = window.setTimeout(() => {
@@ -12283,12 +12417,9 @@ function initWelcomePreview({ liveEntry = false, onboarding = false } = {}) {
   });
 
   els.welcomeKakaoButton?.addEventListener("click", () => {
-    if (isLiveWelcomeOnboarding()) {
-      openWelcomeNameSheet();
-      return;
-    }
-    // 검수·비로그인 손님맞이에서만 카카오 로그인으로 연결합니다.
-    void beginWelcomeKakaoLogin();
+    // 실제 신규 계정과 welcomePreview 모두 같은 이름 → 첫 마음 흐름으로 이어집니다.
+    // preview는 DB를 쓰지 않고, onboarding만 저장 RPC를 사용합니다.
+    openWelcomeNameSheet();
   });
 
   els.welcomeNameForm?.addEventListener("submit", (event) => {
@@ -12324,6 +12455,12 @@ function initWelcomePreview({ liveEntry = false, onboarding = false } = {}) {
       if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "오늘의 마음을 하나 골라주세요.";
       return;
     }
+    const previewLine = els.welcomeRecordLine?.value.trim() || "";
+    if (!previewLine) {
+      if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "오늘을 한 줄로 남겨주세요.";
+      els.welcomeRecordLine?.focus();
+      return;
+    }
     // 검수 화면에서는 실제 기록 저장 없이 장면만 이어집니다.
     preview.classList.add("is-record-previewed");
     preview.dataset.phase = "recorded";
@@ -12331,7 +12468,15 @@ function initWelcomePreview({ liveEntry = false, onboarding = false } = {}) {
     window.setTimeout(() => startWelcomeGardenTransition({ onboarding: false }), 300);
   });
 
-  els.welcomeReplay?.addEventListener("click", resetWelcomePreview);
+  els.foundItemSparkle?.addEventListener("click", () => {
+    if (!welcomeSandboxDiscoveryPending) return;
+    claimWelcomeSandboxDiscovery();
+  });
+
+  els.welcomeReplay?.addEventListener("click", () => {
+    resetWelcomePreview();
+    scheduleWelcomeArrivalAction();
+  });
 }
 
 async function init() {
