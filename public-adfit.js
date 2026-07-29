@@ -97,6 +97,7 @@
     if (activeSurface === surface) return;
 
     activeSurface = surface;
+    document.body.classList.toggle("is-garden-adfit-active", surface === "garden");
     publicSection.classList.toggle("hidden", surface !== "public");
     gardenSection.classList.toggle("hidden", surface !== "garden");
 

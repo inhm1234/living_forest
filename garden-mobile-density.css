@@ -1,0 +1,81 @@
+/* ========================================================================== 
+   MOBILE GARDEN DENSITY v1.0
+   모바일에서 완료 후 320×50 광고까지 자연스럽게 이어지도록, 광고가 실제로
+   노출되는 동안에만 헤더·메뉴·광고 주변의 세로 여백을 조심스럽게 압축합니다.
+   정원 무대 높이와 390×540 좌표 세계는 건드리지 않아 나무 크기와 배치를 보존합니다.
+   ========================================================================== */
+
+@media (max-width: 720px) {
+  body.is-garden-adfit-active #gardenApp {
+    padding-top: 12px;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom));
+  }
+
+  body.is-garden-adfit-active #gardenApp > .garden-header {
+    margin-top: 0;
+    margin-bottom: 10px;
+  }
+
+  body.is-garden-adfit-active #gardenApp > .garden-header .eyebrow {
+    margin-bottom: 2px;
+  }
+
+  body.is-garden-adfit-active #gardenApp > .garden-nav-four {
+    margin-top: 6px;
+    margin-bottom: 0;
+  }
+
+  body.is-garden-adfit-active #gardenApp > .garden-nav-four .nav-action {
+    min-height: 58px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    gap: 4px;
+  }
+
+  body.is-garden-adfit-active #gardenApp > .garden-extra-nav {
+    margin-top: 6px;
+  }
+
+  body.is-garden-adfit-active #gardenApp > .garden-extra-nav .secondary-action,
+  body.is-garden-adfit-active #gardenApp > .garden-extra-nav .secondary-action-oot-card {
+    min-height: 64px;
+  }
+
+  body.is-garden-adfit-active #gardenApp > .garden-extra-nav .secondary-action:not(.secondary-action-oot-card) {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    gap: 3px;
+  }
+
+  body.is-garden-adfit-active #gardenApp > .garden-extra-nav .secondary-action-icon {
+    width: 27px;
+    height: 27px;
+  }
+
+  body.is-garden-adfit-active #gardenApp > .garden-extra-nav .secondary-action-oot-main {
+    min-height: 39px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    gap: 2px;
+  }
+
+  body.is-garden-adfit-active #gardenApp > .garden-extra-nav .secondary-action-oot-main .secondary-action-main-icon {
+    width: 27px;
+    height: 27px;
+  }
+
+  body.is-garden-adfit-active #gardenApp > .garden-extra-nav .secondary-action-oot-tools,
+  body.is-garden-adfit-active #gardenApp > .garden-extra-nav .secondary-action-oot-alert,
+  body.is-garden-adfit-active #gardenApp > .garden-extra-nav .secondary-action-oot-invites {
+    min-height: 25px;
+  }
+
+  body.is-garden-adfit-active #gardenApp > .garden-adfit {
+    margin-top: 6px;
+    padding-top: 6px;
+  }
+
+  body.is-garden-adfit-active #gardenApp > .garden-adfit .garden-adfit-label {
+    margin-bottom: 4px;
+  }
+}
