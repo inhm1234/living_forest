@@ -611,13 +611,13 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .mood-more-chevron { display: inline-block; font-size: 12px; transition: transform .18s ease; }
 .mood-more-toggle.is-expanded .mood-more-chevron { transform: rotate(180deg); }
 .mood-more-options.hidden { display: none; }
-.selected-mood-summary { margin-top: 12px; padding: 10px 11px; border-radius: 14px; background: linear-gradient(135deg, rgba(238,248,239,.88), rgba(248,250,245,.9)); }
+.selected-mood-summary { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; margin-top: 10px; padding: 0 1px; }
 .selected-mood-summary.hidden { display: none; }
-.selected-mood-summary-label { display: block; margin-bottom: 7px; color: #6e8a78; font-size: 10px; font-weight: 850; }
-.selected-mood-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.selected-mood-chip { display: inline-flex; align-items: center; gap: 5px; min-height: 29px; padding: 6px 9px; border: 1px solid rgba(126,174,140,.28); border-radius: 999px; background: #fff; color: #527261; font-size: 10px; font-weight: 900; cursor: pointer; }
-.selected-mood-chip span { color: #8aa294; font-size: 13px; line-height: 1; }
-.mood-selection-status { min-height: 0; margin: 6px 1px 0; color: #8a9ba6; font-size: 10px; font-weight: 750; line-height: 1.4; }
+.selected-mood-summary-label { flex: 0 0 auto; color: #6e8a78; font-size: 10px; font-weight: 850; }
+.selected-mood-chips { display: flex; flex: 1 1 auto; flex-wrap: wrap; gap: 5px; min-width: 0; }
+.selected-mood-chip { display: inline-flex; align-items: center; gap: 4px; min-height: 27px; padding: 5px 8px; border: 1px solid rgba(126,174,140,.28); border-radius: 999px; background: #fff; color: #527261; font-size: 10px; font-weight: 900; cursor: pointer; }
+.selected-mood-chip span { color: #8aa294; font-size: 12px; line-height: 1; }
+.mood-selection-status { min-height: 0; margin: 5px 1px 0; color: #8a9ba6; font-size: 10px; font-weight: 750; line-height: 1.4; }
 .mood-selection-status:empty { display: none; }
 .mood-selection-status.has-selection { color: #5f8d70; }
 .write-label { margin-top: 15px; }

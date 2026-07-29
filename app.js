@@ -10336,10 +10336,9 @@ function renderMoodSelection() {
   }
 
   if (!els.moodSelectionStatus) return;
-  els.moodSelectionStatus.classList.toggle("has-selection", count > 0);
-  els.moodSelectionStatus.textContent = count
-    ? `${count}개 선택 · ${MAX_SELECTED_MOODS - count ? `${MAX_SELECTED_MOODS - count}개 더 고를 수 있어요` : "이대로 오늘을 남길 수 있어요"}`
-    : "";
+  const reachedLimit = count === MAX_SELECTED_MOODS;
+  els.moodSelectionStatus.classList.toggle("has-selection", reachedLimit);
+  els.moodSelectionStatus.textContent = reachedLimit ? "세 가지 마음을 모두 골랐어요." : "";
 }
 
 function renderFeedbackCategorySelection() {
