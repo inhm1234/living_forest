@@ -9505,3 +9505,108 @@ body.animal-preview-clean-mode .ff-cinematic {
     margin-right: calc(50% - 50vw);
   }
 }
+
+/* ==========================================================================
+   KAKAO ADFIT — 정원 전체 밀도 안정화 v1.3
+   광고가 정원과 메뉴 사이를 끊지 않도록 메뉴 다음에 배치합니다.
+   데스크톱에서는 정원·메뉴·광고를 하나의 세로 리듬으로 보고 viewport 높이에 맞춰
+   정원 자체와 주변 여백을 함께 조절합니다. 모바일은 기존 정원 비율을 보존합니다.
+   ========================================================================== */
+.garden-adfit {
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  margin: 10px auto 0;
+  padding: 10px 0 0;
+  border-top: 1px solid rgba(119, 145, 130, .10);
+  border-bottom: 0;
+}
+
+.garden-adfit-label {
+  margin: 0 0 6px;
+  color: #9aa8a1;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: .08em;
+}
+
+@media (min-width: 721px) {
+  .garden-app {
+    padding-top: 12px;
+    padding-bottom: calc(22px + env(safe-area-inset-bottom));
+  }
+
+  .garden-header {
+    align-items: center;
+    margin-top: 0;
+    margin-bottom: 10px;
+  }
+
+  .garden-header h1 {
+    font-size: clamp(29px, 3vw, 33px);
+  }
+
+  /* 390×540 좌표 세계는 JS가 stage 높이에 맞춰 통째로 축소합니다.
+     나무·장식·동물의 상대 위치는 그대로 유지됩니다. */
+  .garden-stage {
+    min-height: 0;
+    height: clamp(500px, calc(100svh - 390px), 570px);
+  }
+
+  .garden-nav-four {
+    margin-top: 8px;
+    margin-bottom: 0;
+  }
+
+  .garden-nav-four .nav-action {
+    min-height: 62px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+
+  .garden-extra-nav {
+    margin-top: 8px;
+  }
+
+  .garden-extra-nav .secondary-action {
+    min-height: 68px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+
+  .garden-adfit {
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+
+  .growth-note {
+    margin-top: 10px;
+  }
+}
+
+@media (min-width: 721px) and (max-height: 850px) {
+  .garden-app {
+    padding-top: 8px;
+  }
+
+  .garden-header {
+    margin-bottom: 8px;
+  }
+
+  .garden-header h1 {
+    font-size: 29px;
+  }
+
+  .garden-stage {
+    height: 470px;
+  }
+
+  .garden-nav-four .nav-action {
+    min-height: 58px;
+  }
+
+  .garden-extra-nav .secondary-action {
+    min-height: 64px;
+  }
+}

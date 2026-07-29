@@ -32,7 +32,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=adfit-garden-v1-2" />
+  <link rel="stylesheet" href="style.css?v=adfit-garden-v1-3" />
   <link rel="stylesheet" href="public-home-phase8-9.css?v=phase8-9-landing-adfit-v1-0" />
   <link rel="stylesheet" href="oot-notifications.css?v=garden-button-labels-v1-3" />
   <link rel="stylesheet" href="tree-animal-call.css?v=tree-discovery-v1-6" />
@@ -621,14 +621,7 @@
     </section>
 
 
-    <!-- GARDEN ADFIT v1.2: 오늘 마음을 완료한 뒤, 정원 풍경과 기능 메뉴 사이의 독립 영역에서 노출합니다.
-         핵심 기록 전에는 숨기고, ?adPreview=1 주소에서는 배치 검수용으로 표시됩니다. -->
-    <section class="garden-adfit hidden" id="gardenAdFitSection" aria-label="광고">
-      <p class="garden-adfit-label">광고</p>
-      <div class="garden-adfit-frame" id="gardenAdFitSlot"></div>
-    </section>
-
-    <!-- OPERATION MENU ORDER v1: 완료 후 광고 영역 다음에 핵심 메뉴를 이어 배치합니다. -->
+    <!-- OPERATION MENU ORDER v1: 핵심 메뉴는 정원 풍경 바로 아래에서 끊김 없이 이어집니다. -->
     <nav class="garden-nav garden-nav-four" aria-label="내 정원 메뉴">
       <button type="button" class="nav-action nav-primary" id="openRecord">
         <span class="nav-icon" aria-hidden="true">
@@ -703,6 +696,13 @@
       </div>
     </div>
 
+    <!-- GARDEN ADFIT v1.3: 정원과 기능 메뉴의 한 덩어리를 먼저 보존한 뒤,
+         오늘 마음을 완료한 사용자에게만 하단 독립 영역에서 1개 노출합니다.
+         데스크톱에서는 전체 정원 밀도를 함께 조절해 첫 화면에서 광고까지 자연스럽게 이어집니다. -->
+    <section class="garden-adfit hidden" id="gardenAdFitSection" aria-label="광고">
+      <p class="garden-adfit-label">광고</p>
+      <div class="garden-adfit-frame" id="gardenAdFitSlot"></div>
+    </section>
 
     <section class="growth-note" aria-label="나무 성장 안내">
       <div class="growth-note-icon" aria-hidden="true">🌱</div>
