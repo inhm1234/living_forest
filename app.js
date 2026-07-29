@@ -518,6 +518,12 @@ const moodMap = {
   sad: { icon: "😢", label: "슬펐어" },
   upset: { icon: "💧", label: "속상했어" },
   anxious: { icon: "☁️", label: "불안했어" },
+  neutral: { icon: "😐", label: "무덤덤했어" },
+  lonely: { icon: "🌙", label: "외로웠어" },
+  frustrated: { icon: "🌫️", label: "답답했어" },
+  angry: { icon: "🔥", label: "화났어" },
+  regretful: { icon: "🍂", label: "아쉬웠어" },
+  disappointed: { icon: "💭", label: "서운했어" },
 };
 
 const MAX_SELECTED_MOODS = 3;
@@ -580,6 +586,7 @@ function activeSpecialForestFriendEncounter() {
 let currentUser = null;
 let state = cloneDefault();
 let selectedMoods = [];
+let moodOptionsExpanded = false;
 let selectedFeedbackCategory = "idea";
 let activeFeedbackTab = "write";
 let activeLetterId = null;
@@ -852,6 +859,10 @@ const els = {
   firstWalkTutorialHint: $("#firstWalkTutorialHint"),
   recordTutorialNote: $("#recordTutorialNote"),
   recordTutorialPreview: $("#recordTutorialPreview"),
+  moodMoreToggle: $("#moodMoreToggle"),
+  moodMoreOptions: $("#moodMoreOptions"),
+  selectedMoodSummary: $("#selectedMoodSummary"),
+  selectedMoodChips: $("#selectedMoodChips"),
   moodSelectionStatus: $("#moodSelectionStatus"),
   sheetOverlay: $("#sheetOverlay"),
   recordSheet: $("#recordSheet"),
@@ -10295,6 +10306,17 @@ async function markLetterRead() {
   closeLetterModal();
 }
 
+function setMoodOptionsExpanded(expanded) {
+  moodOptionsExpanded = Boolean(expanded);
+  els.moodMoreOptions?.classList.toggle("hidden", !moodOptionsExpanded);
+  els.moodMoreOptions?.setAttribute("aria-hidden", String(!moodOptionsExpanded));
+  els.moodMoreToggle?.setAttribute("aria-expanded", String(moodOptionsExpanded));
+  els.moodMoreToggle?.classList.toggle("is-expanded", moodOptionsExpanded);
+
+  const label = els.moodMoreToggle?.querySelector("span:first-child");
+  if (label) label.textContent = moodOptionsExpanded ? "다른 마음 접기" : "다른 마음 찾아보기";
+}
+
 function renderMoodSelection() {
   const selectedSet = new Set(selectedMoods);
   $$(".mood-choice").forEach((button) => {
@@ -10303,12 +10325,21 @@ function renderMoodSelection() {
     button.setAttribute("aria-pressed", String(selected));
   });
 
-  if (!els.moodSelectionStatus) return;
   const count = selectedMoods.length;
+  if (els.selectedMoodSummary && els.selectedMoodChips) {
+    els.selectedMoodSummary.classList.toggle("hidden", count === 0);
+    els.selectedMoodChips.innerHTML = selectedMoods.map((key) => {
+      const mood = moodMap[key];
+      if (!mood) return "";
+      return `<button type="button" class="selected-mood-chip" data-remove-mood="${escapeHTML(key)}" aria-label="${escapeHTML(mood.label)} 선택 해제">${escapeHTML(mood.label)}<span aria-hidden="true">×</span></button>`;
+    }).join("");
+  }
+
+  if (!els.moodSelectionStatus) return;
   els.moodSelectionStatus.classList.toggle("has-selection", count > 0);
   els.moodSelectionStatus.textContent = count
-    ? `${count}개의 마음을 골랐어요. ${MAX_SELECTED_MOODS - count ? `${MAX_SELECTED_MOODS - count}개 더 고를 수 있어요.` : "이대로 오늘을 남길 수 있어요."}`
-    : "마음을 1~3개 골라주세요.";
+    ? `${count}개 선택 · ${MAX_SELECTED_MOODS - count ? `${MAX_SELECTED_MOODS - count}개 더 고를 수 있어요` : "이대로 오늘을 남길 수 있어요"}`
+    : "";
 }
 
 function renderFeedbackCategorySelection() {
@@ -10497,6 +10528,7 @@ async function saveRecord(event) {
     submitButton.textContent = "나무에 마음 남기기";
     els.recordForm.reset();
     selectedMoods = [];
+    setMoodOptionsExpanded(false);
     renderMoodSelection();
     els.detailWrap.classList.add("hidden");
     els.toggleDetail.innerHTML = '조금 더 적기 <span aria-hidden="true">⌄</span>';
@@ -10528,6 +10560,7 @@ async function saveRecord(event) {
 
     els.recordForm.reset();
     selectedMoods = [];
+    setMoodOptionsExpanded(false);
     renderMoodSelection();
     els.detailWrap.classList.add("hidden");
     els.toggleDetail.innerHTML = '조금 더 적기 <span aria-hidden="true">⌄</span>';
@@ -10606,6 +10639,7 @@ async function saveRecord(event) {
 
   els.recordForm.reset();
   selectedMoods = [];
+  setMoodOptionsExpanded(false);
   renderMoodSelection();
   els.detailWrap.classList.add("hidden");
   els.toggleDetail.innerHTML = '조금 더 적기 <span aria-hidden="true">⌄</span>';
@@ -11637,7 +11671,9 @@ function bindEvents() {
       showToast("오늘의 마음은 이미 나무에 남겼어요. 내일 다시 와요.");
       return;
     }
+    setMoodOptionsExpanded(false);
     openSheet(els.recordSheet);
+    renderMoodSelection();
     renderFirstWalkTutorial();
   });
   $("#openRecords").addEventListener("click", () => { renderRecords(); openSheet(els.recordsSheet); });
@@ -11829,6 +11865,16 @@ function bindEvents() {
     const isHidden = els.detailWrap.classList.toggle("hidden");
     els.toggleDetail.innerHTML = isHidden ? '조금 더 적기 <span aria-hidden="true">⌄</span>' : '간단히 접기 <span aria-hidden="true">⌃</span>';
     if (!isHidden) els.detailText.focus();
+  });
+  els.moodMoreToggle?.addEventListener("click", () => {
+    setMoodOptionsExpanded(!moodOptionsExpanded);
+  });
+  els.selectedMoodChips?.addEventListener("click", (event) => {
+    const removeButton = event.target.closest?.("[data-remove-mood]");
+    const moodKey = removeButton?.dataset.removeMood;
+    if (!moodKey || !selectedMoods.includes(moodKey)) return;
+    selectedMoods = selectedMoods.filter((key) => key !== moodKey);
+    renderMoodSelection();
   });
   $$(".mood-choice").forEach((button) => button.addEventListener("click", () => {
     const moodKey = button.dataset.mood;
