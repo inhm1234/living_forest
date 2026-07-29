@@ -11987,6 +11987,11 @@ function resetWelcomePreview() {
     "is-arrival-action-ready", "is-arrival-fast-forward"
   );
   preview.dataset.phase = "intro";
+  if (els.welcomeArrivalAdvance) {
+    els.welcomeArrivalAdvance.hidden = false;
+    els.welcomeArrivalAdvance.disabled = false;
+    els.welcomeArrivalAdvance.removeAttribute("aria-hidden");
+  }
   els.welcomeNameSheet?.classList.add("hidden");
   els.welcomeWalkLayer?.classList.add("hidden");
   els.welcomeWalkIntro?.classList.remove("is-hidden");
@@ -12010,6 +12015,15 @@ function makeWelcomeArrivalActionable({ fastForward = false, source = "timer" } 
   const wasFastForwarded = preview.classList.contains("is-arrival-fast-forward");
   preview.classList.add("is-arrival-action-ready");
   if (fastForward) preview.classList.add("is-arrival-fast-forward");
+
+  // reveal 애니메이션의 forwards 값이 opacity를 계속 점유하면
+  // 건너뛰기 버튼이 시작 버튼 위에 남을 수 있으므로 DOM 상태로도 확실히 닫습니다.
+  if (els.welcomeArrivalAdvance) {
+    els.welcomeArrivalAdvance.hidden = true;
+    els.welcomeArrivalAdvance.disabled = true;
+    els.welcomeArrivalAdvance.setAttribute("aria-hidden", "true");
+  }
+
   if (welcomeArrivalActionTimer) {
     window.clearTimeout(welcomeArrivalActionTimer);
     welcomeArrivalActionTimer = null;

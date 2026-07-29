@@ -9317,10 +9317,12 @@ body.animal-preview-clean-mode .ff-cinematic {
 .welcome-preview.is-naming .welcome-arrival-advance,
 .welcome-preview.is-walk .welcome-arrival-advance,
 .welcome-preview.is-tree-birth .welcome-arrival-advance {
+  animation: none;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
   transform: translateX(-50%) translateY(6px);
-  transition: opacity .22s ease, transform .22s ease;
+  transition: opacity .22s ease, transform .22s ease, visibility 0s linear .22s;
 }
 
 .welcome-preview.is-arrival-fast-forward .welcome-still-art {
