@@ -185,6 +185,7 @@
     resultOverlay: $("#resultOverlay"),
     resultSymbol: $("#resultSymbol"),
     resultTitle: $("#resultTitle"),
+    resultLead: $("#resultLead"),
     resultDesc: $("#resultDesc"),
     resultPersonality: $("#resultPersonality"),
     resultReaction: $("#resultReaction"),
@@ -204,6 +205,7 @@
     introOpponentBadge: $("#introOpponentBadge"),
     introOpponentDesc: $("#introOpponentDesc"),
     introDifficultyButtons: $$('[data-intro-difficulty]'),
+    introDifficultyHint: $("#introDifficultyHint"),
     introCountdown: $("#introCountdown"),
     introNote: $("#introNote"),
     introStartButton: $("#introStartButton"),
@@ -223,6 +225,7 @@
   let activeGameStarted = false;
   let activeGameCompleted = false;
   let gameRunNumber = 0;
+  let lastRenderedCurrentValue = null;
 
   function trackOneOfTen(eventName, params = {}) {
     if (typeof window.trackTodayForestEvent === "function") {
@@ -335,6 +338,12 @@
     pregameCountdownInterval = null;
   }
 
+  const DIFFICULTY_HINTS = {
+    easy: "쉬움 · 다람쥐가 자주 실수해 편하게 연습해요.",
+    normal: "보통 · 좋은 선택과 작은 실수를 섞어 플레이해요.",
+    hard: "어려움 · 결과값에 가까워지는 선택을 거의 놓치지 않아요.",
+  };
+
   function renderPreparation() {
     if (!state) return;
     const personality = getAiPersonality();
@@ -349,6 +358,9 @@
       button.setAttribute("aria-pressed", selected ? "true" : "false");
       button.disabled = Boolean(pregameCountdownInterval);
     });
+    if (els.introDifficultyHint) {
+      els.introDifficultyHint.textContent = DIFFICULTY_HINTS[selectedDifficulty] || DIFFICULTY_HINTS.normal;
+    }
   }
 
   function openPreparation() {
@@ -373,6 +385,7 @@
     trackActiveGameExit("restart");
     activeGameStarted = false;
     activeGameCompleted = false;
+    lastRenderedCurrentValue = null;
     clearHumanTimer();
     clearPendingTimeout();
     clearPersonalityIntroTimeout();
@@ -411,7 +424,24 @@
     }
   }
 
+  function applyPhasePresentation() {
+    if (!state) return;
+    [...document.body.classList]
+      .filter((name) => name.startsWith("oot-phase-") || name.startsWith("oot-step-"))
+      .forEach((name) => document.body.classList.remove(name));
+
+    document.body.classList.add(`oot-phase-${state.phase}`);
+    if (state.phase === "human-play" && !state.selectedOperation) {
+      document.body.classList.add("oot-step-operation");
+    } else if (state.phase === "human-play" && state.selectedOperation && state.selectedNumber === null) {
+      document.body.classList.add("oot-step-number");
+    } else if (state.phase === "human-decision") {
+      document.body.classList.add("oot-step-decision");
+    }
+  }
+
   function render() {
+    applyPhasePresentation();
     renderOpponent();
     renderDifficulty();
     renderHistory();
@@ -510,6 +540,12 @@
 
     els.currentValue.textContent = state.currentValue === null ? "?" : String(state.currentValue);
     els.currentValue.classList.toggle("is-empty", state.currentValue === null);
+    if (state.currentValue !== null && state.currentValue !== lastRenderedCurrentValue) {
+      els.currentValue.classList.remove("is-value-pop");
+      void els.currentValue.offsetWidth;
+      els.currentValue.classList.add("is-value-pop");
+      lastRenderedCurrentValue = state.currentValue;
+    }
 
     els.selectedOperationPreview.textContent = hasOperation ? state.selectedOperation : "";
     els.selectedOperationPreview.classList.toggle("is-hidden", !hasOperation);
@@ -554,6 +590,7 @@
       const selectable = state.phase === "human-play" && available && !lockedByChoice;
       button.disabled = !selectable;
       button.classList.toggle("is-selected", state.selectedOperation === operation);
+      button.setAttribute("aria-pressed", state.selectedOperation === operation ? "true" : "false");
       button.addEventListener("click", () => {
         if (!selectable) return;
         state.selectedOperation = operation;
@@ -583,6 +620,7 @@
       const selectable = state.phase === "human-play" && state.selectedOperation !== null && state.selectedNumber === null;
       button.disabled = !selectable;
       button.classList.toggle("is-selected", state.selectedNumber === number);
+      button.setAttribute("aria-pressed", state.selectedNumber === number ? "true" : "false");
       button.classList.toggle("is-showdown", state.phase === "showdown-resolving");
       button.addEventListener("click", () => handleHumanNumber(number));
       els.humanHand.appendChild(button);
@@ -909,24 +947,27 @@
     let title = "무승부예요";
     let symbol = "🤝";
     let result = "draw";
-    let description = `${state.pendingShowdownReason} 두 카드가 최종 결과값 ${state.currentValue}에서 같은 거리였어요.`;
+    let lead = `두 카드가 결과값 ${state.currentValue}에서 같은 거리였어요.`;
+    let description = `${state.pendingShowdownReason} 남은 카드를 펼쳐 최종 거리를 비교했어요.`;
     let reaction = personality.result.draw;
     if (humanDistance < aiDistance) {
       result = "win";
       title = "당신이 이겼어요";
       symbol = "🏆";
-      description = `${state.pendingShowdownReason} 남은 카드를 펼쳐 보니 내 카드가 최종 결과값 ${state.currentValue}에 더 가까웠어요.`;
+      lead = `결과값 ${state.currentValue}에 더 가까운 카드는 내 카드 ${humanTarget}였어요!`;
       reaction = personality.result.humanWin;
     } else if (humanDistance > aiDistance) {
       result = "lose";
       title = `${personality.name}가 이겼어요`;
       symbol = "🐿️";
-      description = `${state.pendingShowdownReason} 남은 카드를 펼쳐 보니 ${personality.name}의 카드가 최종 결과값 ${state.currentValue}에 더 가까웠어요.`;
+      lead = `결과값 ${state.currentValue}에 더 가까운 카드는 ${personality.name}의 카드 ${aiTarget}였어요.`;
       reaction = personality.result.aiWin;
     }
 
+    els.resultOverlay.dataset.result = result;
     els.resultSymbol.textContent = symbol;
     els.resultTitle.textContent = title;
+    if (els.resultLead) els.resultLead.textContent = lead;
     els.resultDesc.textContent = description;
     els.resultPersonality.textContent = `${personality.icon} 오늘의 상대 · ${personality.name} · ${personality.badge}`;
     els.resultPersonality.dataset.personality = state.aiPersonality;

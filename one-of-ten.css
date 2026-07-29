@@ -914,3 +914,147 @@ body.oot-compact .oot-personality-intro p {
 @media (min-width: 721px), (max-width: 351px) {
   .oot-result-adfit { display: none !important; }
 }
+
+/* ONE-OF-TEN v1.7 — 플레이 정보 위계 · 선택 피드백 · 결과 감정 강화 */
+.oot-current-value-wrap {
+  min-width: min(28vw, 132px);
+  display: inline-grid;
+  place-items: center;
+  align-content: center;
+  gap: 1px;
+}
+.oot-current-value-label {
+  color: #91a097;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .04em;
+  line-height: 1;
+}
+.oot-current-value.is-value-pop {
+  animation: oot-value-arrive .34s cubic-bezier(.2,.85,.35,1.18);
+}
+
+.oot-timer {
+  padding: 5px 7px;
+  border: 1px solid rgba(91,120,102,.11);
+  border-radius: 999px;
+  background: rgba(245,249,245,.88);
+}
+.oot-timer.is-warning {
+  border-color: rgba(209,166,85,.28);
+  background: #fff8e9;
+}
+.oot-timer.is-danger {
+  border-color: rgba(189,106,100,.28);
+  background: #fff1ef;
+}
+
+body.oot-phase-human-play .oot-arena,
+body.oot-phase-human-decision .oot-arena {
+  border-color: rgba(86,132,101,.28);
+  box-shadow: 0 20px 52px rgba(61,99,75,.16), inset 0 0 0 1px rgba(255,255,255,.54);
+}
+body.oot-phase-human-play .oot-turn-pill,
+body.oot-phase-human-decision .oot-turn-pill {
+  background: #dcecdf;
+  box-shadow: 0 5px 14px rgba(72,113,87,.12);
+}
+body.oot-phase-ai-opening .oot-opponent-panel,
+body.oot-phase-ai-thinking .oot-opponent-panel {
+  border-color: rgba(194,155,88,.22);
+  box-shadow: 0 16px 38px rgba(126,99,54,.11);
+}
+
+body.oot-step-operation .oot-operations {
+  width: fit-content;
+  margin-inline: auto;
+  padding: 7px 9px;
+  border-radius: 18px;
+  background: rgba(226,239,229,.72);
+  box-shadow: 0 8px 22px rgba(68,108,82,.10);
+}
+body.oot-step-operation .oot-operation-card:not(:disabled) {
+  border-color: rgba(92,136,106,.34);
+  box-shadow: 0 9px 20px rgba(63,101,76,.13);
+}
+body.oot-step-number .oot-hand-panel {
+  border-color: rgba(197,151,68,.28);
+  box-shadow: 0 18px 44px rgba(150,111,43,.13);
+}
+body.oot-step-number .oot-number-card:not(:disabled) {
+  border-color: rgba(205,162,85,.38);
+  box-shadow: 0 11px 23px rgba(145,104,37,.14);
+}
+body.oot-step-decision .oot-action-panel {
+  border-color: rgba(86,132,101,.30);
+  box-shadow: 0 18px 44px rgba(61,99,75,.15);
+}
+
+.oot-operation-card.is-selected:disabled {
+  transform: translateY(-3px) scale(1.04);
+  border-color: #c99e50;
+  box-shadow: 0 11px 22px rgba(177,127,42,.20);
+}
+.oot-number-card.is-selected {
+  transform: translateY(-10px) scale(1.025);
+  border-color: #c99e50;
+  box-shadow: 0 15px 28px rgba(155,111,35,.20);
+}
+
+.oot-ready-difficulty-hint {
+  min-height: 31px;
+  margin: 9px 1px 0;
+  padding: 7px 9px;
+  border-radius: 11px;
+  background: #f5f7f3;
+  color: #708078;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.oot-result-lead {
+  max-width: 380px;
+  margin: 1px auto 7px;
+  color: #476553;
+  font-size: 15px;
+  font-weight: 950;
+  line-height: 1.42;
+  word-break: keep-all;
+}
+.oot-result-description {
+  max-width: 390px;
+}
+.oot-overlay[data-result="win"] .oot-result-card {
+  border-color: rgba(210,168,94,.42);
+  box-shadow: 0 30px 86px rgba(74,95,82,.25), 0 0 0 4px rgba(255,241,196,.18);
+}
+.oot-overlay[data-result="win"] .oot-result-symbol {
+  animation: oot-win-bounce .72s cubic-bezier(.2,.82,.3,1.2);
+}
+.oot-overlay[data-result="lose"] .oot-result-lead { color: #6a776f; }
+.oot-overlay[data-result="draw"] .oot-result-lead { color: #65766c; }
+
+@keyframes oot-value-arrive {
+  0% { transform: translateY(6px) scale(.84); opacity: .28; }
+  70% { transform: translateY(-2px) scale(1.06); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes oot-win-bounce {
+  0% { transform: translateY(10px) scale(.72) rotate(-7deg); opacity: .2; }
+  55% { transform: translateY(-5px) scale(1.16) rotate(4deg); opacity: 1; }
+  100% { transform: translateY(0) scale(1) rotate(0); opacity: 1; }
+}
+
+body.oot-compact .oot-current-value-wrap { min-width: min(25vw, 98px); gap: 0; }
+body.oot-compact .oot-current-value-label { font-size: 7px; }
+body.oot-compact .oot-timer { padding: 3px 5px; }
+body.oot-compact.oot-step-operation .oot-operations { padding: 3px 5px; border-radius: 13px; }
+body.oot-compact .oot-ready-difficulty-hint { min-height: 26px; margin-top: 6px; padding: 5px 7px; font-size: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .oot-current-value.is-value-pop,
+  .oot-overlay[data-result="win"] .oot-result-symbol {
+    animation: none !important;
+  }
+}

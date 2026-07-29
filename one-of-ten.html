@@ -11,7 +11,7 @@
   <script src="todayforest-analytics.js?v=oot-analytics-v1"></script>
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="one-of-ten.css?v=1.6" />
+  <link rel="stylesheet" href="one-of-ten.css?v=1.7-game-polish" />
 </head>
 <body>
   <main class="oot-app">
@@ -113,7 +113,10 @@
         <p class="oot-timeout-hint is-hidden" id="timeoutHint" aria-live="polite"></p>
 
         <div class="oot-expression" aria-label="현재 수식">
-          <span class="oot-current-value is-empty" id="currentValue">?</span>
+          <span class="oot-current-value-wrap">
+            <small class="oot-current-value-label">현재 결과값</small>
+            <span class="oot-current-value is-empty" id="currentValue">?</span>
+          </span>
           <button class="oot-selected-operation is-hidden" id="selectedOperationPreview" type="button" aria-label="선택한 수식 취소"></button>
           <span class="oot-selected-number is-hidden" id="selectedNumberPreview"></span>
         </div>
@@ -153,6 +156,7 @@
       <div class="oot-result-card">
         <span class="oot-result-symbol" id="resultSymbol">🌿</span>
         <h2 id="resultTitle">승부 결과</h2>
+        <p class="oot-result-lead" id="resultLead"></p>
         <p class="oot-result-description" id="resultDesc"></p>
         <p class="oot-result-personality" id="resultPersonality"></p>
         <p class="oot-result-reaction" id="resultReaction"></p>
@@ -239,6 +243,7 @@
           <button type="button" data-intro-difficulty="normal">보통</button>
           <button type="button" data-intro-difficulty="hard">어려움</button>
         </div>
+        <p class="oot-ready-difficulty-hint" id="introDifficultyHint">보통 · 좋은 선택과 작은 실수를 섞어 플레이해요.</p>
       </div>
       <div class="oot-ready-rule">
         <b>준비되면 시작</b>
@@ -250,7 +255,7 @@
     </div>
   </section>
 
-  <script src="one-of-ten.js?v=1.5.1-analytics"></script>
+  <script src="one-of-ten.js?v=1.7-game-polish"></script>
   <script src="one-of-ten-result-adfit.js?v=1.0"></script>
 </body>
 </html>
