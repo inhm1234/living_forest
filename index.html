@@ -33,7 +33,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
   <link rel="stylesheet" href="style.css?v=daily-mood-layered-v1-1-1" />
-  <link rel="stylesheet" href="public-home-phase8-9.css?v=phase8-9-landing-v1-1" />
+  <link rel="stylesheet" href="public-home-phase8-9.css?v=phase8-9-landing-adfit-v1-0" />
   <link rel="stylesheet" href="oot-notifications.css?v=garden-button-labels-v1-3" />
   <link rel="stylesheet" href="tree-animal-call.css?v=tree-discovery-v1-6" />
   <link rel="stylesheet" href="forest-unicorn-preview.css?v=garden-header-refinement-v1" />
@@ -97,7 +97,7 @@
       document.head.appendChild(tag);
     })();
   </script>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2394251223563817" crossorigin="anonymous"></script>
+  <meta name="google-adsense-account" content="ca-pub-2394251223563817" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -293,6 +293,19 @@
           <p>카카오로 로그인하면 이전에 키우던 정원이 있는 경우 그대로 이어집니다.</p>
         </div>
         <button type="button" class="public-primary-button" data-public-login>오늘의 마음 한 줄 남기기</button>
+      </section>
+
+      <!-- 공개 소개 화면에서만 호출되는 카카오 애드핏 광고입니다.
+           로그인 정원·기록·편지·친구·대전 화면에서는 광고 스크립트를 불러오지 않습니다. -->
+      <section class="public-adfit" id="publicAdFitSection" aria-label="광고">
+        <p class="public-adfit-label">광고</p>
+        <div class="public-adfit-frame" id="publicAdFitSlot">
+          <ins class="kakao_ad_area"
+               style="display:none;"
+               data-ad-unit="DAN-wHmCYjCLZPtHGUjb"
+               data-ad-width="320"
+               data-ad-height="100"></ins>
+        </div>
       </section>
     </main>
 
@@ -1595,5 +1608,6 @@
   <script type="module" src="oot-notifications.js?v=first-day-qa-v1-0"></script>
   <script type="module" src="garden-life-motion.js?v=garden-life-motion-v0-5-1"></script>
   <script type="module" src="shared-tree-v2-motion.js?v=shared-tree-v2-motion-prod-v1-2"></script>
+  <script src="public-adfit.js?v=public-adfit-v1-0" defer></script>
 </body>
 </html>

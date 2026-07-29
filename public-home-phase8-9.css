@@ -339,3 +339,47 @@
     transition: none;
   }
 }
+
+/* =========================================================
+   KAKAO ADFIT — 공개 소개 화면 하단 단일 광고
+   로그인 정원과 핵심 기록 흐름에는 노출하지 않습니다.
+   ========================================================= */
+.public-adfit {
+  display: grid;
+  width: 100vw;
+  justify-items: center;
+  margin: -36px 0 0 calc(50% - 50vw);
+  padding: 0 0 72px;
+}
+
+.public-adfit-label {
+  margin: 0 0 10px;
+  color: #9aa8a1;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.public-adfit-frame {
+  display: grid;
+  width: 320px;
+  min-width: 320px;
+  min-height: 100px;
+  place-items: center;
+  overflow: hidden;
+  background: transparent;
+}
+
+.public-adfit-frame .kakao_ad_area {
+  display: block;
+  width: 320px;
+  height: 100px;
+}
+
+@media (max-width: 520px) {
+  .public-adfit {
+    margin-top: -18px;
+    padding-bottom: 56px;
+  }
+}
+
