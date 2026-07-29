@@ -506,11 +506,55 @@ const stageRules = [
 ];
 
 const moodMap = {
+  happy: { icon: "😊", label: "기뻤어" },
+  excited: { icon: "💓", label: "설렜어" },
+  proud: { icon: "✨", label: "뿌듯했어" },
+  grateful: { icon: "🌷", label: "고마웠어" },
+  comfortable: { icon: "😌", label: "편안했어" },
+  calm: { icon: "🌿", label: "차분했어" },
   good: { icon: "🙂", label: "괜찮았어" },
-  calm: { icon: "😌", label: "차분했어" },
-  tired: { icon: "😮‍💨", label: "조금 지쳤어" },
-  happy: { icon: "🌷", label: "기뻤어" },
+  complex: { icon: "🌀", label: "복잡했어" },
+  tired: { icon: "😮‍💨", label: "지쳤어" },
+  sad: { icon: "😢", label: "슬펐어" },
+  upset: { icon: "💧", label: "속상했어" },
+  anxious: { icon: "☁️", label: "불안했어" },
 };
+
+const MAX_SELECTED_MOODS = 3;
+const MOOD_VALUE_SEPARATOR = "|";
+
+function normalizeMoodKeys(value) {
+  const source = Array.isArray(value)
+    ? value
+    : String(value || "").split(MOOD_VALUE_SEPARATOR);
+  const normalized = [];
+  source.forEach((item) => {
+    const key = String(item || "").trim();
+    if (!key || !moodMap[key] || normalized.includes(key)) return;
+    normalized.push(key);
+  });
+  return normalized.slice(0, MAX_SELECTED_MOODS);
+}
+
+function serializeMoodKeys(value) {
+  return normalizeMoodKeys(value).join(MOOD_VALUE_SEPARATOR);
+}
+
+function moodEntries(value, { fallback = true } = {}) {
+  const keys = normalizeMoodKeys(value);
+  const resolvedKeys = keys.length || !fallback ? keys : ["good"];
+  return resolvedKeys.map((key) => ({ key, ...moodMap[key] }));
+}
+
+function primaryMood(value) {
+  return moodEntries(value)[0] || { key: "good", ...moodMap.good };
+}
+
+function moodChipsMarkup(value, className = "record-mood-chip") {
+  return moodEntries(value).map((mood) => `
+    <span class="${className}"><span aria-hidden="true">${mood.icon}</span>${escapeHTML(mood.label)}</span>
+  `).join("");
+}
 
 // 특별친구 편지는 일반 방문 동물과 같은 작성 화면을 사용하지만,
 // 저장·배송 상태는 특별친구 전용 RPC로 완전히 분리합니다.
@@ -535,7 +579,7 @@ function activeSpecialForestFriendEncounter() {
 
 let currentUser = null;
 let state = cloneDefault();
-let selectedMood = "good";
+let selectedMoods = [];
 let selectedFeedbackCategory = "idea";
 let activeFeedbackTab = "write";
 let activeLetterId = null;
@@ -808,6 +852,7 @@ const els = {
   firstWalkTutorialHint: $("#firstWalkTutorialHint"),
   recordTutorialNote: $("#recordTutorialNote"),
   recordTutorialPreview: $("#recordTutorialPreview"),
+  moodSelectionStatus: $("#moodSelectionStatus"),
   sheetOverlay: $("#sheetOverlay"),
   recordSheet: $("#recordSheet"),
   recordsSheet: $("#recordsSheet"),
@@ -817,6 +862,7 @@ const els = {
   heartFruitPicker: $("#heartFruitPicker"),
   heartFruitDetail: $("#heartFruitDetail"),
   heartFruitDetailDate: $("#heartFruitDetailDate"),
+  heartFruitDetailMoods: $("#heartFruitDetailMoods"),
   heartFruitDetailLine: $("#heartFruitDetailLine"),
   heartFruitDetailMore: $("#heartFruitDetailMore"),
   heartFruitVisibilityStatus: $("#heartFruitVisibilityStatus"),
@@ -1105,7 +1151,7 @@ function applyFirstDayQaMode(mode = firstDayQaMode, { announce = false } = {}) {
   document.documentElement.dataset.firstDayQa = normalized;
   clearFirstDayQaTransientState();
   state = buildFirstDayQaState(normalized);
-  selectedMood = "good";
+  selectedMoods = [];
   selectedLetterRecipientId = "";
   closeAllSheets({ force: true });
   returnToMyGarden();
@@ -5548,6 +5594,7 @@ function renderHeartFruitDetail() {
   const record = selectedHeartFruitRecord();
   if (!record) {
     els.heartFruitDetailDate.textContent = "";
+    if (els.heartFruitDetailMoods) els.heartFruitDetailMoods.innerHTML = "";
     els.heartFruitDetailLine.textContent = "아직 열어볼 마음 열매가 없어요.";
     els.heartFruitDetailMore.classList.add("hidden");
     els.heartFruitVisibilityStatus.textContent = "";
@@ -5557,6 +5604,9 @@ function renderHeartFruitDetail() {
 
   activeHeartFruitRecordId = String(record.id);
   els.heartFruitDetailDate.textContent = formatDate(record.createdAt);
+  if (els.heartFruitDetailMoods) {
+    els.heartFruitDetailMoods.innerHTML = moodChipsMarkup(record.mood, "heart-fruit-mood-chip");
+  }
   els.heartFruitDetailLine.textContent = record.oneLine || "";
   els.heartFruitDetailMore.textContent = record.detail || "";
   els.heartFruitDetailMore.classList.toggle("hidden", !record.detail);
@@ -5602,7 +5652,7 @@ function renderHeartFruitSheet() {
   }
 
   els.heartFruitPicker.innerHTML = records.map((record) => {
-    const mood = moodMap[record.mood] || moodMap.good;
+    const mood = primaryMood(record.mood);
     const selected = String(record.id) === String(activeHeartFruitRecordId);
     const showPublicBadge = isMine && Boolean(record.isPublic) && !record.isPreview;
     const publicClass = showPublicBadge ? " is-public" : "";
@@ -5702,11 +5752,10 @@ function renderRecords() {
   }
 
   els.recordList.innerHTML = records.map((record) => {
-    const mood = moodMap[record.mood] || moodMap.good;
     return `
       <article class="record-item">
         <div class="record-item-head">
-          <div class="record-mood"><span>${mood.icon}</span>${escapeHTML(mood.label)}</div>
+          <div class="record-mood" aria-label="이날의 마음">${moodChipsMarkup(record.mood)}</div>
           <span class="record-date">${escapeHTML(formatDate(record.createdAt))}</span>
         </div>
         <p class="record-text">${escapeHTML(record.oneLine)}</p>
@@ -10247,7 +10296,19 @@ async function markLetterRead() {
 }
 
 function renderMoodSelection() {
-  $$(".mood-choice").forEach((button) => button.classList.toggle("selected", button.dataset.mood === selectedMood));
+  const selectedSet = new Set(selectedMoods);
+  $$(".mood-choice").forEach((button) => {
+    const selected = selectedSet.has(button.dataset.mood);
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+
+  if (!els.moodSelectionStatus) return;
+  const count = selectedMoods.length;
+  els.moodSelectionStatus.classList.toggle("has-selection", count > 0);
+  els.moodSelectionStatus.textContent = count
+    ? `${count}개의 마음을 골랐어요. ${MAX_SELECTED_MOODS - count ? `${MAX_SELECTED_MOODS - count}개 더 고를 수 있어요.` : "이대로 오늘을 남길 수 있어요."}`
+    : "마음을 1~3개 골라주세요.";
 }
 
 function renderFeedbackCategorySelection() {
@@ -10388,7 +10449,15 @@ async function saveRecord(event) {
   event.preventDefault();
   const oneLine = els.oneLine.value.trim();
   const detail = els.detailText.value.trim();
+  const moodValue = serializeMoodKeys(selectedMoods);
   const submitButton = els.recordForm.querySelector('button[type="submit"]');
+
+  const requireMoodSelection = () => {
+    if (selectedMoods.length) return true;
+    showToast("오늘 마음에 가까운 것을 하나 이상 골라주세요.");
+    document.querySelector(".mood-choice")?.focus();
+    return false;
+  };
 
   if (isFirstDayQaMode()) {
     if (hasSavedToday()) {
@@ -10397,6 +10466,7 @@ async function saveRecord(event) {
       showToast("신규 첫날 QA에서는 오늘 마음을 이미 남긴 상태예요.");
       return;
     }
+    if (!requireMoodSelection()) return;
     if (!oneLine) {
       showToast("QA 화면에서도 오늘 마음에 남은 한 줄을 적어보세요.");
       els.oneLine.focus();
@@ -10410,7 +10480,7 @@ async function saveRecord(event) {
     const recordId = `first-day-qa-record-${Date.now()}`;
     state.records.unshift({
       id: recordId,
-      mood: selectedMood,
+      mood: moodValue,
       oneLine,
       detail,
       isPublic: false,
@@ -10426,7 +10496,7 @@ async function saveRecord(event) {
     submitButton.disabled = false;
     submitButton.textContent = "나무에 마음 남기기";
     els.recordForm.reset();
-    selectedMood = "good";
+    selectedMoods = [];
     renderMoodSelection();
     els.detailWrap.classList.add("hidden");
     els.toggleDetail.innerHTML = '조금 더 적기 <span aria-hidden="true">⌄</span>';
@@ -10441,6 +10511,7 @@ async function saveRecord(event) {
   }
 
   if (isTutorialSandboxPreview()) {
+    if (!requireMoodSelection()) return;
     if (!oneLine) {
       showToast("튜토리얼에서도 오늘 마음에 남은 한 줄을 적어보세요.");
       els.oneLine.focus();
@@ -10456,7 +10527,7 @@ async function saveRecord(event) {
     submitButton.textContent = "나무에 마음 남기기";
 
     els.recordForm.reset();
-    selectedMood = "good";
+    selectedMoods = [];
     renderMoodSelection();
     els.detailWrap.classList.add("hidden");
     els.toggleDetail.innerHTML = '조금 더 적기 <span aria-hidden="true">⌄</span>';
@@ -10475,6 +10546,7 @@ async function saveRecord(event) {
     showToast("오늘의 마음은 이미 나무에 남겼어요. 내일 다시 와요.");
     return;
   }
+  if (!requireMoodSelection()) return;
   if (!oneLine) {
     showToast("오늘 마음에 남은 한 줄을 적어주세요.");
     els.oneLine.focus();
@@ -10490,7 +10562,7 @@ async function saveRecord(event) {
   submitButton.disabled = true;
   submitButton.textContent = "나무에 마음을 남기는 중이에요";
   const { error } = await supabase.rpc("save_garden_record", {
-    p_mood: selectedMood,
+    p_mood: moodValue,
     p_one_line: oneLine,
     p_detail: detail || null,
   });
@@ -10523,7 +10595,9 @@ async function saveRecord(event) {
   window.dispatchEvent(new CustomEvent("todayforest:garden-record-saved"));
 
   trackTodayForestOperationalEvent("garden_mood_saved", {
-    mood: selectedMood,
+    mood: selectedMoods[0] || "",
+    moods: moodValue,
+    mood_count: selectedMoods.length,
     detail_added: detail ? "yes" : "no",
   });
 
@@ -10531,7 +10605,7 @@ async function saveRecord(event) {
     && Number(state.growth || 0) >= HEART_FRUIT_COMPLETE_COUNT;
 
   els.recordForm.reset();
-  selectedMood = "good";
+  selectedMoods = [];
   renderMoodSelection();
   els.detailWrap.classList.add("hidden");
   els.toggleDetail.innerHTML = '조금 더 적기 <span aria-hidden="true">⌄</span>';
@@ -11165,7 +11239,7 @@ async function syncSession() {
     selectedAnimalV2VisitId = "";
     closeAnimalEncounterCard();
     state = cloneDefault();
-    selectedMood = "good";
+    selectedMoods = [];
     selectedLetterRecipientId = "";
     invitePreviewHandled = false;
     renderAuthUI();
@@ -11757,7 +11831,21 @@ function bindEvents() {
     if (!isHidden) els.detailText.focus();
   });
   $$(".mood-choice").forEach((button) => button.addEventListener("click", () => {
-    selectedMood = button.dataset.mood;
+    const moodKey = button.dataset.mood;
+    if (!moodMap[moodKey]) return;
+
+    if (selectedMoods.includes(moodKey)) {
+      selectedMoods = selectedMoods.filter((key) => key !== moodKey);
+      renderMoodSelection();
+      return;
+    }
+
+    if (selectedMoods.length >= MAX_SELECTED_MOODS) {
+      showToast("마음은 세 가지까지 함께 남길 수 있어요. 하나를 빼고 다시 골라주세요.");
+      return;
+    }
+
+    selectedMoods = [...selectedMoods, moodKey];
     renderMoodSelection();
   }));
   $$('[data-close]').forEach((button) => button.addEventListener("click", closeAllSheets));
@@ -12582,7 +12670,7 @@ async function init() {
       selectedAnimalV2VisitId = "";
       closeAnimalEncounterCard();
       state = cloneDefault();
-      selectedMood = "good";
+      selectedMoods = [];
       selectedLetterRecipientId = "";
       invitePreviewHandled = false;
       renderAuthUI();

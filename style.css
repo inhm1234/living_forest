@@ -599,12 +599,17 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 
 .record-form { margin-top: 18px; }
 .mood-picker { margin: 0; padding: 0; border: 0; }
-.mood-picker legend, .write-label { display: block; margin-bottom: 9px; color: #607789; font-size: 13px; font-weight: 900; }
-.mood-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
-.mood-choice { min-height: 68px; padding: 7px 4px; border: 1px solid #e2e8ec; border-radius: 16px; background: #fff; color: #778b9b; font-size: 11px; font-weight: 900; cursor: pointer; transition: transform .15s ease, border-color .15s ease, background .15s ease; }
-.mood-choice span { display: block; margin-bottom: 3px; font-size: 21px; }
+.mood-picker legend, .write-label { display: block; margin-bottom: 7px; color: #607789; font-size: 13px; font-weight: 900; }
+.mood-picker-guide { margin: 0 0 10px; color: #8b9aa6; font-size: 11px; font-weight: 750; line-height: 1.45; }
+.mood-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+.mood-choice { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 43px; padding: 7px 6px; border: 1px solid #e2e8ec; border-radius: 14px; background: #fff; color: #778b9b; font-size: 10px; font-weight: 900; line-height: 1.15; cursor: pointer; transition: transform .15s ease, border-color .15s ease, background .15s ease, color .15s ease, box-shadow .15s ease; }
+.mood-choice:hover { transform: translateY(-1px); }
+.mood-choice span { display: inline; margin: 0; font-size: 16px; line-height: 1; }
 .mood-choice.selected { border-color: #93c5a5; background: #eff9ef; color: #487861; box-shadow: inset 0 0 0 1px rgba(130,186,147,0.16); }
-.write-label { margin-top: 18px; }
+.mood-choice.selected::after { content: "✓"; margin-left: -1px; color: #67a079; font-size: 9px; }
+.mood-selection-status { min-height: 18px; margin: 7px 1px 0; color: #8a9ba6; font-size: 10px; font-weight: 750; line-height: 1.4; }
+.mood-selection-status.has-selection { color: #5f8d70; }
+.write-label { margin-top: 15px; }
 textarea { display: block; width: 100%; resize: vertical; padding: 13px; border: 1px solid #e0e7eb; border-radius: 17px; background: #fff; color: #496070; font-size: 14px; line-height: 1.58; box-shadow: inset 0 1px 1px rgba(74,96,111,0.02); }
 textarea::placeholder { color: #a7b4bd; }
 .more-writing { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; padding: 6px 1px; border: 0; background: transparent; color: #709783; font-size: 12px; font-weight: 900; cursor: pointer; }
@@ -617,6 +622,13 @@ textarea::placeholder { color: #a7b4bd; }
 .record-item, .letter-item { padding: 14px; border: 1px solid #e6edf0; border-radius: 18px; background: #fff; box-shadow: 0 8px 17px rgba(102,124,143,0.05); }
 .record-item-head, .letter-item-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .record-mood, .letter-from-row { display: flex; align-items: center; gap: 7px; color: #5d7485; font-size: 13px; font-weight: 900; }
+.record-mood { flex-wrap: wrap; gap: 5px; }
+.record-item .record-item-head { align-items: flex-start; }
+.record-item .record-date { flex: 0 0 auto; padding-top: 4px; }
+.record-mood-chip,
+.heart-fruit-mood-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 7px; border-radius: 999px; background: #f1f7f2; color: #5f7f6c; font-size: 10px; font-weight: 850; line-height: 1; }
+.record-mood-chip span,
+.heart-fruit-mood-chip span { font-size: 12px; line-height: 1; }
 .record-date, .letter-meta { color: #9aa8b1; font-size: 11px; font-weight: 700; }
 .record-text, .letter-preview { margin: 9px 0 0; color: #637887; font-size: 13px; line-height: 1.52; white-space: pre-line; }
 .record-detail { margin: 7px 0 0; color: #8a9aa7; font-size: 12px; line-height: 1.5; white-space: pre-line; }
@@ -700,7 +712,9 @@ textarea::placeholder { color: #a7b4bd; }
   .stage-message { font-size: 11px; }
   .garden-decorate-controls { right: 12px; bottom: 13px; }
   .garden-decorate-edit-actions { width: min(232px, calc(100vw - 38px)); }
-  .mood-choice { font-size: 10px; }
+  .mood-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mood-choice { min-height: 41px; padding-inline: 5px; font-size: 10px; }
+  .mood-choice span { font-size: 15px; }
 }
 
 
@@ -4140,6 +4154,15 @@ textarea::placeholder { color: #a7b4bd; }
   background: #f8e5eb;
   color: #98566a;
 }
+
+.heart-fruit-detail-moods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: -2px 0 12px;
+}
+
+.heart-fruit-detail-moods:empty { display: none; }
 
 .heart-fruit-detail-line,
 .heart-fruit-detail-more {

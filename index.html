@@ -32,7 +32,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=new-user-flow-v1-1-2" />
+  <link rel="stylesheet" href="style.css?v=daily-mood-multiselect-v1-0" />
   <link rel="stylesheet" href="public-home-phase8-9.css?v=phase8-9-landing-v1-1" />
   <link rel="stylesheet" href="oot-notifications.css?v=garden-button-labels-v1-3" />
   <link rel="stylesheet" href="tree-animal-call.css?v=tree-discovery-v1-6" />
@@ -1114,7 +1114,7 @@
     <div class="sheet-head">
       <div>
         <p class="sheet-kicker">TODAY'S LEAF</p>
-        <h2 id="recordSheetTitle">오늘 어떤 하루였어?</h2>
+        <h2 id="recordSheetTitle">오늘 어떤 마음들이 있었어?</h2>
       </div>
       <button class="close-button" data-close="recordSheet" type="button" aria-label="마음 남기기 닫기">×</button>
     </div>
@@ -1122,21 +1122,31 @@
     <form id="recordForm" class="record-form">
       <p class="record-tutorial-note hidden" id="recordTutorialNote">
         <span class="record-tutorial-step">첫날의 작은 산책 · 2 / 3</span>
-        <span>정답은 없어요. 오늘과 가장 가까운 마음 하나면 충분해요.</span>
+        <span>한 가지여도, 여러 가지여도 괜찮아요. 오늘과 가까운 마음을 골라보세요.</span>
         <span class="record-tutorial-preview hidden" id="recordTutorialPreview">미리보기에서는 실제 기록이나 나무 성장에 저장되지 않아요.</span>
       </p>
       <fieldset class="mood-picker">
-        <legend>오늘의 기분</legend>
-        <div class="mood-grid">
-          <button type="button" class="mood-choice selected" data-mood="good" data-icon="🙂" data-label="괜찮았어"><span>🙂</span>괜찮았어</button>
-          <button type="button" class="mood-choice" data-mood="calm" data-icon="😌" data-label="차분했어"><span>😌</span>차분했어</button>
-          <button type="button" class="mood-choice" data-mood="tired" data-icon="😮‍💨" data-label="조금 지쳤어"><span>😮‍💨</span>조금 지쳤어</button>
-          <button type="button" class="mood-choice" data-mood="happy" data-icon="🌷" data-label="기뻤어"><span>🌷</span>기뻤어</button>
+        <legend>오늘의 마음</legend>
+        <p class="mood-picker-guide">여러 마음이 함께 있어도 괜찮아요 · 최대 3개</p>
+        <div class="mood-grid" aria-describedby="moodSelectionStatus">
+          <button type="button" class="mood-choice" data-mood="happy" data-icon="😊" data-label="기뻤어" aria-pressed="false"><span>😊</span>기뻤어</button>
+          <button type="button" class="mood-choice" data-mood="excited" data-icon="💓" data-label="설렜어" aria-pressed="false"><span>💓</span>설렜어</button>
+          <button type="button" class="mood-choice" data-mood="proud" data-icon="✨" data-label="뿌듯했어" aria-pressed="false"><span>✨</span>뿌듯했어</button>
+          <button type="button" class="mood-choice" data-mood="grateful" data-icon="🌷" data-label="고마웠어" aria-pressed="false"><span>🌷</span>고마웠어</button>
+          <button type="button" class="mood-choice" data-mood="comfortable" data-icon="😌" data-label="편안했어" aria-pressed="false"><span>😌</span>편안했어</button>
+          <button type="button" class="mood-choice" data-mood="calm" data-icon="🌿" data-label="차분했어" aria-pressed="false"><span>🌿</span>차분했어</button>
+          <button type="button" class="mood-choice" data-mood="good" data-icon="🙂" data-label="괜찮았어" aria-pressed="false"><span>🙂</span>괜찮았어</button>
+          <button type="button" class="mood-choice" data-mood="complex" data-icon="🌀" data-label="복잡했어" aria-pressed="false"><span>🌀</span>복잡했어</button>
+          <button type="button" class="mood-choice" data-mood="tired" data-icon="😮‍💨" data-label="지쳤어" aria-pressed="false"><span>😮‍💨</span>지쳤어</button>
+          <button type="button" class="mood-choice" data-mood="sad" data-icon="😢" data-label="슬펐어" aria-pressed="false"><span>😢</span>슬펐어</button>
+          <button type="button" class="mood-choice" data-mood="upset" data-icon="💧" data-label="속상했어" aria-pressed="false"><span>💧</span>속상했어</button>
+          <button type="button" class="mood-choice" data-mood="anxious" data-icon="☁️" data-label="불안했어" aria-pressed="false"><span>☁️</span>불안했어</button>
         </div>
+        <p class="mood-selection-status" id="moodSelectionStatus" aria-live="polite">마음을 1~3개 골라주세요.</p>
       </fieldset>
 
       <label class="write-label" for="oneLine">오늘 마음에 남은 한 줄</label>
-      <textarea id="oneLine" name="oneLine" maxlength="120" rows="3" placeholder="아주 짧아도 괜찮아요. 오늘의 마음 한 조각을 남겨볼래요?"></textarea>
+      <textarea id="oneLine" name="oneLine" maxlength="120" rows="3" placeholder="고른 마음들이 함께 있었던 오늘을 짧게 남겨볼래요?"></textarea>
       <button type="button" class="more-writing" id="toggleDetail">조금 더 적기 <span aria-hidden="true">⌄</span></button>
       <div class="detail-wrap hidden" id="detailWrap">
         <label class="write-label" for="detailText">조금 더 남기고 싶은 이야기</label>
@@ -1182,6 +1192,7 @@
         <span class="heart-fruit-detail-date" id="heartFruitDetailDate"></span>
         <span class="heart-fruit-visibility-status" id="heartFruitVisibilityStatus"></span>
       </div>
+      <div class="heart-fruit-detail-moods" id="heartFruitDetailMoods" aria-label="이날의 마음"></div>
       <p class="heart-fruit-detail-line" id="heartFruitDetailLine"></p>
       <p class="heart-fruit-detail-more hidden" id="heartFruitDetailMore"></p>
       <button class="heart-fruit-visibility-button hidden" id="heartFruitVisibilityButton" type="button"></button>
@@ -1553,7 +1564,7 @@
   <div class="heart-fruit-ceremony-lock hidden" id="heartFruitCeremonyLock" aria-hidden="true"></div>
   <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="app.js?v=new-user-flow-v1-1-2"></script>
+  <script type="module" src="app.js?v=daily-mood-multiselect-v1-0"></script>
   <script type="module" src="friend-connection-safety.js?v=first-day-qa-v1-0"></script>
   <script type="module" src="tree-animal-call.js?v=first-day-qa-v1-0"></script>
   <script type="module" src="forest-unicorn-preview.js?v=animal-preview-clean-v0-4"></script>
