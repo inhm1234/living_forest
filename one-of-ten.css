@@ -898,6 +898,9 @@ body.oot-compact .oot-personality-intro p {
   overflow: hidden;
   background: rgba(255,255,255,.08);
 }
+.oot-result-adfit[data-ad-mode="desktop"] .oot-result-adfit-slot {
+  height: 100px;
+}
 .oot-result-adfit[data-ad-state="loading"] .oot-result-adfit-slot {
   background: rgba(255,255,255,.12);
 }
@@ -911,8 +914,21 @@ body.oot-compact .oot-personality-intro p {
   .oot-result-dialog { gap: 22px; }
 }
 
-@media (min-width: 721px), (max-width: 351px) {
+@media (max-width: 351px) {
   .oot-result-adfit { display: none !important; }
+}
+
+@media (min-width: 721px) {
+  .oot-result-dialog {
+    gap: 16px;
+    max-height: calc(100dvh - 24px);
+  }
+  .oot-result-adfit {
+    padding-top: 10px;
+  }
+  .oot-result-adfit-label {
+    margin-bottom: 6px;
+  }
 }
 
 /* ONE-OF-TEN v1.7 — 플레이 정보 위계 · 선택 피드백 · 결과 감정 강화 */
