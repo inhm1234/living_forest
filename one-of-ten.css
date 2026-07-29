@@ -856,3 +856,61 @@ body.oot-compact .oot-personality-intro p {
   .oot-mode-choice em { width: fit-content; min-height: 23px; align-self: start; padding: 3px 7px; font-size: 8px; }
   .oot-mode-gate-note { margin-top: 13px; font-size: 9px; }
 }
+
+/* v1.6 · 모바일 대전 선택 구도 + 다람쥐 대전 결과 광고 */
+.oot-result-dialog {
+  width: min(100%, 460px);
+  max-height: calc(100dvh - 32px);
+  display: grid;
+  justify-items: center;
+  gap: 22px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+.oot-result-dialog::-webkit-scrollbar { display: none; }
+.oot-result-dialog .oot-result-card {
+  width: 100%;
+  max-height: none;
+  overflow: visible;
+}
+.oot-result-adfit {
+  width: 320px;
+  max-width: 100%;
+  flex: 0 0 auto;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,.44);
+  text-align: center;
+}
+.oot-result-adfit-label {
+  display: block;
+  margin: 0 0 7px;
+  color: rgba(244,248,245,.82);
+  font-size: 9px;
+  font-weight: 850;
+  line-height: 1;
+}
+.oot-result-adfit-slot {
+  width: 320px;
+  height: 50px;
+  max-width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  background: rgba(255,255,255,.08);
+}
+.oot-result-adfit[data-ad-state="loading"] .oot-result-adfit-slot {
+  background: rgba(255,255,255,.12);
+}
+
+@media (max-width: 560px) {
+  .oot-mode-gate {
+    min-height: auto;
+    place-items: start center;
+    padding: clamp(34px, 6dvh, 56px) 0 24px;
+  }
+  .oot-result-dialog { gap: 22px; }
+}
+
+@media (min-width: 721px), (max-width: 351px) {
+  .oot-result-adfit { display: none !important; }
+}
