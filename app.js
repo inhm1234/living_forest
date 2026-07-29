@@ -11917,6 +11917,8 @@ let welcomeArrivalActionTimer = null;
 let welcomeWalkTimer = null;
 let welcomeGardenTransitionTimer = null;
 let welcomeGardenArrivalTimer = null;
+let welcomeSandboxGuideTimer = null;
+let welcomePlantActionHideTimer = null;
 let welcomeSelectedMood = "";
 let welcomeTreeName = "내 나무";
 // preview는 URL 검수 전용, onboarding은 카카오 로그인 뒤 신규 계정의 실제 첫 나무 흐름입니다.
@@ -11926,7 +11928,15 @@ let welcomeSandboxDiscoveryPending = false;
 let welcomeOnboardingAnalyticsStarted = false;
 
 function clearWelcomePreviewTimers() {
-  [welcomeSeedTimer, welcomeArrivalActionTimer, welcomeWalkTimer, welcomeGardenTransitionTimer, welcomeGardenArrivalTimer].forEach((timer) => {
+  [
+    welcomeSeedTimer,
+    welcomeArrivalActionTimer,
+    welcomeWalkTimer,
+    welcomeGardenTransitionTimer,
+    welcomeGardenArrivalTimer,
+    welcomeSandboxGuideTimer,
+    welcomePlantActionHideTimer,
+  ].forEach((timer) => {
     if (timer) window.clearTimeout(timer);
   });
   welcomeSeedTimer = null;
@@ -11934,6 +11944,8 @@ function clearWelcomePreviewTimers() {
   welcomeWalkTimer = null;
   welcomeGardenTransitionTimer = null;
   welcomeGardenArrivalTimer = null;
+  welcomeSandboxGuideTimer = null;
+  welcomePlantActionHideTimer = null;
 }
 
 function isLiveWelcomeOnboarding() {
@@ -11971,6 +11983,17 @@ function resetWelcomeSandboxGarden() {
   if (els.firstWalkTutorial) els.firstWalkTutorial.classList.add("hidden");
 }
 
+function setWelcomePlantActionVisible(visible) {
+  const actions = els.welcomePlantButton?.closest?.(".welcome-plant-actions");
+  if (actions) actions.hidden = !visible;
+  if (els.welcomePlantButton) {
+    els.welcomePlantButton.hidden = !visible;
+    els.welcomePlantButton.disabled = !visible;
+    if (visible) els.welcomePlantButton.removeAttribute("aria-hidden");
+    else els.welcomePlantButton.setAttribute("aria-hidden", "true");
+  }
+}
+
 function resetWelcomePreview() {
   const preview = els.welcomePreview;
   if (!preview) return;
@@ -12002,6 +12025,7 @@ function resetWelcomePreview() {
   if (els.welcomeRecordPreviewNote) els.welcomeRecordPreviewNote.textContent = "";
   $$(".welcome-mood-choice").forEach((button) => button.classList.remove("is-selected"));
   if (els.welcomeKakaoButton) els.welcomeKakaoButton.disabled = false;
+  setWelcomePlantActionVisible(true);
 
   // CSS 장면 애니메이션을 처음부터 다시 재생합니다.
   preview.classList.add("is-resetting");
@@ -12137,10 +12161,17 @@ function prepareWelcomeSandboxGarden() {
   if (els.foundItemHint) els.foundItemHint.hidden = false;
 
   // welcomePreview 모드에서는 일반 init()을 건너뛰므로, 실제 정원과 같은 좌표 비율만 직접 맞춥니다.
+  // 도착 전환의 transform이 남아 있는 동안 fixed 안내광을 배치하면 데스크톱에서 앱 여백만큼 밀릴 수 있습니다.
+  // 정원 도착 모션이 끝난 뒤 안내 좌표를 계산해 실제 반짝임 위에 정확히 올립니다.
   window.requestAnimationFrame(() => {
     syncGardenWorldScale();
     app.classList.add("is-welcome-garden-visible");
-    showFirstWalkTutorialScene("discovery", { animateGuide: false });
+    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    welcomeSandboxGuideTimer = window.setTimeout(() => {
+      welcomeSandboxGuideTimer = null;
+      syncGardenWorldScale();
+      showFirstWalkTutorialScene("discovery", { animateGuide: false });
+    }, reducedMotion ? 0 : 820);
   });
 }
 
@@ -12421,8 +12452,16 @@ function initWelcomePreview({ liveEntry = false, onboarding = false } = {}) {
     if (isLiveWelcomeOnboarding()) {
       trackTodayForestOperationalEvent("onboarding_seed_planted", { source: "welcome_button" });
     }
+    // 도착 단계의 강제 노출 클래스를 제거해야 시작 버튼의 reveal 애니메이션이
+    // 이후 나무 탄생 장면까지 남아 문구를 가리지 않습니다.
+    preview.classList.remove("is-arrival-action-ready", "is-arrival-fast-forward");
     preview.classList.add("is-seeded");
     preview.dataset.phase = "seed";
+    if (welcomePlantActionHideTimer) window.clearTimeout(welcomePlantActionHideTimer);
+    welcomePlantActionHideTimer = window.setTimeout(() => {
+      welcomePlantActionHideTimer = null;
+      setWelcomePlantActionVisible(false);
+    }, 380);
     welcomeSeedTimer = window.setTimeout(() => {
       preview.classList.add("is-seed-ready");
       preview.dataset.phase = "seed-ready";

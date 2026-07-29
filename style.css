@@ -3674,7 +3674,9 @@ textarea::placeholder { color: #a7b4bd; }
 }
 .garden-app.welcome-sandbox-garden.is-welcome-garden-visible {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  /* 최종 상태에서 transform을 완전히 해제해야 내부 fixed 튜토리얼이
+     앱 컨테이너가 아니라 브라우저 화면을 기준으로 정확히 배치됩니다. */
+  transform: none;
 }
 /* 이 장면은 도착 모습만 확인하는 안전한 미리보기입니다. 실제 저장·메뉴 이동은 하지 않습니다. */
 .garden-app.welcome-sandbox-garden button {
@@ -9323,6 +9325,20 @@ body.animal-preview-clean-mode .ff-cinematic {
   pointer-events: none;
   transform: translateX(-50%) translateY(6px);
   transition: opacity .22s ease, transform .22s ease, visibility 0s linear .22s;
+}
+
+/* NEW USER FLOW v1.1.2: 씨앗을 심은 뒤에는 도착 단계의 시작 버튼을 반드시 닫습니다.
+   이전 reveal animation의 forwards 값이 후속 장면까지 남는 브라우저 차이를 방어합니다. */
+.welcome-preview.is-seeded .welcome-plant-actions,
+.welcome-preview.is-naming .welcome-plant-actions,
+.welcome-preview.is-walk .welcome-plant-actions,
+.welcome-preview.is-tree-birth .welcome-plant-actions,
+.welcome-preview.is-entering-garden .welcome-plant-actions {
+  animation: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(8px);
 }
 
 .welcome-preview.is-arrival-fast-forward .welcome-still-art {
