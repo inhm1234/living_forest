@@ -2,9 +2,25 @@
   "use strict";
 
   const ADFIT_SCRIPT_SRC = "https://t1.daumcdn.net/kas/static/ba.min.js";
-  const ADFIT_UNIT = "DAN-wHmCYjCLZPtHGUjb";
-  const ADFIT_WIDTH = "320";
-  const ADFIT_HEIGHT = "100";
+  const ADFIT_BREAKPOINT = "(max-width: 720px)";
+  const ADFIT_FORMATS = {
+    desktop: {
+      unit: "DAN-wHmCYjCLZPtHGUjb",
+      width: "320",
+      height: "100",
+      name: "desktop"
+    },
+    mobile: {
+      unit: "DAN-aiumjldQWepYQHoo",
+      width: "320",
+      height: "50",
+      name: "mobile"
+    }
+  };
+  // 광고 스크립트가 실행된 뒤 슬롯 크기를 바꾸지 않도록 최초 진입 폭에서 형식을 고정합니다.
+  const adFormat = window.matchMedia(ADFIT_BREAKPOINT).matches
+    ? ADFIT_FORMATS.mobile
+    : ADFIT_FORMATS.desktop;
 
   const publicHome = document.getElementById("publicHome");
   const publicSection = document.getElementById("publicAdFitSection");
@@ -15,6 +31,9 @@
   const todayAction = document.getElementById("openRecord");
 
   if (!publicHome || !publicSection || !publicSlot || !gardenApp || !gardenSection || !gardenSlot) return;
+
+  publicSection.dataset.adFormat = adFormat.name;
+  gardenSection.dataset.adFormat = adFormat.name;
 
   const params = new URL(window.location.href).searchParams;
   const forceGardenPreview = params.get("adPreview") === "1";
@@ -48,9 +67,9 @@
     adUnitElement = document.createElement("ins");
     adUnitElement.className = "kakao_ad_area";
     adUnitElement.style.display = "none";
-    adUnitElement.dataset.adUnit = ADFIT_UNIT;
-    adUnitElement.dataset.adWidth = ADFIT_WIDTH;
-    adUnitElement.dataset.adHeight = ADFIT_HEIGHT;
+    adUnitElement.dataset.adUnit = adFormat.unit;
+    adUnitElement.dataset.adWidth = adFormat.width;
+    adUnitElement.dataset.adHeight = adFormat.height;
     return adUnitElement;
   };
 

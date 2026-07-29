@@ -9498,6 +9498,16 @@ body.animal-preview-clean-mode .ff-cinematic {
   height: 100px;
 }
 
+/* 모바일에서는 별도 발급한 320×50 단위를 사용합니다.
+   JS가 선택한 실제 광고 형식과 프레임 높이를 data-ad-format으로 정확히 맞춥니다. */
+.garden-adfit[data-ad-format="mobile"] .garden-adfit-frame {
+  min-height: 50px;
+}
+
+.garden-adfit[data-ad-format="mobile"] .garden-adfit-frame .kakao_ad_area {
+  height: 50px;
+}
+
 @media (max-width: 340px) {
   .garden-adfit {
     width: 100vw;

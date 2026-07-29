@@ -376,6 +376,15 @@
   height: 100px;
 }
 
+/* 모바일 공개 화면도 실제 320×50 광고 단위 높이에 맞춥니다. */
+.public-adfit[data-ad-format="mobile"] .public-adfit-frame {
+  min-height: 50px;
+}
+
+.public-adfit[data-ad-format="mobile"] .public-adfit-frame .kakao_ad_area {
+  height: 50px;
+}
+
 @media (max-width: 520px) {
   .public-adfit {
     margin-top: -18px;
