@@ -1,0 +1,21 @@
+# Search engines may crawl these URLs only to read the noindex response rule.
+/qa-login
+  X-Robots-Tag: noindex, nofollow, noarchive
+/qa-login.html
+  X-Robots-Tag: noindex, nofollow, noarchive
+/admin
+  X-Robots-Tag: noindex, nofollow, noarchive
+/admin.html
+  X-Robots-Tag: noindex, nofollow, noarchive
+/feedback-admin/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+/dev/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+/one-of-ten.html
+  X-Robots-Tag: noindex, nofollow, noarchive
+/one-of-ten-friend.html
+  X-Robots-Tag: noindex, nofollow, noarchive
+/*.txt
+  X-Robots-Tag: noindex, nofollow, noarchive
+/README.md
+  X-Robots-Tag: noindex, nofollow, noarchive

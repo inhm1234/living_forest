@@ -1,6 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /qa-login
-Disallow: /qa-login.html
 
 Sitemap: https://todayforest.pages.dev/sitemap.xml
