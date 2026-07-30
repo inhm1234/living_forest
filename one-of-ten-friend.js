@@ -77,7 +77,7 @@ const els = {
   activeMatchesSection: $("#activeMatchesSection"), activeMatchCount: $("#activeMatchCount"), activeMatchesList: $("#activeMatchesList"),
   incomingSection: $("#incomingSection"), incomingCount: $("#incomingCount"), incomingList: $("#incomingList"),
   outgoingSection: $("#outgoingSection"), outgoingCount: $("#outgoingCount"), outgoingList: $("#outgoingList"),
-  friendsList: $("#friendsList"), noFriendsView: $("#noFriendsView"), refreshLobbyButton: $("#refreshLobbyButton"),
+  friendsList: $("#friendsList"), noFriendsView: $("#noFriendsView"), refreshLobbyButton: $("#refreshLobbyButton"), friendAvailabilitySummary: $("#friendAvailabilitySummary"),
   randomMatchCard: $("#randomMatchCard"), randomMatchButton: $("#randomMatchButton"), randomCandidateStatus: $("#randomCandidateStatus"), randomCandidateHint: $("#randomCandidateHint"), randomMatchOverlay: $("#randomMatchOverlay"), randomMatchWaitingTitle: $("#randomMatchWaitingTitle"), randomMatchMessage: $("#randomMatchMessage"), randomWaitTime: $("#randomWaitTime"), randomQueueSize: $("#randomQueueSize"), randomWaitNote: $("#randomWaitNote"), randomRetryMatchButton: $("#randomRetryMatchButton"), cancelRandomMatchButton: $("#cancelRandomMatchButton"), randomToSquirrelLink: $("#randomToSquirrelLink"),
   inviteModeOverlay: $("#inviteModeOverlay"), closeInviteModeButton: $("#closeInviteModeButton"), inviteFriendName: $("#inviteFriendName"), inviteFriendAvatar: $("#inviteFriendAvatar"), inviteFriendStatus: $("#inviteFriendStatus"), casualInviteButton: $("#casualInviteButton"), ratedInviteButton: $("#ratedInviteButton"), ratedInviteStatus: $("#ratedInviteStatus"),
   opponentAvatar: $("#opponentAvatar"), opponentName: $("#opponentName"), opponentStatus: $("#opponentStatus"), opponentCardCount: $("#opponentCardCount"), opponentHand: $("#opponentHand"), matchModeBadge: $("#matchModeBadge"),
@@ -262,11 +262,11 @@ function availabilityByFriendId(friendId) {
 function availabilityPresentation(value) {
   const availability = value?.availability || "offline";
   const map = {
-    game_ready: { label: "🟢 지금 한 판 가능", className: "is-ready", button: "바로 초대" },
-    online: { label: "🌿 오늘의숲 이용 중", className: "is-online", button: "초대 보내기" },
-    away: { label: "🌙 잠시 자리 비움", className: "is-away", button: value?.has_push ? "알림으로 초대" : "초대 남기기" },
-    offline: { label: "⚪ 오프라인", className: "is-offline", button: value?.has_push ? "알림으로 초대" : "초대 남기기" },
-    in_game: { label: "🎮 게임 중", className: "is-game", button: "게임 중" },
+    game_ready: { label: "지금 한 판 가능", className: "is-ready", button: "바로 초대" },
+    online: { label: "온라인", className: "is-online", button: "바로 초대" },
+    away: { label: "잠시 자리 비움", className: "is-away", button: value?.has_push ? "알림으로 초대" : "초대 남기기" },
+    offline: { label: "오프라인", className: "is-offline", button: value?.has_push ? "알림으로 초대" : "초대 남기기" },
+    in_game: { label: "게임 중", className: "is-game", button: "게임 중" },
   };
   return map[availability] || map.offline;
 }
@@ -686,6 +686,7 @@ function showView(name) {
   els.lobbyView.classList.toggle("is-hidden", name !== "lobby");
   els.matchView.classList.toggle("is-hidden", name !== "match");
   document.body.classList.toggle("ootf-in-match", name === "match");
+  document.body.classList.toggle("ootf-in-lobby", name === "lobby");
 }
 
 async function loadLobby({ silent = false } = {}) {
@@ -927,7 +928,20 @@ function renderLobby() {
     actions: `<button class="ootf-secondary" data-cancel-invite="${item.invite_id}">취소</button>`,
   })).join("");
 
-  const hasFriends = state.friends.length > 0;
+  const availabilityOrder = { game_ready: 0, online: 1, in_game: 2, away: 3, offline: 4 };
+  const sortedFriends = [...state.friends].sort((a, b) => {
+    const aState = availabilityByFriendId(a.friend_id).availability || "offline";
+    const bState = availabilityByFriendId(b.friend_id).availability || "offline";
+    return (availabilityOrder[aState] ?? 9) - (availabilityOrder[bState] ?? 9)
+      || String(a.nickname || "").localeCompare(String(b.nickname || ""), "ko");
+  });
+  const onlineFriendCount = sortedFriends.filter((friend) => ["game_ready", "online"].includes(availabilityByFriendId(friend.friend_id).availability)).length;
+  const hasFriends = sortedFriends.length > 0;
+  if (els.friendAvailabilitySummary) {
+    els.friendAvailabilitySummary.textContent = hasFriends
+      ? `온라인 ${onlineFriendCount}명 · 전체 ${sortedFriends.length}명`
+      : "함께할 친구를 기다리고 있어요";
+  }
   els.noFriendsView.classList.toggle("is-hidden", hasFriends);
   els.friendsList.classList.toggle("is-hidden", !hasFriends);
 
@@ -937,7 +951,7 @@ function renderLobby() {
       : `<span>🌱</span><strong>아직 초대할 친구가 없어요.</strong><p>내 정원에서 친구를 맺으면 이곳에서 원오브텐을 함께할 수 있어요.</p>`;
   }
 
-  els.friendsList.innerHTML = state.friends.map((friend) => {
+  els.friendsList.innerHTML = sortedFriends.map((friend) => {
     const friendKey = String(friend.friend_id);
     const activeMatch = activeByOpponent.get(friendKey);
     const invite = inviteByOpponent.get(friendKey);
@@ -1013,7 +1027,7 @@ async function openInviteMode(friendId, sourceButton) {
   els.inviteFriendName.textContent = friend.nickname || "친구";
   els.inviteFriendAvatar.innerHTML = avatarMarkup(friend.avatar_url, friend.nickname);
   const availability = availabilityByFriendId(friendId);
-  els.inviteFriendStatus.textContent = availabilityPresentation(availability).label.replace(/^[^ ]+ /, "");
+  els.inviteFriendStatus.textContent = availabilityPresentation(availability).label;
   els.ratedInviteStatus.textContent = "오늘 남은 횟수를 확인하고 있어요.";
   els.ratedInviteButton.disabled = true;
   els.casualInviteButton.disabled = false;

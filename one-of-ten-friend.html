@@ -12,7 +12,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="one-of-ten-friend.css?v=phase8-7-postmatch-friend-v1-0" />
+  <link rel="stylesheet" href="one-of-ten-friend.css?v=friend-lobby-v1-0" />
   <link rel="stylesheet" href="oot-notifications.css?v=oot-push-v0-5" />
 </head>
 <body>
@@ -27,8 +27,8 @@
     </header>
 
     <nav class="ootf-mode-nav" aria-label="원오브텐 대전 방식">
-      <a href="one-of-ten.html">🐿️ 다람쥐와 하기</a>
-      <span class="is-active" aria-current="page">🌿 사람과 하기</span>
+      <a href="one-of-ten.html">다람쥐 대전</a>
+      <span class="is-active" aria-current="page">사람 대전</span>
     </nav>
 
     <section class="ootf-loading" id="loadingView" aria-live="polite">
@@ -45,51 +45,32 @@
     </section>
 
     <section class="ootf-lobby is-hidden" id="lobbyView" aria-live="polite">
-      <article class="ootf-hero">
-        <div>
-          <p>PLAYER MATCH</p>
-          <h2>친구와도, 새로운 상대와도</h2>
-          <span>친구를 초대하거나 기다리는 사람과 바로 연결해요. 한 턴은 30초예요.</span>
+      <article class="ootf-lobby-hero">
+        <div class="ootf-lobby-hero-art" aria-hidden="true">
+          <span class="ootf-lobby-ground"></span>
+          <img src="assets/visitors/forest-squirrel-ground-idle.svg" alt="" />
         </div>
-        <div class="ootf-hero-cards" aria-hidden="true"><i>7</i><b>+</b><i>3</i></div>
-      </article>
-
-      <article class="ootf-point-card" id="pointSummaryCard" aria-label="내 원포인트">
-        <div class="ootf-point-main">
-          <span class="ootf-point-icon" aria-hidden="true">🌰</span>
-          <div>
-            <small>MY ONE POINT</small>
-            <strong><b id="pointValue">0</b> 원포인트</strong>
-            <span id="pointTier">숫자씨앗</span>
+        <div class="ootf-lobby-hero-copy">
+          <p>FRIEND MATCH</p>
+          <h2>친구와 겨루기</h2>
+          <span>친구를 초대하거나 새로운 상대를 만나보세요.</span>
+        </div>
+        <article class="ootf-point-card" id="pointSummaryCard" aria-label="내 원포인트">
+          <div class="ootf-point-main">
+            <span class="ootf-point-icon" aria-hidden="true">●</span>
+            <div>
+              <small>내 원포인트</small>
+              <strong><b id="pointValue">0</b>점</strong>
+              <span id="pointTier">숫자씨앗</span>
+            </div>
           </div>
-        </div>
-        <div class="ootf-point-progress">
-          <span id="pointProgressText">다음 등급을 확인하고 있어요.</span>
-          <div><i id="pointProgressBar"></i></div>
-          <small id="pointProtection">첫걸음 보호 10판 남음</small>
-        </div>
+          <div class="ootf-point-progress">
+            <span id="pointProgressText">다음 등급을 확인하고 있어요.</span>
+            <div><i id="pointProgressBar"></i></div>
+            <small id="pointProtection">첫걸음 보호 10판 남음</small>
+          </div>
+        </article>
       </article>
-
-      <section class="ootf-random-card" id="randomMatchCard" aria-labelledby="randomMatchTitle">
-        <div class="ootf-random-copy">
-          <small>RANDOM ONE POINT</small>
-          <h2 id="randomMatchTitle">새로운 상대와 대전</h2>
-          <p id="randomCandidateStatus" aria-live="polite">현재 가능한 상대를 확인하고 있어요.</p>
-          <span id="randomCandidateHint">본인을 제외하고 실제로 연결 가능한 상대만 표시해요.</span>
-        </div>
-        <button id="randomMatchButton" type="button"><span aria-hidden="true">🎲</span><b>상대 확인 중</b></button>
-      </section>
-
-      <section class="oot-ready-card" aria-label="친구 대전 초대 상태">
-        <div class="oot-ready-copy">
-          <strong>친구에게 지금 상태를 알려줄까요?</strong>
-          <span id="ootReadyStatus">켜지 않아도 초대는 받을 수 있고, 알림으로 놓치지 않게 전달해요.</span>
-        </div>
-        <div class="oot-ready-actions">
-          <button id="ootGameReadyButton" type="button">10분 동안 한 판 가능</button>
-          <button type="button" data-oot-enable-push>초대 알림 받기</button>
-        </div>
-      </section>
 
       <section class="ootf-section is-hidden" id="activeMatchesSection">
         <div class="ootf-section-title">
@@ -115,17 +96,49 @@
         <div class="ootf-list" id="outgoingList"></div>
       </section>
 
-      <section class="ootf-section">
-        <div class="ootf-section-title">
-          <div><small>MY FRIENDS</small><h2>함께할 친구</h2></div>
-          <button class="ootf-refresh" id="refreshLobbyButton" type="button" aria-label="목록 새로고침">↻</button>
+      <div class="ootf-lobby-grid">
+        <section class="ootf-random-card" id="randomMatchCard" aria-labelledby="randomMatchTitle">
+          <div class="ootf-random-copy">
+            <small>NEW OPPONENT</small>
+            <h2 id="randomMatchTitle">새로운 상대 만나기</h2>
+            <p id="randomCandidateStatus" aria-live="polite">현재 가능한 상대를 확인하고 있어요.</p>
+          </div>
+          <div class="ootf-random-scene" aria-hidden="true">
+            <span class="ootf-random-hill is-back"></span>
+            <span class="ootf-random-hill is-front"></span>
+            <i>?</i>
+          </div>
+          <button id="randomMatchButton" type="button"><b>상대 확인 중</b></button>
+          <span class="ootf-random-hint" id="randomCandidateHint">본인을 제외하고 실제로 연결 가능한 상대만 표시해요.</span>
+        </section>
+
+        <section class="ootf-section ootf-friends-section">
+          <div class="ootf-section-title">
+            <div><small>MY FRIENDS</small><h2>함께할 친구</h2></div>
+            <div class="ootf-friends-tools">
+              <span id="friendAvailabilitySummary">친구 상태 확인 중</span>
+              <button class="ootf-refresh" id="refreshLobbyButton" type="button" aria-label="목록 새로고침">↻</button>
+            </div>
+          </div>
+          <p class="ootf-friends-description">온라인 친구에게 바로 초대하거나, 오프라인 친구에게 알림으로 알려보세요.</p>
+          <div class="ootf-list" id="friendsList"></div>
+          <div class="ootf-empty is-hidden" id="noFriendsView">
+            <span>🌱</span>
+            <strong>아직 초대할 친구가 없어요.</strong>
+            <p>내 정원에서 친구를 맺으면 이곳에서 원오브텐을 함께할 수 있어요.</p>
+            <a href="index.html#friendsSection">친구 메뉴로 가기</a>
+          </div>
+        </section>
+      </div>
+
+      <section class="oot-ready-card" aria-label="친구 대전 초대 상태">
+        <div class="oot-ready-copy">
+          <strong>대전 가능 상태</strong>
+          <span id="ootReadyStatus">켜지 않아도 초대는 받을 수 있고, 알림으로 놓치지 않게 전달해요.</span>
         </div>
-        <div class="ootf-list" id="friendsList"></div>
-        <div class="ootf-empty is-hidden" id="noFriendsView">
-          <span>🌱</span>
-          <strong>아직 초대할 친구가 없어요.</strong>
-          <p>내 정원에서 친구를 맺으면 이곳에서 원오브텐을 함께할 수 있어요.</p>
-          <a href="index.html#friendsSection">친구 메뉴로 가기</a>
+        <div class="oot-ready-actions">
+          <button id="ootGameReadyButton" type="button">10분 동안 한 판 가능</button>
+          <button type="button" data-oot-enable-push>초대 알림 받기</button>
         </div>
       </section>
 
@@ -366,6 +379,6 @@
 
   <div class="ootf-toast is-hidden" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="oot-notifications.js?v=oot-push-v0-6-opt"></script>
-  <script type="module" src="one-of-ten-friend.js?v=phase8-7-postmatch-friend-v1-0"></script>
+  <script type="module" src="one-of-ten-friend.js?v=friend-lobby-v1-0"></script>
 </body>
 </html>

@@ -570,3 +570,428 @@ body.ootf-random-waiting { overflow: hidden; }
   .ootf-result-friend button,
   .ootf-result-friend a { min-height: 41px; }
 }
+
+/* TodayForest · 친구 대전 로비 브리지 v1.0 */
+body.ootf-in-lobby .ootf-app {
+  width: min(100%, 1120px);
+  padding-inline: 22px;
+}
+body.ootf-in-lobby .ootf-header {
+  margin-bottom: 10px;
+}
+body.ootf-in-lobby .ootf-mode-nav {
+  width: min(100%, 320px);
+  margin: 0 auto 18px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.52);
+  box-shadow: none;
+}
+body.ootf-in-lobby .ootf-mode-nav a,
+body.ootf-in-lobby .ootf-mode-nav span {
+  min-height: 31px;
+  border-radius: 999px;
+  font-size: 10px;
+}
+body.ootf-in-lobby .ootf-lobby {
+  gap: 14px;
+}
+body.ootf-in-lobby .ootf-lobby-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: 130px minmax(220px, 1fr) minmax(330px, .9fr);
+  align-items: center;
+  gap: 22px;
+  min-height: 152px;
+  padding: 18px 22px;
+  overflow: hidden;
+  border: 1px solid rgba(80,111,89,.12);
+  border-radius: 25px;
+  background:
+    radial-gradient(circle at 7% 10%, rgba(226,238,223,.92), transparent 18rem),
+    linear-gradient(140deg, rgba(255,255,252,.97), rgba(246,249,243,.94));
+  box-shadow: 0 15px 38px rgba(59,83,67,.09);
+}
+body.ootf-in-lobby .ootf-lobby-hero::after {
+  content: "";
+  position: absolute;
+  right: -55px;
+  bottom: -85px;
+  width: 250px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(211,229,210,.34);
+  pointer-events: none;
+}
+body.ootf-in-lobby .ootf-lobby-hero-art {
+  position: relative;
+  align-self: stretch;
+  min-height: 112px;
+}
+body.ootf-in-lobby .ootf-lobby-hero-art img {
+  position: absolute;
+  z-index: 2;
+  left: 6px;
+  bottom: -1px;
+  width: 116px;
+  height: 104px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 12px rgba(64,88,70,.12));
+}
+body.ootf-in-lobby .ootf-lobby-ground {
+  position: absolute;
+  z-index: 1;
+  left: -22px;
+  right: -5px;
+  bottom: -18px;
+  height: 66px;
+  border-radius: 50% 50% 0 0;
+  background: linear-gradient(180deg, rgba(205,226,203,.8), rgba(229,239,223,.2));
+}
+body.ootf-in-lobby .ootf-lobby-hero-copy {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+}
+body.ootf-in-lobby .ootf-lobby-hero-copy p {
+  margin: 0;
+  color: #92a097;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .13em;
+}
+body.ootf-in-lobby .ootf-lobby-hero-copy h2 {
+  margin: 5px 0 7px;
+  color: #365344;
+  font-size: clamp(24px, 3vw, 34px);
+  letter-spacing: -.055em;
+}
+body.ootf-in-lobby .ootf-lobby-hero-copy span {
+  color: #728078;
+  font-size: 12px;
+  line-height: 1.55;
+}
+body.ootf-in-lobby .ootf-point-card {
+  position: relative;
+  z-index: 2;
+  grid-template-columns: minmax(125px,.65fr) minmax(160px,1fr);
+  gap: 16px;
+  padding: 13px 15px;
+  border-color: rgba(80,111,89,.13);
+  border-radius: 18px;
+  background: rgba(255,255,255,.72);
+  box-shadow: 0 8px 22px rgba(58,81,65,.06);
+}
+body.ootf-in-lobby .ootf-point-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background: #f3ead8;
+  color: #a06a2f;
+  font-size: 13px;
+}
+body.ootf-in-lobby .ootf-point-main small {
+  color: #75847b;
+  font-size: 9px;
+  letter-spacing: 0;
+}
+body.ootf-in-lobby .ootf-point-main strong {
+  margin-top: 0;
+  font-size: 10px;
+}
+body.ootf-in-lobby .ootf-point-main strong b {
+  font-size: 22px;
+}
+body.ootf-in-lobby .ootf-point-main > div > span {
+  font-size: 8px;
+}
+body.ootf-in-lobby .ootf-point-progress > span,
+body.ootf-in-lobby .ootf-point-progress > small {
+  font-size: 8px;
+}
+body.ootf-in-lobby .ootf-lobby-grid {
+  display: grid;
+  grid-template-columns: minmax(300px,.82fr) minmax(440px,1.28fr);
+  align-items: stretch;
+  gap: 14px;
+}
+body.ootf-in-lobby .ootf-random-card,
+body.ootf-in-lobby .ootf-friends-section {
+  min-height: 475px;
+}
+body.ootf-in-lobby .ootf-random-card {
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr auto auto;
+  align-items: stretch;
+  gap: 13px;
+  padding: 22px;
+  border-color: rgba(78,111,87,.14);
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(255,255,252,.97), rgba(244,249,242,.95));
+  box-shadow: 0 15px 36px rgba(58,82,65,.09);
+}
+body.ootf-in-lobby .ootf-random-copy small {
+  color: #8b9b91;
+  letter-spacing: .1em;
+}
+body.ootf-in-lobby .ootf-random-copy h2 {
+  margin: 5px 0 6px;
+  color: #345342;
+  font-size: 22px;
+}
+body.ootf-in-lobby .ootf-random-copy p {
+  color: #65786b;
+  font-size: 11px;
+  font-weight: 850;
+}
+body.ootf-in-lobby .ootf-random-scene {
+  position: relative;
+  min-height: 220px;
+  overflow: hidden;
+  border: 1px solid rgba(92,125,100,.11);
+  border-radius: 21px;
+  background:
+    radial-gradient(circle at 50% 31%, rgba(255,255,255,.9), transparent 4.8rem),
+    linear-gradient(180deg, #f7faf4, #eaf3e7);
+}
+body.ootf-in-lobby .ootf-random-scene::before,
+body.ootf-in-lobby .ootf-random-scene::after {
+  content: "";
+  position: absolute;
+  bottom: 46px;
+  width: 84px;
+  height: 102px;
+  opacity: .36;
+  background:
+    radial-gradient(ellipse at 50% 32%, #9ebc99 0 25%, transparent 27%),
+    radial-gradient(ellipse at 28% 55%, #afc9a8 0 24%, transparent 26%),
+    radial-gradient(ellipse at 72% 58%, #a7c2a1 0 25%, transparent 27%),
+    linear-gradient(90deg, transparent 45%, #9eb49c 46% 54%, transparent 55%);
+}
+body.ootf-in-lobby .ootf-random-scene::before { left: 24px; }
+body.ootf-in-lobby .ootf-random-scene::after { right: 24px; transform: scale(.84); }
+body.ootf-in-lobby .ootf-random-hill {
+  position: absolute;
+  left: -8%;
+  right: -8%;
+  bottom: -43px;
+  height: 120px;
+  border-radius: 50% 50% 0 0;
+  background: #dfeedd;
+}
+body.ootf-in-lobby .ootf-random-hill.is-back {
+  left: 25%;
+  bottom: -27px;
+  background: #edf5ea;
+}
+body.ootf-in-lobby .ootf-random-scene i {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 50%;
+  width: 92px;
+  height: 92px;
+  display: grid;
+  place-items: center;
+  transform: translate(-50%,-50%);
+  border: 2px dashed rgba(89,126,96,.24);
+  border-radius: 50%;
+  background: rgba(255,255,255,.78);
+  color: #66816e;
+  font-size: 43px;
+  font-style: normal;
+  font-weight: 850;
+  box-shadow: 0 12px 26px rgba(65,91,71,.08);
+}
+body.ootf-in-lobby .ootf-random-card > button {
+  width: 100%;
+  min-height: 52px;
+  border-radius: 16px;
+  background: #54745e;
+  box-shadow: 0 10px 24px rgba(65,94,72,.16);
+}
+body.ootf-in-lobby .ootf-random-card > button::before {
+  content: "";
+  width: 14px;
+  height: 9px;
+  border-radius: 100% 0 100% 0;
+  background: #d7e9d5;
+  transform: rotate(-24deg);
+}
+body.ootf-in-lobby .ootf-random-card > button b {
+  font-size: 12px;
+}
+body.ootf-in-lobby .ootf-random-hint {
+  display: block;
+  min-height: 34px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  background: rgba(232,241,230,.72);
+  color: #748179;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.5;
+  text-align: center;
+}
+body.ootf-in-lobby .ootf-friends-section {
+  padding: 22px;
+  border-color: rgba(78,111,87,.14);
+  border-radius: 24px;
+  background: rgba(255,255,252,.94);
+  box-shadow: 0 15px 36px rgba(58,82,65,.09);
+}
+body.ootf-in-lobby .ootf-friends-section .ootf-section-title h2 {
+  color: #345342;
+  font-size: 22px;
+}
+body.ootf-in-lobby .ootf-friends-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+body.ootf-in-lobby .ootf-friends-tools > span {
+  color: #748279;
+  font-size: 9px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+body.ootf-in-lobby .ootf-friends-description {
+  margin: 7px 0 0;
+  color: #7c8981;
+  font-size: 10px;
+  line-height: 1.5;
+}
+body.ootf-in-lobby .ootf-friends-section .ootf-list {
+  gap: 10px;
+  margin-top: 15px;
+}
+body.ootf-in-lobby .ootf-friends-section .ootf-list-card {
+  min-height: 78px;
+  padding: 11px 12px;
+  border-color: rgba(79,108,87,.14);
+  border-radius: 18px;
+  background: #fffefa;
+}
+body.ootf-in-lobby .ootf-friends-section .ootf-list-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+}
+body.ootf-in-lobby .ootf-friends-section .ootf-list-copy strong {
+  font-size: 14px;
+}
+body.ootf-in-lobby .ootf-friends-section .ootf-list-copy span {
+  margin-top: 5px;
+  font-size: 9px;
+}
+body.ootf-in-lobby .oot-availability {
+  gap: 6px;
+}
+body.ootf-in-lobby .oot-availability::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #9ba59f;
+}
+body.ootf-in-lobby .oot-availability.is-ready::before { background: #49a465; box-shadow: 0 0 0 4px rgba(73,164,101,.1); }
+body.ootf-in-lobby .oot-availability.is-online::before { background: #6c9b78; }
+body.ootf-in-lobby .oot-availability.is-away::before { background: #c0a167; }
+body.ootf-in-lobby .oot-availability.is-offline::before { background: #aab1ad; }
+body.ootf-in-lobby .oot-availability.is-game::before { background: #8a76a6; }
+body.ootf-in-lobby .ootf-friends-section .ootf-list-actions button,
+body.ootf-in-lobby .ootf-friends-section .ootf-list-card > button {
+  min-height: 42px;
+  padding-inline: 15px;
+  border-radius: 13px;
+  font-size: 10px;
+}
+body.ootf-in-lobby .ootf-friends-section .ootf-primary {
+  background: #55765f;
+}
+body.ootf-in-lobby .oot-ready-card {
+  grid-template-columns: minmax(0,1fr) auto;
+  padding: 13px 17px;
+  border-color: rgba(77,108,86,.14);
+  border-radius: 18px;
+  background: rgba(255,255,252,.82);
+  box-shadow: 0 8px 24px rgba(59,82,66,.06);
+}
+body.ootf-in-lobby .oot-ready-copy strong {
+  color: #45604f;
+  font-size: 12px;
+}
+body.ootf-in-lobby .oot-ready-copy span {
+  margin-top: 3px;
+  font-size: 9px;
+}
+body.ootf-in-lobby .oot-ready-actions button {
+  min-height: 38px;
+  border-radius: 12px;
+  font-size: 10px;
+}
+body.ootf-in-lobby .ootf-section:not(.ootf-friends-section) {
+  padding: 16px 18px;
+  border-color: rgba(78,111,87,.13);
+  background: rgba(255,255,252,.92);
+}
+body.ootf-in-lobby .ootf-lobby-note {
+  margin-top: -2px;
+  font-size: 8px;
+}
+@media (max-width: 880px) {
+  body.ootf-in-lobby .ootf-app { padding-inline: 14px; }
+  body.ootf-in-lobby .ootf-lobby-hero {
+    grid-template-columns: 105px 1fr;
+    gap: 16px;
+  }
+  body.ootf-in-lobby .ootf-lobby-hero-art img { width: 100px; height: 90px; }
+  body.ootf-in-lobby .ootf-point-card { grid-column: 1 / -1; }
+  body.ootf-in-lobby .ootf-lobby-grid { grid-template-columns: 1fr; }
+  body.ootf-in-lobby .ootf-random-card,
+  body.ootf-in-lobby .ootf-friends-section { min-height: auto; }
+}
+@media (max-width: 560px) {
+  body.ootf-in-lobby .ootf-app { padding-inline: 10px; }
+  body.ootf-in-lobby .ootf-mode-nav { margin-bottom: 11px; }
+  body.ootf-in-lobby .ootf-lobby { gap: 10px; }
+  body.ootf-in-lobby .ootf-lobby-hero {
+    grid-template-columns: 76px 1fr;
+    min-height: 0;
+    padding: 14px;
+    border-radius: 21px;
+  }
+  body.ootf-in-lobby .ootf-lobby-hero-art { min-height: 78px; }
+  body.ootf-in-lobby .ootf-lobby-hero-art img { left: -4px; width: 82px; height: 75px; }
+  body.ootf-in-lobby .ootf-lobby-ground { left: -20px; bottom: -16px; height: 48px; }
+  body.ootf-in-lobby .ootf-lobby-hero-copy p { display: none; }
+  body.ootf-in-lobby .ootf-lobby-hero-copy h2 { margin-top: 0; font-size: 23px; }
+  body.ootf-in-lobby .ootf-lobby-hero-copy span { font-size: 10px; }
+  body.ootf-in-lobby .ootf-point-card {
+    grid-template-columns: 1fr 1.4fr;
+    gap: 10px;
+    padding: 10px;
+  }
+  body.ootf-in-lobby .ootf-random-card,
+  body.ootf-in-lobby .ootf-friends-section { padding: 16px; border-radius: 21px; }
+  body.ootf-in-lobby .ootf-random-copy h2,
+  body.ootf-in-lobby .ootf-friends-section .ootf-section-title h2 { font-size: 18px; }
+  body.ootf-in-lobby .ootf-random-scene { min-height: 165px; }
+  body.ootf-in-lobby .ootf-random-scene i { width: 74px; height: 74px; font-size: 34px; }
+  body.ootf-in-lobby .ootf-friends-tools > span { display: none; }
+  body.ootf-in-lobby .ootf-friends-section .ootf-list-card {
+    grid-template-columns: auto minmax(0,1fr);
+    min-height: 72px;
+  }
+  body.ootf-in-lobby .ootf-friends-section .ootf-list-card > button,
+  body.ootf-in-lobby .ootf-friends-section .ootf-list-actions {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+  body.ootf-in-lobby .ootf-friends-section .ootf-list-actions > button,
+  body.ootf-in-lobby .ootf-friends-section .ootf-list-card > button { flex: 1; width: 100%; }
+  body.ootf-in-lobby .oot-ready-card { grid-template-columns: 1fr; padding: 13px; }
+  body.ootf-in-lobby .oot-ready-actions { justify-content: stretch; }
+  body.ootf-in-lobby .oot-ready-actions button { flex: 1; }
+}
