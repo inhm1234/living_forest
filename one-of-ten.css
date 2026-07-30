@@ -2935,3 +2935,64 @@ body.oot-match-active .oot-difficulty-row {
   .oot-showdown > div { min-height: 65px; }
   .oot-result-actions { gap: 6px; }
 }
+
+/* ONE-OF-TEN RESULT v2.1 — PC 상단 감정 영역 미세 보정 */
+@media (min-width: 601px) {
+  .oot-result-card {
+    padding-top: 14px;
+  }
+
+  .oot-result-kicker {
+    margin-bottom: 0;
+    opacity: .88;
+  }
+
+  .oot-result-hero {
+    width: 224px;
+    height: 132px;
+    margin-top: -2px;
+    margin-bottom: 1px;
+  }
+
+  .oot-result-hero::before {
+    left: 26px;
+    right: 26px;
+    bottom: 2px;
+    height: 35px;
+  }
+
+  .oot-result-hero img {
+    width: 142px;
+    height: 132px;
+  }
+
+  .oot-result-hero-leaf {
+    bottom: 12px;
+    transform: scale(1.04);
+  }
+
+  .oot-result-card h2 {
+    margin-top: 1px;
+  }
+
+  .oot-result-personality {
+    padding: 5px 10px;
+    background: rgba(237, 243, 235, .68);
+    color: rgba(102, 125, 109, .78);
+    font-size: 9.5px;
+  }
+
+  .oot-result-personality::before {
+    color: rgba(113, 147, 112, .72);
+  }
+
+  .oot-result-personality[data-personality="greedy"] {
+    background: rgba(248, 239, 229, .64);
+    color: rgba(140, 105, 79, .78);
+  }
+
+  .oot-result-personality[data-personality="genius"] {
+    background: rgba(238, 240, 248, .68);
+    color: rgba(105, 111, 145, .78);
+  }
+}
