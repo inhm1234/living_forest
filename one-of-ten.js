@@ -2,7 +2,6 @@
   "use strict";
 
   const OPERATIONS = ["+", "−", "×", "÷"];
-  const OPERATION_LABELS = { "+": "더하기", "−": "빼기", "×": "곱하기", "÷": "나누기" };
   const TURN_LIMIT_MS = 30000;
   const AI_THINK_MS = 1050;
   const EQUATION_REVEAL_MS = 800;
@@ -150,11 +149,8 @@
     modeGate: $("#modeGate"),
     computerGameArea: $("#computerGameArea"),
     modeBadge: $("#modeBadge"),
-    gameBackButton: $("#gameBackButton"),
-    gameBackLabel: $("#gameBackLabel"),
     computerModeButton: $("#computerModeButton"),
     aiStatus: $("#aiStatus"),
-    aiAvatarImage: $("#aiAvatarImage"),
     aiName: $("#aiName"),
     aiPersonalityBadge: $("#aiPersonalityBadge"),
     personalityIntro: $("#personalityIntro"),
@@ -166,21 +162,15 @@
     aiReaction: $("#aiReaction"),
     difficultyButtons: $$('[data-difficulty]'),
     resultDifficultyButtons: $$('[data-result-difficulty]'),
-    historyPanel: $("#historyPanel"),
     history: $("#history"),
     historyToggle: $("#historyToggle"),
     operationCount: $("#operationCount"),
-    progressDots: $("#progressDots"),
     turnPill: $("#turnPill"),
     turnTimer: $("#turnTimer"),
     timerText: $("#timerText"),
     timerBar: $("#timerBar"),
     timeoutHint: $("#timeoutHint"),
     currentValue: $("#currentValue"),
-    formulaBaseValue: $("#formulaBaseValue"),
-    formulaResultPreview: $("#formulaResultPreview"),
-    operationStep: $("#operationStep"),
-    numberStep: $("#numberStep"),
     selectedOperationPreview: $("#selectedOperationPreview"),
     selectedNumberPreview: $("#selectedNumberPreview"),
     arenaMessage: $("#arenaMessage"),
@@ -488,7 +478,6 @@
   function renderOpponent() {
     const personality = getAiPersonality();
     els.aiName.textContent = personality.name;
-    if (els.aiAvatarImage) els.aiAvatarImage.src = personality.image;
     els.aiPersonalityBadge.textContent = personality.badge;
     els.aiPersonalityBadge.dataset.personality = state.aiPersonality;
     els.personalityIntro.dataset.personality = state.aiPersonality;
@@ -505,9 +494,15 @@
       card.textContent = reveal ? String(number) : "";
       els.aiHand.appendChild(card);
     });
-    els.aiCardCount.textContent = `상대 카드 ${state.aiHand.length}장`;
+    els.aiCardCount.textContent = `손패 ${state.aiHand.length}장`;
 
-    els.aiStatus.textContent = personality.intro;
+    const status = {
+      "ai-opening": "첫 카드를 고르는 중이에요.",
+      "ai-thinking": "스톱할지 계산을 이어갈지 생각 중이에요.",
+      "showdown-resolving": "남은 카드를 펼쳤어요.",
+      "game-over": "승부가 끝났어요.",
+    };
+    els.aiStatus.textContent = status[state.phase] || "상대 카드는 아직 보이지 않아요.";
     els.aiReaction.textContent = state.aiReaction || "";
   }
 
@@ -556,34 +551,18 @@
       requestAnimationFrame(() => { els.history.scrollLeft = els.history.scrollWidth; });
     }
 
-    const calculationCount = state.history.filter((item) => item.type === "calculation").length;
     const canToggle = compact && state.history.length > 1;
     els.historyToggle.classList.toggle("is-hidden", !canToggle);
     els.historyToggle.textContent = state.historyExpanded ? "간단히" : "전체 보기";
-    els.operationCount.textContent = `${calculationCount} / ${OPERATIONS.length}턴`;
-    if (els.historyPanel) els.historyPanel.classList.toggle("is-hidden", calculationCount === 0 && !state.gameOver);
-    if (els.progressDots) {
-      [...els.progressDots.children].forEach((dot, index) => {
-        dot.classList.toggle("is-done", index < calculationCount);
-        dot.classList.toggle("is-current", !state.gameOver && index === calculationCount && calculationCount < OPERATIONS.length);
-      });
-    }
+    els.operationCount.textContent = `수식 ${OPERATIONS.length - state.availableOperations.length} / ${OPERATIONS.length}`;
   }
 
   function renderArena() {
-    const hasOperation = ["human-play", "human-resolving"].includes(state.phase) && Boolean(state.selectedOperation);
+    const hasOperation = ["human-play", "human-resolving"].includes(state.phase) && state.selectedOperation;
     const hasNumber = hasOperation && state.selectedNumber !== null;
-    const currentText = state.currentValue === null ? "?" : String(state.currentValue);
-    const previewResult = hasNumber
-      ? String(applyOperation(state.currentValue, state.selectedOperation, state.selectedNumber))
-      : "?";
 
-    els.currentValue.textContent = currentText;
+    els.currentValue.textContent = state.currentValue === null ? "?" : String(state.currentValue);
     els.currentValue.classList.toggle("is-empty", state.currentValue === null);
-    if (els.formulaBaseValue) {
-      els.formulaBaseValue.textContent = currentText;
-      els.formulaBaseValue.classList.toggle("is-empty", state.currentValue === null);
-    }
     if (state.currentValue !== null && state.currentValue !== lastRenderedCurrentValue) {
       els.currentValue.classList.remove("is-value-pop");
       void els.currentValue.offsetWidth;
@@ -591,51 +570,34 @@
       lastRenderedCurrentValue = state.currentValue;
     }
 
-    els.selectedOperationPreview.textContent = hasOperation ? state.selectedOperation : "?";
-    els.selectedOperationPreview.classList.toggle("is-empty", !hasOperation);
+    els.selectedOperationPreview.textContent = hasOperation ? state.selectedOperation : "";
+    els.selectedOperationPreview.classList.toggle("is-hidden", !hasOperation);
     els.selectedOperationPreview.classList.toggle("is-cancelable", Boolean(hasOperation && !hasNumber && state.phase === "human-play"));
     els.selectedOperationPreview.disabled = !(hasOperation && !hasNumber && state.phase === "human-play");
-    els.selectedOperationPreview.setAttribute("aria-label", hasOperation ? `${OPERATION_LABELS[state.selectedOperation]} 선택됨. 다시 누르면 취소` : "연산자 선택 자리");
 
-    els.selectedNumberPreview.textContent = hasNumber ? String(state.selectedNumber) : "?";
-    els.selectedNumberPreview.classList.toggle("is-empty", !hasNumber);
-    if (els.formulaResultPreview) {
-      els.formulaResultPreview.textContent = previewResult;
-      els.formulaResultPreview.classList.toggle("is-empty", !hasNumber);
-    }
+    els.selectedNumberPreview.textContent = hasNumber ? String(state.selectedNumber) : "";
+    els.selectedNumberPreview.classList.toggle("is-hidden", !hasNumber);
 
     const phaseCopy = {
-      "ai-opening": ["다람쥐 선공", "다람쥐가 시작 숫자를 고르고 있어요."],
-      "human-play": ["내 차례", "먼저 연산자를 선택하세요."],
-      "human-resolving": ["계산 중", "선택한 계산의 결과를 확인하고 있어요."],
-      "human-decision": ["내 차례", "여기서 멈추거나 카드 한 장을 받고 이어갈 수 있어요."],
-      "ai-thinking": ["다람쥐 차례", `${getAiPersonality().name}가 다음 계산을 생각하고 있어요.`],
-      "showdown-resolving": ["승부 확인", "남은 카드와 최종 결과값을 비교하고 있어요."],
-      "game-over": ["승부 종료", "한 판 더 하거나 정원으로 돌아갈 수 있어요."],
+      "ai-opening": ["다람쥐 선공", "숲 다람쥐가 첫 숫자카드를 내고 있어요."],
+      "human-play": ["내 차례", "수식카드를 고른 뒤 손에 있는 숫자카드를 내세요."],
+      "human-resolving": ["계산 중", "놓인 수식의 결과가 잠시 뒤 나타나요."],
+      "human-decision": ["내 차례", "지금 승부하거나 카드 한 장을 받고 계산을 이어갈 수 있어요."],
+      "ai-thinking": ["다람쥐 차례", "다람쥐가 자기 카드와 결과값을 비교하고 있어요."],
+      "showdown-resolving": ["승부 확인", "두 사람의 남은 카드와 최종 결과값을 비교하고 있어요."],
+      "game-over": ["승부 종료", "한 판 더 하거나 내 정원으로 돌아갈 수 있어요."],
     };
     let [pill, message] = phaseCopy[state.phase] || ["원오브텐", ""];
-    if (state.phase === "human-play" && hasOperation && !hasNumber) {
-      message = "이제 낼 숫자 카드를 선택하세요.";
+    if (state.phase === "human-play" && state.selectedOperation && state.selectedNumber === null) {
+      message = `선택한 ${state.selectedOperation}가 놓였어요. 잘못 골랐다면 중앙의 수식을 눌러 취소하세요.`;
     }
-    if (state.phase === "human-resolving" && hasNumber) {
-      message = `${state.currentValue} ${state.selectedOperation} ${state.selectedNumber} = ${previewResult}`;
+    if (state.phase === "human-resolving") {
+      message = `${state.currentValue} ${state.selectedOperation} ${state.selectedNumber}…`;
     }
     els.turnPill.textContent = pill;
     els.arenaMessage.textContent = message;
     els.calculationNote.textContent = state.lastCalculationNote || "";
     els.calculationNote.classList.toggle("is-hidden", !state.lastCalculationNote);
-
-    if (els.operationStep) {
-      const operationActive = state.phase === "human-play" && !hasOperation;
-      const operationDone = hasOperation || state.phase === "human-resolving";
-      els.operationStep.classList.toggle("is-active", operationActive);
-      els.operationStep.classList.toggle("is-done", operationDone);
-    }
-    if (els.numberStep) {
-      const numberActive = state.phase === "human-play" && hasOperation && !hasNumber;
-      els.numberStep.classList.toggle("is-active", numberActive);
-      els.numberStep.classList.toggle("is-done", hasNumber || state.phase === "human-resolving");
-    }
   }
 
   function renderOperations() {
@@ -644,8 +606,7 @@
       const button = document.createElement("button");
       button.type = "button";
       button.className = "oot-operation-card";
-      button.innerHTML = `<strong>${operation}</strong><small>${OPERATION_LABELS[operation]}</small>`;
-      button.setAttribute("aria-label", OPERATION_LABELS[operation]);
+      button.textContent = operation;
 
       const available = state.availableOperations.includes(operation);
       const lockedByChoice = state.selectedOperation !== null;
@@ -687,7 +648,7 @@
       button.addEventListener("click", () => handleHumanNumber(number));
       els.humanHand.appendChild(button);
     });
-    els.deckCount.textContent = `${state.deck.length}장`;
+    els.deckCount.textContent = `더미 ${state.deck.length}장`;
 
     let help = "다람쥐의 차례예요.";
     if (state.phase === "human-play" && !state.selectedOperation) help = "먼저 수식카드를 선택하세요.";
@@ -1150,9 +1111,6 @@
     trackOneOfTen("oneoften_mode_selected", { mode: "squirrel" });
     els.modeGate.classList.add("is-hidden");
     els.computerGameArea.classList.remove("is-hidden");
-    document.body.classList.add("oot-game-active");
-    els.gameBackLabel.textContent = "대전 나가기";
-    els.gameBackButton.setAttribute("aria-label", "진행 중인 대전 나가기");
     els.modeBadge.textContent = "다람쥐 대전";
     resetGame({ deferOpening: true });
     openPreparation();
@@ -1187,17 +1145,6 @@
   els.selectedOperationPreview.addEventListener("click", cancelOperationFromPreview);
   els.newGameButton.addEventListener("click", prepareNewGame);
   els.newGameButtonInline.addEventListener("click", prepareNewGame);
-  els.gameBackButton.addEventListener("click", (event) => {
-    if (!document.body.classList.contains("oot-game-active")) return;
-    if (activeGameStarted && !activeGameCompleted) {
-      const leave = window.confirm("진행 중인 대전을 나갈까요?\n지금까지의 대전은 저장되지 않아요.");
-      if (!leave) {
-        event.preventDefault();
-        return;
-      }
-      trackActiveGameExit("back_button");
-    }
-  });
   els.rulesButton.addEventListener("click", openRules);
   els.closeRulesButton.addEventListener("click", closeRules);
   els.rulesConfirmButton.addEventListener("click", closeRules);
@@ -1226,8 +1173,5 @@
   resetGame({ deferOpening: true });
   els.modeGate.classList.remove("is-hidden");
   els.computerGameArea.classList.add("is-hidden");
-  document.body.classList.remove("oot-game-active");
-  els.gameBackLabel.textContent = "내 정원";
-  els.gameBackButton.setAttribute("aria-label", "내 정원으로 돌아가기");
   els.modeBadge.textContent = "대전 선택";
 })();
