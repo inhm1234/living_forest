@@ -28,12 +28,12 @@ const els = {
 let authBusy = false;
 
 function safeNextPath() {
-  const value = new URL(window.location.href).searchParams.get("next") || "/";
+  const value = new URL(window.location.href).searchParams.get("next") || "/app.html";
   try {
     const url = new URL(value, window.location.origin);
-    if (url.origin !== window.location.origin) return "/";
-    if (url.pathname === "/qa-login" || url.pathname === "/qa-login.html") return "/";
-    return `${url.pathname}${url.search}${url.hash}` || "/";
+    if (url.origin !== window.location.origin) return "/app.html";
+    if (url.pathname === "/qa-login" || url.pathname === "/qa-login.html") return "/app.html";
+    return `${url.pathname}${url.search}${url.hash}` || "/app.html";
   } catch {
     return "/";
   }

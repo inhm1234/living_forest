@@ -2347,7 +2347,7 @@ async function leaveResultToGarden(event) {
   if (match && currentMatchIsFinished()) {
     try { await rpc("oot_decline_rematch", { p_match_id: match.matchId }); } catch { /* page navigation continues */ }
   }
-  location.href = "index.html";
+  location.href = "app.html";
 }
 
 function renderResult(match) {

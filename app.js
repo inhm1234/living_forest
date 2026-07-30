@@ -8789,7 +8789,7 @@ function saveSharedTreeKeepsakeImage() {
 }
 
 function sharedTreeDiscoveryUrl() {
-  const url = new URL("/", window.location.origin);
+  const url = new URL("/app.html", window.location.origin);
   url.searchParams.set("sharedMemory", "1");
   return url.toString();
 }
@@ -10859,6 +10859,10 @@ function openPublicHomeFromSharedMemory() {
   clearSharedMemoryStartIntent();
   sharedMemoryEntryContextActive = false;
   clearSharedMemoryEntryFlag();
+  if (!els.publicHome) {
+    window.location.assign("/");
+    return;
+  }
   publicEntryView = "home";
   renderAuthUI();
   window.scrollTo({ top: 0, behavior: "auto" });
@@ -10868,9 +10872,10 @@ function renderAuthUI() {
   const isSignedIn = Boolean(currentUser);
   const onboardingVisible = welcomeFlowMode === "onboarding";
   const welcomeSurfaceVisible = onboardingVisible || welcomeFlowMode === "transitioning";
+  const hasPublicHome = Boolean(els.publicHome);
   const showSharedMemoryEntry = !isSignedIn && publicEntryView === "shared-memory";
-  const showPublicHome = !isSignedIn && publicEntryView === "home";
-  const showAuthScreen = !isSignedIn && publicEntryView === "auth";
+  const showPublicHome = !isSignedIn && publicEntryView === "home" && hasPublicHome;
+  const showAuthScreen = !isSignedIn && (publicEntryView === "auth" || (publicEntryView === "home" && !hasPublicHome));
 
   els.sharedMemoryEntry?.classList.toggle("hidden", !showSharedMemoryEntry);
   els.publicHome?.classList.toggle("hidden", !showPublicHome);
@@ -10911,6 +10916,10 @@ function openPublicLogin() {
 
 function returnToPublicHome() {
   if (currentUser) return;
+  if (!els.publicHome && !sharedMemoryEntryRequested()) {
+    window.location.assign("/");
+    return;
+  }
   publicEntryView = sharedMemoryEntryRequested() ? "shared-memory" : "home";
   setAuthError("");
   renderAuthUI();
@@ -11231,7 +11240,7 @@ async function beginKakaoLogin() {
   if (inviteToken) {
     window.sessionStorage.setItem("todayforest_pending_friend_invite", inviteToken);
   }
-  const redirectTo = `${window.location.origin}${window.location.pathname}`;
+  const redirectTo = `${window.location.origin}/`;
   const { error } = await supabase.auth.signInWithOAuth({ provider: "kakao", options: { redirectTo } });
 
   if (error) {
@@ -12388,7 +12397,7 @@ async function beginWelcomeKakaoLogin() {
 
   // 손님맞이 검수 주소는 로그인 뒤에 남기지 않습니다.
   // OAuth가 끝나면 일반 DEV 초기화가 실행되어, 실제 계정 상태를 읽습니다.
-  const redirectTo = `${window.location.origin}${window.location.pathname}`;
+  const redirectTo = `${window.location.origin}/`;
   const { error } = await supabase.auth.signInWithOAuth({
     provider: "kakao",
     options: { redirectTo },
