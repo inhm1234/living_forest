@@ -11,6 +11,7 @@
       name: "겁많은 다람쥐",
       badge: "안전형",
       icon: "🌿",
+      image: "assets/visitors/forest-squirrel-ground-idle.svg",
       intro: "결과값이 가까워지면 위험을 피하고 일찍 멈추는 편이에요.",
       mistakeRate: 0.15,
       stopChance(distance) {
@@ -53,6 +54,7 @@
       name: "욕심쟁이 다람쥐",
       badge: "도전형",
       icon: "🔥",
+      image: "assets/visitors/forest-squirrel-ground-look.svg",
       intro: "좋은 숫자가 나와도 한 번 더 도전하고 큰 변화를 좋아해요.",
       mistakeRate: 0.20,
       stopChance(distance) {
@@ -96,6 +98,7 @@
       name: "계산왕 다람쥐",
       badge: "분석형",
       icon: "🧠",
+      image: "assets/visitors/forest-squirrel-trunk-idle.svg",
       intro: "가능한 수식을 비교하고 목표에 가장 가까운 선택을 찾아요.",
       mistakeRate: 0.05,
       stopChance(distance) {
@@ -204,6 +207,7 @@
     introOpponentName: $("#introOpponentName"),
     introOpponentBadge: $("#introOpponentBadge"),
     introOpponentDesc: $("#introOpponentDesc"),
+    introPersonalityButtons: $$('[data-intro-personality]'),
     introDifficultyButtons: $$('[data-intro-difficulty]'),
     introDifficultyHint: $("#introDifficultyHint"),
     introCountdown: $("#introCountdown"),
@@ -347,11 +351,20 @@
   function renderPreparation() {
     if (!state) return;
     const personality = getAiPersonality();
-    els.introOpponentIcon.textContent = personality.icon;
+    els.introOpponentIcon.src = personality.image;
+    els.introOpponentIcon.alt = "";
+    const iconFrame = els.introOpponentIcon.closest(".oot-ready-icon");
+    if (iconFrame) iconFrame.dataset.personality = state.aiPersonality;
     els.introOpponentName.textContent = personality.name;
     els.introOpponentBadge.textContent = personality.badge;
     els.introOpponentBadge.dataset.personality = state.aiPersonality;
     els.introOpponentDesc.textContent = personality.intro;
+    els.introPersonalityButtons.forEach((button) => {
+      const selected = button.dataset.introPersonality === state.aiPersonality;
+      button.classList.toggle("is-selected", selected);
+      button.setAttribute("aria-pressed", selected ? "true" : "false");
+      button.disabled = Boolean(pregameCountdownInterval);
+    });
     els.introDifficultyButtons.forEach((button) => {
       const selected = button.dataset.introDifficulty === selectedDifficulty;
       button.classList.toggle("is-selected", selected);
@@ -365,12 +378,12 @@
 
   function openPreparation() {
     clearPregameCountdown();
-    els.introKicker.textContent = "TODAY'S OPPONENT";
+    els.introKicker.innerHTML = '<span aria-hidden="true">⌁</span> 오늘의 상대 <span aria-hidden="true">⌁</span>';
     els.introCountdown.classList.add("is-hidden");
     els.introCountdown.textContent = "3";
     els.introNote.textContent = "버튼을 누르면 3초 뒤 다람쥐가 첫 카드를 냅니다.";
     els.introStartButton.disabled = false;
-    els.introStartButton.textContent = "게임 시작";
+    els.introStartButton.innerHTML = '<span aria-hidden="true">↗</span> 3초 뒤 게임 시작';
     renderPreparation();
     els.introOverlay.classList.remove("is-hidden");
   }
@@ -1021,8 +1034,9 @@
   function startAfterIntro() {
     if (pregameCountdownInterval || !state || state.gameOver) return;
     els.introStartButton.disabled = true;
+    els.introPersonalityButtons.forEach((button) => { button.disabled = true; });
     els.introDifficultyButtons.forEach((button) => { button.disabled = true; });
-    els.introKicker.textContent = "MATCH START";
+    els.introKicker.textContent = "대전 준비";
     els.introCountdown.classList.remove("is-hidden");
     els.introNote.textContent = `${getAiPersonality().name}가 카드를 준비하고 있어요.`;
 
@@ -1051,6 +1065,7 @@
         });
       }
       els.introOverlay.classList.add("is-hidden");
+      els.introPersonalityButtons.forEach((button) => { button.disabled = false; });
       els.introDifficultyButtons.forEach((button) => { button.disabled = false; });
       render();
       showPersonalityIntro();
@@ -1067,6 +1082,20 @@
     if (!["easy", "normal", "hard"].includes(difficulty)) return;
     selectedDifficulty = difficulty;
     prepareNewGame();
+  }
+
+  function setIntroPersonality(personalityKey) {
+    if (!AI_PERSONALITIES[personalityKey] || pregameCountdownInterval || !state) return;
+    state.aiPersonality = personalityKey;
+    lastPersonalityKey = personalityKey;
+    state.aiReaction = `${AI_PERSONALITIES[personalityKey].name}가 자기 방식대로 카드를 정리하고 있어요.`;
+    renderOpponent();
+    renderPreparation();
+    trackOneOfTen("oneoften_opponent_selected", {
+      mode: "squirrel",
+      opponent_personality: personalityKey,
+      difficulty: state.difficulty || selectedDifficulty,
+    });
   }
 
   function setIntroDifficulty(difficulty) {
@@ -1096,6 +1125,9 @@
     link.addEventListener("click", () => trackOneOfTen("oneoften_mode_selected", { mode: "friend" }));
   });
   els.difficultyButtons.forEach((button) => button.addEventListener("click", () => setDifficulty(button.dataset.difficulty)));
+  els.introPersonalityButtons.forEach((button) => {
+    button.addEventListener("click", () => setIntroPersonality(button.dataset.introPersonality));
+  });
   els.introDifficultyButtons.forEach((button) => {
     button.addEventListener("click", () => setIntroDifficulty(button.dataset.introDifficulty));
   });

@@ -11,7 +11,7 @@
   <script src="todayforest-analytics.js?v=oot-analytics-v1"></script>
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="one-of-ten.css?v=2.1-forest-entry-polish" />
+  <link rel="stylesheet" href="one-of-ten.css?v=2.3-squirrel-modal" />
 </head>
 <body>
   <main class="oot-app">
@@ -253,35 +253,75 @@
 
   <section class="oot-overlay is-hidden" id="introOverlay" role="dialog" aria-modal="true" aria-labelledby="introTitle">
     <div class="oot-intro-card oot-ready-card">
-      <p class="oot-intro-kicker" id="introKicker">TODAY'S OPPONENT</p>
+      <p class="oot-intro-kicker" id="introKicker"><span aria-hidden="true">⌁</span> 오늘의 상대 <span aria-hidden="true">⌁</span></p>
+
       <div class="oot-ready-opponent">
-        <span class="oot-ready-icon" id="introOpponentIcon">🐿️</span>
-        <div>
-          <h2 id="introTitle"><span id="introOpponentName">오늘의 다람쥐</span>와 대결해요</h2>
-          <span class="oot-ready-badge" id="introOpponentBadge">오늘의 상대</span>
+        <span class="oot-ready-icon" data-personality="cautious">
+          <img id="introOpponentIcon" src="assets/visitors/forest-squirrel-ground-idle.svg" alt="" />
+        </span>
+        <div class="oot-ready-opponent-copy">
+          <div class="oot-ready-title-row">
+            <h2 id="introTitle"><span id="introOpponentName">오늘의 다람쥐</span>와 겨뤄요</h2>
+            <span class="oot-ready-badge" id="introOpponentBadge">오늘의 상대</span>
+          </div>
+          <p class="oot-ready-description" id="introOpponentDesc">상대의 성격을 확인하고 준비되면 시작하세요.</p>
         </div>
       </div>
-      <p class="oot-ready-description" id="introOpponentDesc">상대의 성격을 확인하고 준비되면 시작하세요.</p>
+
+      <div class="oot-ready-personality">
+        <span class="oot-ready-section-label">다람쥐 선택</span>
+        <div class="oot-ready-personality-grid" role="group" aria-label="대전할 다람쥐 선택">
+          <button type="button" data-intro-personality="cautious">
+            <span class="oot-ready-personality-visual">
+              <img src="assets/visitors/forest-squirrel-ground-idle.svg" alt="" />
+            </span>
+            <strong>겁많은 다람쥐</strong>
+            <em>안전형</em>
+            <small>가까워지면 일찍 멈춰요.</small>
+          </button>
+          <button type="button" data-intro-personality="greedy">
+            <span class="oot-ready-personality-visual">
+              <img src="assets/visitors/forest-squirrel-ground-look.svg" alt="" />
+            </span>
+            <strong>욕심쟁이 다람쥐</strong>
+            <em>도전형</em>
+            <small>좋은 숫자에도 한 번 더 가요.</small>
+          </button>
+          <button type="button" data-intro-personality="genius">
+            <span class="oot-ready-personality-visual">
+              <img src="assets/visitors/forest-squirrel-trunk-idle.svg" alt="" />
+            </span>
+            <strong>계산왕 다람쥐</strong>
+            <em>분석형</em>
+            <small>가장 가까운 수식을 찾아요.</small>
+          </button>
+        </div>
+      </div>
+
       <div class="oot-ready-difficulty">
-        <span>이번 판 난이도</span>
+        <span class="oot-ready-section-label">난이도 선택</span>
         <div role="group" aria-label="이번 판 컴퓨터 난이도">
-          <button type="button" data-intro-difficulty="easy">쉬움</button>
-          <button type="button" data-intro-difficulty="normal">보통</button>
-          <button type="button" data-intro-difficulty="hard">어려움</button>
+          <button type="button" data-intro-difficulty="easy"><strong>쉬움</strong><small>부담 없이 연습</small></button>
+          <button type="button" data-intro-difficulty="normal"><strong>보통</strong><small>가장 균형 잡힌 난이도</small></button>
+          <button type="button" data-intro-difficulty="hard"><strong>어려움</strong><small>도전과 전략을 즐길 때</small></button>
         </div>
         <p class="oot-ready-difficulty-hint" id="introDifficultyHint">보통 · 좋은 선택과 작은 실수를 섞어 플레이해요.</p>
       </div>
+
       <div class="oot-ready-rule">
-        <b>준비되면 시작</b>
-        <span>시작 버튼을 누르기 전에는 카드와 30초 제한시간이 움직이지 않아요.</span>
+        <div>
+          <b>준비되면 시작</b>
+          <span>시작 전에는 카드와 30초 제한시간이 움직이지 않아요.</span>
+        </div>
+        <span class="oot-ready-acorns" aria-hidden="true"></span>
       </div>
       <div class="oot-ready-countdown is-hidden" id="introCountdown" aria-live="assertive">3</div>
       <p class="oot-intro-note" id="introNote">버튼을 누르면 3초 뒤 다람쥐가 첫 카드를 냅니다.</p>
-      <button class="oot-intro-start" id="introStartButton" type="button">게임 시작</button>
+      <button class="oot-intro-start" id="introStartButton" type="button"><span aria-hidden="true">↗</span> 3초 뒤 게임 시작</button>
     </div>
   </section>
 
-  <script src="one-of-ten.js?v=1.8-pc-play-fit"></script>
+  <script src="one-of-ten.js?v=1.9-squirrel-modal"></script>
   <script src="one-of-ten-result-adfit.js?v=2.0"></script>
 </body>
 </html>
