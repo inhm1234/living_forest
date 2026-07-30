@@ -87,7 +87,7 @@ const els = {
   currentValue: $("#currentValue"), selectedOperation: $("#selectedOperation"), selectedNumber: $("#selectedNumber"), arenaMessage: $("#arenaMessage"), calculationNote: $("#calculationNote"), operationCards: $("#operationCards"),
   actionPanel: $("#actionPanel"), stopButton: $("#stopButton"), drawButton: $("#drawButton"), myHand: $("#myHand"), deckCount: $("#deckCount"), handHelp: $("#handHelp"),
   leaveMatchButton: $("#leaveMatchButton"), connectionStatus: $("#connectionStatus"),
-  resultOverlay: $("#resultOverlay"), resultSymbol: $("#resultSymbol"), resultTitle: $("#resultTitle"), resultDescription: $("#resultDescription"), resultHistory: $("#resultHistory"), resultValue: $("#resultValue"), myTarget: $("#myTarget"), myDistance: $("#myDistance"), opponentTargetLabel: $("#opponentTargetLabel"), opponentTarget: $("#opponentTarget"), opponentDistance: $("#opponentDistance"), resultRematchBox: $("#resultRematchBox"), resultSeriesStatus: $("#resultSeriesStatus"), resultRematchStatus: $("#resultRematchStatus"), resultFriendPanel: $("#resultFriendPanel"), resultFriendTitle: $("#resultFriendTitle"), resultFriendDescription: $("#resultFriendDescription"), resultFriendButton: $("#resultFriendButton"), resultFriendGardenLink: $("#resultFriendGardenLink"), resultRematchButton: $("#resultRematchButton"), resultLobbyButton: $("#resultLobbyButton"), resultGardenLink: $("#resultGardenLink"),
+  resultOverlay: $("#resultOverlay"), resultSymbol: $("#resultSymbol"), resultTitle: $("#resultTitle"), resultDescription: $("#resultDescription"), resultHistoryDetails: $("#resultHistoryDetails"), resultHistory: $("#resultHistory"), resultValue: $("#resultValue"), myTarget: $("#myTarget"), myDistance: $("#myDistance"), opponentTargetLabel: $("#opponentTargetLabel"), opponentTarget: $("#opponentTarget"), opponentDistance: $("#opponentDistance"), resultRematchBox: $("#resultRematchBox"), resultSeriesStatus: $("#resultSeriesStatus"), resultRematchStatus: $("#resultRematchStatus"), resultFriendPanel: $("#resultFriendPanel"), resultFriendTitle: $("#resultFriendTitle"), resultFriendDescription: $("#resultFriendDescription"), resultFriendButton: $("#resultFriendButton"), resultFriendGardenLink: $("#resultFriendGardenLink"), resultRematchButton: $("#resultRematchButton"), resultLobbyButton: $("#resultLobbyButton"), resultGardenLink: $("#resultGardenLink"),
   resultPointPanel: $("#resultPointPanel"), resultPointMode: $("#resultPointMode"), resultPointDelta: $("#resultPointDelta"), resultPointBefore: $("#resultPointBefore"), resultPointAfter: $("#resultPointAfter"), resultPointMessage: $("#resultPointMessage"), resultTierMessage: $("#resultTierMessage"),
   chatToggleButton: $("#matchChatToggle"), chatUnreadBadge: $("#matchChatUnread"), chatBackdrop: $("#matchChatBackdrop"), chatPanel: $("#matchChatPanel"), chatCloseButton: $("#matchChatClose"), chatOpponentName: $("#matchChatOpponent"), chatMessages: $("#matchChatMessages"), chatEmpty: $("#matchChatEmpty"), chatForm: $("#matchChatForm"), chatInput: $("#matchChatInput"), chatSendButton: $("#matchChatSend"), chatStatus: $("#matchChatStatus"), chatCounter: $("#matchChatCounter"),
   toast: $("#toast"),
@@ -317,7 +317,7 @@ function friendlyError(error) {
     ["OOT_VERSION_MISMATCH", "상대의 행동이 먼저 반영됐어요. 최신 상태를 다시 불러왔어요."], ["OOT_TURN_EXPIRED", "턴 시간이 끝나 서버가 자동 진행하고 있어요."],
     ["OOT_NOT_MY_TURN", "지금은 친구의 차례예요."], ["OOT_INVALID_PHASE", "이미 다음 단계로 넘어갔어요."],
     ["OOT_CARD_NOT_IN_HAND", "그 숫자카드는 현재 손에 없어요."], ["OOT_OPERATION_NOT_AVAILABLE", "이미 사용한 수식카드예요."],
-    ["OOT_DAILY_RATED_LIMIT_REACHED", "오늘 이 상대와 반영할 수 있는 원포인트 대전 3판을 모두 했어요."],
+    ["OOT_DAILY_RATED_LIMIT_REACHED", "오늘 이 상대와 점수가 반영되는 3판을 모두 마쳤어요."],
     ["OOT_INVALID_BATTLE_MODE", "대전 방식을 다시 선택해 주세요."],
     ["OOT_MATCH_NOT_WAITING", "이미 경기가 시작됐어요."],
     ["OOT_READY_COUNTDOWN_STARTED", "두 사람의 준비가 끝나 카운트다운이 시작됐어요."],
@@ -1996,7 +1996,7 @@ function renderPointResult(match) {
 
   if (ineligible) {
     els.resultPointPanel.classList.add("is-ineligible");
-    els.resultPointMessage.textContent = "오늘 이 상대와 반영되는 3판을 모두 마쳐 이번 경기는 점수에 포함되지 않았어요.";
+    els.resultPointMessage.textContent = "오늘 이 상대와 점수가 반영되는 3판을 모두 마쳐 이번 경기는 점수에 포함되지 않았어요.";
   } else if (pointResult.beginnerProtectionApplied) {
     els.resultPointPanel.classList.add("is-protected");
     els.resultPointMessage.textContent = `첫걸음 보호가 적용되어 패배 ${baseDelta}점이 차감되지 않았어요.`;
@@ -2225,10 +2225,10 @@ function renderRematchState(match) {
   els.resultRematchButton.disabled = false;
 
   if (match.battleMode === "rated" && targetMode === "rated") {
-    els.resultSeriesStatus.textContent = `오늘 이 상대와 원포인트 ${played}/3판 완료`;
-    els.resultRematchButton.textContent = "원포인트로 다시 한 판";
+    els.resultSeriesStatus.textContent = `오늘 이 상대와 ${played}/3판 완료`;
+    els.resultRematchButton.textContent = "같은 상대와 다시 한 판";
   } else if (match.battleMode === "rated" && targetMode === "casual") {
-    els.resultSeriesStatus.textContent = "오늘 점수가 반영되는 3판을 모두 마쳤어요.";
+    els.resultSeriesStatus.textContent = "오늘 이 상대와 3/3판을 모두 마쳤어요.";
     els.resultRematchButton.textContent = "편한 대전으로 계속하기";
   } else {
     els.resultSeriesStatus.textContent = `같은 방에서 ${Number(match.roundNumber || 1) + 1}번째 판을 이어갈 수 있어요.`;
@@ -2351,6 +2351,8 @@ async function leaveResultToGarden(event) {
 }
 
 function renderResult(match) {
+  closeMatchChat();
+  if (els.resultHistoryDetails) els.resultHistoryDetails.open = false;
   const winnerId = match.winnerId;
   const won = winnerId === state.user.id;
   const draw = !winnerId;
@@ -2387,7 +2389,7 @@ function closeHelp() { els.helpOverlay.classList.add("is-hidden"); }
 function applyViewport() { if (state.match) renderHistory(state.match); }
 
 async function initialize() {
-  console.info("TodayForest OneOfTen Player PHASE 8.7 · post-match friend connection v1.0");
+  console.info("TodayForest OneOfTen Friend Match · real-match QA polish v1.2");
   showView("loading");
   const { data: { session }, error } = await supabase.auth.getSession();
   if (error || !session?.user) {

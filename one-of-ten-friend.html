@@ -7,12 +7,12 @@
   <meta name="color-scheme" content="light" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <title>원오브텐 사람 대전 | 오늘의숲</title>
+  <title>원오브텐 친구 대전 | 오늘의숲</title>
   <script src="todayforest-analytics.js?v=oot-analytics-v1"></script>
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="one-of-ten-friend.css?v=friend-lobby-v1-1" />
+  <link rel="stylesheet" href="one-of-ten-friend.css?v=friend-match-qa-v1-2" />
   <link rel="stylesheet" href="oot-notifications.css?v=oot-push-v0-5" />
 </head>
 <body>
@@ -21,19 +21,19 @@
       <a class="ootf-back" href="index.html" aria-label="내 정원으로 돌아가기">← <span>내 정원</span></a>
       <div class="ootf-title">
         <p>FOREST NUMBER GAME</p>
-        <h1>원오브텐 <span>사람 대전</span></h1>
+        <h1>원오브텐 <span>친구 대전</span></h1>
       </div>
       <button class="ootf-help" id="helpButton" type="button">안내</button>
     </header>
 
     <nav class="ootf-mode-nav" aria-label="원오브텐 대전 방식">
       <a href="one-of-ten.html">다람쥐 대전</a>
-      <span class="is-active" aria-current="page">사람 대전</span>
+      <span class="is-active" aria-current="page">친구 대전</span>
     </nav>
 
     <section class="ootf-loading" id="loadingView" aria-live="polite">
       <span class="ootf-loading-leaf">🌿</span>
-      <strong>사람 대전을 준비하고 있어요.</strong>
+      <strong>친구 대전을 준비하고 있어요.</strong>
       <p>로그인과 경기 상태를 확인하는 중이에요.</p>
     </section>
 
@@ -281,7 +281,7 @@
     <div class="ootf-modal-card">
       <button class="ootf-modal-close" id="closeHelpButton" type="button" aria-label="안내 닫기">×</button>
       <p>PLAYER MATCH</p>
-      <h2 id="helpTitle">사람 대전 안내</h2>
+      <h2 id="helpTitle">친구 대전 안내</h2>
       <ol>
         <li>친구가 초대를 수락하면 대기방으로 이동하고, 두 사람이 모두 준비한 뒤 경기가 시작돼요.</li>
         <li>선공은 서버에서 무작위로 정해요.</li>
@@ -304,7 +304,13 @@
       <span class="ootf-result-symbol" id="resultSymbol">🌿</span>
       <h2 id="resultTitle">경기 결과</h2>
       <p id="resultDescription"></p>
-      <div class="ootf-result-history"><span>이번 판 카드 기록</span><div id="resultHistory"></div><strong id="resultValue">최종 결과값: -</strong></div>
+      <div class="ootf-result-history">
+        <details id="resultHistoryDetails">
+          <summary><span>이번 판 카드 기록</span><em>계산 과정 보기</em></summary>
+          <div id="resultHistory"></div>
+        </details>
+        <strong id="resultValue">최종 결과값: -</strong>
+      </div>
       <div class="ootf-showdown">
         <div><small>나의 가까운 카드</small><b id="myTarget">-</b><span id="myDistance">거리 -</span></div>
         <em>VS</em>
@@ -379,6 +385,6 @@
 
   <div class="ootf-toast is-hidden" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="oot-notifications.js?v=oot-push-v0-6-opt"></script>
-  <script type="module" src="one-of-ten-friend.js?v=friend-lobby-v1-0"></script>
+  <script type="module" src="one-of-ten-friend.js?v=friend-match-qa-v1-2"></script>
 </body>
 </html>

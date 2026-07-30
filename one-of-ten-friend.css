@@ -168,7 +168,15 @@ button:disabled { opacity: .45; cursor: default; }
 .ootf-result-card h2 { margin: 5px 0; font-size: 23px; }
 .ootf-result-card > p { margin: 0; color: var(--f-muted); font-size: 11px; line-height: 1.55; }
 .ootf-result-history { margin-top: 15px; padding: 13px; border: 1px solid var(--f-line); border-radius: 16px; background: #f5f6ef; text-align: left; }
-.ootf-result-history > span { display: block; margin-bottom: 7px; color: var(--f-muted); font-size: 9px; font-weight: 900; }
+.ootf-result-history details { margin: 0; }
+.ootf-result-history summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 28px; color: var(--f-muted); cursor: pointer; list-style: none; }
+.ootf-result-history summary::-webkit-details-marker { display: none; }
+.ootf-result-history summary span { font-size: 9px; font-weight: 900; }
+.ootf-result-history summary em { display: inline-flex; align-items: center; gap: 4px; color: #6f8176; font-size: 8px; font-style: normal; font-weight: 900; }
+.ootf-result-history summary em::after { content: "⌄"; font-size: 11px; line-height: 1; transition: transform .18s ease; }
+.ootf-result-history details[open] summary em::after { transform: rotate(180deg); }
+.ootf-result-history details[open] summary { margin-bottom: 7px; }
+.ootf-result-history summary:focus-visible { outline: 2px solid rgba(82, 115, 92, .28); outline-offset: 3px; border-radius: 8px; }
 .ootf-result-step { display: block; color: #53665b; font-size: 10px; line-height: 1.6; }
 .ootf-result-step small { display: block; color: #a06e68; font-size: 8px; }
 .ootf-result-history strong { display: block; margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--f-line); color: var(--f-green-dark); text-align: center; font-size: 15px; }
@@ -404,7 +412,7 @@ button:disabled { opacity: .45; cursor: default; }
 .ootf-chat-form > p { min-height: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 5px 2px 0; color: #89958e; font-size: 7px; line-height: 1.4; }
 .ootf-chat-form > p b { flex: 0 0 auto; color: #7b8981; }
 body.ootf-chat-open { overflow: hidden; }
-body.ootf-chat-open .ootf-chat-toggle { z-index: 72; }
+body.ootf-chat-open .ootf-chat-toggle { display: none; }
 
 @media (max-width: 600px) {
   .ootf-chat-toggle { right: max(10px, env(safe-area-inset-right)); bottom: max(10px, env(safe-area-inset-bottom)); min-height: 39px; padding: 7px 10px; }
