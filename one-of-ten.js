@@ -45,9 +45,9 @@
         "결과를 확인하며 살짝 눈을 감았어요.",
       ],
       result: {
-        humanWin: "안전하게 가려다 기회를 놓쳤다며 다음 판을 준비해요.",
-        aiWin: "휴, 무리하지 않길 잘했다며 안도의 숨을 쉬어요.",
-        draw: "같은 거리라서 다행이라며 방긋 웃어요.",
+        humanWin: "이번에는 정말 가까웠어요! 다음 판을 준비해요.",
+        aiWin: "휴, 무리하지 않길 잘했어요! 안도의 숨을 쉬어요.",
+        draw: "우리 생각이 똑같았네요. 방긋 웃어요.",
       },
     },
     greedy: {
@@ -89,9 +89,9 @@
         "이번에도 이길 거라며 꼬리를 힘껏 세워요.",
       ],
       result: {
-        humanWin: "한 번만 덜 욕심낼 걸 그랬다며 도토리를 굴려요.",
-        aiWin: "과감한 도전이 통했다며 신나게 폴짝 뛰어요.",
-        draw: "다음에는 한 번 더 가겠다며 벌써 승부욕을 보여요.",
+        humanWin: "앗, 한 번만 덜 욕심낼 걸 그랬어요!",
+        aiWin: "과감한 도전이 통했어요! 신나게 폴짝 뛰어요.",
+        draw: "같은 거리네요! 다음에는 한 번 더 가볼래요.",
       },
     },
     genius: {
@@ -133,9 +133,9 @@
         "마지막 거리까지 확인하며 고개를 끄덕여요.",
       ],
       result: {
-        humanWin: "이번 계산은 당신이 더 정확했다며 정중히 박수쳐요.",
-        aiWin: "예상한 범위 안이었다며 조용히 고개를 끄덕여요.",
-        draw: "같은 답에 도착했다며 흥미롭게 기록해둬요.",
+        humanWin: "이번 계산은 당신이 더 정확했어요. 정중히 박수쳐요.",
+        aiWin: "계산대로였어요. 조용히 고개를 끄덕여요.",
+        draw: "같은 답에 도착했네요. 흥미로워요.",
       },
     },
   };
@@ -188,6 +188,9 @@
     handHelp: $("#handHelp"),
     resultOverlay: $("#resultOverlay"),
     resultSymbol: $("#resultSymbol"),
+    resultHero: $("#resultHero"),
+    resultCharacterImage: $("#resultCharacterImage"),
+    resultHistoryDetails: $("#resultHistoryDetails"),
     resultTitle: $("#resultTitle"),
     resultLead: $("#resultLead"),
     resultDesc: $("#resultDesc"),
@@ -392,13 +395,13 @@
     els.introOverlay.classList.remove("is-hidden");
   }
 
-  function prepareNewGame() {
+  function prepareNewGame({ preserveOpponent = true } = {}) {
     clearPregameCountdown();
-    resetGame({ deferOpening: true });
+    resetGame({ deferOpening: true, preserveOpponent });
     openPreparation();
   }
 
-  function resetGame({ deferOpening = false } = {}) {
+  function resetGame({ deferOpening = false, preserveOpponent = false } = {}) {
     trackActiveGameExit("restart");
     activeGameStarted = false;
     activeGameCompleted = false;
@@ -408,7 +411,10 @@
     clearPersonalityIntroTimeout();
     clearPregameCountdown();
 
-    const aiPersonality = pickAiPersonality();
+    const previousPersonality = state?.aiPersonality;
+    const aiPersonality = preserveOpponent && AI_PERSONALITIES[previousPersonality]
+      ? previousPersonality
+      : pickAiPersonality();
     state = {
       deck: shuffle(Array.from({ length: 10 }, (_, index) => index + 1)),
       humanHand: [],
@@ -968,7 +974,7 @@
       }
       els.resultEquation.appendChild(line);
     });
-    els.resultFinalValue.textContent = `최종 결과값: ${state.currentValue}`;
+    els.resultFinalValue.textContent = `❧ 최종 결과값 ${state.currentValue}`;
   }
 
   function finishAutomaticShowdown() {
@@ -986,20 +992,20 @@
     let title = "무승부예요";
     let symbol = "🤝";
     let result = "draw";
-    let lead = `두 카드가 결과값 ${state.currentValue}에서 같은 거리였어요.`;
+    let lead = `결과값 ${state.currentValue}에서 두 카드의 거리가 같았어요.`;
     let description = `${state.pendingShowdownReason} 남은 카드를 펼쳐 최종 거리를 비교했어요.`;
     let reaction = personality.result.draw;
     if (humanDistance < aiDistance) {
       result = "win";
       title = "당신이 이겼어요";
       symbol = "🏆";
-      lead = `결과값 ${state.currentValue}에 더 가까운 카드는 내 카드 ${humanTarget}였어요!`;
+      lead = `결과값 ${state.currentValue}에 내 카드가 더 가까웠어요.`;
       reaction = personality.result.humanWin;
     } else if (humanDistance > aiDistance) {
       result = "lose";
       title = `${personality.name}가 이겼어요`;
       symbol = "🐿️";
-      lead = `결과값 ${state.currentValue}에 더 가까운 카드는 ${personality.name}의 카드 ${aiTarget}였어요.`;
+      lead = `결과값 ${state.currentValue}에 다람쥐 카드가 더 가까웠어요.`;
       reaction = personality.result.aiWin;
     }
 
@@ -1008,9 +1014,18 @@
     els.resultTitle.textContent = title;
     if (els.resultLead) els.resultLead.textContent = lead;
     els.resultDesc.textContent = description;
-    els.resultPersonality.textContent = `${personality.icon} 오늘의 상대 · ${personality.name} · ${personality.badge}`;
+    els.resultPersonality.textContent = `오늘의 상대 · ${personality.name} · ${personality.badge}`;
     els.resultPersonality.dataset.personality = state.aiPersonality;
     els.resultReaction.textContent = reaction;
+    if (els.resultCharacterImage) {
+      els.resultCharacterImage.src = personality.image;
+      els.resultCharacterImage.alt = `${personality.name} 결과 모습`;
+    }
+    if (els.resultHero) {
+      els.resultHero.dataset.personality = state.aiPersonality;
+      els.resultHero.dataset.result = result;
+    }
+    if (els.resultHistoryDetails) els.resultHistoryDetails.open = false;
     els.humanTargetResult.textContent = humanTarget;
     els.humanDistanceResult.textContent = `거리 ${humanDistance}`;
     els.aiTargetResult.textContent = aiTarget;

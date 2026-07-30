@@ -188,37 +188,50 @@
   <section class="oot-overlay is-hidden" id="resultOverlay" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
     <div class="oot-result-dialog">
       <div class="oot-result-card">
-        <span class="oot-result-symbol" id="resultSymbol">🌿</span>
+        <p class="oot-result-kicker"><span aria-hidden="true">⌁</span> 대전 결과 <span aria-hidden="true">⌁</span></p>
+        <div class="oot-result-hero" id="resultHero">
+          <img id="resultCharacterImage" src="assets/visitors/forest-squirrel-ground-idle.svg" alt="대전 상대 다람쥐" />
+          <i class="oot-result-hero-leaf oot-result-hero-leaf-left" aria-hidden="true"></i>
+          <i class="oot-result-hero-leaf oot-result-hero-leaf-right" aria-hidden="true"></i>
+        </div>
+        <span class="oot-result-symbol is-hidden" id="resultSymbol" aria-hidden="true"></span>
         <h2 id="resultTitle">승부 결과</h2>
         <p class="oot-result-lead" id="resultLead"></p>
-        <p class="oot-result-description" id="resultDesc"></p>
+        <p class="oot-result-description" id="resultDesc" hidden></p>
         <p class="oot-result-personality" id="resultPersonality"></p>
         <p class="oot-result-reaction" id="resultReaction"></p>
 
-        <div class="oot-result-history">
-          <span>이번 판 카드 기록</span>
-          <div id="resultEquation"></div>
-          <strong id="resultFinalValue">최종 결과값: -</strong>
-        </div>
-
         <div class="oot-showdown">
           <div>
-            <small>나의 가까운 카드</small>
+            <small>내 카드</small>
             <b id="humanTargetResult">-</b>
             <span id="humanDistanceResult">거리 -</span>
           </div>
           <em>VS</em>
           <div>
-            <small>다람쥐의 가까운 카드</small>
+            <small>다람쥐 카드</small>
             <b id="aiTargetResult">-</b>
             <span id="aiDistanceResult">거리 -</span>
           </div>
         </div>
 
+        <strong class="oot-result-final-value" id="resultFinalValue">최종 결과값 -</strong>
+
+        <details class="oot-result-history" id="resultHistoryDetails">
+          <summary>
+            <span class="oot-result-history-icon" aria-hidden="true">▦</span>
+            <span>이번 판 계산 보기</span>
+            <span class="oot-result-history-chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="oot-result-history-body">
+            <div id="resultEquation"></div>
+          </div>
+        </details>
+
         <div class="oot-result-actions">
-          <button class="oot-result-new" id="newGameButton" type="button">같은 난이도로 새 상대 만나기</button>
+          <button class="oot-result-new" id="newGameButton" type="button"><span aria-hidden="true">↗</span> 같은 조건으로 다시 하기</button>
           <button class="oot-result-change" id="changeDifficultyButton" type="button">난이도 바꾸기</button>
-          <a class="oot-result-back" href="index.html">내 정원으로 돌아가기</a>
+          <a class="oot-result-back" href="index.html"><span aria-hidden="true">❧</span> 정원으로 돌아가기</a>
         </div>
         <div class="oot-result-difficulty is-hidden" id="resultDifficultyPicker">
           <span>다음 판 난이도</span>
