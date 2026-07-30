@@ -484,7 +484,7 @@ body.oot-compact .oot-operation-card {
   width: 37px;
   height: 37px;
   border-radius: 11px;
-  font-size: 18px;
+  font-size: 17px;
 }
 body.oot-compact .oot-action-panel {
   min-height: 45px;
@@ -779,7 +779,8 @@ body.oot-compact .oot-personality-intro p {
   font-size: clamp(40px, 6.4vw, 56px);
   font-weight: 950;
   line-height: 1.04;
-  letter-spacing: -.065em;
+  letter-spacing: -.045em;
+  word-spacing: .08em;
 }
 .oot-mode-hero-copy > p:last-child {
   margin: 25px 0 0;
@@ -855,15 +856,15 @@ body.oot-compact .oot-personality-intro p {
   line-height: 1;
   box-shadow: 0 12px 25px rgba(75, 72, 53, .13);
 }
-.oot-mode-number-card.is-six { right: 214px; bottom: 107px; transform: rotate(-7deg); }
-.oot-mode-number-card.is-four { right: 136px; bottom: 113px; transform: rotate(5deg); }
+.oot-mode-number-card.is-six { right: 226px; bottom: 107px; transform: rotate(-7deg); }
+.oot-mode-number-card.is-four { right: 148px; bottom: 113px; transform: rotate(5deg); }
 .oot-mode-hero-squirrel {
   position: absolute;
   z-index: 4;
-  right: 18px;
-  bottom: 48px;
-  width: 164px;
-  height: 142px;
+  right: -10px;
+  bottom: 49px;
+  width: 145px;
+  height: 126px;
   object-fit: contain;
   filter: drop-shadow(0 10px 10px rgba(73,75,57,.12));
 }
@@ -932,12 +933,12 @@ body.oot-compact .oot-personality-intro p {
 }
 .oot-mode-choice {
   min-width: 0;
-  min-height: 172px;
+  min-height: 142px;
   display: grid;
-  grid-template-columns: 118px minmax(0, 1fr) 38px;
+  grid-template-columns: 92px minmax(0, 1fr) 34px;
   align-items: center;
-  gap: 12px;
-  padding: 18px 18px 18px 13px;
+  gap: 10px;
+  padding: 13px 14px 13px 12px;
   overflow: hidden;
   border: 1px solid rgba(78,105,87,.14);
   border-radius: 25px;
@@ -964,9 +965,9 @@ body.oot-compact .oot-personality-intro p {
 .oot-mode-choice:active { transform: translateY(-1px) scale(.992); }
 .oot-mode-choice-visual {
   position: relative;
-  width: 118px;
-  height: 120px;
-  align-self: end;
+  width: 92px;
+  height: 94px;
+  align-self: center;
 }
 .oot-mode-choice-visual img {
   position: absolute;
@@ -974,30 +975,30 @@ body.oot-compact .oot-personality-intro p {
   object-fit: contain;
   filter: drop-shadow(0 7px 7px rgba(76, 79, 61, .09));
 }
-.oot-mode-choice-visual.is-solo img { left: 4px; bottom: 4px; width: 101px; height: 88px; }
-.oot-mode-choice-visual.is-friend .is-left { left: -8px; bottom: 5px; width: 78px; height: 68px; }
-.oot-mode-choice-visual.is-friend .is-right { right: -2px; bottom: 8px; width: 69px; height: 61px; transform: scaleX(-1); }
+.oot-mode-choice-visual.is-solo img { left: 2px; bottom: 4px; width: 79px; height: 69px; }
+.oot-mode-choice-visual.is-friend .is-left { left: -2px; bottom: 6px; width: 61px; height: 54px; }
+.oot-mode-choice-visual.is-friend .is-right { right: -1px; bottom: 8px; width: 55px; height: 49px; transform: scaleX(-1); }
 .oot-mode-mini-stump {
-  left: 21px;
-  bottom: 1px;
-  width: 82px;
-  height: 34px;
+  left: 14px;
+  bottom: 3px;
+  width: 66px;
+  height: 28px;
   border-radius: 48% 48% 25% 27%;
   box-shadow: 0 7px 12px rgba(87,69,43,.11);
 }
 .oot-mode-choice-visual.is-friend .oot-mode-mini-stump {
-  left: 29px;
-  width: 61px;
-  height: 27px;
+  left: 22px;
+  width: 49px;
+  height: 23px;
 }
-.oot-mode-mini-acorn { right: 9px; bottom: 5px; transform: rotate(-23deg) scale(.68); }
+.oot-mode-mini-acorn { right: 2px; bottom: 6px; transform: rotate(-23deg) scale(.58); }
 .oot-mode-mini-sprout {
   position: absolute;
   z-index: 4;
-  left: 56px;
-  bottom: 23px;
+  left: 45px;
+  bottom: 20px;
   width: 3px;
-  height: 26px;
+  height: 22px;
   border-radius: 999px;
   background: #71906f;
 }
@@ -1013,7 +1014,7 @@ body.oot-compact .oot-personality-intro p {
 }
 .oot-mode-mini-sprout::before { right: 1px; transform: rotate(26deg); }
 .oot-mode-mini-sprout::after { left: 1px; transform: scaleX(-1) rotate(26deg); }
-.oot-mode-choice-copy { min-width: 0; display: grid; gap: 6px; }
+.oot-mode-choice-copy { min-width: 0; display: grid; align-content: center; gap: 5px; }
 .oot-mode-choice-copy strong {
   color: #405a4b;
   font-size: 18px;
@@ -1518,4 +1519,40 @@ body.oot-compact .oot-ready-difficulty-hint { min-height: 26px; margin-top: 6px;
     background: #edf4ee;
     color: #4f735e;
   }
+}
+
+
+/* ONE-OF-TEN v2.1 — 운영 화면 1차 폴리싱 */
+.oot-mode-badge { display: none !important; }
+.oot-mode-hero-copy h2 { letter-spacing: -.045em; word-spacing: .08em; }
+.oot-mode-number-card.is-six { right: 226px; }
+.oot-mode-number-card.is-four { right: 148px; }
+.oot-mode-hero-squirrel { right: -10px; width: 145px; height: 126px; }
+.oot-mode-choice { min-height: 142px; grid-template-columns: 92px minmax(0,1fr) 34px; gap: 10px; padding: 13px 14px 13px 12px; }
+.oot-mode-choice-visual { width: 92px; height: 94px; align-self: center; }
+.oot-mode-choice-copy { align-content: center; gap: 5px; }
+.oot-mode-choice-copy strong { font-size: 17px; line-height: 1.22; }
+.oot-mode-choice-copy small { font-size: 9.5px; line-height: 1.45; letter-spacing: -.02em; white-space: nowrap; }
+.oot-mode-choice-arrow { width: 34px; height: 34px; font-size: 18px; }
+@media (max-width: 640px) {
+  .oot-mode-hero-copy h2 { font-size: clamp(29px, 8.2vw, 34px); letter-spacing: -.04em; word-spacing: .06em; white-space: nowrap; }
+  .oot-mode-number-card.is-six { right: 132px; }
+  .oot-mode-number-card.is-four { right: 80px; }
+  .oot-mode-hero-squirrel { right: -5px; width: 100px; height: 90px; }
+  .oot-mode-choice { min-height: 103px; grid-template-columns: 76px minmax(0,1fr) 32px; gap: 9px; padding: 9px 12px 9px 8px; }
+  .oot-mode-choice-visual { width: 76px; height: 78px; }
+  .oot-mode-choice-visual.is-solo img { left: 0; bottom: 3px; width: 67px; height: 59px; }
+  .oot-mode-choice-visual.is-friend .is-left { left: -2px; bottom: 5px; width: 52px; height: 46px; }
+  .oot-mode-choice-visual.is-friend .is-right { right: -3px; bottom: 7px; width: 46px; height: 41px; }
+  .oot-mode-mini-stump { left: 11px; width: 54px; height: 23px; }
+  .oot-mode-choice-visual.is-friend .oot-mode-mini-stump { left: 18px; width: 40px; height: 18px; }
+  .oot-mode-mini-sprout { left: 37px; bottom: 15px; height: 17px; }
+  .oot-mode-choice-copy strong { font-size: 15px; }
+  .oot-mode-choice-copy small { font-size: 8.8px; white-space: normal; }
+  .oot-mode-choice-arrow { width: 30px; height: 30px; font-size: 16px; }
+}
+@media (max-width: 390px) {
+  .oot-mode-number-card.is-six { right: 117px; }
+  .oot-mode-number-card.is-four { right: 69px; }
+  .oot-mode-hero-squirrel { right: -5px; width: 96px; height: 86px; }
 }
