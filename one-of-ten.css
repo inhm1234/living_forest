@@ -2516,3 +2516,151 @@ body.oot-match-active .oot-difficulty-row {
     overflow: visible;
   }
 }
+
+/* ONE OF TEN — battle bridge v1.1
+   v1.0의 안정된 구조를 유지하면서 실제 조작 요소의 존재감만 체감되게 높입니다. */
+@media (min-width: 721px) {
+  body.oot-match-active .oot-match-summary > .oot-opponent-panel {
+    padding: 16px 18px;
+  }
+  body.oot-match-active .oot-player-profile { gap: 14px; }
+  body.oot-match-active .oot-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 19px;
+  }
+  body.oot-match-active .oot-avatar img {
+    width: 60px;
+    height: 60px;
+  }
+  body.oot-match-active .oot-player-profile strong {
+    font-size: 17px;
+    line-height: 1.25;
+  }
+  body.oot-match-active .oot-player-profile small {
+    margin-top: 5px;
+    font-size: 10.5px;
+    line-height: 1.5;
+  }
+  body.oot-match-active .oot-hand-count {
+    padding: 7px 10px;
+    font-size: 9.5px;
+  }
+
+  body.oot-match-active .oot-arena {
+    min-height: 205px;
+    padding: 12px 16px 12px;
+  }
+  body.oot-match-active .oot-turn-row {
+    width: min(100%, 530px);
+  }
+  body.oot-match-active .oot-expression {
+    min-height: 76px;
+  }
+  body.oot-match-active .oot-arena-message {
+    min-height: 22px;
+    margin-top: 0;
+  }
+  body.oot-match-active .oot-operations {
+    min-height: 68px;
+    margin-top: 4px;
+    gap: 12px;
+  }
+  body.oot-match-active .oot-operation-card {
+    width: 68px;
+    height: 64px;
+    padding: 7px 5px 6px;
+    border-radius: 17px;
+  }
+  body.oot-match-active .oot-operation-card > span {
+    font-size: 29px;
+  }
+  body.oot-match-active .oot-operation-card > small {
+    font-size: 8.5px;
+  }
+
+  body.oot-match-active .oot-hand-panel {
+    padding: 11px 14px 12px;
+  }
+  body.oot-match-active .oot-hand-panel .oot-section-head {
+    font-size: 10.5px;
+  }
+  body.oot-match-active .oot-human-hand {
+    min-height: 118px;
+    gap: 12px;
+  }
+  body.oot-match-active .oot-number-card {
+    width: 86px;
+    border-radius: 19px;
+    font-size: 43px;
+  }
+  body.oot-match-active .oot-hand-help {
+    margin-top: 2px;
+    font-size: 9.5px;
+  }
+}
+
+@media (max-width: 720px) {
+  body.oot-match-active .oot-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 16px;
+  }
+  body.oot-match-active .oot-avatar img {
+    width: 47px;
+    height: 47px;
+  }
+  body.oot-match-active .oot-player-profile { gap: 11px; }
+  body.oot-match-active .oot-player-profile strong { font-size: 14px; }
+
+  body.oot-match-active .oot-arena {
+    min-height: 224px;
+    padding-bottom: 12px;
+  }
+  body.oot-match-active .oot-expression { min-height: 80px; }
+  body.oot-match-active .oot-operations {
+    min-height: 62px;
+    gap: 7px;
+  }
+  body.oot-match-active .oot-operation-card {
+    width: min(19.5vw, 63px);
+    height: 60px;
+    padding: 6px 3px 5px;
+  }
+  body.oot-match-active .oot-operation-card > span { font-size: 25px; }
+  body.oot-match-active .oot-operation-card > small { font-size: 7.5px; }
+
+  body.oot-match-active .oot-human-hand {
+    min-height: 108px;
+    gap: 10px;
+  }
+  body.oot-match-active .oot-number-card {
+    width: min(24vw, 82px);
+    font-size: clamp(35px, 9.4vw, 42px);
+  }
+}
+
+@media (max-width: 600px) and (max-height: 900px) {
+  body.oot-compact.oot-match-active .oot-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+  }
+  body.oot-compact.oot-match-active .oot-avatar img {
+    width: 42px;
+    height: 42px;
+  }
+  body.oot-compact.oot-match-active .oot-player-profile strong { font-size: 12px; }
+  body.oot-compact.oot-match-active .oot-arena { min-height: 218px; }
+  body.oot-compact.oot-match-active .oot-operations { min-height: 58px; }
+  body.oot-compact.oot-match-active .oot-operation-card {
+    width: 58px;
+    height: 56px;
+  }
+  body.oot-compact.oot-match-active .oot-operation-card > span { font-size: 23px; }
+  body.oot-compact.oot-match-active .oot-number-card {
+    width: 72px;
+    font-size: 36px;
+  }
+  body.oot-compact.oot-match-active .oot-human-hand { min-height: 94px; }
+}
