@@ -2935,3 +2935,54 @@ body.oot-match-active .oot-difficulty-row {
   .oot-showdown > div { min-height: 65px; }
   .oot-result-actions { gap: 6px; }
 }
+
+/* ONE OF TEN — human decision layout hotfix v1.0
+   battle bridge 이후 남아 있던 구형 PC 2열 결정 레이아웃을 무효화합니다. */
+@media (min-width: 721px) {
+  body.oot-match-active.oot-phase-human-decision .oot-board {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "summary"
+      "arena"
+      "actions"
+      "hand"
+      "note";
+    gap: 10px;
+  }
+
+  body.oot-match-active.oot-phase-human-decision .oot-match-summary {
+    grid-area: summary;
+  }
+
+  body.oot-match-active.oot-phase-human-decision .oot-arena {
+    grid-area: arena;
+  }
+
+  body.oot-match-active.oot-phase-human-decision .oot-action-panel {
+    grid-area: actions;
+    min-height: 0;
+    padding: 10px 12px;
+    border-radius: 20px;
+  }
+
+  body.oot-match-active.oot-phase-human-decision .oot-decision-actions {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: 1fr;
+    gap: 10px;
+  }
+
+  body.oot-match-active.oot-phase-human-decision .oot-action-button {
+    min-height: 52px;
+  }
+
+  body.oot-match-active.oot-phase-human-decision .oot-hand-panel {
+    grid-area: hand;
+  }
+
+  body.oot-match-active.oot-phase-human-decision .oot-no-reward-note {
+    grid-area: note;
+  }
+}
