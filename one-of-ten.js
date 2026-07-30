@@ -151,6 +151,7 @@
     modeBadge: $("#modeBadge"),
     computerModeButton: $("#computerModeButton"),
     aiStatus: $("#aiStatus"),
+    aiAvatarImage: $(".oot-avatar img"),
     aiName: $("#aiName"),
     aiPersonalityBadge: $("#aiPersonalityBadge"),
     personalityIntro: $("#personalityIntro"),
@@ -478,6 +479,10 @@
   function renderOpponent() {
     const personality = getAiPersonality();
     els.aiName.textContent = personality.name;
+    if (els.aiAvatarImage) {
+      els.aiAvatarImage.src = personality.image;
+      els.aiAvatarImage.alt = "";
+    }
     els.aiPersonalityBadge.textContent = personality.badge;
     els.aiPersonalityBadge.dataset.personality = state.aiPersonality;
     els.personalityIntro.dataset.personality = state.aiPersonality;
@@ -541,7 +546,7 @@
         const step = document.createElement("span");
         step.className = `oot-history-step ${item.player === "ai" ? "is-ai" : "is-human"}`;
         if (item.type === "opening") {
-          step.textContent = `🐿 첫 카드 ${item.number}`;
+          step.textContent = `시작 숫자 ${item.number}`;
         } else {
           const owner = item.player === "ai" ? "🐿" : "나";
           step.textContent = `${owner} · ${item.before} ${item.operation} ${item.number} = ${item.after}`;
@@ -554,7 +559,7 @@
     const canToggle = compact && state.history.length > 1;
     els.historyToggle.classList.toggle("is-hidden", !canToggle);
     els.historyToggle.textContent = state.historyExpanded ? "간단히" : "전체 보기";
-    els.operationCount.textContent = `수식 ${OPERATIONS.length - state.availableOperations.length} / ${OPERATIONS.length}`;
+    els.operationCount.textContent = `진행 ${OPERATIONS.length - state.availableOperations.length} / ${OPERATIONS.length}턴`;
   }
 
   function renderArena() {
@@ -648,7 +653,7 @@
       button.addEventListener("click", () => handleHumanNumber(number));
       els.humanHand.appendChild(button);
     });
-    els.deckCount.textContent = `더미 ${state.deck.length}장`;
+    els.deckCount.textContent = `남은 숫자 카드 ${state.deck.length}장`;
 
     let help = "다람쥐의 차례예요.";
     if (state.phase === "human-play" && !state.selectedOperation) help = "먼저 수식카드를 선택하세요.";

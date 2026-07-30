@@ -2015,3 +2015,122 @@ body.oot-compact .oot-ready-difficulty-hint { min-height: 26px; margin-top: 6px;
 @media (prefers-reduced-motion: reduce) {
   #introOverlay .oot-ready-personality-grid button { transition: none; }
 }
+
+
+/* ONE OF TEN — battle polish v1.1
+   기존 플레이 구조/크기/로직은 유지하고 시각 언어만 저위험 보정합니다. */
+body.oot-match-active .oot-mode-nav {
+  pointer-events: none;
+  opacity: .82;
+}
+body.oot-match-active .oot-mode-nav a {
+  color: #97a29c;
+  background: rgba(255,255,255,.48);
+}
+body.oot-match-active .oot-mode-nav .is-active {
+  color: #52705e;
+  background: #e8f1e8;
+}
+body.oot-match-active .oot-panel {
+  border-color: rgba(100,126,109,.15);
+  box-shadow: 0 12px 28px rgba(63,84,71,.075);
+}
+body.oot-match-active .oot-opponent-panel {
+  background: linear-gradient(100deg, #fffdf8 0%, #f7faf5 100%);
+}
+body.oot-match-active .oot-avatar {
+  background: linear-gradient(145deg, #fff9e9, #edf4e9);
+  box-shadow: inset 0 0 0 1px rgba(102,132,111,.10);
+}
+body.oot-match-active .oot-avatar img {
+  transform: scale(1.05);
+}
+body.oot-match-active .oot-history-panel {
+  background: #fbfcf9;
+}
+body.oot-match-active .oot-history-step {
+  border: 1px solid rgba(112,134,119,.12);
+  background: #f5f7f2;
+  color: #63756a;
+}
+body.oot-match-active .oot-arena {
+  border-color: rgba(100,135,111,.19);
+  background:
+    radial-gradient(circle at 50% 58%, rgba(124,166,135,.13), transparent 12.5rem),
+    linear-gradient(180deg, #fffefa 0%, #f8fbf6 100%);
+  box-shadow: 0 16px 34px rgba(61,87,69,.09);
+}
+body.oot-match-active .oot-arena::before,
+body.oot-match-active .oot-arena::after {
+  background: rgba(112,153,123,.075);
+}
+body.oot-match-active .oot-turn-pill {
+  border: 1px solid rgba(102,139,112,.10);
+  background: #e7f1e8;
+  color: #4f705b;
+}
+body.oot-match-active .oot-current-value-label {
+  color: #819087;
+  letter-spacing: .02em;
+}
+body.oot-match-active .oot-current-value {
+  color: #365443;
+  text-shadow: 0 5px 18px rgba(83,116,93,.11);
+}
+body.oot-match-active .oot-operations {
+  gap: 9px;
+}
+body.oot-match-active .oot-operation-card {
+  width: 46px;
+  height: 46px;
+  border-color: rgba(93,122,101,.16);
+  background: #fffefa;
+  color: #496653;
+  box-shadow: 0 7px 16px rgba(59,83,67,.075);
+}
+body.oot-match-active .oot-operation-card:hover:not(:disabled) {
+  border-color: rgba(90,130,101,.28);
+  background: #f0f6ef;
+}
+body.oot-match-active .oot-operation-card.is-selected:disabled {
+  border-color: #72947b;
+  background: #e8f1e7;
+  color: #45644f;
+  box-shadow: 0 8px 18px rgba(68,104,79,.12);
+}
+body.oot-match-active .oot-hand-panel {
+  background: linear-gradient(180deg, #fffefa, #fffdf8);
+}
+body.oot-match-active .oot-number-card {
+  width: min(10vw, 66px);
+  border: 1px solid rgba(144,116,68,.15);
+  background: linear-gradient(155deg, #fffefa 0%, #f8f3e7 100%);
+  color: #40584a;
+  font-size: 34px;
+  box-shadow: 0 9px 20px rgba(71,82,69,.09);
+}
+body.oot-match-active .oot-number-card:hover:not(:disabled) {
+  border-color: rgba(104,139,112,.28);
+}
+body.oot-match-active .oot-number-card.is-selected {
+  border-color: #76977f;
+  background: #edf4eb;
+  box-shadow: 0 12px 24px rgba(69,105,79,.13);
+}
+body.oot-match-active .oot-section-head > span {
+  color: #607568;
+}
+body.oot-match-active .oot-section-head b {
+  color: #7b8a82;
+}
+
+@media (max-width: 720px) {
+  body.oot-match-active .oot-operation-card {
+    width: 48px;
+    height: 48px;
+  }
+  body.oot-match-active .oot-number-card {
+    width: min(23vw, 74px);
+    font-size: clamp(29px, 8vw, 38px);
+  }
+}
