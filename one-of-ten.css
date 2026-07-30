@@ -1074,3 +1074,190 @@ body.oot-compact .oot-ready-difficulty-hint { min-height: 26px; margin-top: 6px;
     animation: none !important;
   }
 }
+
+
+/* ONE-OF-TEN v1.8 — PC 플레이 한 화면 조작 최적화
+   모바일 레이아웃은 유지하고, 진행 중인 PC 대전에서만 상대 정보와 카드 영역을 압축합니다. */
+@media (min-width: 721px) {
+  body.oot-match-active .oot-app {
+    min-height: auto;
+    padding-top: 12px;
+    padding-bottom: 18px;
+  }
+  body.oot-match-active .oot-header { margin-bottom: 8px; }
+  body.oot-match-active .oot-mode-nav { margin-bottom: 7px; }
+
+  body.oot-match-active .oot-board {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "opponent"
+      "history"
+      "arena"
+      "hand"
+      "actions"
+      "note";
+    gap: 8px;
+  }
+  body.oot-match-active .oot-opponent-panel { grid-area: opponent; }
+  body.oot-match-active .oot-history-panel { grid-area: history; }
+  body.oot-match-active .oot-arena { grid-area: arena; }
+  body.oot-match-active .oot-action-panel { grid-area: actions; }
+  body.oot-match-active .oot-hand-panel { grid-area: hand; }
+  body.oot-match-active .oot-no-reward-note { grid-area: note; }
+
+  /* 준비 화면에서 이미 확인한 상세 정보는 플레이 중 한 줄 상태로 접습니다. */
+  body.oot-match-active .oot-opponent-panel {
+    padding: 9px 12px;
+    border-radius: 18px;
+  }
+  body.oot-match-active .oot-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 13px;
+  }
+  body.oot-match-active .oot-avatar img {
+    width: 35px;
+    height: 35px;
+  }
+  body.oot-match-active .oot-player-profile { gap: 8px; }
+  body.oot-match-active .oot-player-profile strong { font-size: 13px; }
+  body.oot-match-active .oot-player-profile small {
+    margin-top: 1px;
+    font-size: 10px;
+  }
+  body.oot-match-active .oot-hand-count { font-size: 10px; }
+  body.oot-match-active .oot-personality-intro,
+  body.oot-match-active .oot-ai-hand,
+  body.oot-match-active .oot-ai-reaction,
+  body.oot-match-active .oot-difficulty-row {
+    display: none;
+  }
+
+  body.oot-match-active .oot-history-panel {
+    min-width: 0;
+    padding: 8px 12px 9px;
+    border-radius: 18px;
+  }
+  body.oot-match-active .oot-section-head {
+    margin-bottom: 5px;
+    font-size: 10px;
+  }
+  body.oot-match-active .oot-history {
+    min-height: 32px;
+    gap: 6px;
+    padding-bottom: 0;
+  }
+  body.oot-match-active .oot-history-step {
+    padding: 6px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+  }
+
+  body.oot-match-active .oot-arena {
+    min-height: 232px;
+    padding: 11px 14px 12px;
+    border-radius: 21px;
+  }
+  body.oot-match-active .oot-expression {
+    min-height: 86px;
+    margin: 3px 0 0;
+  }
+  body.oot-match-active .oot-current-value-wrap { min-width: 112px; }
+  body.oot-match-active .oot-current-value,
+  body.oot-match-active .oot-selected-number {
+    font-size: clamp(60px, 8vw, 78px);
+  }
+  body.oot-match-active .oot-selected-operation {
+    min-width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    font-size: 35px;
+  }
+  body.oot-match-active .oot-selected-operation.is-cancelable::after {
+    margin-top: 78px;
+    font-size: 8px;
+  }
+  body.oot-match-active .oot-arena-message {
+    min-height: 27px;
+    font-size: 10px;
+    line-height: 1.4;
+  }
+  body.oot-match-active .oot-calculation-note {
+    margin-top: 2px;
+    padding: 4px 8px;
+    font-size: 9px;
+  }
+  body.oot-match-active .oot-operations {
+    min-height: 42px;
+    margin-top: 6px;
+  }
+  body.oot-match-active .oot-operation-card {
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+    font-size: 19px;
+  }
+
+  body.oot-match-active .oot-hand-panel {
+    min-width: 0;
+    padding: 9px 11px 10px;
+    border-radius: 20px;
+  }
+  body.oot-match-active .oot-human-hand {
+    min-height: 78px;
+    gap: 7px;
+    padding-top: 0;
+  }
+  body.oot-match-active .oot-number-card {
+    width: min(9vw, 60px);
+    border-radius: 14px;
+    font-size: 31px;
+  }
+  body.oot-match-active .oot-hand-help {
+    min-height: 14px;
+    margin-top: 3px;
+    font-size: 9px;
+  }
+  body.oot-match-active .oot-no-reward-note { display: none; }
+
+  /* 결정 순간에는 손패와 두 전략 버튼을 가로로 나란히 두어 스크롤을 없앱니다. */
+  body.oot-match-active.oot-phase-human-decision .oot-board {
+    grid-template-columns: minmax(0, 1fr) 218px;
+    grid-template-areas:
+      "opponent opponent"
+      "history history"
+      "arena arena"
+      "hand actions"
+      "note note";
+  }
+  body.oot-match-active.oot-phase-human-decision .oot-action-panel {
+    min-height: 0;
+    padding: 9px;
+    border-radius: 20px;
+  }
+  body.oot-match-active.oot-phase-human-decision .oot-decision-actions {
+    height: 100%;
+    min-height: 102px;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(2, 1fr);
+    gap: 8px;
+  }
+  body.oot-match-active.oot-phase-human-decision .oot-action-button {
+    min-height: 47px;
+    border: 1px solid transparent;
+    border-radius: 14px;
+    padding: 9px 11px;
+    font-size: 11px;
+    box-shadow: 0 8px 18px rgba(68, 90, 76, .08);
+  }
+  body.oot-match-active.oot-phase-human-decision .oot-decision-actions .oot-stop-button {
+    border-color: rgba(179,108,102,.20);
+    background: #f8edeb;
+    color: #9d5d58;
+  }
+  body.oot-match-active.oot-phase-human-decision .oot-decision-actions .oot-draw-button {
+    border-color: rgba(75,112,90,.20);
+    background: #edf4ee;
+    color: #4f735e;
+  }
+}

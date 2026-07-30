@@ -431,6 +431,16 @@
       .forEach((name) => document.body.classList.remove(name));
 
     document.body.classList.add(`oot-phase-${state.phase}`);
+    const matchActivePhases = [
+      "ai-opening",
+      "human-play",
+      "human-resolving",
+      "ai-thinking",
+      "human-decision",
+      "showdown-resolving",
+    ];
+    document.body.classList.toggle("oot-match-active", !state.gameOver && matchActivePhases.includes(state.phase));
+
     if (state.phase === "human-play" && !state.selectedOperation) {
       document.body.classList.add("oot-step-operation");
     } else if (state.phase === "human-play" && state.selectedOperation && state.selectedNumber === null) {
