@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <meta name="theme-color" content="#f4f0e4" />
+  <title>오늘의숲 · QA 로그인</title>
+  <link rel="stylesheet" href="./qa-login.css?v=1.0" />
+</head>
+<body>
+  <main class="qa-page">
+    <div class="qa-orb qa-orb-one" aria-hidden="true"></div>
+    <div class="qa-orb qa-orb-two" aria-hidden="true"></div>
+
+    <section class="qa-card" aria-labelledby="qaTitle">
+      <div class="qa-brand" aria-hidden="true">
+        <span class="qa-brand-leaf qa-brand-leaf-left"></span>
+        <span class="qa-brand-trunk"></span>
+        <span class="qa-brand-leaf qa-brand-leaf-right"></span>
+      </div>
+
+      <p class="qa-eyebrow">PRIVATE TEST ENTRANCE</p>
+      <h1 id="qaTitle">오늘의숲 QA 로그인</h1>
+      <p class="qa-intro">
+        운영 검수를 위한 비공개 입구예요.<br />
+        미리 만든 테스트 계정만 로그인할 수 있어요.
+      </p>
+
+      <form class="qa-form" id="qaLoginForm" novalidate>
+        <label class="qa-field">
+          <span>테스트 계정 이메일</span>
+          <input
+            type="email"
+            id="qaEmail"
+            name="email"
+            autocomplete="username"
+            inputmode="email"
+            placeholder="qa@example.com"
+            required
+          />
+        </label>
+
+        <label class="qa-field">
+          <span>비밀번호</span>
+          <input
+            type="password"
+            id="qaPassword"
+            name="password"
+            autocomplete="current-password"
+            placeholder="비밀번호 입력"
+            minlength="6"
+            required
+          />
+        </label>
+
+        <button class="qa-primary-button" id="qaLoginButton" type="submit">
+          테스트 계정으로 로그인
+        </button>
+      </form>
+
+      <section class="qa-session hidden" id="qaSessionPanel" aria-live="polite">
+        <span class="qa-session-dot" aria-hidden="true"></span>
+        <div>
+          <p class="qa-session-label">현재 로그인된 계정</p>
+          <strong id="qaSessionEmail">확인 중</strong>
+          <p class="qa-session-help" id="qaSessionHelp"></p>
+        </div>
+        <div class="qa-session-actions">
+          <button class="qa-primary-button" id="qaContinueButton" type="button">내 정원으로 이동</button>
+          <button class="qa-text-button" id="qaLogoutButton" type="button">이 계정 로그아웃</button>
+        </div>
+      </section>
+
+      <p class="qa-message hidden" id="qaMessage" role="status" aria-live="polite"></p>
+
+      <div class="qa-divider" aria-hidden="true"><span></span></div>
+      <p class="qa-note">
+        이 화면에는 회원가입 기능이 없어요. 테스트 계정은 Supabase 관리자 화면에서만 만들어요.
+      </p>
+      <a class="qa-back-link" href="./">오늘의숲 소개로 돌아가기</a>
+    </section>
+  </main>
+
+  <script type="module" src="./qa-login.js?v=1.0"></script>
+</body>
+</html>
