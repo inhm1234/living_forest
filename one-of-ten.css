@@ -2134,3 +2134,385 @@ body.oot-match-active .oot-section-head b {
     font-size: clamp(29px, 8vw, 38px);
   }
 }
+
+/* ONE OF TEN — battle bridge v1.0
+   선택 모달과 실제 경기 화면 사이의 시각 문법을 연결하는 운영용 폴리싱. */
+.oot-match-context {
+  display: none;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  margin: 0 auto 10px;
+  padding: 7px 14px;
+  border: 1px solid rgba(95, 126, 105, .14);
+  border-radius: 999px;
+  background: rgba(248, 251, 246, .88);
+  color: #62766a;
+  box-shadow: 0 8px 20px rgba(66, 89, 73, .06);
+  font-size: 11px;
+}
+.oot-match-context strong { color: #496453; font-size: 12px; }
+.oot-match-context b { color: #71847a; font-size: 11px; }
+.oot-match-context-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #79a083;
+  box-shadow: 0 0 0 4px rgba(121, 160, 131, .11);
+}
+.oot-match-summary { display: contents; }
+
+body.oot-match-active .oot-mode-nav { display: none; }
+body.oot-match-active .oot-match-context { display: inline-flex; }
+body.oot-match-active .oot-header { margin-bottom: 8px; }
+body.oot-match-active .oot-back {
+  border-color: rgba(99, 127, 108, .12);
+  background: rgba(255, 255, 255, .82);
+  color: #52695b;
+}
+body.oot-match-active .oot-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "summary"
+    "arena"
+    "actions"
+    "hand"
+    "note";
+  gap: 10px;
+}
+body.oot-match-active .oot-match-summary {
+  grid-area: summary;
+  display: grid;
+  grid-template-columns: minmax(0, 1.28fr) minmax(210px, .72fr);
+  overflow: hidden;
+  border: 1px solid rgba(98, 124, 107, .15);
+  border-radius: 23px;
+  background: linear-gradient(104deg, #fffdf8 0%, #f7faf5 100%);
+  box-shadow: 0 13px 30px rgba(63, 84, 71, .08);
+}
+body.oot-match-active .oot-match-summary > .oot-panel {
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+body.oot-match-active .oot-match-summary > .oot-opponent-panel {
+  padding: 14px 16px;
+}
+body.oot-match-active .oot-match-summary > .oot-history-panel {
+  padding: 13px 15px;
+  border-left: 1px solid rgba(98, 124, 107, .12);
+  background: rgba(250, 251, 247, .54);
+}
+body.oot-match-active .oot-player-row { align-items: center; }
+body.oot-match-active .oot-player-profile { gap: 12px; }
+body.oot-match-active .oot-avatar {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 auto;
+  border-radius: 17px;
+  background: linear-gradient(145deg, #fff9e9, #edf4e9);
+}
+body.oot-match-active .oot-avatar img {
+  width: 50px;
+  height: 50px;
+  transform: none;
+}
+body.oot-match-active .oot-player-profile strong { font-size: 15px; }
+body.oot-match-active .oot-player-profile small {
+  max-width: 320px;
+  margin-top: 4px;
+  font-size: 10px;
+  line-height: 1.45;
+}
+body.oot-match-active .oot-hand-count {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border: 1px solid rgba(99, 128, 108, .11);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .65);
+  color: #6d7f75;
+  font-size: 9px;
+}
+body.oot-match-active .oot-history-panel .oot-section-head {
+  margin-bottom: 8px;
+  font-size: 10px;
+}
+body.oot-match-active .oot-history-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+body.oot-match-active .oot-history-panel .oot-section-head > span {
+  color: #536c5d;
+  font-size: 11px;
+}
+body.oot-match-active .oot-history-panel .oot-section-head b {
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #edf3eb;
+  color: #61786a;
+  font-size: 9px;
+}
+body.oot-match-active .oot-history {
+  min-height: 38px;
+  align-items: center;
+  gap: 6px;
+}
+body.oot-match-active .oot-history-step {
+  padding: 7px 9px;
+  border: 1px solid rgba(112, 134, 119, .13);
+  border-radius: 11px;
+  background: #f7f7f1;
+  color: #5f7167;
+  font-size: 10px;
+}
+body.oot-match-active .oot-opponent-panel,
+body.oot-match-active .oot-history-panel,
+body.oot-match-active .oot-arena,
+body.oot-match-active .oot-action-panel,
+body.oot-match-active .oot-hand-panel,
+body.oot-match-active .oot-no-reward-note {
+  grid-area: auto;
+}
+body.oot-match-active .oot-arena {
+  grid-area: arena;
+  min-height: 216px;
+  padding: 13px 16px 14px;
+  border-radius: 22px;
+  border-color: rgba(100, 135, 111, .18);
+  background:
+    radial-gradient(circle at 50% 56%, rgba(124, 166, 135, .115), transparent 11.5rem),
+    linear-gradient(180deg, #fffefa 0%, #f8fbf6 100%);
+  box-shadow: 0 14px 31px rgba(61, 87, 69, .085);
+}
+body.oot-match-active .oot-turn-row {
+  width: min(100%, 490px);
+  margin: 0 auto;
+}
+body.oot-match-active .oot-turn-pill {
+  min-height: 31px;
+  padding: 7px 13px;
+  font-size: 11px;
+}
+body.oot-match-active .oot-timer {
+  width: min(178px, 48%);
+  font-size: 11px;
+}
+body.oot-match-active .oot-expression {
+  min-height: 82px;
+  margin: 1px 0 0;
+}
+body.oot-match-active .oot-current-value-wrap { min-width: 128px; }
+body.oot-match-active .oot-current-value,
+body.oot-match-active .oot-selected-number {
+  font-size: clamp(64px, 8vw, 82px);
+}
+body.oot-match-active .oot-arena-message {
+  min-height: 25px;
+  font-size: 10px;
+}
+body.oot-match-active .oot-operations {
+  gap: 10px;
+  min-height: 58px;
+  margin-top: 7px;
+}
+body.oot-match-active .oot-operation-card {
+  width: 58px;
+  height: 56px;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  place-items: center;
+  align-content: center;
+  gap: 1px;
+  padding: 6px 4px 5px;
+  border: 1px solid rgba(93, 122, 101, .17);
+  border-radius: 16px;
+  background: #fffefa;
+  color: #496653;
+  box-shadow: 0 8px 17px rgba(59, 83, 67, .08);
+}
+body.oot-match-active .oot-operation-card > span {
+  font-size: 24px;
+  line-height: .95;
+  font-weight: 950;
+}
+body.oot-match-active .oot-operation-card > small {
+  color: #75867c;
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 800;
+}
+body.oot-match-active .oot-operation-card:hover:not(:disabled) {
+  transform: translateY(-3px);
+  border-color: rgba(90, 130, 101, .28);
+  background: #f0f6ef;
+}
+body.oot-match-active .oot-operation-card.is-selected:disabled {
+  transform: translateY(-3px);
+  border-color: #72947b;
+  background: #e8f1e7;
+  color: #45644f;
+  box-shadow: 0 10px 20px rgba(68, 104, 79, .13);
+}
+body.oot-match-active .oot-operation-card:disabled:not(.is-selected) { opacity: .36; }
+body.oot-match-active .oot-action-panel { grid-area: actions; }
+body.oot-match-active .oot-hand-panel {
+  grid-area: hand;
+  padding: 12px 14px 13px;
+  border-radius: 21px;
+  background: linear-gradient(180deg, #fffefa, #fffdf8);
+}
+body.oot-match-active .oot-hand-panel .oot-section-head {
+  margin-bottom: 4px;
+  font-size: 10px;
+}
+body.oot-match-active .oot-human-hand {
+  min-height: 100px;
+  gap: 10px;
+  padding-top: 1px;
+}
+body.oot-match-active .oot-number-card {
+  width: 74px;
+  border: 1px solid rgba(144, 116, 68, .16);
+  border-radius: 17px;
+  background: linear-gradient(155deg, #fffefa 0%, #f8f3e7 100%);
+  color: #40584a;
+  font-size: 37px;
+  box-shadow: 0 10px 21px rgba(71, 82, 69, .095);
+}
+body.oot-match-active .oot-number-card:hover:not(:disabled) {
+  transform: translateY(-6px);
+  border-color: rgba(104, 139, 112, .30);
+}
+body.oot-match-active .oot-number-card.is-selected {
+  transform: translateY(-7px);
+  border-color: #76977f;
+  background: #edf4eb;
+  box-shadow: 0 13px 25px rgba(69, 105, 79, .14);
+}
+body.oot-match-active .oot-hand-help {
+  min-height: 15px;
+  margin-top: 3px;
+  font-size: 9px;
+}
+body.oot-match-active .oot-no-reward-note { grid-area: note; }
+
+@media (max-width: 720px) {
+  body.oot-match-active .oot-app { padding-inline: 10px; }
+  body.oot-match-active .oot-match-context { margin-bottom: 8px; }
+  body.oot-match-active .oot-match-summary {
+    grid-template-columns: 1fr;
+    border-radius: 20px;
+  }
+  body.oot-match-active .oot-match-summary > .oot-opponent-panel {
+    padding: 12px 13px 10px;
+  }
+  body.oot-match-active .oot-match-summary > .oot-history-panel {
+    padding: 9px 13px 10px;
+    border-top: 1px solid rgba(98, 124, 107, .11);
+    border-left: 0;
+  }
+  body.oot-match-active .oot-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 15px;
+  }
+  body.oot-match-active .oot-avatar img { width: 43px; height: 43px; }
+  body.oot-match-active .oot-player-profile strong { font-size: 13px; }
+  body.oot-match-active .oot-player-profile small { font-size: 9px; }
+  body.oot-match-active .oot-history-panel .oot-section-head { margin-bottom: 5px; }
+  body.oot-match-active .oot-history { min-height: 31px; }
+  body.oot-match-active .oot-arena {
+    min-height: 238px;
+    padding: 12px 10px 14px;
+  }
+  body.oot-match-active .oot-expression { min-height: 86px; }
+  body.oot-match-active .oot-operations { gap: 7px; }
+  body.oot-match-active .oot-operation-card {
+    width: 57px;
+    height: 56px;
+    border-radius: 15px;
+  }
+  body.oot-match-active .oot-operation-card > span { font-size: 23px; }
+  body.oot-match-active .oot-operation-card > small { font-size: 7px; }
+  body.oot-match-active .oot-hand-panel { padding: 11px 10px 12px; }
+  body.oot-match-active .oot-human-hand { min-height: 98px; }
+  body.oot-match-active .oot-number-card {
+    width: min(22vw, 76px);
+    font-size: clamp(32px, 9vw, 39px);
+  }
+}
+
+/* 짧은 모바일 화면에서 기존 compact 축소 규칙보다 경기 조작성을 우선합니다. */
+@media (max-width: 600px) and (max-height: 900px) {
+  body.oot-compact.oot-match-active .oot-app { padding: 8px 8px 20px; }
+  body.oot-compact.oot-match-active .oot-header { margin-bottom: 5px; }
+  body.oot-compact.oot-match-active .oot-match-context {
+    min-height: 29px;
+    margin-bottom: 6px;
+    padding: 5px 11px;
+    font-size: 9px;
+  }
+  body.oot-compact.oot-match-active .oot-board { gap: 7px; }
+  body.oot-compact.oot-match-active .oot-match-summary { border-radius: 18px; }
+  body.oot-compact.oot-match-active .oot-match-summary > .oot-opponent-panel { padding: 9px 10px 7px; }
+  body.oot-compact.oot-match-active .oot-match-summary > .oot-history-panel { padding: 6px 10px 7px; }
+  body.oot-compact.oot-match-active .oot-avatar { width: 40px; height: 40px; border-radius: 13px; }
+  body.oot-compact.oot-match-active .oot-avatar img { width: 38px; height: 38px; }
+  body.oot-compact.oot-match-active .oot-player-profile strong { font-size: 11px; }
+  body.oot-compact.oot-match-active .oot-player-profile small { font-size: 8px; }
+  body.oot-compact.oot-match-active .oot-hand-count { padding: 4px 7px; font-size: 7px; }
+  body.oot-compact.oot-match-active .oot-history-panel .oot-section-head { margin-bottom: 3px; }
+  body.oot-compact.oot-match-active .oot-history-panel .oot-section-head > span { font-size: 9px; }
+  body.oot-compact.oot-match-active .oot-history-panel .oot-section-head b { font-size: 7px; }
+  body.oot-compact.oot-match-active .oot-history { min-height: 25px; }
+  body.oot-compact.oot-match-active .oot-history-step { padding: 4px 7px; font-size: 8px; }
+  body.oot-compact.oot-match-active .oot-arena {
+    min-height: 226px;
+    padding: 9px 8px 10px;
+    border-radius: 19px;
+  }
+  body.oot-compact.oot-match-active .oot-turn-row { min-height: 29px; }
+  body.oot-compact.oot-match-active .oot-turn-pill { min-height: 27px; padding: 5px 10px; font-size: 9px; }
+  body.oot-compact.oot-match-active .oot-timer { width: 46%; font-size: 9px; }
+  body.oot-compact.oot-match-active .oot-expression { min-height: 79px; margin: 0; }
+  body.oot-compact.oot-match-active .oot-current-value,
+  body.oot-compact.oot-match-active .oot-selected-number { font-size: 64px; }
+  body.oot-compact.oot-match-active .oot-arena-message { min-height: 22px; font-size: 8px; }
+  body.oot-compact.oot-match-active .oot-operations { min-height: 54px; margin-top: 4px; gap: 6px; }
+  body.oot-compact.oot-match-active .oot-operation-card {
+    width: 55px;
+    height: 53px;
+    padding: 5px 3px 4px;
+  }
+  body.oot-compact.oot-match-active .oot-operation-card > span { font-size: 22px; }
+  body.oot-compact.oot-match-active .oot-operation-card > small { font-size: 7px; }
+  body.oot-compact.oot-match-active .oot-hand-panel { padding: 8px 9px 9px; border-radius: 18px; }
+  body.oot-compact.oot-match-active .oot-human-hand { min-height: 88px; gap: 8px; }
+  body.oot-compact.oot-match-active .oot-number-card { width: 68px; font-size: 34px; border-radius: 15px; }
+  body.oot-compact.oot-match-active .oot-hand-help { margin-top: 1px; font-size: 7px; }
+  body.oot-compact.oot-match-active .oot-no-reward-note { display: none; }
+}
+
+/* 플레이 중에는 준비 화면에서 이미 확인한 세부 선택 UI를 PC/모바일 모두 접습니다. */
+body.oot-match-active .oot-personality-intro,
+body.oot-match-active .oot-ai-hand,
+body.oot-match-active .oot-ai-reaction,
+body.oot-match-active .oot-difficulty-row {
+  display: none !important;
+}
+
+@media (max-width: 600px) and (max-height: 900px) {
+  body.oot-compact.oot-match-active .oot-board {
+    flex: 0 0 auto;
+    grid-template-rows: auto auto auto auto auto;
+    align-content: start;
+    overflow: visible;
+  }
+}

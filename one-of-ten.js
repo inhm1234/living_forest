@@ -218,6 +218,9 @@
     rulesButton: $("#rulesButton"),
     closeRulesButton: $("#closeRulesButton"),
     rulesConfirmButton: $("#rulesConfirmButton"),
+    battleBackLink: $("#battleBackLink"),
+    battleBackLabel: $("#battleBackLabel"),
+    matchDifficultyLabel: $("#matchDifficultyLabel"),
   };
 
   let selectedDifficulty = "normal";
@@ -453,7 +456,13 @@
       "human-decision",
       "showdown-resolving",
     ];
-    document.body.classList.toggle("oot-match-active", !state.gameOver && matchActivePhases.includes(state.phase));
+    const isMatchActive = !state.gameOver && matchActivePhases.includes(state.phase);
+    document.body.classList.toggle("oot-match-active", isMatchActive);
+    if (els.battleBackLabel) els.battleBackLabel.textContent = isMatchActive ? "대전 나가기" : "내 정원";
+    if (els.matchDifficultyLabel) {
+      const difficultyLabels = { easy: "쉬움", normal: "보통", hard: "어려움" };
+      els.matchDifficultyLabel.textContent = difficultyLabels[state.difficulty || selectedDifficulty] || "보통";
+    }
 
     if (state.phase === "human-play" && !state.selectedOperation) {
       document.body.classList.add("oot-step-operation");
@@ -611,7 +620,9 @@
       const button = document.createElement("button");
       button.type = "button";
       button.className = "oot-operation-card";
-      button.textContent = operation;
+      const operationLabels = { "+": "더하기", "−": "빼기", "×": "곱하기", "÷": "나누기" };
+      button.innerHTML = `<span>${operation}</span><small>${operationLabels[operation]}</small>`;
+      button.setAttribute("aria-label", operationLabels[operation]);
 
       const available = state.availableOperations.includes(operation);
       const lockedByChoice = state.selectedOperation !== null;
@@ -1126,6 +1137,17 @@
   function closeRules() { els.rulesModal.classList.add("is-hidden"); }
 
   els.computerModeButton.addEventListener("click", enterComputerMode);
+  if (els.battleBackLink) {
+    els.battleBackLink.addEventListener("click", (event) => {
+      if (!document.body.classList.contains("oot-match-active")) return;
+      const shouldLeave = window.confirm("진행 중인 대전을 나갈까요?\n지금까지의 대전은 저장되지 않아요.");
+      if (!shouldLeave) {
+        event.preventDefault();
+        return;
+      }
+      trackActiveGameExit("battle_back");
+    });
+  }
   $$('a[href^="one-of-ten-friend.html"]').forEach((link) => {
     link.addEventListener("click", () => trackOneOfTen("oneoften_mode_selected", { mode: "friend" }));
   });
@@ -1179,4 +1201,5 @@
   els.modeGate.classList.remove("is-hidden");
   els.computerGameArea.classList.add("is-hidden");
   els.modeBadge.textContent = "대전 선택";
+
 })();
