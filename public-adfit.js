@@ -28,7 +28,6 @@
   const gardenApp = document.getElementById("gardenApp");
   const gardenSection = document.getElementById("gardenAdFitSection");
   const gardenSlot = document.getElementById("gardenAdFitSlot");
-  const todayAction = document.getElementById("openRecord");
 
   if (!publicHome || !publicSection || !publicSlot || !gardenApp || !gardenSection || !gardenSlot) return;
 
@@ -59,7 +58,6 @@
   const gardenAdIsEligible = () => (
     gardenIsActive()
     && !suppressForQa
-    && (forceGardenPreview || todayAction?.classList.contains("record-complete"))
   );
 
   const ensureUnit = () => {
@@ -134,9 +132,7 @@
   observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
   observer.observe(publicHome, { attributes: true, attributeFilter: ["class"] });
   observer.observe(gardenApp, { attributes: true, attributeFilter: ["class"] });
-  if (todayAction) observer.observe(todayAction, { attributes: true, attributeFilter: ["class"] });
 
-  window.addEventListener("todayforest:garden-record-saved", queueSync);
   window.addEventListener("pageshow", queueSync);
   queueSync();
 })();
