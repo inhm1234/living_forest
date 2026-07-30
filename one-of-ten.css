@@ -1556,3 +1556,100 @@ body.oot-compact .oot-ready-difficulty-hint { min-height: 26px; margin-top: 6px;
   .oot-mode-number-card.is-four { right: 69px; }
   .oot-mode-hero-squirrel { right: -5px; width: 96px; height: 86px; }
 }
+
+/* ONE-OF-TEN v2.2 — 첫 입장 화면 최종 PC·모바일 밀도 보정 */
+@media (min-width: 641px) {
+  /* 카드 높이는 유지하고, PC에서 핵심 행동만 한 단계 더 또렷하게 보입니다. */
+  .oot-mode-choice {
+    grid-template-columns: 100px minmax(0, 1fr) 36px;
+    gap: 11px;
+    padding: 10px 15px 10px 12px;
+  }
+  .oot-mode-choice-visual {
+    width: 100px;
+    height: 100px;
+  }
+  .oot-mode-choice-visual.is-solo img {
+    left: 2px;
+    bottom: 4px;
+    width: 85px;
+    height: 74px;
+  }
+  .oot-mode-choice-visual.is-friend .is-left {
+    left: -2px;
+    bottom: 6px;
+    width: 66px;
+    height: 58px;
+  }
+  .oot-mode-choice-visual.is-friend .is-right {
+    right: -1px;
+    bottom: 8px;
+    width: 59px;
+    height: 53px;
+  }
+  .oot-mode-mini-stump {
+    left: 15px;
+    width: 70px;
+    height: 29px;
+  }
+  .oot-mode-choice-visual.is-friend .oot-mode-mini-stump {
+    left: 24px;
+    width: 52px;
+    height: 24px;
+  }
+  .oot-mode-mini-sprout { left: 49px; }
+  .oot-mode-choice-copy strong { font-size: 18.5px; }
+  .oot-mode-choice-copy small { font-size: 10.2px; }
+  .oot-mode-choice-arrow {
+    width: 36px;
+    height: 36px;
+    font-size: 19px;
+  }
+}
+
+@media (max-width: 560px) {
+  /* v1.6의 넓은 상단 대기 여백을 덮어써, 입구 장면이 헤더 뒤에 바로 이어집니다. */
+  .oot-mode-gate {
+    min-height: auto;
+    padding: 6px 0 22px;
+  }
+
+  /* 히어로를 약 6% 압축하되, 텍스트와 숫자 카드의 판독성은 유지합니다. */
+  .oot-mode-hero,
+  .oot-mode-hero-scene {
+    min-height: 229px;
+  }
+  .oot-mode-hero-copy { padding: 23px 7px 21px 20px; }
+  .oot-mode-hero-copy > p:last-child { margin-top: 14px; }
+  .oot-mode-hero-canopy {
+    inset: -99px -82px auto -7%;
+    height: 174px;
+  }
+  .oot-mode-hero-ground {
+    bottom: -44px;
+    height: 116px;
+  }
+  .oot-mode-hero-stump {
+    right: 58px;
+    bottom: 38px;
+    width: 108px;
+    height: 48px;
+  }
+  .oot-mode-number-card.is-six { bottom: 74px; }
+  .oot-mode-number-card.is-four { bottom: 78px; }
+  .oot-mode-hero-squirrel { bottom: 28px; }
+  .oot-mode-hero-flowers { bottom: -25px; }
+  .oot-mode-hero-mushrooms { bottom: -18px; }
+  .oot-mode-acorn.is-one { bottom: 18px; }
+  .oot-mode-acorn.is-two { bottom: 15px; }
+}
+
+@media (max-width: 390px) {
+  .oot-mode-hero,
+  .oot-mode-hero-scene { min-height: 216px; }
+  .oot-mode-hero-copy { padding-top: 21px; padding-bottom: 19px; }
+  .oot-mode-hero-stump { bottom: 35px; }
+  .oot-mode-number-card.is-six { bottom: 70px; }
+  .oot-mode-number-card.is-four { bottom: 73px; }
+  .oot-mode-hero-squirrel { bottom: 25px; }
+}
