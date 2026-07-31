@@ -1521,6 +1521,7 @@ async function openMatch(matchId) {
   state.selectedOperation = null; state.selectedNumber = null; state.historyExpanded = false; state.renderResultForMatchId = null;
   state.readyStartRequested = false; state.readyActionBusy = false; state.rematchBusy = false; state.resultFriendBusy = false; state.resultFriendMatchId = ""; stopReadyCountdown();
   els.resultOverlay.classList.add("is-hidden");
+  document.body.classList.remove("ootf-result-open");
   showView("match");
   const loaded = await loadMatch({ force: true });
   if (!loaded || !state.match || extractMatchId(state.match.matchId) !== normalizedMatchId || getMatchIdFromUrl() !== normalizedMatchId) {
@@ -1540,6 +1541,7 @@ async function returnToLobby() {
   els.matchReadyOverlay.classList.add("is-hidden");
   state.autoOpeningMatchId = null;
   els.resultOverlay.classList.add("is-hidden");
+  document.body.classList.remove("ootf-result-open");
   setMatchUrl(""); showView("lobby");
   hideRandomMatchOverlay();
   state.randomStatusRestored = false;
@@ -2370,6 +2372,7 @@ function renderResult(match) {
   renderPointResult(match);
   renderRematchState(match);
   els.resultOverlay.classList.remove("is-hidden");
+  document.body.classList.add("ootf-result-open");
   void prepareResultFriendConnection(match);
 
   const result = draw ? "draw" : won ? "win" : "lose";

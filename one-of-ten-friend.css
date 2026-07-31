@@ -413,6 +413,7 @@ button:disabled { opacity: .45; cursor: default; }
 .ootf-chat-form > p b { flex: 0 0 auto; color: #7b8981; }
 body.ootf-chat-open { overflow: hidden; }
 body.ootf-chat-open .ootf-chat-toggle { display: none; }
+body.ootf-result-open .ootf-chat-toggle { display: none !important; }
 
 @media (max-width: 600px) {
   .ootf-chat-toggle { right: max(10px, env(safe-area-inset-right)); bottom: max(10px, env(safe-area-inset-bottom)); min-height: 39px; padding: 7px 10px; }
