@@ -1,0 +1,33 @@
+오늘의숲 공개 문서 URL 정규화 v1.0
+
+목적
+- Cloudflare Pages가 HTML 문서를 확장자 없는 URL로 제공하는 방식에 맞춰 공개 문서의 대표 URL을 통일합니다.
+- Google Search Console과 AdSense가 사이트맵, canonical, 내부 링크를 같은 URL로 인식하도록 정리합니다.
+
+변경한 공개 URL
+- /whitepaper
+- /guide
+- /one-of-ten-guide
+- /updates
+- /privacy
+
+수정 파일
+- index.html
+- whitepaper.html
+- guide.html
+- one-of-ten-guide.html
+- updates.html
+- privacy.html
+- sitemap.xml
+
+수정 범위
+- canonical
+- og:url
+- JSON-LD url
+- 공개 상단 메뉴 및 본문 내부 링크
+- 메인 공개 페이지 링크
+- sitemap.xml
+
+주의
+- app.html, one-of-ten.html 등 로그인형 기능 페이지와 OAuth·게임 이동 경로는 변경하지 않았습니다.
+- 배포 후 Search Console에서 sitemap.xml을 다시 제출하고 /guide 등 확장자 없는 URL로 실제 URL 테스트와 색인 생성을 요청합니다.
