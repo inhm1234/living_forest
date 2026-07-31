@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="one-of-ten-friend.css?v=friend-match-qa-v1-2" />
+  <link rel="stylesheet" href="one-of-ten-friend.css?v=friend-match-adfit-v1-0" />
   <link rel="stylesheet" href="oot-notifications.css?v=oot-push-v0-5" />
 </head>
 <body>
@@ -141,6 +141,11 @@
           <button id="ootGameReadyButton" type="button">10분 동안 한 판 가능</button>
           <button type="button" data-oot-enable-push>초대 알림 받기</button>
         </div>
+      </section>
+
+      <section class="ootf-adfit ootf-lobby-adfit is-hidden" id="friendLobbyAdFitSection" aria-label="광고">
+        <span class="ootf-adfit-label">광고</span>
+        <div class="ootf-adfit-slot" id="friendLobbyAdFitSlot"></div>
       </section>
 
       <p class="ootf-lobby-note">새 초대는 실시간으로 표시하고, 연결이 잠시 어긋나면 10초마다 조용히 다시 확인해요.</p>
@@ -301,6 +306,7 @@
   </section>
 
   <section class="ootf-overlay is-hidden" id="resultOverlay" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <div class="ootf-result-dialog">
     <div class="ootf-result-card">
       <span class="ootf-result-symbol" id="resultSymbol">🌿</span>
       <h2 id="resultTitle">경기 결과</h2>
@@ -349,6 +355,12 @@
       <button class="ootf-result-secondary ootf-result-button" id="resultLobbyButton" type="button">대전 목록으로</button>
       <a class="ootf-result-secondary" id="resultGardenLink" href="app.html">내 정원으로 돌아가기</a>
     </div>
+
+      <section class="ootf-adfit ootf-result-adfit is-hidden" id="friendResultAdFitSection" aria-label="광고">
+        <span class="ootf-adfit-label">광고</span>
+        <div class="ootf-adfit-slot" id="friendResultAdFitSlot"></div>
+      </section>
+    </div>
   </section>
 
 
@@ -387,5 +399,6 @@
   <div class="ootf-toast is-hidden" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="oot-notifications.js?v=oot-push-v0-6-opt"></script>
   <script type="module" src="one-of-ten-friend.js?v=friend-match-qa-v1-2"></script>
+  <script src="one-of-ten-friend-adfit.js?v=friend-adfit-v1-0"></script>
 </body>
 </html>

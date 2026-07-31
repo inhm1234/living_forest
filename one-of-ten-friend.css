@@ -1220,3 +1220,72 @@ body.ootf-in-lobby .ootf-lobby-note {
   body.ootf-in-lobby .oot-ready-actions { justify-content: stretch; }
   body.ootf-in-lobby .oot-ready-actions button { flex: 1; }
 }
+
+/* TodayForest · 원오브텐 친구 대전 AdFit v1.0 */
+.ootf-adfit {
+  width: 320px;
+  max-width: 100%;
+  margin-inline: auto;
+  text-align: center;
+}
+.ootf-adfit-label {
+  display: block;
+  margin: 0 0 7px;
+  color: #8f9b94;
+  font-size: 8px;
+  font-weight: 850;
+  line-height: 1;
+}
+.ootf-adfit-slot {
+  width: 320px;
+  height: 50px;
+  max-width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  background: rgba(255,255,255,.42);
+}
+.ootf-adfit[data-ad-mode="desktop"] .ootf-adfit-slot { height: 100px; }
+.ootf-adfit[data-ad-state="loading"] .ootf-adfit-slot { background: rgba(255,255,255,.58); }
+.ootf-lobby-adfit {
+  padding-top: 12px;
+  border-top: 1px solid rgba(76,103,86,.10);
+}
+.ootf-result-dialog {
+  width: min(100%, 470px);
+  max-height: calc(100dvh - 32px);
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+.ootf-result-dialog::-webkit-scrollbar { display: none; }
+.ootf-result-dialog .ootf-result-card {
+  width: 100%;
+  max-height: none;
+  overflow: visible;
+  flex: 0 0 auto;
+}
+.ootf-result-adfit {
+  flex: 0 0 auto;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,.42);
+}
+.ootf-result-adfit .ootf-adfit-label { color: rgba(244,248,245,.82); }
+.ootf-result-adfit .ootf-adfit-slot { background: rgba(255,255,255,.08); }
+.ootf-result-adfit[data-ad-state="loading"] .ootf-adfit-slot { background: rgba(255,255,255,.12); }
+
+@media (max-width: 351px) {
+  .ootf-adfit { display: none !important; }
+}
+
+@media (min-width: 721px) {
+  .ootf-lobby-adfit { padding-top: 10px; }
+  .ootf-result-dialog {
+    max-height: calc(100dvh - 24px);
+    gap: 16px;
+  }
+  .ootf-result-adfit { padding-top: 10px; }
+  .ootf-adfit-label { margin-bottom: 6px; }
+}
