@@ -4285,7 +4285,7 @@ function renderGardenDecorateInventory(items) {
           <button class="garden-inventory-item garden-inventory-group" type="button" data-decorate-place-item-id="${escapeAttr(itemToPlace.id)}" aria-label="${escapeAttr(catalogItem.name)} 총 ${totalCount}개, 정원 ${placedCount}개, 보관 ${inventoryCount}개. 한 개 정원에 꺼내기">
             <span class="garden-inventory-art" aria-hidden="true">
               <img src="${escapeAttr(catalogItem.asset)}" alt="" />
-              <b class="garden-inventory-quantity">×${inventoryCount}</b>
+              <b class="garden-inventory-quantity">×${totalCount}</b>
             </span>
             <span class="garden-inventory-name">${escapeHTML(catalogItem.name)}</span>
             <small class="garden-inventory-counts">
