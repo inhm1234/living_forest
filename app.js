@@ -497,13 +497,25 @@ const SHARED_TREE_START_MOMENT_DURATION_MS = 2200;
 // 준비는 ?retentionTest=21|wind|31&retentionReset=1 일 때만, 검수는 retentionTest 주소에서만 동작합니다.
 
 const stageRules = [
-  { min: 0, max: 2, label: "처음 깨어난 새싹", asset: "tree_stage1_morning.png" },
-  { min: 3, max: 6, label: "봉오리가 올라온 새싹", asset: "tree_stage2_morning.png" },
-  { min: 7, max: 13, label: "줄기가 자란 어린 나무", asset: "tree_stage3_morning.png" },
-  { min: 14, max: 20, label: "꽃이 피는 작은 나무", asset: "tree_stage4_morning.png" },
-  { min: 21, max: 29, label: "풍성해지는 나무", asset: "tree_stage5_morning.png" },
-  { min: 30, max: Infinity, label: "완성된 마음 나무", asset: "tree_stage6_morning.png" },
+  { stage: 1, min: 0, max: 1, label: "아주 작은 새싹", shortLabel: "작은 새싹", asset: "tree_stage01.png" },
+  { stage: 2, min: 2, max: 3, label: "깨어나는 새싹", shortLabel: "깨어난 새싹", asset: "tree_stage02.png" },
+  { stage: 3, min: 4, max: 6, label: "줄기를 올린 새싹", shortLabel: "자라는 새싹", asset: "tree_stage03.png" },
+  { stage: 4, min: 7, max: 10, label: "처음 나무가 된 마음", shortLabel: "어린 마음 나무", asset: "tree_stage04.png" },
+  { stage: 5, min: 11, max: 15, label: "건강하게 자라는 어린 나무", shortLabel: "건강한 어린 나무", asset: "tree_stage05.png" },
+  { stage: 6, min: 16, max: 21, label: "완성을 준비하는 마음 나무", shortLabel: "완성 직전의 나무", asset: "tree_stage06.png" },
+  { stage: 7, min: 22, max: 30, label: "첫 완성 마음 나무", shortLabel: "첫 완성 나무", asset: "tree_stage07.png" },
+  { stage: 8, min: 31, max: 45, label: "완성 뒤에도 자라는 마음 나무", shortLabel: "풍성해진 나무", asset: "tree_stage08.png" },
+  { stage: 9, min: 46, max: 60, label: "꽃과 생기가 피어난 나무", shortLabel: "꽃이 피어난 나무", asset: "tree_stage09.png" },
+  { stage: 10, min: 61, max: 90, label: "작은 정원을 품은 나무", shortLabel: "정원이 생긴 나무", asset: "tree_stage10.png" },
+  { stage: 11, min: 91, max: 120, label: "깊고 안정된 마음 나무", shortLabel: "깊어진 마음 나무", asset: "tree_stage11.png" },
+  { stage: 12, min: 121, max: 180, label: "초록이 머무는 마음 정원", shortLabel: "마음 정원", asset: "tree_stage12.png" },
+  { stage: 13, min: 181, max: 240, label: "작은 숲이 시작된 마음", shortLabel: "작은 숲의 시작", asset: "tree_stage13.png" },
+  { stage: 14, min: 241, max: Infinity, label: "완성된 마음의 숲", shortLabel: "마음의 숲", asset: "tree_stage14.png" },
 ];
+
+const TREE_GROWTH_V2_BASE = "assets/garden/tree_growth_v2/";
+const TREE_GROWTH_MAP_URL = `${TREE_GROWTH_V2_BASE}tree_growth_stage_map_v1.json`;
+const FOREST_YEAR_COMPLETE_COUNT = 365;
 
 const moodMap = {
   happy: { icon: "😊", label: "기뻤어" },
@@ -2774,7 +2786,48 @@ function getStage() {
 }
 
 function stageForGrowth(growth) {
-  return stageRules.find((rule) => growth >= rule.min && growth <= rule.max) || stageRules.at(-1);
+  const count = Math.max(0, Math.floor(Number(growth) || 0));
+  return stageRules.find((rule) => count >= rule.min && count <= rule.max) || stageRules.at(-1);
+}
+
+function renderGrowthTreeSprite(element, growth, { altLabel = "" } = {}) {
+  if (!element) return;
+
+  const count = Math.max(0, Math.floor(Number(growth) || 0));
+  const stage = stageForGrowth(count);
+  const resolvedAlt = altLabel || (count === 0 ? "마음을 기다리는 새싹" : stage.label);
+  element.alt = resolvedAlt;
+
+  if (!window.TodayForestTreeRenderer) {
+    element.src = `${TREE_GROWTH_V2_BASE}source/${stage.asset}`;
+    return;
+  }
+
+  void window.TodayForestTreeRenderer.render(element, {
+    growthCount: count,
+    mapUrl: TREE_GROWTH_MAP_URL,
+    assetBaseUrl: TREE_GROWTH_V2_BASE,
+  }).then((state) => {
+    if (state) element.alt = resolvedAlt;
+  }).catch((error) => {
+    console.warn("TodayForest tree atlas render fallback:", error);
+    element.classList.remove("uses-tree-atlas");
+    element.style.backgroundImage = "";
+    element.style.backgroundSize = "";
+    element.style.backgroundPosition = "";
+    element.src = `${TREE_GROWTH_V2_BASE}source/${stage.asset}`;
+    element.alt = resolvedAlt;
+  });
+}
+
+function playForestYearCelebration() {
+  if (!els.treeWrap) return;
+  els.treeWrap.classList.remove("forest-365-celebration");
+  void els.treeWrap.offsetWidth;
+  els.treeWrap.classList.add("forest-365-celebration");
+  window.setTimeout(() => els.treeWrap?.classList.remove("forest-365-celebration"), 3600);
+  showToast("365개의 마음이 모여 하나의 숲이 되었어요.", 7000);
+  trackTodayForestOperationalEvent("garden_365_forest_completed", { growth_count: FOREST_YEAR_COMPLETE_COUNT });
 }
 
 function growthPreviewFromUrl() {
@@ -5240,12 +5293,14 @@ function renderGarden() {
   applyAnimalPreviewCleanMode();
   // 방문 동물은 성장 단계에 맞는 실제 착지 지점을 사용합니다.
   // 작은 새는 가지가 없는 초기 단계에서는 풀밭 가까이, 나무가 자란 뒤에는 가지 높이에 앉습니다.
-  if (els.gardenStage) els.gardenStage.dataset.treeStage = String(stageRules.indexOf(stage) + 1);
+  if (els.gardenStage) {
+    els.gardenStage.dataset.treeStage = String(Math.min(stage.stage, 6));
+    els.gardenStage.dataset.treeGrowthStage = String(stage.stage);
+  }
   els.dayCount.textContent = `마음 ${visualGrowth}일째${isGrowthPreview ? " · 미리보기" : ""}`;
-  els.treeStageLabel.textContent = stage.label;
+  els.treeStageLabel.textContent = visualGrowth === 0 ? "마음을 기다리는 새싹" : stage.label;
   if (els.treeNameLabel) els.treeNameLabel.textContent = state.treeName || "내 마음 나무";
-  els.treeImage.src = `assets/garden/tree_growth/${stage.asset}`;
-  els.treeImage.alt = stage.label;
+  renderGrowthTreeSprite(els.treeImage, visualGrowth);
   renderMyHeartFruits();
   window.setTimeout(maybePlayHeartFruitReveal, 140);
 
@@ -10047,8 +10102,7 @@ async function openFriendGarden(friendId) {
     els.removeFriendFromVisit.textContent = fallbackFriend.isDevTest ? "테스트 친구 지우기" : "친구 관계 끝내기";
   }
   els.friendVisitName.textContent = `${name}의 정원`;
-  els.friendVisitTree.src = `assets/garden/tree_growth/${stage.asset}`;
-  els.friendVisitTree.alt = `${name}의 ${stage.label}`;
+  renderGrowthTreeSprite(els.friendVisitTree, growth, { altLabel: `${name}의 ${stage.label}` });
   els.friendVisitDayCount.textContent = `마음 ${growth}일째`;
   els.friendVisitStageLabel.textContent = stage.label;
   els.friendVisitWeatherIcon.textContent = weather.icon;
@@ -10590,6 +10644,7 @@ async function saveRecord(event) {
   }
 
   const treeWasCompleteBeforeSave = Number(state.growth || 0) >= HEART_FRUIT_COMPLETE_COUNT;
+  const forestYearWasCompleteBeforeSave = Number(state.growth || 0) >= FOREST_YEAR_COMPLETE_COUNT;
 
   submitButton.disabled = true;
   submitButton.textContent = "나무에 마음을 남기는 중이에요";
@@ -10635,6 +10690,8 @@ async function saveRecord(event) {
 
   const treeCompletedWithThisRecord = !treeWasCompleteBeforeSave
     && Number(state.growth || 0) >= HEART_FRUIT_COMPLETE_COUNT;
+  const forestYearCompletedWithThisRecord = !forestYearWasCompleteBeforeSave
+    && Number(state.growth || 0) >= FOREST_YEAR_COMPLETE_COUNT;
 
   els.recordForm.reset();
   selectedMoods = [];
@@ -10649,6 +10706,11 @@ async function saveRecord(event) {
   renderAll();
 
   if (treeCompletedWithThisRecord) {
+    return;
+  }
+
+  if (forestYearCompletedWithThisRecord) {
+    playForestYearCelebration();
     return;
   }
 
@@ -12278,8 +12340,8 @@ function prepareWelcomeSandboxGarden() {
   if (els.dayCount) els.dayCount.textContent = "마음 1일째";
   if (els.treeStageLabel) els.treeStageLabel.textContent = "처음 깨어난 새싹";
   if (els.treeImage) {
-    els.treeImage.src = "assets/garden/tree_growth/tree_stage1_morning.png";
-    els.treeImage.alt = "처음 깨어난 새싹";
+    renderGrowthTreeSprite(els.treeImage, 1);
+    els.treeImage.alt = "아주 작은 새싹";
   }
   if (els.weatherIcon) els.weatherIcon.textContent = "☀️";
   if (els.weatherText) els.weatherText.textContent = "햇살이 포근하게 내려와요";

@@ -329,6 +329,64 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
   opacity: 0.8;
 }
 .tree-image { position: relative; z-index: 2; display: block; width: 100%; height: auto; filter: drop-shadow(0 25px 18px rgba(73, 112, 83, 0.18)); user-select: none; pointer-events: none; }
+.tree-image.uses-tree-atlas {
+  aspect-ratio: 1 / 1;
+  height: auto;
+  background-color: transparent;
+  background-origin: border-box;
+  background-clip: border-box;
+}
+
+.tree-wrap.forest-365-celebration .tree-aura {
+  animation: forest365Aura 3.2s ease-out both;
+}
+.tree-wrap.forest-365-celebration::before,
+.tree-wrap.forest-365-celebration::after {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  top: 13%;
+  width: 92%;
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+  color: rgba(255, 247, 178, .95);
+  text-shadow: 0 0 12px rgba(255, 240, 145, .9);
+  opacity: 0;
+}
+.tree-wrap.forest-365-celebration::before {
+  content: "✦   ·   ✧   ·   ✦";
+  font-size: 28px;
+  animation: forest365Sparkles 3.1s ease-out both;
+}
+.tree-wrap.forest-365-celebration::after {
+  content: "365개의 마음이 숲이 되었어요";
+  top: 2%;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: rgba(91, 103, 72, .9);
+  text-shadow: 0 1px 8px rgba(255,255,255,.9);
+  animation: forest365Caption 3.3s ease-out both;
+}
+
+@keyframes forest365Aura {
+  0% { opacity: .55; transform: scale(.88); }
+  34% { opacity: 1; transform: scale(1.08); }
+  100% { opacity: .8; transform: scale(1); }
+}
+@keyframes forest365Sparkles {
+  0% { opacity: 0; transform: translate(-50%, 22px) scale(.78); }
+  28% { opacity: 1; transform: translate(-50%, 0) scale(1.08); }
+  78% { opacity: .86; }
+  100% { opacity: 0; transform: translate(-50%, -24px) scale(1); }
+}
+@keyframes forest365Caption {
+  0%, 14% { opacity: 0; transform: translate(-50%, 8px); }
+  32%, 74% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -5px); }
+}
+
 
 /* 장식은 처음에는 숲이 정한 자리에 놓이고, 꾸미기 모드에서만 사용자가 옮길 수 있습니다. */
 .found-items-layer { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
@@ -9619,4 +9677,13 @@ body.animal-preview-clean-mode .ff-cinematic {
   .garden-extra-nav .secondary-action {
     min-height: 64px;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tree-wrap.forest-365-celebration .tree-aura,
+  .tree-wrap.forest-365-celebration::before,
+  .tree-wrap.forest-365-celebration::after {
+    animation: none !important;
+  }
+  .tree-wrap.forest-365-celebration::after { opacity: 1; }
 }
