@@ -820,6 +820,7 @@ let gardenDecorateMode = false;
 let gardenDecorateSaving = false;
 let gardenDecorateDraftPositions = new Map();
 let gardenDecorateDraftStorage = new Map();
+let gardenDecorateNoticeTimer = null;
 let selectedFoundItemId = null;
 let activeFoundItemDrag = null;
 
@@ -3485,13 +3486,17 @@ function leaveAnimalWithLetter(animal, visitId) {
 function v2TraceMeta(visit) {
   const visitor = animalVisitors[visit.kind] || genericAnimalTrace;
   const icons = {
-    feather: "🪶",
+    feather: "",
     footprints: "〰️",
     acorn_shell: "🌰",
     ruffled_leaves: "🍂",
   };
+  const assets = {
+    feather: "assets/garden/visitor-trace-feather.svg",
+  };
   return {
-    icon: icons[visit.traceKind] || visitor.traceIcon || "🍃",
+    icon: icons[visit.traceKind] ?? visitor.traceIcon ?? "🍃",
+    asset: assets[visit.traceKind] || "",
     story: visitor.traceStory || genericAnimalTrace.traceStory,
     sceneClass: visitor.sceneClass || "generic",
   };
@@ -3641,8 +3646,10 @@ function renderAnimalV2Scene() {
   els.animalV2TraceLayer.innerHTML = traces.map((visit) => {
     const trace = v2TraceMeta(visit);
     return `
-      <button class="animal-v2-trace trace-${escapeAttr(trace.sceneClass)}" type="button" data-animal-v2-trace="${escapeAttr(visit.id)}" aria-label="${escapeAttr(`${animalVisitors[visit.kind]?.name || "숲친구"}가 남긴 흔적 보기`)}">
-        <span aria-hidden="true">${trace.icon}</span>
+      <button class="animal-v2-trace trace-${escapeAttr(trace.sceneClass)} ${trace.asset ? "has-trace-art" : ""}" type="button" data-animal-v2-trace="${escapeAttr(visit.id)}" aria-label="${escapeAttr(`${animalVisitors[visit.kind]?.name || "숲친구"}가 남긴 흔적 보기`)}">
+        ${trace.asset
+          ? `<img class="animal-v2-trace-art" src="${escapeAttr(trace.asset)}" alt="" aria-hidden="true" />`
+          : `<span aria-hidden="true">${trace.icon}</span>`}
       </button>
     `;
   }).join("");
@@ -4248,6 +4255,7 @@ function renderGardenDecorateControls(foundItems) {
   els.gardenDecorateControls.hidden = !hasAnyItems || !gardenDecorateMode;
   els.gardenStage?.classList.toggle("is-garden-decorating", gardenDecorateMode && hasAnyItems);
   els.foundItemsLayer?.classList.toggle("is-decorating", gardenDecorateMode && hasAnyItems);
+  document.body.classList.toggle("is-garden-decorating", gardenDecorateMode && hasAnyItems);
 
   if (els.openGardenDecorate) {
     els.openGardenDecorate.hidden = false;
@@ -4326,6 +4334,25 @@ function renderFoundItems() {
   }
 }
 
+function showGardenDecorateNotice(message, duration = 2200) {
+  window.clearTimeout(gardenDecorateNoticeTimer);
+  if (!gardenDecorateMode || !els.gardenDecorateGuide) {
+    showToast(message, duration);
+    return;
+  }
+
+  els.gardenDecorateGuide.textContent = message;
+  els.gardenDecorateGuide.classList.remove("is-notice");
+  void els.gardenDecorateGuide.offsetWidth;
+  els.gardenDecorateGuide.classList.add("is-notice");
+
+  gardenDecorateNoticeTimer = window.setTimeout(() => {
+    if (!gardenDecorateMode) return;
+    els.gardenDecorateGuide.classList.remove("is-notice");
+    renderGardenDecorateControls(state.foundItems || []);
+  }, duration);
+}
+
 function startGardenDecorateMode() {
   const foundItems = (state.foundItems || []).filter((item) => foundItemCatalog[item.itemKey]);
   if (gardenDecorateSaving) return;
@@ -4354,7 +4381,7 @@ function startGardenDecorateMode() {
     applyFoundItemDraftPosition(element, visiblePosition);
   });
 
-  showToast("장식을 옮기거나 눌러 보관함에 넣어보세요.");
+  showGardenDecorateNotice("장식을 옮기거나 눌러 보관함에 넣어보세요.");
 }
 
 function releaseFoundItemPointer(pointerId) {
@@ -4499,7 +4526,7 @@ function changeFoundItemDraftStorage(itemId, nextStorageState) {
   renderFoundItems();
 
   const catalogItem = foundItemCatalog[item.itemKey];
-  showToast(nextState === FOUND_ITEM_STORAGE.INVENTORY
+  showGardenDecorateNotice(nextState === FOUND_ITEM_STORAGE.INVENTORY
     ? `${catalogItem.name}을 보관함에 잠시 넣었어요.`
     : `${catalogItem.name}을 정원에 다시 꺼냈어요.`);
 }

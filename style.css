@@ -739,7 +739,7 @@ textarea::placeholder { color: #a7b4bd; }
 .letter-body { margin: 0; color: #6c7883; font-size: 14px; line-height: 1.72; white-space: pre-line; }
 .letter-date { margin: 16px 0 0; color: #a1aab2; font-size: 11px; }
 
-.toast { position: fixed; z-index: 80; left: 50%; bottom: 28px; max-width: calc(100% - 32px); padding: 12px 15px; border-radius: 14px; background: rgba(54,77,78,.88); color: #fff; font-size: 13px; font-weight: 800; box-shadow: 0 10px 24px rgba(35,52,52,.2); transform: translateX(-50%); }
+.toast { position: fixed; z-index: 80; left: 50%; bottom: max(92px, calc(env(safe-area-inset-bottom) + 92px)); max-width: calc(100% - 32px); padding: 12px 15px; border-radius: 14px; background: rgba(54,77,78,.88); color: #fff; font-size: 13px; font-weight: 800; box-shadow: 0 10px 24px rgba(35,52,52,.2); transform: translateX(-50%); }
 .toast.hidden { display: none; }
 
 @keyframes foundItemSettle {
@@ -10132,5 +10132,51 @@ body.animal-preview-clean-mode .ff-cinematic {
   }
   .garden-inventory-item {
     flex-basis: 72px;
+  }
+}
+
+
+/* ========================================================================== 
+   GARDEN TRACE + NOTICE POLISH v1
+   - feather emoji fallback box 대신 투명 SVG 흔적 사용
+   - 꾸미기 안내는 편집 패널 안에서 보여 메뉴와 광고를 가리지 않음
+   ========================================================================== */
+.animal-v2-trace.trace-bird.has-trace-art {
+  width: 50px;
+  height: 50px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  filter: drop-shadow(0 7px 8px rgba(73, 91, 73, .14));
+}
+.animal-v2-trace-art {
+  display: block;
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  pointer-events: none;
+}
+.animal-v2-trace.trace-bird.has-trace-art:hover .animal-v2-trace-art,
+.animal-v2-trace.trace-bird.has-trace-art:focus-visible .animal-v2-trace-art {
+  transform: translateY(-1px) scale(1.04);
+}
+.garden-decorate-flow-controls .garden-decorate-guide.is-notice {
+  color: #4f7560;
+  animation: gardenDecorateNoticePulse .42s ease both;
+}
+body.is-garden-decorating .toast {
+  bottom: max(148px, calc(env(safe-area-inset-bottom) + 148px));
+}
+@keyframes gardenDecorateNoticePulse {
+  0% { opacity: .45; transform: translateY(2px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 600px) {
+  .toast {
+    bottom: max(104px, calc(env(safe-area-inset-bottom) + 104px));
+  }
+  body.is-garden-decorating .toast {
+    bottom: max(176px, calc(env(safe-area-inset-bottom) + 176px));
   }
 }
