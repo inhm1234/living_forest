@@ -4152,7 +4152,8 @@ function renderGardenDecorateControls(foundItems) {
   const hasFoundItems = foundItems.length > 0;
   if (!els.gardenDecorateControls) return;
 
-  els.gardenDecorateControls.hidden = !hasFoundItems;
+  // 편집 도구는 정원 바깥에 있으므로 실제 꾸미기 모드에서만 표시합니다.
+  els.gardenDecorateControls.hidden = !hasFoundItems || !gardenDecorateMode;
   els.gardenStage?.classList.toggle("is-garden-decorating", gardenDecorateMode && hasFoundItems);
   els.foundItemsLayer?.classList.toggle("is-decorating", gardenDecorateMode && hasFoundItems);
 
@@ -11842,6 +11843,9 @@ function bindEvents() {
     setMoreMenuOpen(false);
     moreMenuButton?.focus();
   });
+  $$('[data-more-action="decorate"]').forEach((button) => button.addEventListener("click", () => {
+    setMoreMenuOpen(false);
+  }));
   $$('[data-more-action="feedback"]').forEach((button) => button.addEventListener("click", () => {
     setMoreMenuOpen(false);
     openFeedbackSheet();

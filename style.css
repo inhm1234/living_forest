@@ -9770,3 +9770,83 @@ body.animal-preview-clean-mode .ff-cinematic {
 .tree-call-hitbox { z-index: 4; }
 .garden-stage.is-garden-decorating .found-items-layer { z-index: 14; }
 .garden-stage.is-garden-decorating .found-item { touch-action: none; }
+
+
+/* ========================================================================== 
+   GARDEN DECORATE MENU FLOW v3
+   - 시작 버튼은 정원 위에서 제거하고 더보기 메뉴로 이동
+   - 취소/저장은 정원 아래 문서 흐름에 배치하여 장식을 가리지 않음
+   ========================================================================== */
+.garden-decorate-flow-controls {
+  position: static !important;
+  inset: auto !important;
+  z-index: auto !important;
+  width: 100% !important;
+  margin: 10px 0 0 !important;
+  padding: 0 !important;
+  pointer-events: auto !important;
+  transform: none !important;
+}
+.garden-decorate-flow-controls[hidden] {
+  display: none !important;
+}
+.garden-decorate-flow-controls .garden-decorate-edit-actions {
+  width: 100% !important;
+  max-width: none !important;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(135, 155, 143, .22);
+  border-radius: 18px;
+  background: rgba(255,255,255,.94);
+  box-shadow: 0 10px 24px rgba(74, 91, 79, .10);
+  backdrop-filter: blur(12px);
+}
+.garden-decorate-flow-controls .garden-decorate-edit-actions.hidden {
+  display: none !important;
+}
+.garden-decorate-flow-controls .garden-decorate-guide {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.garden-decorate-flow-controls .garden-decorate-action-row {
+  display: flex;
+  gap: 8px;
+  min-width: 230px;
+}
+.garden-decorate-flow-controls .garden-decorate-cancel,
+.garden-decorate-flow-controls .garden-decorate-save {
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+#moreMenuPanel #openGardenDecorate[hidden] {
+  display: none !important;
+}
+@media (max-width: 600px) {
+  .garden-decorate-flow-controls {
+    margin-top: 8px !important;
+  }
+  .garden-decorate-flow-controls .garden-decorate-edit-actions {
+    grid-template-columns: 1fr;
+    gap: 9px;
+    padding: 11px;
+  }
+  .garden-decorate-flow-controls .garden-decorate-guide {
+    text-align: center;
+  }
+  .garden-decorate-flow-controls .garden-decorate-action-row {
+    min-width: 0;
+    width: 100%;
+  }
+  .garden-decorate-flow-controls .garden-decorate-cancel {
+    flex: 0 0 34%;
+  }
+  .garden-decorate-flow-controls .garden-decorate-save {
+    flex: 1 1 auto;
+  }
+}
