@@ -431,7 +431,25 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .garden-stage.is-garden-decorating .found-item.is-moving { cursor: grabbing; z-index: 2; filter: drop-shadow(0 12px 13px rgba(72, 112, 79, .23)); }
 .garden-stage.is-garden-decorating .found-item.is-moving::after { border-color: rgba(250, 175, 135, .92); background: rgba(255, 244, 232, .36); }
 
-.garden-decorate-controls { position: absolute; z-index: 12; right: 16px; bottom: 16px; }
+.garden-decorate-controls {
+  position: absolute;
+  z-index: 18;
+  top: 106px;
+  right: 16px;
+  bottom: auto;
+}
+/* 편집 중에는 저장·취소 바를 장식이 몰리는 하단이 아니라 상단 중앙에 둡니다. */
+.garden-stage.is-garden-decorating .garden-decorate-controls {
+  top: 105px;
+  left: 50%;
+  right: auto;
+  width: min(304px, calc(100% - 30px));
+  transform: translateX(-50%);
+}
+.garden-stage.is-garden-decorating .garden-decorate-edit-actions {
+  width: 100%;
+  box-sizing: border-box;
+}
 .garden-decorate-button, .garden-decorate-cancel, .garden-decorate-save { border: 1px solid rgba(255,255,255,.82); font-family: inherit; font-weight: 900; cursor: pointer; backdrop-filter: blur(8px); }
 .garden-decorate-button { display: inline-flex; align-items: center; gap: 5px; min-height: 35px; padding: 8px 11px; border-radius: 999px; background: rgba(255,255,255,.76); color: #647b68; font-size: 11px; box-shadow: 0 9px 18px rgba(76, 104, 85, .13); }
 .garden-decorate-button span:first-child { font-size: 14px; }
@@ -779,8 +797,18 @@ textarea::placeholder { color: #a7b4bd; }
   .branch-letter-item.item-3 { right: 31%; }
   .branch-letter-bundle { top: 20%; right: 15%; }
   .stage-message { font-size: 11px; }
-  .garden-decorate-controls { right: 12px; bottom: 13px; }
-  .garden-decorate-edit-actions { width: min(232px, calc(100vw - 38px)); }
+  .garden-decorate-controls { top: 103px; right: 12px; bottom: auto; }
+  .garden-stage.is-garden-decorating .garden-decorate-controls {
+    top: 102px;
+    left: 50%;
+    right: auto;
+    width: min(286px, calc(100% - 24px));
+  }
+  .garden-decorate-edit-actions { width: 100%; padding: 8px; }
+  .garden-stage.is-garden-decorating .garden-decorate-guide { display: none; }
+  .garden-stage.is-garden-decorating .garden-decorate-action-row { gap: 8px; }
+  .garden-stage.is-garden-decorating .garden-decorate-cancel,
+  .garden-stage.is-garden-decorating .garden-decorate-save { min-height: 38px; }
   .mood-grid { gap: 7px; }
   .mood-grid-primary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .mood-grid-primary .mood-choice { width: 100%; }
@@ -9736,3 +9764,9 @@ body.animal-preview-clean-mode .ff-cinematic {
   }
   .tree-wrap.forest-365-celebration::after { opacity: 1; }
 }
+
+
+/* TREE CALL + DECORATE CONTROLS FIX v2 ---------------------------------- */
+.tree-call-hitbox { z-index: 4; }
+.garden-stage.is-garden-decorating .found-items-layer { z-index: 14; }
+.garden-stage.is-garden-decorating .found-item { touch-action: none; }

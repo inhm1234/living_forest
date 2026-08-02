@@ -135,6 +135,14 @@ function hasAnimalConflict() {
   return hasGeneralAnimalConflict() || hasSpecialFriendConflict();
 }
 
+// 특별친구는 일반 방문 동물과 함께 정원에 머물 수 있습니다.
+// 따라서 이미 만난 특별친구를 나무로 부를 때는 일반 동물 방문을 충돌로 보지 않습니다.
+function hasTreeCallConflict() {
+  return shouldCallSpecialFriend()
+    ? hasSpecialFriendConflict()
+    : hasAnimalConflict();
+}
+
 function isInteractionBlocked() {
   return Boolean(document.querySelector(".garden-stage.is-garden-decorating"));
 }
@@ -166,7 +174,7 @@ function isCooldownActive() {
 }
 
 function canCharge() {
-  return authenticated && !isCooldownActive() && !hasAnimalConflict();
+  return authenticated && !isCooldownActive() && !hasTreeCallConflict();
 }
 
 function clearChargeResetTimer() {
@@ -240,7 +248,7 @@ function playTreeHintReaction() {
 
 function renderState() {
   if (!treeWrap || !hitbox) return;
-  const conflict = hasAnimalConflict();
+  const conflict = hasTreeCallConflict();
   const cooldown = isCooldownActive();
   const specialTarget = shouldCallSpecialFriend();
   const ready = authenticated && !isInteractionBlocked() && !cooldown && !conflict;
@@ -409,9 +417,13 @@ function acceptValidTap() {
   treeWrap.classList.add("is-tree-call-charging");
   window.setTimeout(() => treeWrap?.classList.remove("is-tree-call-charging"), 540);
 
+  const remaining = Math.max(0, 3 - charge);
   if (charge >= 3) {
     void completeTreeCall();
   } else {
+    showStatus(shouldCallSpecialFriend()
+      ? `나무가 반응했어요 · ${remaining}번 더 두드리면 특별친구가 찾아와요`
+      : `나무가 반응했어요 · ${remaining}번 더 두드려주세요`);
     scheduleChargeReset();
   }
   renderState();
@@ -426,8 +438,12 @@ function handleTreeTap(event) {
   // 사용자가 나무를 직접 눌렀다면 결과와 관계없이 상호작용을 발견한 것으로 기록합니다.
   const discoveredNow = markTreeInteractionDiscovered();
   if (discoveredNow) showStatus("나무가 손길을 느끼고 살며시 빛났어요.");
-  // 동물이 머물거나 다가오는 동안, 그리고 3초 등장 연출 중에는 안내 없이 나무만 흔들립니다.
-  if (hasAnimalConflict()) {
+  // 일반 방문 동물은 특별친구 호출을 막지 않습니다.
+  // 실제 호출 대상과 충돌하는 상태일 때만 이유를 분명히 안내합니다.
+  if (hasTreeCallConflict()) {
+    showStatus(shouldCallSpecialFriend()
+      ? "특별친구가 이미 정원에 머물거나 이동하고 있어요"
+      : "숲친구가 정원에 머무는 동안에는 새 친구를 부를 수 없어요");
     renderState();
     return;
   }
