@@ -1,0 +1,11 @@
+TodayForest tree growth production build v1
+
+Sources: 14/14 validated
+Canvas: 500x500 transparent PNG
+Anchor baseline: y=480
+Early atlas (Stage 1-7): 313,858 bytes
+Late atlas (Stage 8-14): 735,738 bytes
+WebP quality: 86
+Atlas dimensions: 2048x1024
+Cell: 512x512, sprite: 500x500, padding: 6px
+Production connected: app.html / app.js / style.css

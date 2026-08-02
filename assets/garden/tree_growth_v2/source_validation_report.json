@@ -1,0 +1,261 @@
+{
+  "expectedStages": 14,
+  "validStages": 14,
+  "readyToBuild": true,
+  "files": [
+    {
+      "file": "tree_stage01.png",
+      "exists": true,
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "size": [
+        500,
+        500
+      ],
+      "mode": "RGBA",
+      "alphaBoundingBox": [
+        104,
+        297,
+        403,
+        482
+      ]
+    },
+    {
+      "file": "tree_stage02.png",
+      "exists": true,
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "size": [
+        500,
+        500
+      ],
+      "mode": "RGBA",
+      "alphaBoundingBox": [
+        142,
+        323,
+        347,
+        482
+      ]
+    },
+    {
+      "file": "tree_stage03.png",
+      "exists": true,
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "size": [
+        500,
+        500
+      ],
+      "mode": "RGBA",
+      "alphaBoundingBox": [
+        104,
+        128,
+        409,
+        482
+      ]
+    },
+    {
+      "file": "tree_stage04.png",
+      "exists": true,
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "size": [
+        500,
+        500
+      ],
+      "mode": "RGBA",
+      "alphaBoundingBox": [
+        100,
+        163,
+        403,
+        482
+      ]
+    },
+    {
+      "file": "tree_stage05.png",
+      "exists": true,
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "size": [
+        500,
+        500
+      ],
+      "mode": "RGBA",
+      "alphaBoundingBox": [
+        76,
+        101,
+        431,
+        482
+      ]
+    },
+    {
+      "file": "tree_stage06.png",
+      "exists": true,
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "size": [
+        500,
+        500
+      ],
+      "mode": "RGBA",
+      "alphaBoundingBox": [
+        24,
+        97,
+        476,
+        483
+      ]
+    },
+    {
+      "file": "tree_stage07.png",
+      "exists": true,
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "size": [
+        500,
+        500
+      ],
+      "mode": "RGBA",
+      "alphaBoundingBox": [
+        50,
+        20,
+        462,
+        482
+      ]
+    },
+    {
+      "file": "tree_stage08.png",
+      "exists": true,
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "size": [
+        500,
+        500
+      ],
+      "mode": "RGBA",
+      "alphaBoundingBox": [
+        44,
+        24,
+        467,
+        482
+      ]
+    },
+    {
+      "file": "tree_stage09.png",
+      "exists": true,
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "size": [
+        500,
+        500
+      ],
+      "mode": "RGBA",
+      "alphaBoundingBox": [
+        32,
+        34,
+        471,
+        482
+      ]
+    },
+    {
+      "file": "tree_stage10.png",
+      "exists": true,
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "size": [
+        500,
+        500
+      ],
+      "mode": "RGBA",
+      "alphaBoundingBox": [
+        36,
+        24,
+        472,
+        483
+      ]
+    },
+    {
+      "file": "tree_stage11.png",
+      "exists": true,
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "size": [
+        500,
+        500
+      ],
+      "mode": "RGBA",
+      "alphaBoundingBox": [
+        31,
+        40,
+        473,
+        482
+      ]
+    },
+    {
+      "file": "tree_stage12.png",
+      "exists": true,
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "size": [
+        500,
+        500
+      ],
+      "mode": "RGBA",
+      "alphaBoundingBox": [
+        32,
+        45,
+        475,
+        482
+      ]
+    },
+    {
+      "file": "tree_stage13.png",
+      "exists": true,
+      "valid": true,
+      "errors": [],
+      "warnings": [
+        "art touches a canvas edge; clipping risk"
+      ],
+      "size": [
+        500,
+        500
+      ],
+      "mode": "RGBA",
+      "alphaBoundingBox": [
+        31,
+        22,
+        500,
+        496
+      ]
+    },
+    {
+      "file": "tree_stage14.png",
+      "exists": true,
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "size": [
+        500,
+        500
+      ],
+      "mode": "RGBA",
+      "alphaBoundingBox": [
+        25,
+        35,
+        478,
+        483
+      ]
+    }
+  ]
+}

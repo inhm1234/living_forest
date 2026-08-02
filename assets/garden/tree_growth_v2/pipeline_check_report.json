@@ -1,0 +1,12 @@
+{
+  "map": "assets/garden/tree_growth_v2/tree_growth_stage_map_v1.json",
+  "structureValid": true,
+  "readyForProductionBuild": true,
+  "errors": [],
+  "warnings": [],
+  "sourceAssets": {
+    "present": 14,
+    "expected": 14,
+    "ready": true
+  }
+}

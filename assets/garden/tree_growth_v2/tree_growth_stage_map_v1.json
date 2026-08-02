@@ -1,0 +1,196 @@
+{
+  "version": 1,
+  "sourceField": "growth_count",
+  "countMode": "cumulative_records",
+  "zeroCount": {
+    "stage": 1,
+    "label": "마음을 기다리는 새싹",
+    "description": "첫 마음 기록 전에는 1단계 이미지를 사용하되 별도 문구를 표시합니다."
+  },
+  "atlasGroups": {
+    "early": {
+      "stages": [1, 2, 3, 4, 5, 6, 7],
+      "image": "tree_growth_early_atlas_v1.webp",
+      "manifest": "tree_growth_early_atlas_v1.json",
+      "columns": 4,
+      "rows": 2
+    },
+    "late": {
+      "stages": [8, 9, 10, 11, 12, 13, 14],
+      "image": "tree_growth_late_atlas_v1.webp",
+      "manifest": "tree_growth_late_atlas_v1.json",
+      "columns": 4,
+      "rows": 2
+    }
+  },
+  "stages": [
+    {
+      "stage": 1,
+      "min": 1,
+      "max": 1,
+      "key": "tiny_sprout",
+      "label": "아주 작은 새싹",
+      "shortLabel": "작은 새싹",
+      "atlas": "early",
+      "column": 0,
+      "row": 0
+    },
+    {
+      "stage": 2,
+      "min": 2,
+      "max": 3,
+      "key": "waking_sprout",
+      "label": "깨어나는 새싹",
+      "shortLabel": "깨어난 새싹",
+      "atlas": "early",
+      "column": 1,
+      "row": 0
+    },
+    {
+      "stage": 3,
+      "min": 4,
+      "max": 6,
+      "key": "rising_sprout",
+      "label": "줄기를 올린 새싹",
+      "shortLabel": "자라는 새싹",
+      "atlas": "early",
+      "column": 2,
+      "row": 0
+    },
+    {
+      "stage": 4,
+      "min": 7,
+      "max": 10,
+      "key": "first_sapling",
+      "label": "처음 나무가 된 마음",
+      "shortLabel": "어린 마음 나무",
+      "atlas": "early",
+      "column": 3,
+      "row": 0
+    },
+    {
+      "stage": 5,
+      "min": 11,
+      "max": 15,
+      "key": "healthy_sapling",
+      "label": "건강하게 자라는 어린 나무",
+      "shortLabel": "건강한 어린 나무",
+      "atlas": "early",
+      "column": 0,
+      "row": 1
+    },
+    {
+      "stage": 6,
+      "min": 16,
+      "max": 21,
+      "key": "near_mature_tree",
+      "label": "완성을 준비하는 마음 나무",
+      "shortLabel": "완성 직전의 나무",
+      "atlas": "early",
+      "column": 1,
+      "row": 1
+    },
+    {
+      "stage": 7,
+      "min": 22,
+      "max": 30,
+      "key": "first_complete_tree",
+      "label": "첫 완성 마음 나무",
+      "shortLabel": "첫 완성 나무",
+      "atlas": "early",
+      "column": 2,
+      "row": 1
+    },
+    {
+      "stage": 8,
+      "min": 31,
+      "max": 45,
+      "key": "fuller_tree",
+      "label": "완성 뒤에도 자라는 마음 나무",
+      "shortLabel": "풍성해진 나무",
+      "atlas": "late",
+      "column": 0,
+      "row": 0
+    },
+    {
+      "stage": 9,
+      "min": 46,
+      "max": 60,
+      "key": "flowering_tree",
+      "label": "꽃과 생기가 피어난 나무",
+      "shortLabel": "꽃이 피어난 나무",
+      "atlas": "late",
+      "column": 1,
+      "row": 0
+    },
+    {
+      "stage": 10,
+      "min": 61,
+      "max": 90,
+      "key": "garden_tree",
+      "label": "작은 정원을 품은 나무",
+      "shortLabel": "정원이 생긴 나무",
+      "atlas": "late",
+      "column": 2,
+      "row": 0
+    },
+    {
+      "stage": 11,
+      "min": 91,
+      "max": 120,
+      "key": "deep_rooted_tree",
+      "label": "깊고 안정된 마음 나무",
+      "shortLabel": "깊어진 마음 나무",
+      "atlas": "late",
+      "column": 3,
+      "row": 0
+    },
+    {
+      "stage": 12,
+      "min": 121,
+      "max": 180,
+      "key": "green_garden",
+      "label": "초록이 머무는 마음 정원",
+      "shortLabel": "마음 정원",
+      "atlas": "late",
+      "column": 0,
+      "row": 1
+    },
+    {
+      "stage": 13,
+      "min": 181,
+      "max": 240,
+      "key": "young_forest",
+      "label": "작은 숲이 시작된 마음",
+      "shortLabel": "작은 숲의 시작",
+      "atlas": "late",
+      "column": 1,
+      "row": 1
+    },
+    {
+      "stage": 14,
+      "min": 241,
+      "max": null,
+      "key": "complete_heart_forest",
+      "label": "완성된 마음의 숲",
+      "shortLabel": "마음의 숲",
+      "atlas": "late",
+      "column": 2,
+      "row": 1
+    }
+  ],
+  "specialMilestones": [
+    {
+      "count": 30,
+      "key": "first_tree_complete",
+      "title": "한 그루의 마음 나무가 완성되었어요",
+      "effect": "tree_completion"
+    },
+    {
+      "count": 365,
+      "key": "one_year_forest",
+      "title": "365개의 마음이 모여 하나의 숲이 되었어요",
+      "effect": "forest_365_completion"
+    }
+  ]
+}
