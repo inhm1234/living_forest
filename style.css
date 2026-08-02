@@ -9920,3 +9920,217 @@ body.animal-preview-clean-mode .ff-cinematic {
     white-space: nowrap;
   }
 }
+
+/* ========================================================================== 
+   GARDEN INVENTORY V1
+   - 꾸미기 중 위치와 보관 상태를 초안으로 편집
+   - 정원 바깥에서 보관함을 가로 선반 형태로 사용
+   ========================================================================== */
+.garden-decorate-flow-controls .garden-decorate-edit-actions {
+  display: block !important;
+  padding: 12px 14px 13px;
+}
+.garden-decorate-flow-controls .garden-decorate-topline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+.garden-decorate-flow-controls .garden-decorate-action-row {
+  min-width: 230px;
+}
+.garden-stage.is-garden-decorating .found-item.is-selected {
+  z-index: 3;
+  filter: drop-shadow(0 10px 13px rgba(215, 148, 102, .28));
+}
+.garden-stage.is-garden-decorating .found-item.is-selected::after {
+  border-style: solid;
+  border-color: rgba(227, 151, 101, .92);
+  background: rgba(255, 244, 232, .34);
+  box-shadow: 0 0 0 4px rgba(255,255,255,.34);
+}
+.garden-decorate-selected-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 9px 10px;
+  border: 1px solid rgba(231, 210, 185, .82);
+  border-radius: 14px;
+  background: rgba(255, 249, 241, .92);
+}
+.garden-decorate-selected-action[hidden] { display: none !important; }
+.garden-decorate-selected-copy {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.garden-decorate-selected-copy img {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 30px;
+  object-fit: contain;
+}
+.garden-decorate-selected-copy > span {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+.garden-decorate-selected-copy small {
+  color: #9c8b77;
+  font-size: 9px;
+  font-weight: 800;
+}
+.garden-decorate-selected-copy b {
+  overflow: hidden;
+  color: #6c655a;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.garden-decorate-selected-action button {
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid rgba(203, 176, 146, .7);
+  border-radius: 10px;
+  background: #fff;
+  color: #8b684e;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.garden-decorate-inventory {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(137, 158, 143, .16);
+}
+.garden-decorate-inventory[hidden] { display: none !important; }
+.garden-decorate-inventory-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.garden-decorate-inventory-head > span {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+.garden-decorate-inventory-head b {
+  color: #5d7462;
+  font-size: 12px;
+}
+.garden-decorate-inventory-head small {
+  overflow: hidden;
+  color: #94a095;
+  font-size: 9px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.garden-decorate-inventory-head em {
+  flex: 0 0 auto;
+  color: #8ba08d;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 900;
+}
+.garden-decorate-inventory-list {
+  display: flex;
+  gap: 8px;
+  min-height: 72px;
+  overflow-x: auto;
+  padding: 1px 1px 5px;
+  scrollbar-width: thin;
+  scroll-snap-type: x proximity;
+}
+.garden-inventory-item {
+  flex: 0 0 82px;
+  min-height: 68px;
+  display: grid;
+  grid-template-rows: 37px auto;
+  place-items: center;
+  gap: 3px;
+  padding: 6px 5px;
+  border: 1px solid rgba(210, 226, 208, .94);
+  border-radius: 14px;
+  background: rgba(255,255,255,.94);
+  color: #657969;
+  font: inherit;
+  cursor: pointer;
+  scroll-snap-align: start;
+  box-shadow: 0 4px 10px rgba(89, 121, 96, .07);
+}
+.garden-inventory-item:hover,
+.garden-inventory-item:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(143, 179, 132, .8);
+  outline: none;
+}
+.garden-inventory-item img {
+  width: 45px;
+  height: 36px;
+  object-fit: contain;
+}
+.garden-inventory-item span {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 9px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.garden-inventory-empty {
+  flex: 1;
+  min-height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px;
+  border: 1px dashed rgba(210, 225, 208, .95);
+  border-radius: 13px;
+  background: rgba(249,252,248,.78);
+  color: #8b9a8c;
+  text-align: left;
+}
+.garden-inventory-empty span { font-size: 18px; }
+.garden-inventory-empty p {
+  margin: 0;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+@media (max-width: 600px) {
+  .garden-decorate-flow-controls .garden-decorate-edit-actions {
+    padding: 10px 11px 11px;
+  }
+  .garden-decorate-flow-controls .garden-decorate-topline {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .garden-decorate-flow-controls .garden-decorate-action-row {
+    min-width: 0;
+    width: 100%;
+  }
+  .garden-decorate-selected-action {
+    margin-top: 8px;
+  }
+  .garden-decorate-inventory {
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+  .garden-decorate-inventory-head > span {
+    display: grid;
+    gap: 1px;
+  }
+  .garden-inventory-item {
+    flex-basis: 72px;
+  }
+}
