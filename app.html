@@ -32,7 +32,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=garden-inventory-group-v3" />
+  <link rel="stylesheet" href="style.css?v=garden-inventory-manager-v4" />
   <link rel="stylesheet" href="public-home-phase8-9.css?v=phase8-9-landing-adfit-v1-0" />
   <link rel="stylesheet" href="oot-notifications.css?v=garden-button-labels-v1-3" />
   <link rel="stylesheet" href="tree-animal-call.css?v=tree-discovery-v1-6" />
@@ -405,12 +405,40 @@
 
         <section class="garden-decorate-inventory" id="gardenDecorateInventory" aria-label="작은 것 보관함">
           <div class="garden-decorate-inventory-head">
-            <span><b>작은 것 보관함</b><small>같은 장식은 묶어서 보여요 · 누르면 한 개씩 꺼내요</small></span>
+            <span><b>작은 것 보관함</b><small>같은 장식은 묶어서 보여요 · 눌러 수량을 정해 꺼내요</small></span>
             <em id="gardenDecorateInventoryCount">0개</em>
           </div>
           <div class="garden-decorate-inventory-list" id="gardenDecorateInventoryList"></div>
         </section>
       </div>
+    </div>
+
+    <div class="garden-inventory-manager-backdrop" id="gardenInventoryManager" hidden>
+      <section class="garden-inventory-manager" role="dialog" aria-modal="true" aria-labelledby="gardenInventoryManagerTitle">
+        <button class="garden-inventory-manager-close" id="gardenInventoryManagerClose" type="button" aria-label="장식 관리창 닫기">×</button>
+        <div class="garden-inventory-manager-summary">
+          <span class="garden-inventory-manager-art" aria-hidden="true"><img id="gardenInventoryManagerImage" src="" alt="" /></span>
+          <span class="garden-inventory-manager-copy">
+            <small>작은 것 관리</small>
+            <b id="gardenInventoryManagerTitle">장식</b>
+            <span id="gardenInventoryManagerCounts">총 0개 · 정원 0 · 보관 0</span>
+          </span>
+        </div>
+        <div class="garden-inventory-manager-actions">
+          <button class="garden-inventory-manager-primary" id="gardenInventoryPlaceOne" type="button">한 개 꺼내기</button>
+          <button id="gardenInventoryOpenMulti" type="button" aria-expanded="false">여러 개 꺼내기</button>
+        </div>
+        <div class="garden-inventory-multi" id="gardenInventoryMulti" hidden>
+          <span class="garden-inventory-multi-label">꺼낼 개수</span>
+          <div class="garden-inventory-stepper" role="group" aria-label="정원에 꺼낼 장식 개수">
+            <button id="gardenInventoryQuantityMinus" type="button" aria-label="개수 줄이기">−</button>
+            <output id="gardenInventoryQuantity" aria-live="polite">2</output>
+            <button id="gardenInventoryQuantityPlus" type="button" aria-label="개수 늘리기">＋</button>
+          </div>
+          <button class="garden-inventory-multi-confirm" id="gardenInventoryPlaceMany" type="button">2개 꺼내기</button>
+        </div>
+        <p class="garden-inventory-manager-note">꺼낸 장식은 배치 저장 전까지 임시 상태예요.</p>
+      </section>
     </div>
 
     <!-- OPERATION MENU ORDER v1: 핵심 메뉴는 정원 풍경 바로 아래에서 끊김 없이 이어집니다. -->
@@ -1400,7 +1428,7 @@
   <script src="assets/garden/tree_growth_v2/tree-growth-stage-map.js?v=tree-growth-14-v1"></script>
   <script src="assets/garden/tree_growth_v2/tree-growth-atlas.js?v=tree-growth-14-v1"></script>
   <script src="assets/garden/tree_growth_v2/tree-growth-renderer.js?v=tree-growth-14-v1"></script>
-  <script type="module" src="app.js?v=garden-inventory-group-v3"></script>
+  <script type="module" src="app.js?v=garden-inventory-manager-v4"></script>
   <script type="module" src="friend-connection-safety.js?v=first-day-qa-v1-0"></script>
   <script type="module" src="tree-animal-call.js?v=tree-call-decorate-fix-v2"></script>
   <script type="module" src="forest-unicorn-preview.js?v=animal-preview-clean-v0-4"></script>

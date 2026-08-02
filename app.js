@@ -856,6 +856,10 @@ let gardenDecorateDraftStorage = new Map();
 let gardenDecorateNoticeTimer = null;
 let selectedFoundItemId = null;
 let activeFoundItemDrag = null;
+let activeGardenInventoryItemKey = "";
+let gardenInventoryMultiOpen = false;
+let gardenInventoryMultiQuantity = 2;
+let gardenInventoryManagerReturnFocus = null;
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -924,6 +928,18 @@ const els = {
   gardenDecorateInventory: $("#gardenDecorateInventory"),
   gardenDecorateInventoryCount: $("#gardenDecorateInventoryCount"),
   gardenDecorateInventoryList: $("#gardenDecorateInventoryList"),
+  gardenInventoryManager: $("#gardenInventoryManager"),
+  gardenInventoryManagerClose: $("#gardenInventoryManagerClose"),
+  gardenInventoryManagerImage: $("#gardenInventoryManagerImage"),
+  gardenInventoryManagerTitle: $("#gardenInventoryManagerTitle"),
+  gardenInventoryManagerCounts: $("#gardenInventoryManagerCounts"),
+  gardenInventoryPlaceOne: $("#gardenInventoryPlaceOne"),
+  gardenInventoryOpenMulti: $("#gardenInventoryOpenMulti"),
+  gardenInventoryMulti: $("#gardenInventoryMulti"),
+  gardenInventoryQuantityMinus: $("#gardenInventoryQuantityMinus"),
+  gardenInventoryQuantity: $("#gardenInventoryQuantity"),
+  gardenInventoryQuantityPlus: $("#gardenInventoryQuantityPlus"),
+  gardenInventoryPlaceMany: $("#gardenInventoryPlaceMany"),
   cancelGardenDecorate: $("#cancelGardenDecorate"),
   saveGardenDecorate: $("#saveGardenDecorate"),
   navLetterBadge: $("#navLetterBadge"),
@@ -4269,7 +4285,7 @@ function renderGardenDecorateInventory(items) {
   if (els.gardenDecorateInventory) els.gardenDecorateInventory.hidden = !gardenDecorateMode;
   if (els.gardenDecorateInventoryCount) {
     els.gardenDecorateInventoryCount.textContent = storedItems.length
-      ? `${storedItems.length}개 · ${inventoryGroups.length}종`
+      ? `보관 ${storedItems.length}개 · ${inventoryGroups.length}종`
       : "0개";
   }
   if (!els.gardenDecorateInventoryList) return;
@@ -4282,7 +4298,7 @@ function renderGardenDecorateInventory(items) {
         const inventoryCount = group.inventory.length;
         const totalCount = group.all.length;
         return `
-          <button class="garden-inventory-item garden-inventory-group" type="button" data-decorate-place-item-id="${escapeAttr(itemToPlace.id)}" aria-label="${escapeAttr(catalogItem.name)} 총 ${totalCount}개, 정원 ${placedCount}개, 보관 ${inventoryCount}개. 한 개 정원에 꺼내기">
+          <button class="garden-inventory-item garden-inventory-group" type="button" data-inventory-item-key="${escapeAttr(group.itemKey)}" aria-haspopup="dialog" aria-label="${escapeAttr(catalogItem.name)} 총 ${totalCount}개, 정원 ${placedCount}개, 보관 ${inventoryCount}개. 관리창 열기">
             <span class="garden-inventory-art" aria-hidden="true">
               <img src="${escapeAttr(catalogItem.asset)}" alt="" />
               <b class="garden-inventory-quantity">×${totalCount}</b>
@@ -4301,6 +4317,120 @@ function renderGardenDecorateInventory(items) {
         <p>보관 중인 작은 것이 없어요.<br />정원의 장식을 짧게 눌러 선택해 보세요.</p>
       </div>
     `;
+}
+
+function gardenInventoryGroup(itemKey, items = state.foundItems || []) {
+  return groupFoundItemsByItemKey(items).find((group) => group.itemKey === itemKey) || null;
+}
+
+function closeGardenInventoryManager({ restoreFocus = true } = {}) {
+  const manager = els.gardenInventoryManager;
+  if (!manager || manager.hidden) return;
+  manager.hidden = true;
+  document.body.classList.remove("is-garden-inventory-manager-open");
+  activeGardenInventoryItemKey = "";
+  gardenInventoryMultiOpen = false;
+  gardenInventoryMultiQuantity = 2;
+  if (restoreFocus && gardenInventoryManagerReturnFocus?.isConnected) {
+    gardenInventoryManagerReturnFocus.focus({ preventScroll: true });
+  }
+  gardenInventoryManagerReturnFocus = null;
+}
+
+function normalizedGardenInventoryQuantity(group, requested = gardenInventoryMultiQuantity) {
+  const max = Math.max(1, group?.inventory?.length || 1);
+  const min = Math.min(2, max);
+  return clamp(Math.round(Number(requested) || min), min, max);
+}
+
+function renderGardenInventoryManager(items = state.foundItems || []) {
+  const manager = els.gardenInventoryManager;
+  if (!manager || manager.hidden || !activeGardenInventoryItemKey) return;
+
+  const group = gardenInventoryGroup(activeGardenInventoryItemKey, items);
+  if (!gardenDecorateMode || !group || group.inventory.length < 1) {
+    closeGardenInventoryManager({ restoreFocus: false });
+    return;
+  }
+
+  const inventoryCount = group.inventory.length;
+  const placedCount = group.placed.length;
+  const totalCount = group.all.length;
+  gardenInventoryMultiQuantity = normalizedGardenInventoryQuantity(group);
+
+  if (els.gardenInventoryManagerImage) els.gardenInventoryManagerImage.src = group.catalogItem.asset;
+  if (els.gardenInventoryManagerTitle) els.gardenInventoryManagerTitle.textContent = group.catalogItem.name;
+  if (els.gardenInventoryManagerCounts) {
+    els.gardenInventoryManagerCounts.textContent = `총 ${totalCount}개 · 정원 ${placedCount} · 보관 ${inventoryCount}`;
+  }
+  if (els.gardenInventoryPlaceOne) {
+    els.gardenInventoryPlaceOne.disabled = inventoryCount < 1;
+    els.gardenInventoryPlaceOne.textContent = inventoryCount === 1 ? "정원에 꺼내기" : "한 개 꺼내기";
+  }
+  if (els.gardenInventoryOpenMulti) {
+    els.gardenInventoryOpenMulti.hidden = inventoryCount < 2;
+    els.gardenInventoryOpenMulti.setAttribute("aria-expanded", String(gardenInventoryMultiOpen));
+  }
+  if (els.gardenInventoryMulti) els.gardenInventoryMulti.hidden = inventoryCount < 2 || !gardenInventoryMultiOpen;
+  if (els.gardenInventoryQuantity) els.gardenInventoryQuantity.textContent = String(gardenInventoryMultiQuantity);
+  if (els.gardenInventoryQuantityMinus) els.gardenInventoryQuantityMinus.disabled = gardenInventoryMultiQuantity <= 2;
+  if (els.gardenInventoryQuantityPlus) els.gardenInventoryQuantityPlus.disabled = gardenInventoryMultiQuantity >= inventoryCount;
+  if (els.gardenInventoryPlaceMany) {
+    els.gardenInventoryPlaceMany.disabled = inventoryCount < 2;
+    els.gardenInventoryPlaceMany.textContent = `${gardenInventoryMultiQuantity}개 꺼내기`;
+  }
+}
+
+function openGardenInventoryManager(itemKey, trigger = null) {
+  if (!gardenDecorateMode || gardenDecorateSaving || !els.gardenInventoryManager) return;
+  const group = gardenInventoryGroup(itemKey);
+  if (!group || group.inventory.length < 1) return;
+
+  activeGardenInventoryItemKey = itemKey;
+  gardenInventoryMultiOpen = false;
+  gardenInventoryMultiQuantity = normalizedGardenInventoryQuantity(group, 2);
+  gardenInventoryManagerReturnFocus = trigger || document.activeElement;
+  els.gardenInventoryManager.hidden = false;
+  document.body.classList.add("is-garden-inventory-manager-open");
+  renderGardenInventoryManager(state.foundItems || []);
+  window.requestAnimationFrame(() => els.gardenInventoryManagerClose?.focus({ preventScroll: true }));
+}
+
+function setGardenInventoryMultiOpen(open) {
+  if (!activeGardenInventoryItemKey) return;
+  gardenInventoryMultiOpen = Boolean(open);
+  const group = gardenInventoryGroup(activeGardenInventoryItemKey);
+  gardenInventoryMultiQuantity = normalizedGardenInventoryQuantity(group, gardenInventoryMultiQuantity);
+  renderGardenInventoryManager(state.foundItems || []);
+  if (gardenInventoryMultiOpen) {
+    window.requestAnimationFrame(() => els.gardenInventoryQuantityPlus?.focus({ preventScroll: true }));
+  }
+}
+
+function adjustGardenInventoryQuantity(delta) {
+  const group = gardenInventoryGroup(activeGardenInventoryItemKey);
+  if (!group || group.inventory.length < 2) return;
+  gardenInventoryMultiQuantity = normalizedGardenInventoryQuantity(
+    group,
+    gardenInventoryMultiQuantity + Number(delta || 0)
+  );
+  renderGardenInventoryManager(state.foundItems || []);
+}
+
+function placeGardenInventoryItems(itemKey, requestedCount = 1) {
+  if (!gardenDecorateMode || gardenDecorateSaving) return;
+  const group = gardenInventoryGroup(itemKey);
+  if (!group || group.inventory.length < 1) return;
+
+  const count = clamp(Math.round(Number(requestedCount) || 1), 1, group.inventory.length);
+  const itemsToPlace = group.inventory.slice(0, count);
+  itemsToPlace.forEach((item) => gardenDecorateDraftStorage.set(item.id, FOUND_ITEM_STORAGE.PLACED));
+  selectedFoundItemId = itemsToPlace.at(-1)?.id || null;
+  renderFoundItems();
+
+  showGardenDecorateNotice(count === 1
+    ? `${group.catalogItem.name}을 정원에 다시 꺼냈어요.`
+    : `${group.catalogItem.name} ${count}개를 정원에 꺼냈어요.`);
 }
 
 function renderGardenDecorateControls(foundItems) {
@@ -4336,6 +4466,7 @@ function renderGardenDecorateControls(foundItems) {
 
   renderGardenDecorateSelectedAction(foundItems);
   renderGardenDecorateInventory(foundItems);
+  renderGardenInventoryManager(foundItems);
 }
 
 function tutorialSandboxFoundItems() {
@@ -4420,6 +4551,7 @@ function startGardenDecorateMode() {
     return;
   }
 
+  closeGardenInventoryManager({ restoreFocus: false });
   gardenDecorateDraftPositions = new Map();
   gardenDecorateDraftStorage = new Map(
     foundItems.map((item) => [item.id, normalizedFoundItemStorageState(item.storageState)])
@@ -4457,6 +4589,7 @@ function cancelGardenDecorateMode() {
     releaseFoundItemPointer(activeFoundItemDrag.pointerId);
   }
   activeFoundItemDrag = null;
+  closeGardenInventoryManager({ restoreFocus: false });
   selectedFoundItemId = null;
   gardenDecorateMode = false;
   gardenDecorateDraftPositions = new Map();
@@ -4593,9 +4726,39 @@ function handleGardenDecorateActionClick(event) {
 }
 
 function handleGardenInventoryClick(event) {
-  const placeButton = event.target.closest("[data-decorate-place-item-id]");
-  if (!placeButton) return;
-  changeFoundItemDraftStorage(placeButton.dataset.decoratePlaceItemId, FOUND_ITEM_STORAGE.PLACED);
+  const groupButton = event.target.closest("[data-inventory-item-key]");
+  if (!groupButton) return;
+  openGardenInventoryManager(groupButton.dataset.inventoryItemKey, groupButton);
+}
+
+function handleGardenInventoryManagerClick(event) {
+  if (event.target === els.gardenInventoryManager) {
+    closeGardenInventoryManager();
+    return;
+  }
+  if (event.target.closest("#gardenInventoryManagerClose")) {
+    closeGardenInventoryManager();
+    return;
+  }
+  if (event.target.closest("#gardenInventoryPlaceOne")) {
+    placeGardenInventoryItems(activeGardenInventoryItemKey, 1);
+    return;
+  }
+  if (event.target.closest("#gardenInventoryOpenMulti")) {
+    setGardenInventoryMultiOpen(!gardenInventoryMultiOpen);
+    return;
+  }
+  if (event.target.closest("#gardenInventoryQuantityMinus")) {
+    adjustGardenInventoryQuantity(-1);
+    return;
+  }
+  if (event.target.closest("#gardenInventoryQuantityPlus")) {
+    adjustGardenInventoryQuantity(1);
+    return;
+  }
+  if (event.target.closest("#gardenInventoryPlaceMany")) {
+    placeGardenInventoryItems(activeGardenInventoryItemKey, gardenInventoryMultiQuantity);
+  }
 }
 
 async function saveGardenDecorateMode() {
@@ -4659,6 +4822,7 @@ async function saveGardenDecorateMode() {
   });
 
   activeFoundItemDrag = null;
+  closeGardenInventoryManager({ restoreFocus: false });
   selectedFoundItemId = null;
   gardenDecorateMode = false;
   gardenDecorateDraftPositions = new Map();
@@ -11949,6 +12113,13 @@ function bindEvents() {
   els.saveGardenDecorate.addEventListener("click", () => { void saveGardenDecorateMode(); });
   els.gardenDecorateSelectedAction?.addEventListener("click", handleGardenDecorateActionClick);
   els.gardenDecorateInventoryList?.addEventListener("click", handleGardenInventoryClick);
+  els.gardenInventoryManager?.addEventListener("click", handleGardenInventoryManagerClick);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !els.gardenInventoryManager?.hidden) {
+      event.preventDefault();
+      closeGardenInventoryManager();
+    }
+  });
   els.foundItemsLayer.addEventListener("pointerdown", beginFoundItemDrag, { passive: false });
   // 드래그 시작 뒤에는 장식 밖으로 손가락·마우스가 벗어나도 끊기지 않도록
   // window 캡처 단계에서 이동과 종료를 받습니다.

@@ -10259,3 +10259,196 @@ body.is-garden-decorating .toast {
     max-width: 205px;
   }
 }
+
+
+/* ========================================================================== 
+   GARDEN INVENTORY MANAGER v4
+   - 보관함 카드는 즉시 꺼내지 않고 관리창을 엽니다.
+   - 한 개 또는 수량을 정해 여러 개를 꺼낼 수 있습니다.
+   ========================================================================== */
+.garden-inventory-manager-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 84;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(49, 63, 54, .28);
+  backdrop-filter: blur(5px);
+}
+.garden-inventory-manager-backdrop[hidden] { display: none !important; }
+.garden-inventory-manager {
+  position: relative;
+  width: min(360px, 100%);
+  padding: 19px 18px 16px;
+  border: 1px solid rgba(219, 230, 216, .98);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, .98);
+  box-shadow: 0 24px 60px rgba(50, 70, 56, .22);
+  color: #63766a;
+}
+.garden-inventory-manager-close {
+  position: absolute;
+  top: 10px;
+  right: 11px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: #f2f6f1;
+  color: #819184;
+  font: inherit;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+.garden-inventory-manager-summary {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding-right: 34px;
+}
+.garden-inventory-manager-art {
+  flex: 0 0 76px;
+  width: 76px;
+  height: 70px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(216, 229, 213, .94);
+  border-radius: 18px;
+  background: #f8fbf7;
+}
+.garden-inventory-manager-art img {
+  width: 64px;
+  height: 56px;
+  object-fit: contain;
+}
+.garden-inventory-manager-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.garden-inventory-manager-copy small {
+  color: #9aa69c;
+  font-size: 10px;
+  font-weight: 800;
+}
+.garden-inventory-manager-copy b {
+  overflow: hidden;
+  color: #536d5b;
+  font-size: 17px;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.garden-inventory-manager-copy span {
+  color: #87968a;
+  font-size: 11px;
+  font-weight: 800;
+}
+.garden-inventory-manager-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 16px;
+}
+.garden-inventory-manager-actions button,
+.garden-inventory-multi-confirm {
+  min-height: 44px;
+  border: 1px solid rgba(210, 224, 207, .98);
+  border-radius: 14px;
+  background: #f6f9f5;
+  color: #667d6c;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.garden-inventory-manager-actions .garden-inventory-manager-primary,
+.garden-inventory-multi-confirm {
+  border-color: rgba(203, 221, 191, .98);
+  background: #edf6df;
+  color: #58725f;
+}
+.garden-inventory-manager-actions button:hover,
+.garden-inventory-manager-actions button:focus-visible,
+.garden-inventory-multi-confirm:hover,
+.garden-inventory-multi-confirm:focus-visible,
+.garden-inventory-manager-close:focus-visible {
+  outline: 2px solid rgba(126, 164, 128, .35);
+  outline-offset: 2px;
+}
+.garden-inventory-multi {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 11px;
+  border: 1px solid rgba(218, 230, 215, .94);
+  border-radius: 16px;
+  background: #fbfdf9;
+}
+.garden-inventory-multi[hidden] { display: none !important; }
+.garden-inventory-multi-label {
+  color: #7a8d7f;
+  font-size: 11px;
+  font-weight: 900;
+}
+.garden-inventory-stepper {
+  justify-self: end;
+  display: grid;
+  grid-template-columns: 36px 46px 36px;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(207, 223, 205, .98);
+  border-radius: 12px;
+  background: #fff;
+}
+.garden-inventory-stepper button {
+  height: 36px;
+  border: 0;
+  background: transparent;
+  color: #6d8272;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.garden-inventory-stepper button:disabled {
+  opacity: .3;
+  cursor: default;
+}
+.garden-inventory-stepper output {
+  display: grid;
+  place-items: center;
+  height: 36px;
+  border-inline: 1px solid rgba(222, 232, 220, .96);
+  color: #58705e;
+  font-size: 13px;
+  font-weight: 950;
+}
+.garden-inventory-multi-confirm {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+.garden-inventory-manager-note {
+  margin: 11px 0 0;
+  color: #9aa49b;
+  font-size: 10px;
+  font-weight: 750;
+  text-align: center;
+}
+body.is-garden-inventory-manager-open { overflow: hidden; }
+@media (max-width: 600px) {
+  .garden-inventory-manager-backdrop {
+    align-items: end;
+    padding: 12px;
+  }
+  .garden-inventory-manager {
+    width: 100%;
+    padding: 18px 16px calc(15px + env(safe-area-inset-bottom));
+    border-radius: 22px;
+  }
+}
