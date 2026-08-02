@@ -10180,3 +10180,82 @@ body.is-garden-decorating .toast {
     bottom: max(176px, calc(env(safe-area-inset-bottom) + 176px));
   }
 }
+
+
+/* ========================================================================== 
+   GARDEN INVENTORY GROUPING v2
+   - 같은 장식은 보관함에서 한 카드로 묶고 ×수량 표시
+   - 정원 배치 수와 보관 수를 함께 안내
+   ========================================================================== */
+.garden-inventory-group {
+  flex-basis: 96px;
+  min-height: 92px;
+  grid-template-rows: 42px auto auto;
+  align-content: center;
+  gap: 3px;
+  padding: 7px 6px 6px;
+}
+.garden-inventory-art {
+  position: relative;
+  width: 58px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+}
+.garden-inventory-art img {
+  width: 50px;
+  height: 40px;
+  object-fit: contain;
+}
+.garden-inventory-quantity {
+  position: absolute;
+  right: -7px;
+  bottom: -1px;
+  min-width: 25px;
+  padding: 2px 5px;
+  border: 2px solid rgba(255,255,255,.96);
+  border-radius: 999px;
+  background: #6f8d73;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 950;
+  line-height: 1.15;
+  letter-spacing: -.02em;
+  box-shadow: 0 3px 8px rgba(75, 107, 81, .2);
+}
+.garden-inventory-name {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  color: #657969;
+  font-size: 9px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.garden-inventory-counts {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #8b9a8d;
+  font-size: 7.5px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+.garden-inventory-counts span + span::before {
+  content: "·";
+  margin-right: 4px;
+  color: #b7c1b8;
+}
+@media (max-width: 600px) {
+  .garden-inventory-group {
+    flex-basis: 88px;
+    min-height: 88px;
+  }
+  .garden-decorate-inventory-head small {
+    max-width: 205px;
+  }
+}

@@ -303,6 +303,39 @@ function inventoryFoundItems(items = state.foundItems || []) {
   return items.filter((item) => foundItemCatalog[item.itemKey] && foundItemStorageState(item) === FOUND_ITEM_STORAGE.INVENTORY);
 }
 
+// 같은 종류의 작은 것을 한 묶음으로 보여주기 위한 화면 전용 집계입니다.
+// 실제 장식 행과 좌표는 그대로 유지하므로, 보관함에서 꺼낼 때는 묶음 안의 장식 한 개만 placed로 전환합니다.
+function groupFoundItemsByItemKey(items = state.foundItems || []) {
+  const groups = new Map();
+
+  items.forEach((item, index) => {
+    const catalogItem = foundItemCatalog[item?.itemKey];
+    if (!catalogItem) return;
+
+    let group = groups.get(item.itemKey);
+    if (!group) {
+      group = {
+        itemKey: item.itemKey,
+        catalogItem,
+        firstIndex: index,
+        all: [],
+        placed: [],
+        inventory: [],
+      };
+      groups.set(item.itemKey, group);
+    }
+
+    group.all.push(item);
+    if (foundItemStorageState(item) === FOUND_ITEM_STORAGE.INVENTORY) {
+      group.inventory.push(item);
+    } else {
+      group.placed.push(item);
+    }
+  });
+
+  return [...groups.values()].sort((a, b) => a.firstIndex - b.firstIndex);
+}
+
 const animalVisitors = {
   bird: {
     kind: "bird",
@@ -4213,11 +4246,18 @@ function renderGardenDecorateSelectedAction(items) {
     return;
   }
 
+  const selectedGroup = groupFoundItemsByItemKey(items).find((group) => group.itemKey === selected.itemKey);
+  const placedCount = selectedGroup?.placed.length || 1;
+  const inventoryCount = selectedGroup?.inventory.length || 0;
+
   action.hidden = false;
   action.innerHTML = `
     <span class="garden-decorate-selected-copy">
       <img src="${escapeAttr(catalogItem.asset)}" alt="" />
-      <span><small>선택한 작은 것</small><b>${escapeHTML(catalogItem.name)}</b></span>
+      <span>
+        <small>선택한 작은 것 · 정원 ${placedCount} · 보관 ${inventoryCount}</small>
+        <b>${escapeHTML(catalogItem.name)}</b>
+      </span>
     </span>
     <button type="button" data-decorate-store-item-id="${escapeAttr(selected.id)}">보관함에 넣기</button>
   `;
@@ -4225,18 +4265,33 @@ function renderGardenDecorateSelectedAction(items) {
 
 function renderGardenDecorateInventory(items) {
   const storedItems = inventoryFoundItems(items);
+  const inventoryGroups = groupFoundItemsByItemKey(items).filter((group) => group.inventory.length > 0);
   if (els.gardenDecorateInventory) els.gardenDecorateInventory.hidden = !gardenDecorateMode;
-  if (els.gardenDecorateInventoryCount) els.gardenDecorateInventoryCount.textContent = `${storedItems.length}개`;
+  if (els.gardenDecorateInventoryCount) {
+    els.gardenDecorateInventoryCount.textContent = storedItems.length
+      ? `${storedItems.length}개 · ${inventoryGroups.length}종`
+      : "0개";
+  }
   if (!els.gardenDecorateInventoryList) return;
 
-  els.gardenDecorateInventoryList.innerHTML = storedItems.length
-    ? storedItems.map((item) => {
-        const catalogItem = foundItemCatalog[item.itemKey];
-        if (!catalogItem) return "";
+  els.gardenDecorateInventoryList.innerHTML = inventoryGroups.length
+    ? inventoryGroups.map((group) => {
+        const { catalogItem } = group;
+        const itemToPlace = group.inventory[0];
+        const placedCount = group.placed.length;
+        const inventoryCount = group.inventory.length;
+        const totalCount = group.all.length;
         return `
-          <button class="garden-inventory-item" type="button" data-decorate-place-item-id="${escapeAttr(item.id)}" aria-label="${escapeAttr(catalogItem.name)} 정원에 꺼내기">
-            <img src="${escapeAttr(catalogItem.asset)}" alt="" />
-            <span>${escapeHTML(catalogItem.name)}</span>
+          <button class="garden-inventory-item garden-inventory-group" type="button" data-decorate-place-item-id="${escapeAttr(itemToPlace.id)}" aria-label="${escapeAttr(catalogItem.name)} 총 ${totalCount}개, 정원 ${placedCount}개, 보관 ${inventoryCount}개. 한 개 정원에 꺼내기">
+            <span class="garden-inventory-art" aria-hidden="true">
+              <img src="${escapeAttr(catalogItem.asset)}" alt="" />
+              <b class="garden-inventory-quantity">×${inventoryCount}</b>
+            </span>
+            <span class="garden-inventory-name">${escapeHTML(catalogItem.name)}</span>
+            <small class="garden-inventory-counts">
+              <span>정원 ${placedCount}</span>
+              <span>보관 ${inventoryCount}</span>
+            </small>
           </button>
         `;
       }).join("")
