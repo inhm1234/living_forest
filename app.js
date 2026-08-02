@@ -4158,8 +4158,15 @@ function renderGardenDecorateControls(foundItems) {
   els.foundItemsLayer?.classList.toggle("is-decorating", gardenDecorateMode && hasFoundItems);
 
   if (els.openGardenDecorate) {
-    els.openGardenDecorate.hidden = gardenDecorateMode || !hasFoundItems;
+    // 꾸미기는 둘째 줄의 고정 메뉴이므로 장식 개수와 관계없이 항상 보입니다.
+    els.openGardenDecorate.hidden = false;
+    els.openGardenDecorate.disabled = gardenDecorateSaving;
+    els.openGardenDecorate.classList.toggle("is-active", gardenDecorateMode && hasFoundItems);
     els.openGardenDecorate.setAttribute("aria-pressed", gardenDecorateMode ? "true" : "false");
+    els.openGardenDecorate.setAttribute(
+      "aria-label",
+      gardenDecorateMode ? "정원 꾸미기 진행 중" : "정원 꾸미기 시작"
+    );
   }
   if (els.gardenDecorateEditActions) {
     els.gardenDecorateEditActions.classList.toggle("hidden", !gardenDecorateMode || !hasFoundItems);
@@ -4223,7 +4230,15 @@ function renderFoundItems() {
 
 function startGardenDecorateMode() {
   const foundItems = (state.foundItems || []).filter((item) => foundItemCatalog[item.itemKey]);
-  if (!foundItems.length || gardenDecorateSaving) return;
+  if (gardenDecorateSaving) return;
+  if (!foundItems.length) {
+    showToast("꾸밀 작은 것을 먼저 찾아보세요.");
+    return;
+  }
+  if (gardenDecorateMode) {
+    showToast("지금 정원을 꾸미고 있어요.");
+    return;
+  }
 
   // 꾸미기를 시작하는 순간, 눈에 보이는 현재 위치를 공통 정원 세계의 초안 좌표로 잡습니다.
   // 예전에 화면 전체 기준으로 저장된 위치도 이 단계에서는 화면에 보이는 자리 그대로
@@ -11843,9 +11858,6 @@ function bindEvents() {
     setMoreMenuOpen(false);
     moreMenuButton?.focus();
   });
-  $$('[data-more-action="decorate"]').forEach((button) => button.addEventListener("click", () => {
-    setMoreMenuOpen(false);
-  }));
   $$('[data-more-action="feedback"]').forEach((button) => button.addEventListener("click", () => {
     setMoreMenuOpen(false);
     openFeedbackSheet();

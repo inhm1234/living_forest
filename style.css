@@ -810,7 +810,7 @@ textarea::placeholder { color: #a7b4bd; }
   .garden-stage.is-garden-decorating .garden-decorate-cancel,
   .garden-stage.is-garden-decorating .garden-decorate-save { min-height: 38px; }
   .mood-grid { gap: 7px; }
-  .mood-grid-primary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mood-grid-primary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .mood-grid-primary .mood-choice { width: 100%; }
   .mood-choice { min-height: 38px; padding: 8px 11px; font-size: 10px; }
 }
@@ -6892,7 +6892,7 @@ body.forest-unicorn-live-enabled .header-actions {
 }
 
 .garden-extra-nav.special-friend-locked {
-  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 @media (max-width: 420px) {
@@ -9848,5 +9848,75 @@ body.animal-preview-clean-mode .ff-cinematic {
   }
   .garden-decorate-flow-controls .garden-decorate-save {
     flex: 1 1 auto;
+  }
+}
+
+
+/* ========================================================================== 
+   GARDEN MENU FOUR v4
+   둘째 줄을 원오브텐 대전 · 정원 꾸미기 · 특별친구 · 더보기의 동일한 4칸으로 구성합니다.
+   꾸미기 진입은 항상 보이되 다른 기능보다 크거나 강하게 강조하지 않습니다.
+   ========================================================================== */
+.garden-extra-nav {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.garden-extra-nav.special-friend-locked {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.garden-extra-nav .secondary-action-icon-decorate {
+  background: rgba(229, 244, 232, .94);
+  border-color: rgba(102, 151, 117, .17);
+  color: #658d70;
+}
+
+.garden-extra-nav .secondary-action-icon-decorate > span {
+  font-size: 19px;
+  transform: translateY(-.5px);
+}
+
+.garden-extra-nav .secondary-action-decorate.is-active,
+.garden-extra-nav .secondary-action-decorate[aria-pressed="true"] {
+  border-color: rgba(99, 154, 116, .36);
+  background: rgba(236, 247, 239, .94);
+  box-shadow: 0 9px 20px rgba(77, 124, 90, .09);
+}
+
+.garden-extra-nav .secondary-action-decorate.is-active .secondary-action-icon-decorate,
+.garden-extra-nav .secondary-action-decorate[aria-pressed="true"] .secondary-action-icon-decorate {
+  background: rgba(217, 239, 223, .98);
+  color: #547f61;
+}
+
+.garden-extra-nav .secondary-action-decorate:disabled {
+  cursor: wait;
+  opacity: .72;
+}
+
+@media (max-width: 380px) {
+  .garden-extra-nav {
+    gap: 5px;
+  }
+
+  .garden-extra-nav .secondary-action,
+  .garden-extra-nav .secondary-action-oot-card {
+    border-radius: 15px;
+  }
+
+  .garden-extra-nav .secondary-action {
+    padding-left: 3px;
+    padding-right: 3px;
+  }
+
+  .garden-extra-nav .secondary-action .secondary-action-label,
+  .garden-extra-nav .secondary-action-oot-main .secondary-action-label {
+    font-size: 10px;
+    letter-spacing: -.035em;
+  }
+
+  .garden-extra-nav .secondary-action-subcopy {
+    font-size: 7.5px;
+    white-space: nowrap;
   }
 }
