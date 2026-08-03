@@ -149,17 +149,6 @@
 .garden-recipe-ingredient.is-missing { background: #f8eeee; color: #ad7c78; }
 .garden-recipe-ingredient img { width: 21px; height: 18px; object-fit: contain; }
 .garden-recipe-ingredient.is-flexible span:first-child { font-size: 14px; line-height: 1; }
-.garden-recipe-protection-note {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 7px;
-  color: #829087;
-  font-size: 8.5px;
-  font-weight: 850;
-  line-height: 1.35;
-}
-.garden-recipe-protection-note > span:first-child { font-size: 11px; line-height: 1; }
 .garden-recipe-prepare {
   width: 100%;
   min-height: 34px;
