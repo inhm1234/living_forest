@@ -1,0 +1,228 @@
+/* TODAYFOREST DECORATION RECIPES V1 --------------------------------------- */
+.garden-decorate-inventory-head-actions {
+  flex: 0 0 auto;
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+.garden-recipe-open {
+  min-height: 30px;
+  padding: 6px 10px;
+  border: 1px solid rgba(195, 216, 187, .95);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #eef8e9, #fff5dc);
+  color: #667e67;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 950;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 5px 12px rgba(85, 117, 82, .1);
+}
+.garden-recipe-open:hover,
+.garden-recipe-open:focus-visible { transform: translateY(-1px); outline: none; }
+.garden-recipe-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 88;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(47, 61, 52, .31);
+  backdrop-filter: blur(6px);
+}
+.garden-recipe-backdrop[hidden] { display: none !important; }
+.garden-recipe-dialog {
+  position: relative;
+  width: min(430px, 100%);
+  max-height: min(84vh, 720px);
+  overflow: hidden;
+  border: 1px solid rgba(218, 229, 214, .98);
+  border-radius: 26px;
+  background: rgba(253, 255, 251, .99);
+  box-shadow: 0 26px 70px rgba(46, 67, 51, .24);
+  color: #63766a;
+}
+.garden-recipe-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 20px 20px 13px;
+  border-bottom: 1px solid rgba(222, 231, 218, .82);
+}
+.garden-recipe-dialog-head small {
+  display: block;
+  color: #a08f70;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .12em;
+}
+.garden-recipe-dialog-head h2 {
+  margin: 4px 0 0;
+  color: #536b59;
+  font-size: 19px;
+  letter-spacing: -.04em;
+}
+.garden-recipe-close {
+  flex: 0 0 auto;
+  width: 35px;
+  height: 35px;
+  border: 0;
+  border-radius: 50%;
+  background: #f0f5ee;
+  color: #7f8f82;
+  font: inherit;
+  font-size: 21px;
+  cursor: pointer;
+}
+.garden-recipe-dialog-body {
+  max-height: calc(min(84vh, 720px) - 76px);
+  overflow-y: auto;
+  padding: 14px 16px 18px;
+  overscroll-behavior: contain;
+}
+.garden-recipe-intro {
+  margin: 0 2px 12px;
+  color: #7f8e82;
+  font-size: 11px;
+  font-weight: 760;
+  line-height: 1.55;
+}
+.garden-recipe-list { display: grid; gap: 11px; }
+.garden-recipe-card {
+  display: grid;
+  grid-template-columns: 94px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid rgba(218, 229, 214, .95);
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(255,255,255,.98), rgba(247,251,243,.94));
+}
+.garden-recipe-card.is-ready { border-color: rgba(183, 213, 172, .98); box-shadow: 0 8px 18px rgba(75, 111, 76, .08); }
+.garden-recipe-result-art {
+  width: 94px;
+  min-height: 96px;
+  display: grid;
+  place-items: center;
+  border-radius: 17px;
+  background: linear-gradient(145deg, #f7f2df, #eff7e9);
+}
+.garden-recipe-result-art img {
+  width: 88px;
+  height: 86px;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 6px rgba(61,87,64,.13));
+}
+.garden-recipe-card-copy { min-width: 0; }
+.garden-recipe-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.garden-recipe-card-title b { color: #536d5b; font-size: 14px; letter-spacing: -.03em; }
+.garden-recipe-ready-badge {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #e7f3df;
+  color: #6d8a6b;
+  font-size: 8px;
+  font-weight: 950;
+}
+.garden-recipe-ready-badge.is-missing { background: #f1f2ed; color: #9da69d; }
+.garden-recipe-description { margin: 5px 0 8px; color: #879589; font-size: 9.5px; font-weight: 720; line-height: 1.45; }
+.garden-recipe-ingredients { display: flex; flex-wrap: wrap; gap: 5px; }
+.garden-recipe-ingredient {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 25px;
+  padding: 4px 7px;
+  border-radius: 9px;
+  background: #f3f7f1;
+  color: #728276;
+  font-size: 8px;
+  font-weight: 900;
+}
+.garden-recipe-ingredient.is-missing { background: #f8eeee; color: #ad7c78; }
+.garden-recipe-ingredient img { width: 21px; height: 18px; object-fit: contain; }
+.garden-recipe-ingredient.is-flexible span:first-child { font-size: 14px; line-height: 1; }
+.garden-recipe-prepare {
+  width: 100%;
+  min-height: 34px;
+  margin-top: 9px;
+  border: 1px solid rgba(185, 211, 176, .9);
+  border-radius: 11px;
+  background: linear-gradient(135deg, #e1f1db, #f8f0d7);
+  color: #5f775f;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 950;
+  cursor: pointer;
+}
+.garden-recipe-prepare:disabled { border-color: #e2e6df; background: #f1f3ef; color: #a5aea5; cursor: default; }
+.garden-recipe-confirm {
+  display: grid;
+  gap: 13px;
+  text-align: center;
+}
+.garden-recipe-confirm-result {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  padding: 15px;
+  border-radius: 20px;
+  background: linear-gradient(145deg, #f8f3df, #edf7e8);
+}
+.garden-recipe-confirm-result img { width: 150px; height: 126px; object-fit: contain; filter: drop-shadow(0 7px 8px rgba(61,87,64,.14)); }
+.garden-recipe-confirm-result small { color: #a18f70; font-size: 9px; font-weight: 950; letter-spacing: .08em; }
+.garden-recipe-confirm-result b { color: #536d5b; font-size: 18px; }
+.garden-recipe-consume-box {
+  padding: 13px;
+  border: 1px solid rgba(222, 229, 218, .94);
+  border-radius: 17px;
+  background: #fff;
+  text-align: left;
+}
+.garden-recipe-consume-box > b { display: block; color: #657769; font-size: 11px; }
+.garden-recipe-consume-list { display: grid; gap: 6px; margin-top: 9px; }
+.garden-recipe-consume-item { display: flex; align-items: center; gap: 8px; color: #78877b; font-size: 10px; font-weight: 850; }
+.garden-recipe-consume-item img { width: 32px; height: 26px; object-fit: contain; }
+.garden-recipe-confirm-note { margin: 0; color: #8a978c; font-size: 9.5px; font-weight: 720; line-height: 1.5; }
+.garden-recipe-confirm-actions { display: grid; grid-template-columns: 1fr 1.35fr; gap: 8px; }
+.garden-recipe-confirm-actions button {
+  min-height: 42px;
+  border-radius: 13px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 950;
+  cursor: pointer;
+}
+.garden-recipe-back { border: 1px solid #dde5da; background: #f5f7f3; color: #7c897e; }
+.garden-recipe-exchange { border: 1px solid #b9d3ae; background: linear-gradient(135deg, #dcefd4, #f5edcf); color: #58705c; }
+.garden-recipe-exchange:disabled { opacity: .55; cursor: wait; }
+body.is-garden-recipe-open { overflow: hidden; }
+
+/* 특별장식은 일반 소품보다 큰 풍경형 이미지라 정원에서 조금 넓게 보여줍니다. */
+.found-item[data-found-item^="crafted_"],
+.friend-found-item[data-friend-found-item-key^="crafted_"] {
+  width: clamp(112px, 34vw, 152px);
+}
+.found-item[data-found-item^="crafted_"] img,
+.friend-found-item[data-friend-found-item-key^="crafted_"] img {
+  width: 100%;
+  max-height: 126px;
+  object-fit: contain;
+}
+
+@media (max-width: 520px) {
+  .garden-decorate-inventory-head { align-items: flex-start; }
+  .garden-decorate-inventory-head-actions { gap: 5px; }
+  .garden-recipe-open { padding-inline: 8px; }
+  .garden-recipe-card { grid-template-columns: 78px minmax(0, 1fr); gap: 9px; padding: 10px; }
+  .garden-recipe-result-art { width: 78px; min-height: 86px; }
+  .garden-recipe-result-art img { width: 74px; height: 74px; }
+  .garden-recipe-dialog-body { padding-inline: 12px; }
+}

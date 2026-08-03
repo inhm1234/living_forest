@@ -1,5 +1,10 @@
 /* Production mirror of dev/garden-login-test/garden.js v19. */
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import {
+  DECORATION_RECIPE_CATALOG,
+  decorationRecipeByKey,
+  decorationRecipeResultCatalog,
+} from "./decoration-recipes.js?v=decoration-recipes-v1";
 
 const SUPABASE_URL = "https://xdcsppaptcmgpvnzgoab.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_oMrSqUFX9UM1n4Ks-AhYKw_OvcZOfPs";
@@ -272,6 +277,9 @@ const foundItemCatalog = {
     detail: "숲길을 가리키는 작은 표지판이 세워졌어요.",
     asset: "assets/decorations/little-sign.png",
   },
+  // 레시피 결과물도 일반 장식과 같은 배치·보관 흐름을 사용합니다.
+  // 결과 메타데이터는 decoration-recipes.js에서 관리해 레시피 추가 시 앱 본체 수정을 줄입니다.
+  ...decorationRecipeResultCatalog(),
 };
 
 // GARDEN INVENTORY V1 -------------------------------------------------------
@@ -860,6 +868,11 @@ let activeGardenInventoryItemKey = "";
 let gardenInventoryMultiOpen = false;
 let gardenInventoryMultiQuantity = 2;
 let gardenInventoryManagerReturnFocus = null;
+let gardenDecorateBaselinePositions = new Map();
+let gardenDecorateBaselineStorage = new Map();
+let activeDecorationRecipeKey = "";
+let decorationRecipeExchangeBusy = false;
+let decorationRecipeReturnFocus = null;
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -940,6 +953,10 @@ const els = {
   gardenInventoryQuantity: $("#gardenInventoryQuantity"),
   gardenInventoryQuantityPlus: $("#gardenInventoryQuantityPlus"),
   gardenInventoryPlaceMany: $("#gardenInventoryPlaceMany"),
+  openDecorationRecipes: $("#openDecorationRecipes"),
+  decorationRecipeDialog: $("#decorationRecipeDialog"),
+  decorationRecipeClose: $("#decorationRecipeClose"),
+  decorationRecipeContent: $("#decorationRecipeContent"),
   cancelGardenDecorate: $("#cancelGardenDecorate"),
   saveGardenDecorate: $("#saveGardenDecorate"),
   navLetterBadge: $("#navLetterBadge"),
@@ -4288,6 +4305,9 @@ function renderGardenDecorateInventory(items) {
       ? `보관 ${storedItems.length}개 · ${inventoryGroups.length}종`
       : "0개";
   }
+  if (els.openDecorationRecipes) {
+    els.openDecorationRecipes.disabled = gardenDecorateSaving || decorationRecipeExchangeBusy;
+  }
   if (!els.gardenDecorateInventoryList) return;
 
   els.gardenDecorateInventoryList.innerHTML = inventoryGroups.length
@@ -4433,6 +4453,303 @@ function placeGardenInventoryItems(itemKey, requestedCount = 1) {
     : `${group.catalogItem.name} ${count}개를 정원에 꺼냈어요.`);
 }
 
+
+function gardenDecorateMapsEqual(left, right, valueEqual = (a, b) => a === b) {
+  if (left.size !== right.size) return false;
+  for (const [key, value] of left.entries()) {
+    if (!right.has(key) || !valueEqual(value, right.get(key))) return false;
+  }
+  return true;
+}
+
+function gardenDecorateHasUnsavedChanges() {
+  const sameStorage = gardenDecorateMapsEqual(
+    gardenDecorateDraftStorage,
+    gardenDecorateBaselineStorage,
+    (a, b) => normalizedFoundItemStorageState(a) === normalizedFoundItemStorageState(b)
+  );
+  const samePositions = gardenDecorateMapsEqual(
+    gardenDecorateDraftPositions,
+    gardenDecorateBaselinePositions,
+    (a, b) => {
+      const ax = Number(a?.x);
+      const ay = Number(a?.y);
+      const bx = Number(b?.x);
+      const by = Number(b?.y);
+      return Number.isFinite(ax) && Number.isFinite(ay) && Number.isFinite(bx) && Number.isFinite(by)
+        ? Math.abs(ax - bx) < .05 && Math.abs(ay - by) < .05
+        : a === b;
+    }
+  );
+  return !sameStorage || !samePositions;
+}
+
+function recipeInventoryItems(items = state.foundItems || []) {
+  return items
+    .filter((item) => foundItemCatalog[item?.itemKey]
+      && normalizedFoundItemStorageState(item.storageState) === FOUND_ITEM_STORAGE.INVENTORY)
+    .slice()
+    .sort((a, b) => {
+      const timeA = new Date(a.foundAt || 0).getTime() || 0;
+      const timeB = new Date(b.foundAt || 0).getTime() || 0;
+      return timeA - timeB
+        || String(a.itemKey).localeCompare(String(b.itemKey))
+        || String(a.id).localeCompare(String(b.id));
+    });
+}
+
+function decorationRecipeSelection(recipe, items = state.foundItems || []) {
+  const remaining = recipeInventoryItems(items);
+  const selected = [];
+  const requirements = [];
+
+  (recipe?.ingredients || []).forEach((ingredient) => {
+    const requested = Math.max(0, Number(ingredient.quantity) || 0);
+    const availableBefore = remaining.filter((item) => item.itemKey === ingredient.itemKey).length;
+    let used = 0;
+    while (used < requested) {
+      const index = remaining.findIndex((item) => item.itemKey === ingredient.itemKey);
+      if (index < 0) break;
+      const [item] = remaining.splice(index, 1);
+      selected.push({ item, role: "required" });
+      used += 1;
+    }
+    requirements.push({
+      ...ingredient,
+      requested,
+      available: availableBefore,
+      selected: used,
+      missing: Math.max(0, requested - used),
+    });
+  });
+
+  const flexibleRequested = Math.max(0, Number(recipe?.flexible?.quantity) || 0);
+  const allowed = new Set(recipe?.flexible?.allowedItemKeys || []);
+  const flexibleAvailableBefore = remaining.filter((item) => allowed.has(item.itemKey)).length;
+  let flexibleSelected = 0;
+  while (flexibleSelected < flexibleRequested) {
+    const index = remaining.findIndex((item) => allowed.has(item.itemKey));
+    if (index < 0) break;
+    const [item] = remaining.splice(index, 1);
+    selected.push({ item, role: "flexible" });
+    flexibleSelected += 1;
+  }
+
+  const flexible = {
+    requested: flexibleRequested,
+    available: flexibleAvailableBefore,
+    selected: flexibleSelected,
+    missing: Math.max(0, flexibleRequested - flexibleSelected),
+  };
+
+  return {
+    selected,
+    requirements,
+    flexible,
+    canCraft: requirements.every((item) => item.missing === 0) && flexible.missing === 0,
+  };
+}
+
+function closeDecorationRecipeDialog({ restoreFocus = true } = {}) {
+  if (!els.decorationRecipeDialog || els.decorationRecipeDialog.hidden) return;
+  els.decorationRecipeDialog.hidden = true;
+  document.body.classList.remove("is-garden-recipe-open");
+  activeDecorationRecipeKey = "";
+  if (restoreFocus && decorationRecipeReturnFocus?.isConnected) {
+    decorationRecipeReturnFocus.focus({ preventScroll: true });
+  }
+  decorationRecipeReturnFocus = null;
+}
+
+function decorationRecipeIngredientHTML(itemKey, requested, available, missing = 0) {
+  const catalogItem = foundItemCatalog[itemKey];
+  if (!catalogItem) return "";
+  return `
+    <span class="garden-recipe-ingredient${missing ? " is-missing" : ""}">
+      <img src="${escapeAttr(catalogItem.asset)}" alt="" />
+      <span>${escapeHTML(catalogItem.name)} ${Math.min(available, requested)}/${requested}</span>
+    </span>
+  `;
+}
+
+function renderDecorationRecipeList() {
+  return `
+    <p class="garden-recipe-intro">보관함에 있는 일반 장식만 재료로 사용해요. 정원에 놓인 장식과 특별장식은 사라지지 않아요.</p>
+    <div class="garden-recipe-list">
+      ${DECORATION_RECIPE_CATALOG
+        .filter((recipe) => recipe.enabled !== false)
+        .slice()
+        .sort((a, b) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0))
+        .map((recipe) => {
+          const selection = decorationRecipeSelection(recipe);
+          return `
+            <article class="garden-recipe-card${selection.canCraft ? " is-ready" : ""}">
+              <span class="garden-recipe-result-art" aria-hidden="true">
+                <img src="${escapeAttr(recipe.result.asset)}" alt="" />
+              </span>
+              <span class="garden-recipe-card-copy">
+                <span class="garden-recipe-card-title">
+                  <b>${escapeHTML(recipe.name)}</b>
+                  <span class="garden-recipe-ready-badge${selection.canCraft ? "" : " is-missing"}">${selection.canCraft ? "만들 수 있어요" : "재료 모으는 중"}</span>
+                </span>
+                <p class="garden-recipe-description">${escapeHTML(recipe.description)}</p>
+                <span class="garden-recipe-ingredients">
+                  ${selection.requirements.map((ingredient) => decorationRecipeIngredientHTML(
+                    ingredient.itemKey,
+                    ingredient.requested,
+                    ingredient.available,
+                    ingredient.missing
+                  )).join("")}
+                  <span class="garden-recipe-ingredient is-flexible${selection.flexible.missing ? " is-missing" : ""}">
+                    <span aria-hidden="true">🍃</span>
+                    <span>아무 일반 장식 ${Math.min(selection.flexible.available, selection.flexible.requested)}/${selection.flexible.requested}</span>
+                  </span>
+                </span>
+                <button class="garden-recipe-prepare" type="button" data-recipe-prepare="${escapeAttr(recipe.key)}"${!selection.canCraft || decorationRecipeExchangeBusy ? " disabled" : ""}>${selection.canCraft ? "재료 확인하고 만들기" : "재료가 더 필요해요"}</button>
+              </span>
+            </article>
+          `;
+        }).join("")}
+    </div>
+  `;
+}
+
+function renderDecorationRecipeConfirmation(recipe) {
+  const selection = decorationRecipeSelection(recipe);
+  if (!selection.canCraft) {
+    activeDecorationRecipeKey = "";
+    return renderDecorationRecipeList();
+  }
+
+  return `
+    <div class="garden-recipe-confirm">
+      <div class="garden-recipe-confirm-result">
+        <small>완성될 특별장식</small>
+        <img src="${escapeAttr(recipe.result.asset)}" alt="" />
+        <b>${escapeHTML(recipe.result.name)}</b>
+      </div>
+      <div class="garden-recipe-consume-box">
+        <b>보관함에서 아래 장식 3개가 사용돼요.</b>
+        <div class="garden-recipe-consume-list">
+          ${selection.selected.map(({ item, role }) => {
+            const catalogItem = foundItemCatalog[item.itemKey];
+            return `
+              <span class="garden-recipe-consume-item">
+                <img src="${escapeAttr(catalogItem.asset)}" alt="" />
+                <span>${escapeHTML(catalogItem.name)} 1개${role === "flexible" ? " · 자유 재료" : ""}</span>
+              </span>
+            `;
+          }).join("")}
+        </div>
+      </div>
+      <p class="garden-recipe-confirm-note">교환이 끝나면 특별장식은 보관함에 들어가요. 이후 정원 꾸미기에서 원하는 위치에 꺼낼 수 있어요.</p>
+      <div class="garden-recipe-confirm-actions">
+        <button class="garden-recipe-back" type="button" data-recipe-back${decorationRecipeExchangeBusy ? " disabled" : ""}>다시 보기</button>
+        <button class="garden-recipe-exchange" type="button" data-recipe-exchange="${escapeAttr(recipe.key)}"${decorationRecipeExchangeBusy ? " disabled" : ""}>${decorationRecipeExchangeBusy ? "만드는 중…" : "특별장식 만들기"}</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderDecorationRecipeDialog() {
+  if (!els.decorationRecipeDialog || els.decorationRecipeDialog.hidden || !els.decorationRecipeContent) return;
+  const recipe = activeDecorationRecipeKey ? decorationRecipeByKey(activeDecorationRecipeKey) : null;
+  els.decorationRecipeContent.innerHTML = recipe
+    ? renderDecorationRecipeConfirmation(recipe)
+    : renderDecorationRecipeList();
+}
+
+function openDecorationRecipeDialog() {
+  if (!currentUser || isFirstDayQaMode() || isTutorialSandboxPreview()) {
+    showToast("실제 정원에서 모은 장식으로 만들 수 있어요.");
+    return;
+  }
+  if (!gardenDecorateMode || gardenDecorateSaving || !els.decorationRecipeDialog) return;
+  if (gardenDecorateHasUnsavedChanges()) {
+    showGardenDecorateNotice("바꾼 배치를 먼저 저장하거나 취소한 뒤 특별장식을 만들어 주세요.");
+    return;
+  }
+
+  closeGardenInventoryManager({ restoreFocus: false });
+  decorationRecipeReturnFocus = document.activeElement;
+  activeDecorationRecipeKey = "";
+  els.decorationRecipeDialog.hidden = false;
+  document.body.classList.add("is-garden-recipe-open");
+  renderDecorationRecipeDialog();
+  window.requestAnimationFrame(() => els.decorationRecipeClose?.focus({ preventScroll: true }));
+}
+
+async function exchangeDecorationRecipe(recipeKey) {
+  if (!currentUser || decorationRecipeExchangeBusy) return;
+  const recipe = decorationRecipeByKey(recipeKey);
+  const selection = decorationRecipeSelection(recipe);
+  if (!recipe || !selection.canCraft) {
+    activeDecorationRecipeKey = "";
+    renderDecorationRecipeDialog();
+    showToast("보관함 재료가 달라졌어요. 다시 확인해 주세요.");
+    return;
+  }
+
+  decorationRecipeExchangeBusy = true;
+  renderDecorationRecipeDialog();
+  const requestId = window.crypto?.randomUUID?.()
+    || `recipe-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const { error } = await supabase.rpc("exchange_my_garden_decoration_recipe_v1", {
+    p_recipe_key: recipe.key,
+    p_client_request_id: requestId,
+  });
+
+  decorationRecipeExchangeBusy = false;
+  if (error) {
+    console.warn("TodayForest decoration recipe exchange failed:", error);
+    renderDecorationRecipeDialog();
+    const message = String(error.message || "");
+    showToast(message.includes("not find the function") || message.includes("schema cache")
+      ? "특별장식 SQL을 먼저 적용해 주세요."
+      : (message.includes("재료") ? "보관함 재료가 부족해요." : "특별장식을 만들지 못했어요. 잠시 후 다시 해주세요."));
+    return;
+  }
+
+  trackTodayForestOperationalEvent("decoration_recipe_completed", {
+    recipe_key: recipe.key,
+    result_item_key: recipe.result.itemKey,
+  });
+
+  // 서버에서 재료 차감과 결과 지급이 한 번에 끝났으므로 최신 보관함을 다시 불러옵니다.
+  selectedFoundItemId = null;
+  gardenDecorateMode = false;
+  gardenDecorateDraftPositions = new Map();
+  gardenDecorateDraftStorage = new Map();
+  gardenDecorateBaselinePositions = new Map();
+  gardenDecorateBaselineStorage = new Map();
+  await loadGardenState();
+  renderAll();
+  startGardenDecorateMode();
+  activeDecorationRecipeKey = "";
+  renderDecorationRecipeDialog();
+  showToast(`${recipe.result.name}을 만들어 보관함에 넣었어요.`);
+}
+
+function handleDecorationRecipeDialogClick(event) {
+  if (event.target === els.decorationRecipeDialog || event.target.closest("#decorationRecipeClose")) {
+    if (!decorationRecipeExchangeBusy) closeDecorationRecipeDialog();
+    return;
+  }
+  const prepare = event.target.closest("[data-recipe-prepare]");
+  if (prepare) {
+    activeDecorationRecipeKey = prepare.dataset.recipePrepare || "";
+    renderDecorationRecipeDialog();
+    return;
+  }
+  if (event.target.closest("[data-recipe-back]")) {
+    activeDecorationRecipeKey = "";
+    renderDecorationRecipeDialog();
+    return;
+  }
+  const exchange = event.target.closest("[data-recipe-exchange]");
+  if (exchange) void exchangeDecorationRecipe(exchange.dataset.recipeExchange);
+}
+
 function renderGardenDecorateControls(foundItems) {
   const hasAnyItems = foundItems.length > 0;
   if (!els.gardenDecorateControls) return;
@@ -4556,6 +4873,8 @@ function startGardenDecorateMode() {
   gardenDecorateDraftStorage = new Map(
     foundItems.map((item) => [item.id, normalizedFoundItemStorageState(item.storageState)])
   );
+  gardenDecorateBaselineStorage = new Map(gardenDecorateDraftStorage);
+  gardenDecorateBaselinePositions = new Map();
   selectedFoundItemId = null;
   gardenDecorateMode = true;
   renderFoundItems();
@@ -4567,6 +4886,9 @@ function startGardenDecorateMode() {
     gardenDecorateDraftPositions.set(item.id, visiblePosition);
     applyFoundItemDraftPosition(element, visiblePosition);
   });
+  gardenDecorateBaselinePositions = new Map(
+    [...gardenDecorateDraftPositions.entries()].map(([id, position]) => [id, { ...position }])
+  );
 
   showGardenDecorateNotice("장식을 옮기거나 눌러 보관함에 넣어보세요.");
 }
@@ -4590,10 +4912,13 @@ function cancelGardenDecorateMode() {
   }
   activeFoundItemDrag = null;
   closeGardenInventoryManager({ restoreFocus: false });
+  closeDecorationRecipeDialog({ restoreFocus: false });
   selectedFoundItemId = null;
   gardenDecorateMode = false;
   gardenDecorateDraftPositions = new Map();
   gardenDecorateDraftStorage = new Map();
+  gardenDecorateBaselinePositions = new Map();
+  gardenDecorateBaselineStorage = new Map();
   renderFoundItems();
   showToast("바꾸기 전 배치로 돌아왔어요.");
 }
@@ -4823,10 +5148,13 @@ async function saveGardenDecorateMode() {
 
   activeFoundItemDrag = null;
   closeGardenInventoryManager({ restoreFocus: false });
+  closeDecorationRecipeDialog({ restoreFocus: false });
   selectedFoundItemId = null;
   gardenDecorateMode = false;
   gardenDecorateDraftPositions = new Map();
   gardenDecorateDraftStorage = new Map();
+  gardenDecorateBaselinePositions = new Map();
+  gardenDecorateBaselineStorage = new Map();
   renderFoundItems();
   showToast("정원 배치와 보관함을 저장했어요.");
 }
@@ -12114,8 +12442,16 @@ function bindEvents() {
   els.gardenDecorateSelectedAction?.addEventListener("click", handleGardenDecorateActionClick);
   els.gardenDecorateInventoryList?.addEventListener("click", handleGardenInventoryClick);
   els.gardenInventoryManager?.addEventListener("click", handleGardenInventoryManagerClick);
+  els.openDecorationRecipes?.addEventListener("click", openDecorationRecipeDialog);
+  els.decorationRecipeDialog?.addEventListener("click", handleDecorationRecipeDialogClick);
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !els.gardenInventoryManager?.hidden) {
+    if (event.key !== "Escape") return;
+    if (!els.decorationRecipeDialog?.hidden && !decorationRecipeExchangeBusy) {
+      event.preventDefault();
+      closeDecorationRecipeDialog();
+      return;
+    }
+    if (!els.gardenInventoryManager?.hidden) {
       event.preventDefault();
       closeGardenInventoryManager();
     }
