@@ -4605,6 +4605,10 @@ function renderDecorationRecipeList() {
                     <span>아무 일반 장식 ${Math.min(selection.flexible.available, selection.flexible.requested)}/${selection.flexible.requested}</span>
                   </span>
                 </span>
+                <span class="garden-recipe-protection-note">
+                  <span aria-hidden="true">🛡️</span>
+                  <span>정원에 배치한 장식은 보호돼요</span>
+                </span>
                 <button class="garden-recipe-prepare" type="button" data-recipe-prepare="${escapeAttr(recipe.key)}"${!selection.canCraft || decorationRecipeExchangeBusy ? " disabled" : ""}>${selection.canCraft ? "재료 확인하고 만들기" : "재료가 더 필요해요"}</button>
               </span>
             </article>
