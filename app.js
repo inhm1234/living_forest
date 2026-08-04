@@ -5209,6 +5209,14 @@ async function claimFoundItem() {
   }
 
   const wasFirstWalkDiscovery = gardenTutorialPhase === "discovery" && firstDiscoveryGuideIsAvailable();
+  const alreadyOwnedSameType = (state.foundItems || []).some(
+    (item) => item.itemKey === claimed.item_key && String(item.id) !== String(claimed.id)
+  );
+  // 새 종류는 정원에 바로 놓고, 이미 가진 종류의 중복 발견은 보관함에 쌓습니다.
+  // SQL V3 적용 전에도 같은 화면 규칙을 유지하도록 현재 보유 상태를 대체값으로 사용합니다.
+  const claimedStorageState = claimed.storage_state
+    ? normalizedFoundItemStorageState(claimed.storage_state)
+    : (alreadyOwnedSameType ? FOUND_ITEM_STORAGE.INVENTORY : FOUND_ITEM_STORAGE.PLACED);
   const nextItem = {
     id: claimed.id,
     recordId: record.id,
@@ -5216,7 +5224,7 @@ async function claimFoundItem() {
     placementSlot: claimed.placement_slot,
     positionX: claimed.position_x,
     positionY: claimed.position_y,
-    storageState: FOUND_ITEM_STORAGE.PLACED,
+    storageState: claimedStorageState,
     foundAt: claimed.found_at,
   };
   const existingIndex = (state.foundItems || []).findIndex((item) => item.recordId === nextItem.recordId);
@@ -5233,7 +5241,9 @@ async function claimFoundItem() {
   }
   renderFirstWalkTutorial();
   const catalogItem = foundItemCatalog[nextItem.itemKey];
-  showToast(`숲에서 작은 것을 찾았어요. ${catalogItem.detail}`);
+  showToast(nextItem.storageState === FOUND_ITEM_STORAGE.INVENTORY
+    ? `이미 정원에 있는 장식이라 보관함에 넣어두었어요. (${catalogItem.name})`
+    : `숲에서 작은 것을 찾았어요. ${catalogItem.detail}`);
 }
 
 function updateTodayRecordAction() {
