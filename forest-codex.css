@@ -10,6 +10,20 @@
   box-shadow: 0 0 0 4px rgba(143, 201, 157, .16);
 }
 .more-menu-panel .forest-codex-new-badge[hidden] { display: none; }
+#openMoreMenu { position: relative; }
+#openMoreMenu .forest-codex-menu-badge {
+  position: absolute;
+  top: 9px;
+  right: 11px;
+  width: 9px;
+  height: 9px;
+  border: 2px solid rgba(255, 255, 255, .94);
+  border-radius: 999px;
+  background: #78b98a;
+  box-shadow: 0 0 0 4px rgba(120, 185, 138, .14);
+  pointer-events: none;
+}
+#openMoreMenu .forest-codex-menu-badge[hidden] { display: none; }
 body.forest-codex-open { overflow: hidden; }
 .forest-codex-backdrop {
   position: fixed;
@@ -138,6 +152,21 @@ body.forest-codex-open { overflow: hidden; }
 }
 .forest-codex-art img { display: block; max-width: 88%; max-height: 100px; object-fit: contain; filter: drop-shadow(0 7px 8px rgba(80, 103, 87, .12)); }
 .forest-codex-art.is-animal img { max-width: 82%; max-height: 94px; }
+.forest-codex-entry-new {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  padding: 4px 7px;
+  border: 1px solid rgba(112, 170, 128, .2);
+  border-radius: 999px;
+  background: rgba(237, 249, 240, .96);
+  color: #5f8d6b;
+  box-shadow: 0 5px 12px rgba(78, 119, 89, .1);
+  font-size: 8px;
+  font-weight: 950;
+  line-height: 1;
+  letter-spacing: -.01em;
+}
 .forest-codex-card.is-locked { color: #9ba9a0; background: rgba(248, 251, 248, .84); }
 .forest-codex-card.is-locked .forest-codex-art img { filter: brightness(0) saturate(0); opacity: .13; }
 .forest-codex-lock {

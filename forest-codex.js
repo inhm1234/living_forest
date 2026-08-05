@@ -69,6 +69,7 @@ let codexData = { decorations: [], animals: [] };
 let codexUserId = "";
 let activeTab = "decorations";
 let isLoading = false;
+let highlightedNewKeys = new Set();
 let dialog = null;
 let menuButton = null;
 
@@ -154,9 +155,13 @@ function markCurrentKeysSeen() {
   renderNewBadge();
 }
 
-function hasUnseenEntries() {
+function unseenEntryKeys() {
   const seen = readSeenKeys();
-  return unlockedKeys().some((key) => !seen.has(key));
+  return unlockedKeys().filter((key) => !seen.has(key));
+}
+
+function hasUnseenEntries() {
+  return unseenEntryKeys().length > 0;
 }
 
 function renderNewBadge() {
@@ -164,6 +169,12 @@ function renderNewBadge() {
   menuButton?.classList.toggle("has-codex-new", hasNew);
   const badge = menuButton?.querySelector("[data-codex-new-badge]");
   if (badge) badge.hidden = !hasNew;
+
+  const moreButton = document.querySelector("#openMoreMenu");
+  const moreBadge = moreButton?.querySelector("[data-codex-menu-badge]");
+  moreButton?.classList.toggle("has-codex-new", hasNew);
+  moreButton?.setAttribute("aria-label", hasNew ? "더보기, 새 숲 도감 기록 있음" : "더보기");
+  if (moreBadge) moreBadge.hidden = !hasNew;
 }
 
 function ensureDialog() {
@@ -223,6 +234,7 @@ function decorationCard(item, row) {
   const claimCount = Number(row?.claim_count || 0);
   if (claimCount < 1) return lockedCard({ asset: item.asset });
 
+  const isNew = highlightedNewKeys.has(`decoration:${item.itemKey}`);
   const placedCount = Number(row?.placed_count || 0);
   const inventoryCount = Number(row?.inventory_count || 0);
   const currentCount = Number(row?.current_count || 0);
@@ -236,6 +248,7 @@ function decorationCard(item, row) {
     <article class="forest-codex-card is-unlocked">
       <div class="forest-codex-art">
         <img src="${escapeHtml(item.asset)}" alt="${escapeHtml(item.name)}" />
+        ${isNew ? `<span class="forest-codex-entry-new">새 기록</span>` : ""}
       </div>
       <div class="forest-codex-card-copy">
         <p class="forest-codex-card-label">${item.crafted ? "직접 만든 특별장식" : "숲에서 발견한 작은 것"}</p>
@@ -254,12 +267,14 @@ function decorationCard(item, row) {
 function animalCard(animal, row) {
   const visitCount = Number(row?.visit_count || 0);
   if (visitCount < 1) return lockedCard({ asset: animal.asset, animal: true });
+  const isNew = highlightedNewKeys.has(`animal:${animal.kind}`);
   const firstDate = formatDate(row?.first_seen_at);
 
   return `
     <article class="forest-codex-card is-unlocked is-animal-card">
       <div class="forest-codex-art is-animal">
         <img src="${escapeHtml(animal.asset)}" alt="${escapeHtml(animal.name)}" />
+        ${isNew ? `<span class="forest-codex-entry-new">새 기록</span>` : ""}
       </div>
       <div class="forest-codex-card-copy">
         <p class="forest-codex-card-label">정원에 찾아온 숲친구</p>
@@ -359,7 +374,13 @@ async function fetchCodex({ quiet = false } = {}) {
       decorations: Array.isArray(data?.decorations) ? data.decorations : [],
       animals: Array.isArray(data?.animals) ? data.animals : [],
     };
-    renderNewBadge();
+
+    if (quiet && dialog && !dialog.hidden) {
+      highlightedNewKeys = new Set(unseenEntryKeys());
+      markCurrentKeysSeen();
+    } else {
+      renderNewBadge();
+    }
     return true;
   } catch (error) {
     console.warn("TodayForest forest codex load skipped:", error);
@@ -379,7 +400,8 @@ async function fetchCodex({ quiet = false } = {}) {
     return false;
   } finally {
     isLoading = false;
-    if (!quiet && !ensureDialog().querySelector(".forest-codex-error")) renderDialog();
+    const isDialogOpen = Boolean(dialog && !dialog.hidden);
+    if ((!quiet || isDialogOpen) && !ensureDialog().querySelector(".forest-codex-error")) renderDialog();
   }
 }
 
@@ -389,13 +411,18 @@ async function openCodex() {
   document.body.classList.add("forest-codex-open");
   renderDialog();
   const loaded = await fetchCodex();
-  if (loaded) markCurrentKeysSeen();
+  if (loaded) {
+    highlightedNewKeys = new Set(unseenEntryKeys());
+    renderDialog();
+    markCurrentKeysSeen();
+  }
   root.querySelector(".forest-codex-close")?.focus();
 }
 
 function closeCodex() {
   if (!dialog || dialog.hidden) return;
   dialog.hidden = true;
+  highlightedNewKeys = new Set();
   document.body.classList.remove("forest-codex-open");
   menuButton?.focus();
 }
