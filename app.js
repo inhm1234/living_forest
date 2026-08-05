@@ -359,6 +359,20 @@ const animalVisitors = {
     position: "branch",
     motion: { waitMin: 4800, waitMax: 8200, lookMin: 700, lookMax: 920 },
   },
+  owl: {
+    kind: "owl",
+    icon: "🦉",
+    asset: "assets/visitors/forest-owl-idle.svg",
+    lookAsset: "assets/visitors/forest-owl-look.svg",
+    name: "부엉이",
+    deliveryHours: 2,
+    sceneClass: "owl",
+    speech: "부엉이가 달빛 같은 눈으로 편지를 기다리고 있어요.",
+    traceIcon: "🌙",
+    traceStory: "부엉이가 달빛을 머금은 작은 깃털을 남겼어요.",
+    position: "branch",
+    motion: { waitMin: 6200, waitMax: 10800, lookMin: 820, lookMax: 1120 },
+  },
   squirrel: {
     kind: "squirrel",
     icon: "🐿️",
@@ -377,6 +391,20 @@ const animalVisitors = {
     position: "branch",
     motion: { waitMin: 5400, waitMax: 9400, lookMin: 760, lookMax: 980 },
   },
+  raccoon: {
+    kind: "raccoon",
+    icon: "🦝",
+    asset: "assets/visitors/forest-raccoon-idle.svg",
+    lookAsset: "assets/visitors/forest-raccoon-look.svg",
+    name: "너구리",
+    deliveryHours: 12,
+    sceneClass: "raccoon",
+    speech: "너구리가 낮은 가지에 앉아 편지를 기다리고 있어요.",
+    traceIcon: "🫐",
+    traceStory: "너구리가 먹고 남긴 작은 산딸기 껍질을 두고 갔어요.",
+    position: "branch",
+    motion: { waitMin: 5800, waitMax: 10200, lookMin: 820, lookMax: 1080 },
+  },
   rabbit: {
     kind: "rabbit",
     icon: "🐇",
@@ -390,6 +418,20 @@ const animalVisitors = {
     traceStory: "토끼가 풀잎을 살짝 눌러두고 뛰어갔어요.",
     position: "ground",
     motion: { waitMin: 6000, waitMax: 10500, lookMin: 820, lookMax: 1080 },
+  },
+  fox: {
+    kind: "fox",
+    icon: "🦊",
+    asset: "assets/visitors/forest-fox-idle.svg",
+    lookAsset: "assets/visitors/forest-fox-look.svg",
+    name: "아기 여우",
+    deliveryHours: 6,
+    sceneClass: "fox",
+    speech: "아기 여우가 꼬리를 감고 편지를 기다리고 있어요.",
+    traceIcon: "🐾",
+    traceStory: "아기 여우가 풀밭에 작은 발자국을 남겼어요.",
+    position: "ground",
+    motion: { waitMin: 5600, waitMax: 9800, lookMin: 760, lookMax: 1040 },
   },
   hedgehog: {
     kind: "hedgehog",
@@ -405,6 +447,20 @@ const animalVisitors = {
     traceStory: "고슴도치가 작은 낙엽 길을 남기고 풀숲으로 돌아갔어요.",
     position: "ground",
     motion: { waitMin: 6800, waitMax: 11800, lookMin: 900, lookMax: 1180 },
+  },
+  mole: {
+    kind: "mole",
+    icon: "🐾",
+    asset: "assets/visitors/forest-mole-idle.svg",
+    lookAsset: "assets/visitors/forest-mole-look.svg",
+    name: "두더지",
+    deliveryHours: 24,
+    sceneClass: "mole",
+    speech: "두더지가 흙더미 사이에서 편지를 기다리고 있어요.",
+    traceIcon: "🟤",
+    traceStory: "두더지가 보드라운 흙자국을 조그맣게 남겼어요.",
+    position: "ground",
+    motion: { waitMin: 7000, waitMax: 12400, lookMin: 900, lookMax: 1220 },
   },
 };
 
@@ -1654,9 +1710,13 @@ function deliveryText(kind) {
   const map = {
     little_bird: "작은 새가 전해줬어요",
     bird: "작은 새가 전해줬어요",
+    owl: "부엉이가 전해줬어요",
     squirrel: "다람쥐가 전해줬어요",
+    raccoon: "너구리가 전해줬어요",
     rabbit: "토끼가 전해줬어요",
+    fox: "아기 여우가 전해줬어요",
     hedgehog: "고슴도치가 전해줬어요",
+    mole: "두더지가 전해줬어요",
     sprout_bird: "새싹새가 전해줬어요",
     swift_bird: "빠른 새가 전해줬어요",
     forest_unicorn: "숲 유니콘이 전해줬어요",
@@ -1675,7 +1735,7 @@ function deliveryStatus(sentLetter) {
   if (sentLetter.returnedAt) return "정원으로 돌아왔어요";
   if (sentLetter.readAt) return "친구가 읽었어요";
   const availableAt = new Date(sentLetter.availableAt);
-  if (availableAt.getTime() > Date.now()) return "새가 날아가는 중";
+  if (availableAt.getTime() > Date.now()) return "숲친구가 편지를 전하는 중";
   return "나뭇가지에 도착";
 }
 
@@ -3264,9 +3324,13 @@ async function syncMyGardenAnimalVisit({ silent = false, rerender = false } = {}
 function animalV2MoodLine(kind) {
   const lines = {
     bird: "가지를 살짝 고르며 당신을 바라보고 있어요.",
+    owl: "고개를 살짝 기울여 정원의 소리를 듣고 있어요.",
     rabbit: "풀잎 사이에서 귀를 쫑긋 세우고 있어요.",
+    fox: "꼬리를 감은 채 주변의 기척을 살피고 있어요.",
     squirrel: "나무 곁에서 작은 발을 멈췄어요.",
+    raccoon: "낮은 가지에서 조용히 주변을 둘러보고 있어요.",
     hedgehog: "낙엽 사이에서 조용히 숨을 고르고 있어요.",
+    mole: "흙냄새를 맡으며 작은 코를 내밀고 있어요.",
   };
   return lines[kind] || "숲길을 걷다 잠시 쉬어가고 있어요.";
 }
@@ -3553,9 +3617,13 @@ function v2TraceMeta(visit) {
   const visitor = animalVisitors[visit.kind] || genericAnimalTrace;
   const icons = {
     feather: "",
+    moon_feather: "🌙",
     footprints: "〰️",
+    tiny_pawprints: "🐾",
     acorn_shell: "🌰",
+    berry_peel: "🫐",
     ruffled_leaves: "🍂",
+    soft_soil: "🟤",
   };
   const assets = {
     feather: "assets/garden/visitor-trace-feather.svg",
@@ -4002,9 +4070,13 @@ function formatDeliveryCountdown(milliseconds) {
 function animalDeliveryStory(animal) {
   const copy = {
     bird: "작은 새가 구름 사이를 가볍게 날고 있어요.",
+    owl: "부엉이가 조용한 하늘길을 따라 날고 있어요.",
     squirrel: "다람쥐가 나무 사이 숲길을 달리고 있어요.",
+    raccoon: "너구리가 낮은 가지와 숲길을 번갈아 지나고 있어요.",
     rabbit: "토끼가 풀숲 사이를 조심히 뛰고 있어요.",
+    fox: "아기 여우가 풀밭의 바람을 따라 달리고 있어요.",
     hedgehog: "고슴도치가 천천히 숲길을 걷고 있어요.",
+    mole: "두더지가 땅속의 포근한 길을 따라가고 있어요.",
   };
   return copy[animal?.kind] || "숲친구가 편지를 품고 길을 가고 있어요.";
 }
@@ -6758,9 +6830,13 @@ function carrierForKind(kind) {
   const map = {
     little_bird: { icon: "🐦", name: "작은 새" },
     bird: { icon: "🐦", name: "작은 새" },
+    owl: { icon: "🦉", name: "부엉이" },
     squirrel: { icon: "🐿️", name: "다람쥐" },
+    raccoon: { icon: "🦝", name: "너구리" },
     rabbit: { icon: "🐇", name: "토끼" },
+    fox: { icon: "🦊", name: "아기 여우" },
     hedgehog: { icon: "🦔", name: "고슴도치" },
+    mole: { icon: "🐾", name: "두더지" },
     sprout_bird: { icon: "🕊️", name: "새싹새" },
     swift_bird: { icon: "🕊️", name: "빠른 새" },
   };

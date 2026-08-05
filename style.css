@@ -7788,14 +7788,14 @@ body.animal-preview-clean-mode .ff-cinematic {
 }
 
 /* 모든 방문자가 같은 깊이의 부드러운 그림자를 사용합니다. */
-.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog) .animal-v2-art {
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-owl, .animal-v2-rabbit, .animal-v2-fox, .animal-v2-squirrel, .animal-v2-raccoon, .animal-v2-hedgehog, .animal-v2-mole) .animal-v2-art {
   opacity: .985;
   filter: drop-shadow(0 3px 3px rgba(65, 84, 66, .105));
   transition: filter .2s ease, opacity .2s ease;
 }
 
 /* 봉투는 동물마다 다른 크기의 UI 아이콘이 아니라 같은 세계의 작은 소품입니다. */
-.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog) .animal-v2-envelope {
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-owl, .animal-v2-rabbit, .animal-v2-fox, .animal-v2-squirrel, .animal-v2-raccoon, .animal-v2-hedgehog, .animal-v2-mole) .animal-v2-envelope {
   z-index: 4;
   width: var(--visitor-envelope-width);
   height: var(--visitor-envelope-height);
@@ -7811,13 +7811,13 @@ body.animal-preview-clean-mode .ff-cinematic {
   overflow: hidden;
   pointer-events: none;
 }
-.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog) .animal-v2-envelope::before,
-.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog) .animal-v2-envelope::after {
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-owl, .animal-v2-rabbit, .animal-v2-fox, .animal-v2-squirrel, .animal-v2-raccoon, .animal-v2-hedgehog, .animal-v2-mole) .animal-v2-envelope::before,
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-owl, .animal-v2-rabbit, .animal-v2-fox, .animal-v2-squirrel, .animal-v2-raccoon, .animal-v2-hedgehog, .animal-v2-mole) .animal-v2-envelope::after {
   content: "";
   position: absolute;
   pointer-events: none;
 }
-.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog) .animal-v2-envelope::before {
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-owl, .animal-v2-rabbit, .animal-v2-fox, .animal-v2-squirrel, .animal-v2-raccoon, .animal-v2-hedgehog, .animal-v2-mole) .animal-v2-envelope::before {
   left: 2px;
   top: -3px;
   width: 9px;
@@ -7827,7 +7827,7 @@ body.animal-preview-clean-mode .ff-cinematic {
   background: transparent;
   transform: rotate(45deg);
 }
-.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog) .animal-v2-envelope::after {
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-owl, .animal-v2-rabbit, .animal-v2-fox, .animal-v2-squirrel, .animal-v2-raccoon, .animal-v2-hedgehog, .animal-v2-mole) .animal-v2-envelope::after {
   right: 2px;
   bottom: 1px;
   width: 3px;
@@ -7838,7 +7838,7 @@ body.animal-preview-clean-mode .ff-cinematic {
 }
 
 /* 키보드 사용자는 밝은 정원에서도 현재 방문자를 분명히 찾을 수 있습니다. */
-.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog):focus-visible {
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-owl, .animal-v2-rabbit, .animal-v2-fox, .animal-v2-squirrel, .animal-v2-raccoon, .animal-v2-hedgehog, .animal-v2-mole):focus-visible {
   outline: 2px solid rgba(89, 139, 104, .80);
   outline-offset: 3px;
   box-shadow: 0 0 0 5px rgba(255, 255, 255, .80);
@@ -7863,10 +7863,10 @@ body.animal-preview-clean-mode .ff-cinematic {
 }
 
 /* 편지 출발 상태는 개별 동물의 animation shorthand보다 우선하며 JS 대기시간과 맞습니다. */
-.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog).is-letter-departing {
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-owl, .animal-v2-rabbit, .animal-v2-fox, .animal-v2-squirrel, .animal-v2-raccoon, .animal-v2-hedgehog, .animal-v2-mole).is-letter-departing {
   animation-duration: 1.45s !important;
 }
-.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog).is-letter-departing .animal-v2-envelope {
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-owl, .animal-v2-rabbit, .animal-v2-fox, .animal-v2-squirrel, .animal-v2-raccoon, .animal-v2-hedgehog, .animal-v2-mole).is-letter-departing .animal-v2-envelope {
   animation: animalVisitorLetterHandoff 1.45s cubic-bezier(.25,.7,.3,1) both !important;
 }
 @keyframes animalVisitorLetterHandoff {
@@ -7893,7 +7893,7 @@ body.animal-preview-clean-mode .ff-cinematic {
 }
 
 /* 희귀 방문 효과도 계속 반짝이는 UI가 아니라 가끔 숨 쉬는 숲빛처럼 보입니다. */
-.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog) .animal-v2-glimmer {
+.animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-owl, .animal-v2-rabbit, .animal-v2-fox, .animal-v2-squirrel, .animal-v2-raccoon, .animal-v2-hedgehog, .animal-v2-mole) .animal-v2-glimmer {
   font-size: 14px;
   opacity: .78;
   animation: animalVisitorGlimmerCalm 2.7s ease-in-out infinite;
@@ -7909,15 +7909,15 @@ body.animal-preview-clean-mode .ff-cinematic {
     --visitor-envelope-width: 13px;
     --visitor-envelope-height: 9px;
   }
-  .animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog) .animal-v2-envelope::before {
+  .animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-owl, .animal-v2-rabbit, .animal-v2-fox, .animal-v2-squirrel, .animal-v2-raccoon, .animal-v2-hedgehog, .animal-v2-mole) .animal-v2-envelope::before {
     width: 8px;
     height: 6px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog).is-letter-departing .animal-v2-envelope,
-  .animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-rabbit, .animal-v2-squirrel, .animal-v2-hedgehog) .animal-v2-glimmer {
+  .animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-owl, .animal-v2-rabbit, .animal-v2-fox, .animal-v2-squirrel, .animal-v2-raccoon, .animal-v2-hedgehog, .animal-v2-mole).is-letter-departing .animal-v2-envelope,
+  .animal-v2-visitor.has-animal-art:is(.animal-v2-bird, .animal-v2-owl, .animal-v2-rabbit, .animal-v2-fox, .animal-v2-squirrel, .animal-v2-raccoon, .animal-v2-hedgehog, .animal-v2-mole) .animal-v2-glimmer {
     animation: none !important;
   }
 }
@@ -10451,4 +10451,131 @@ body.is-garden-inventory-manager-open { overflow: hidden; }
     padding: 18px 16px calc(15px + env(safe-area-inset-bottom));
     border-radius: 22px;
   }
+}
+
+
+/* =========================================================
+   FOREST VISITOR EXPANSION v1.0 — OWL / FOX / RACCOON / MOLE
+   새 숲친구 네 종을 기존 방문자와 같은 정원 세계 안에 배치합니다.
+   시간대는 서버 확률에만 부드럽게 반영하며 화면에는 시간표를 노출하지 않습니다.
+   ========================================================= */
+
+/* 새 종도 기존 공통 봉투·포커스·희귀빛 규격을 그대로 사용합니다. */
+.animal-v2-visitor.animal-v2-owl.has-animal-art { --visitor-envelope-rotation: -4deg; --visitor-letter-take-x: -3px; --visitor-letter-take-y: -6px; }
+.animal-v2-visitor.animal-v2-fox.has-animal-art { --visitor-envelope-rotation: 5deg; --visitor-letter-take-x: 5px; --visitor-letter-take-y: -3px; }
+.animal-v2-visitor.animal-v2-raccoon.has-animal-art { --visitor-envelope-rotation: -6deg; --visitor-letter-take-x: 5px; --visitor-letter-take-y: -5px; }
+.animal-v2-visitor.animal-v2-mole.has-animal-art { --visitor-envelope-rotation: 2deg; --visitor-letter-take-x: 0px; --visitor-letter-take-y: -5px; }
+
+/* 부엉이 — 성숙한 나무에서는 왼쪽 가지, 어린 나무에서는 풀밭 가까이. */
+.animal-v2-visitor.animal-v2-owl.has-animal-art {
+  top: auto;
+  left: 18%;
+  bottom: 42%;
+  width: 64px;
+  height: 58px;
+  isolation: isolate;
+}
+.animal-v2-visitor.animal-v2-owl.has-animal-art::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  left: 7px;
+  bottom: 2px;
+  width: 49px;
+  height: 9px;
+  border-bottom: 2px solid rgba(133, 104, 75, .44);
+  border-radius: 50%;
+  transform: rotate(3deg);
+  pointer-events: none;
+}
+.animal-v2-visitor.animal-v2-owl.has-animal-art .animal-v2-art { position: relative; z-index: 2; animation: animalVisitorOwlRest 7.2s ease-in-out infinite; }
+.animal-v2-visitor.animal-v2-owl.has-animal-art.is-looking .animal-v2-art { animation: animalVisitorOwlNotice 1.02s cubic-bezier(.25,.7,.3,1) both; }
+.animal-v2-visitor.animal-v2-owl.has-animal-art .animal-v2-envelope { right: 0; bottom: 2px; }
+.garden-stage[data-tree-stage="1"] .animal-v2-visitor.animal-v2-owl.has-animal-art { left: 15%; bottom: 18%; width: 59px; height: 54px; }
+.garden-stage[data-tree-stage="2"] .animal-v2-visitor.animal-v2-owl.has-animal-art { left: 15.5%; bottom: 21%; width: 60px; height: 55px; }
+.garden-stage[data-tree-stage="1"] .animal-v2-visitor.animal-v2-owl.has-animal-art::after,
+.garden-stage[data-tree-stage="2"] .animal-v2-visitor.animal-v2-owl.has-animal-art::after {
+  left: 10px; bottom: 1px; width: 39px; border: 0; background: radial-gradient(ellipse, rgba(76,111,75,.18), rgba(76,111,75,0) 72%); transform: none;
+}
+.garden-stage[data-tree-stage="3"] .animal-v2-visitor.animal-v2-owl.has-animal-art { left: 24%; bottom: 31%; }
+.garden-stage[data-tree-stage="4"] .animal-v2-visitor.animal-v2-owl.has-animal-art { left: 22%; bottom: 36%; }
+.garden-stage[data-tree-stage="5"] .animal-v2-visitor.animal-v2-owl.has-animal-art { left: 20%; bottom: 39%; }
+.garden-stage[data-tree-stage="6"] .animal-v2-visitor.animal-v2-owl.has-animal-art { left: 18%; bottom: 42%; }
+.animal-v2-visitor.animal-v2-owl.has-animal-art.is-arriving { animation: animalVisitorOwlArrive .98s cubic-bezier(.2,.78,.28,1) both; }
+.animal-v2-visitor.animal-v2-owl.has-animal-art.is-departing { animation: animalVisitorOwlDepart 1.12s cubic-bezier(.35,.05,.65,.95) both; }
+@keyframes animalVisitorOwlRest { 0%,100%{transform:rotate(0) scale(1)} 50%{transform:rotate(.12deg) scale(.998,1.002)} 56%{transform:rotate(-.08deg) scale(1.001,.999)} }
+@keyframes animalVisitorOwlNotice { 0%,100%{transform:rotate(0) scale(1)} 45%{transform:rotate(-1.4deg) scale(1.008)} 76%{transform:rotate(.3deg) scale(1.002)} }
+@keyframes animalVisitorOwlArrive { 0%{transform:translate3d(-58px,-42px,0) scale(.72) rotate(-8deg);opacity:0} 64%{transform:translate3d(2px,2px,0) scale(1.02) rotate(1deg);opacity:1} 100%{transform:none;opacity:1} }
+@keyframes animalVisitorOwlDepart { 0%{transform:none;opacity:1} 35%{transform:translate3d(7px,-5px,0) scale(.98) rotate(3deg);opacity:1} 100%{transform:translate3d(78px,-88px,0) scale(.66) rotate(11deg);opacity:0} }
+
+/* 아기 여우 — 풀밭 오른쪽 가장자리에서 꼬리를 감고 기다립니다. */
+.animal-v2-visitor.animal-v2-fox.has-animal-art { right: 7.5%; bottom: 10.5%; width: 92px; height: 68px; }
+.animal-v2-visitor.animal-v2-fox.has-animal-art .animal-v2-art { animation: animalVisitorFoxRest 6.2s ease-in-out infinite; }
+.animal-v2-visitor.animal-v2-fox.has-animal-art.is-looking .animal-v2-art { animation: animalVisitorFoxNotice .94s cubic-bezier(.25,.7,.3,1) both; }
+.animal-v2-visitor.animal-v2-fox.has-animal-art .animal-v2-envelope { right: 4px; bottom: 5px; }
+.animal-v2-visitor.animal-v2-fox.has-animal-art.is-arriving { animation: animalVisitorFoxArrive 1s cubic-bezier(.2,.78,.28,1) both; }
+.animal-v2-visitor.animal-v2-fox.has-animal-art.is-departing { animation: animalVisitorFoxDepart 1.12s cubic-bezier(.35,.05,.65,.95) both; }
+@keyframes animalVisitorFoxRest { 0%,100%{transform:scale(1)} 48%{transform:scale(.999,1.002)} 55%{transform:scale(1.002,.998)} }
+@keyframes animalVisitorFoxNotice { 0%,100%{transform:rotate(0) scale(1)} 42%{transform:rotate(.7deg) scale(1.007)} 72%{transform:rotate(-.2deg) scale(1.002)} }
+@keyframes animalVisitorFoxArrive { 0%{transform:translate3d(76px,13px,0) scale(.76);opacity:0} 65%{transform:translate3d(-2px,-1px,0) scale(1.015);opacity:1} 100%{transform:none;opacity:1} }
+@keyframes animalVisitorFoxDepart { 0%{transform:none;opacity:1} 38%{transform:translate3d(8px,-2px,0) scale(.985);opacity:1} 100%{transform:translate3d(92px,14px,0) scale(.7);opacity:0} }
+
+/* 너구리 — 낮은 가지와 줄기 사이에 머무는 가지 방문자. */
+.animal-v2-visitor.animal-v2-raccoon.has-animal-art { left: 27%; bottom: 29%; width: 78px; height: 66px; }
+.animal-v2-visitor.animal-v2-raccoon.has-animal-art .animal-v2-art { animation: animalVisitorRaccoonRest 6.7s ease-in-out infinite; }
+.animal-v2-visitor.animal-v2-raccoon.has-animal-art.is-looking .animal-v2-art { animation: animalVisitorRaccoonNotice .96s cubic-bezier(.25,.7,.3,1) both; }
+.animal-v2-visitor.animal-v2-raccoon.has-animal-art .animal-v2-envelope { right: 2px; bottom: 4px; }
+.garden-stage[data-tree-stage="1"] .animal-v2-visitor.animal-v2-raccoon.has-animal-art { left: 24%; bottom: 17%; width: 73px; height: 62px; }
+.garden-stage[data-tree-stage="2"] .animal-v2-visitor.animal-v2-raccoon.has-animal-art { left: 25%; bottom: 20%; width: 74px; height: 63px; }
+.garden-stage[data-tree-stage="3"] .animal-v2-visitor.animal-v2-raccoon.has-animal-art { left: 30%; bottom: 24%; }
+.garden-stage[data-tree-stage="4"] .animal-v2-visitor.animal-v2-raccoon.has-animal-art { left: 29%; bottom: 26%; }
+.garden-stage[data-tree-stage="5"] .animal-v2-visitor.animal-v2-raccoon.has-animal-art { left: 28%; bottom: 28%; }
+.garden-stage[data-tree-stage="6"] .animal-v2-visitor.animal-v2-raccoon.has-animal-art { left: 27%; bottom: 29%; }
+.animal-v2-visitor.animal-v2-raccoon.has-animal-art.is-arriving { animation: animalVisitorRaccoonArrive 1.02s cubic-bezier(.2,.78,.28,1) both; }
+.animal-v2-visitor.animal-v2-raccoon.has-animal-art.is-departing { animation: animalVisitorRaccoonDepart 1.14s cubic-bezier(.35,.05,.65,.95) both; }
+@keyframes animalVisitorRaccoonRest { 0%,100%{transform:scale(1)} 50%{transform:translateY(.2px) scale(.999,1.002)} 57%{transform:translateY(-.3px) scale(1.001,.999)} }
+@keyframes animalVisitorRaccoonNotice { 0%,100%{transform:rotate(0) scale(1)} 44%{transform:rotate(-.7deg) scale(1.007)} 74%{transform:rotate(.2deg) scale(1.002)} }
+@keyframes animalVisitorRaccoonArrive { 0%{transform:translate3d(-60px,35px,0) scale(.74);opacity:0} 66%{transform:translate3d(2px,-2px,0) scale(1.015);opacity:1} 100%{transform:none;opacity:1} }
+@keyframes animalVisitorRaccoonDepart { 0%{transform:none;opacity:1} 38%{transform:translate3d(-5px,2px,0) scale(.985);opacity:1} 100%{transform:translate3d(-70px,50px,0) scale(.7);opacity:0} }
+
+/* 두더지 — 흙더미 안에서 천천히 나타나고 사라집니다. */
+.animal-v2-visitor.animal-v2-mole.has-animal-art { left: 16%; bottom: 8.8%; width: 76px; height: 56px; }
+.animal-v2-visitor.animal-v2-mole.has-animal-art .animal-v2-art { animation: animalVisitorMoleRest 7.5s ease-in-out infinite; }
+.animal-v2-visitor.animal-v2-mole.has-animal-art.is-looking .animal-v2-art { animation: animalVisitorMoleNotice 1.04s cubic-bezier(.25,.7,.3,1) both; }
+.animal-v2-visitor.animal-v2-mole.has-animal-art .animal-v2-envelope { right: 3px; bottom: 3px; }
+.animal-v2-visitor.animal-v2-mole.has-animal-art.is-arriving { animation: animalVisitorMoleArrive 1.04s cubic-bezier(.2,.78,.28,1) both; }
+.animal-v2-visitor.animal-v2-mole.has-animal-art.is-departing { animation: animalVisitorMoleDepart 1.12s cubic-bezier(.35,.05,.65,.95) both; }
+@keyframes animalVisitorMoleRest { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(.5px) scale(.999,1.002)} 58%{transform:translateY(-.3px) scale(1.001,.999)} }
+@keyframes animalVisitorMoleNotice { 0%,100%{transform:translateY(0) scale(1)} 42%{transform:translateY(-2px) scale(1.008)} 74%{transform:translateY(-.5px) scale(1.002)} }
+@keyframes animalVisitorMoleArrive { 0%{transform:translate3d(0,26px,0) scale(.72,.58);opacity:0} 68%{transform:translate3d(0,-2px,0) scale(1.015);opacity:1} 100%{transform:none;opacity:1} }
+@keyframes animalVisitorMoleDepart { 0%{transform:none;opacity:1} 40%{transform:translate3d(0,2px,0) scale(.985);opacity:1} 100%{transform:translate3d(0,30px,0) scale(.72,.55);opacity:0} }
+
+/* 기척과 자연 퇴장 흔적의 위치도 실제 동물 자리와 맞춥니다. */
+.animal-v2-approach.approach-owl { top: 34%; left: 18%; }
+.animal-v2-approach.approach-fox { right: 8%; bottom: 15%; }
+.animal-v2-approach.approach-raccoon { top: 52%; left: 27%; }
+.animal-v2-approach.approach-mole { left: 16%; bottom: 13%; }
+.animal-v2-trace.trace-owl { top: 43%; left: 18%; }
+.animal-v2-trace.trace-fox { right: 10%; bottom: 16%; }
+.animal-v2-trace.trace-raccoon { top: 60%; left: 28%; }
+.animal-v2-trace.trace-mole { left: 18%; bottom: 13%; }
+
+@media (max-width: 520px) {
+  .animal-v2-visitor.animal-v2-owl.has-animal-art { width: 58px; height: 53px; }
+  .garden-stage[data-tree-stage="1"] .animal-v2-visitor.animal-v2-owl.has-animal-art { left: 12%; bottom: 18.5%; width: 55px; height: 50px; }
+  .garden-stage[data-tree-stage="2"] .animal-v2-visitor.animal-v2-owl.has-animal-art { left: 12.5%; bottom: 21.5%; width: 56px; height: 51px; }
+  .garden-stage[data-tree-stage="3"] .animal-v2-visitor.animal-v2-owl.has-animal-art { left: 21%; bottom: 31%; }
+  .garden-stage[data-tree-stage="4"] .animal-v2-visitor.animal-v2-owl.has-animal-art { left: 19%; bottom: 36%; }
+  .garden-stage[data-tree-stage="5"] .animal-v2-visitor.animal-v2-owl.has-animal-art { left: 17%; bottom: 39%; }
+  .garden-stage[data-tree-stage="6"] .animal-v2-visitor.animal-v2-owl.has-animal-art { left: 15%; bottom: 42%; }
+  .animal-v2-visitor.animal-v2-fox.has-animal-art { right: 4.5%; bottom: 11%; width: 83px; height: 62px; }
+  .animal-v2-visitor.animal-v2-raccoon.has-animal-art { left: 22%; bottom: 28%; width: 71px; height: 61px; }
+  .garden-stage[data-tree-stage="1"] .animal-v2-visitor.animal-v2-raccoon.has-animal-art { left: 19%; bottom: 17.5%; width: 68px; height: 58px; }
+  .garden-stage[data-tree-stage="2"] .animal-v2-visitor.animal-v2-raccoon.has-animal-art { left: 20%; bottom: 20.5%; width: 69px; height: 59px; }
+  .animal-v2-visitor.animal-v2-mole.has-animal-art { left: 11%; bottom: 9.5%; width: 70px; height: 52px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animal-v2-visitor:is(.animal-v2-owl,.animal-v2-fox,.animal-v2-raccoon,.animal-v2-mole),
+  .animal-v2-visitor:is(.animal-v2-owl,.animal-v2-fox,.animal-v2-raccoon,.animal-v2-mole) .animal-v2-art { animation: none !important; }
 }
