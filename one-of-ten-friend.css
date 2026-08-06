@@ -1290,3 +1290,56 @@ body.ootf-in-lobby .ootf-lobby-note {
   .ootf-result-adfit { padding-top: 10px; }
   .ootf-adfit-label { margin-bottom: 6px; }
 }
+
+/* OneOfTen acorn wallet v1 */
+.ootf-acorn-chip {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px !important;
+  padding: 3px 7px !important;
+  border: 1px solid rgba(143, 117, 72, .18);
+  border-radius: 999px;
+  background: rgba(255, 250, 235, .92) !important;
+  color: #765d3d !important;
+  font-size: 9px !important;
+  font-weight: 950;
+  letter-spacing: 0;
+  vertical-align: middle;
+}
+.ootf-acorn-chip i { font-style: normal; }
+.ootf-acorn-chip b { color: #60482e; font-size: 10px; }
+.ootf-acorn-chip small { color: #9b805c; font-size: 7px; font-weight: 900; }
+.ootf-acorn-chip.is-signed-out { opacity: .58; }
+
+.ootf-acorn-reward {
+  margin: 10px 0 12px;
+  padding: 12px 13px;
+  border: 1px solid rgba(156, 126, 72, .18);
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(255, 251, 237, .98), rgba(247, 240, 218, .9));
+  color: #6c573b;
+  text-align: left;
+  box-shadow: 0 7px 20px rgba(92, 76, 48, .06);
+}
+.ootf-acorn-reward[hidden] { display: none !important; }
+.ootf-acorn-reward-head { display: flex; align-items: center; gap: 9px; }
+.ootf-acorn-reward-head > span { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.72); font-size: 20px; box-shadow: inset 0 0 0 1px rgba(142,111,59,.1); }
+.ootf-acorn-reward-head div { display: grid; gap: 1px; }
+.ootf-acorn-reward-head small { color: #a18765; font-size: 8px; font-weight: 900; }
+.ootf-acorn-reward-head strong { color: #624a2d; font-size: 14px; letter-spacing: -.02em; }
+.ootf-acorn-reward-head strong b { font-size: 18px; }
+.ootf-acorn-reward p { margin: 7px 0 4px; color: #7e6a4d; font-size: 10px; line-height: 1.5; font-weight: 750; }
+.ootf-acorn-reward-balance { display: block; color: #9b8463; font-size: 9px; font-weight: 850; }
+.ootf-acorn-reward-balance b { color: #695236; }
+.ootf-acorn-reward.is-awarded .ootf-acorn-reward-head > span { animation: ootf-acorn-pop .58s cubic-bezier(.2,.8,.2,1); }
+.ootf-acorn-reward.is-repeat { background: rgba(248, 246, 238, .92); }
+.ootf-acorn-reward.is-signed-out, .ootf-acorn-reward.is-error { background: rgba(247, 247, 242, .9); border-color: rgba(110,125,116,.15); color: #758078; }
+@keyframes ootf-acorn-pop { 0% { transform: scale(.72) rotate(-12deg); opacity: .3; } 70% { transform: scale(1.12) rotate(4deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
+
+@media (max-width: 600px) {
+  .ootf-acorn-chip { margin-left: 3px !important; padding: 2px 5px !important; }
+  .ootf-acorn-chip small { display: none; }
+  .ootf-acorn-reward { padding: 10px 11px; border-radius: 14px; }
+  .ootf-acorn-reward-head > span { width: 32px; height: 32px; font-size: 18px; }
+}

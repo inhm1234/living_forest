@@ -22,7 +22,7 @@
       <a class="ootf-back" href="app.html" aria-label="내 정원으로 돌아가기">← <span>내 정원</span></a>
       <div class="ootf-title">
         <p>FOREST NUMBER GAME</p>
-        <h1>원오브텐 <span>친구 대전</span></h1>
+        <h1>원오브텐 <span>친구 대전</span><span class="ootf-acorn-chip" data-acorn-wallet title="보유 도토리"><i aria-hidden="true">🌰</i><b data-acorn-balance>0</b><small>도토리</small></span></h1>
       </div>
       <button class="ootf-help" id="helpButton" type="button">안내</button>
     </header>
@@ -323,9 +323,17 @@
         <em>VS</em>
         <div><small id="opponentTargetLabel">친구의 가까운 카드</small><b id="opponentTarget">-</b><span id="opponentDistance">거리 -</span></div>
       </div>
+      <section class="ootf-acorn-reward" data-acorn-reward-panel hidden aria-live="polite">
+        <div class="ootf-acorn-reward-head">
+          <span aria-hidden="true">🌰</span>
+          <div><small>이번 대전</small><strong>도토리 <b data-acorn-earned>0</b>개 획득</strong></div>
+        </div>
+        <p data-acorn-reward-message>도토리 정산을 확인하고 있어요.</p>
+        <small class="ootf-acorn-reward-balance">보유 도토리 <b data-acorn-after>0</b>개</small>
+      </section>
       <section class="ootf-point-result is-hidden" id="resultPointPanel" aria-live="polite">
         <div class="ootf-point-result-head">
-          <span id="resultPointMode">🌰 원포인트 대전</span>
+          <span id="resultPointMode">● 원포인트 대전</span>
           <strong id="resultPointDelta">+0</strong>
         </div>
         <div class="ootf-point-change">
@@ -398,7 +406,8 @@
 
   <div class="ootf-toast is-hidden" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="oot-notifications.js?v=oot-push-v0-6-opt"></script>
-  <script type="module" src="one-of-ten-friend.js?v=friend-match-qa-v1-2"></script>
+  <script type="module" src="one-of-ten-acorns.js?v=acorn-v1"></script>
+  <script type="module" src="one-of-ten-friend.js?v=friend-match-acorn-v1"></script>
   <script src="one-of-ten-friend-adfit.js?v=friend-adfit-v1-0"></script>
 </body>
 </html>

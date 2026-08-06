@@ -395,6 +395,27 @@
     els.introOverlay.classList.remove("is-hidden");
   }
 
+  function newAcornRunId() {
+    if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+    return `squirrel-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+  }
+
+  function hideAcornRewardPanel() {
+    document.querySelectorAll("[data-acorn-reward-panel]").forEach((panel) => { panel.hidden = true; });
+  }
+
+  function claimSquirrelAcorns(result) {
+    const request = { runId: state?.acornRunId, result };
+    if (!request.runId) return;
+    if (window.TodayForestAcorns?.claimSoloReward) {
+      void window.TodayForestAcorns.claimSoloReward(request);
+      return;
+    }
+    document.addEventListener("todayforest-acorns-ready", () => {
+      if (window.TodayForestAcorns?.claimSoloReward) void window.TodayForestAcorns.claimSoloReward(request);
+    }, { once: true });
+  }
+
   function prepareNewGame({ preserveOpponent = true } = {}) {
     clearPregameCountdown();
     resetGame({ deferOpening: true, preserveOpponent });
@@ -410,6 +431,7 @@
     clearPendingTimeout();
     clearPersonalityIntroTimeout();
     clearPregameCountdown();
+    hideAcornRewardPanel();
 
     const previousPersonality = state?.aiPersonality;
     const aiPersonality = preserveOpponent && AI_PERSONALITIES[previousPersonality]
@@ -434,6 +456,7 @@
       lastCalculationNote: "",
       historyExpanded: false,
       gameOver: false,
+      acornRunId: newAcornRunId(),
     };
 
     // 실제 카드 배정은 준비 카운트다운이 끝난 뒤에만 진행합니다.
@@ -1033,6 +1056,7 @@
     renderResultHistory();
     render();
     els.resultOverlay.classList.remove("is-hidden");
+    claimSquirrelAcorns(result);
 
     activeGameCompleted = true;
     trackOneOfTen("oneoften_game_complete", {

@@ -1975,7 +1975,7 @@ function renderPointResult(match) {
   if (!rated) return;
 
   els.resultPointPanel.classList.remove("is-positive", "is-negative", "is-protected", "is-ineligible");
-  els.resultPointMode.textContent = match.matchSource === "random" ? "🎲 랜덤 원포인트" : "🌰 원포인트 대전";
+  els.resultPointMode.textContent = match.matchSource === "random" ? "🎲 랜덤 원포인트" : "● 원포인트 대전";
 
   if (!pointResult) {
     els.resultPointDelta.textContent = "정산 확인";
@@ -2352,6 +2352,19 @@ async function leaveResultToGarden(event) {
   location.href = "app.html";
 }
 
+function claimMatchAcorns(matchId) {
+  const request = { matchId: String(matchId || "").trim() };
+  if (!request.matchId) return;
+  document.querySelectorAll("[data-acorn-reward-panel]").forEach((panel) => { panel.hidden = true; });
+  if (window.TodayForestAcorns?.claimMatchReward) {
+    void window.TodayForestAcorns.claimMatchReward(request);
+    return;
+  }
+  document.addEventListener("todayforest-acorns-ready", () => {
+    if (window.TodayForestAcorns?.claimMatchReward) void window.TodayForestAcorns.claimMatchReward(request);
+  }, { once: true });
+}
+
 function renderResult(match) {
   closeMatchChat();
   if (els.resultHistoryDetails) els.resultHistoryDetails.open = false;
@@ -2374,6 +2387,7 @@ function renderResult(match) {
   els.resultOverlay.classList.remove("is-hidden");
   document.body.classList.add("ootf-result-open");
   void prepareResultFriendConnection(match);
+  claimMatchAcorns(match.matchId);
 
   const result = draw ? "draw" : won ? "win" : "lose";
   const pointResult = match.pointResult || null;

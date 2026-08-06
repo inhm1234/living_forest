@@ -2986,3 +2986,56 @@ body.oot-match-active .oot-difficulty-row {
     grid-area: note;
   }
 }
+
+/* OneOfTen acorn wallet v1 */
+.oot-acorn-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 7px;
+  padding: 4px 7px;
+  border: 1px solid rgba(143, 117, 72, .2);
+  border-radius: 999px;
+  background: rgba(255, 250, 235, .9);
+  color: #79603f;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0;
+  vertical-align: middle;
+  box-shadow: 0 3px 10px rgba(103, 82, 47, .06);
+}
+.oot-acorn-chip b { font-size: 11px; color: #654c2f; }
+.oot-acorn-chip small { font-size: 8px; color: #9a805d; font-weight: 900; }
+.oot-acorn-chip.is-signed-out { opacity: .58; }
+
+.oot-acorn-reward {
+  margin: 12px 0 5px;
+  padding: 13px 14px;
+  border: 1px solid rgba(156, 126, 72, .2);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(255, 251, 237, .98), rgba(247, 240, 218, .9));
+  color: #6c573b;
+  text-align: left;
+  box-shadow: 0 8px 24px rgba(92, 76, 48, .07);
+}
+.oot-acorn-reward[hidden] { display: none !important; }
+.oot-acorn-reward-head { display: flex; align-items: center; gap: 10px; }
+.oot-acorn-reward-head > span { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,.72); font-size: 22px; box-shadow: inset 0 0 0 1px rgba(142,111,59,.1); }
+.oot-acorn-reward-head div { display: grid; gap: 1px; }
+.oot-acorn-reward-head small { color: #a18765; font-size: 9px; font-weight: 900; }
+.oot-acorn-reward-head strong { color: #624a2d; font-size: 15px; letter-spacing: -.02em; }
+.oot-acorn-reward-head strong b { font-size: 19px; }
+.oot-acorn-reward p { margin: 8px 0 5px; color: #7e6a4d; font-size: 11px; line-height: 1.55; font-weight: 700; }
+.oot-acorn-reward-balance { display: block; color: #9b8463; font-size: 10px; font-weight: 800; }
+.oot-acorn-reward-balance b { color: #695236; }
+.oot-acorn-reward.is-awarded .oot-acorn-reward-head > span { animation: oot-acorn-pop .58s cubic-bezier(.2,.8,.2,1); }
+.oot-acorn-reward.is-repeat { background: rgba(248, 246, 238, .92); }
+.oot-acorn-reward.is-signed-out, .oot-acorn-reward.is-error { background: rgba(247, 247, 242, .9); border-color: rgba(110,125,116,.15); color: #758078; }
+@keyframes oot-acorn-pop { 0% { transform: scale(.72) rotate(-12deg); opacity: .3; } 70% { transform: scale(1.12) rotate(4deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
+
+@media (max-width: 600px) {
+  .oot-acorn-chip { margin-left: 4px; padding: 3px 6px; gap: 2px; }
+  .oot-acorn-chip small { display: none; }
+  .oot-acorn-reward { padding: 11px 12px; border-radius: 15px; }
+  .oot-acorn-reward-head > span { width: 34px; height: 34px; font-size: 19px; }
+}
