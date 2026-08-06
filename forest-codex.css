@@ -1,4 +1,4 @@
-/* TODAYFOREST FOREST CODEX V1 */
+/* TODAYFOREST FOREST CODEX V1.3 */
 .more-menu-panel button[data-more-action="codex"] {
   grid-template-columns: 24px minmax(0, 1fr) auto;
 }
@@ -225,4 +225,116 @@ body.forest-codex-open { overflow: hidden; }
 }
 @media (prefers-reduced-motion: reduce) {
   .forest-codex-dialog { animation: none; }
+}
+
+/* FOREST CODEX V1.3 · 숲친구 편지길 규칙 */
+.forest-codex-route-guide {
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid rgba(135, 163, 144, .17);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, .72);
+}
+.forest-codex-route-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 11px;
+}
+.forest-codex-route-heading p {
+  margin: 0 0 3px;
+  color: #97a79d;
+  font-size: 9px;
+  font-weight: 900;
+}
+.forest-codex-route-heading h3 {
+  margin: 0;
+  color: #526c5b;
+  font-size: 14px;
+  line-height: 1.35;
+}
+.forest-codex-route-heading > span {
+  flex: none;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #f0f6f1;
+  color: #7b9081;
+  font-size: 9px;
+  font-weight: 900;
+}
+.forest-codex-route-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.forest-codex-route-card {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  min-height: 88px;
+  overflow: hidden;
+  padding: 11px;
+  border: 1px solid rgba(133, 159, 141, .13);
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(248, 252, 248, .96), rgba(239, 247, 241, .9));
+}
+.forest-codex-route-card::after {
+  content: "";
+  position: absolute;
+  right: -17px;
+  bottom: -20px;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: rgba(124, 169, 135, .08);
+}
+.forest-codex-route-card strong {
+  color: #52775d;
+  font-size: 15px;
+  line-height: 1.1;
+}
+.forest-codex-route-card b {
+  color: #6d8374;
+  font-size: 10px;
+}
+.forest-codex-route-card small {
+  position: relative;
+  z-index: 1;
+  margin-top: 5px;
+  color: #94a49a;
+  font-size: 8px;
+  font-weight: 780;
+  line-height: 1.45;
+}
+.forest-codex-locked-clues {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+.forest-codex-locked-clues span {
+  padding: 4px 7px;
+  border: 1px solid rgba(144, 165, 151, .16);
+  border-radius: 999px;
+  background: rgba(245, 249, 246, .9);
+  color: #8a9d90;
+  font-size: 8px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+.forest-codex-card.is-locked.is-animal-card .forest-codex-card-copy > p:not(.forest-codex-card-label) {
+  color: #889a8e;
+}
+
+@media (max-width: 640px) {
+  .forest-codex-route-guide { padding: 14px; }
+  .forest-codex-route-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .forest-codex-route-card { min-height: 78px; }
+}
+
+@media (max-width: 390px) {
+  .forest-codex-route-heading { align-items: flex-start; }
+  .forest-codex-route-heading > span { margin-top: 1px; }
 }
