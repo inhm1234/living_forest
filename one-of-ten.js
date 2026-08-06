@@ -339,6 +339,59 @@
     })[0];
   }
 
+  function handDistance(hand, value) {
+    const target = closestCard(hand, value);
+    return target === null ? 10 : Math.abs(target - value);
+  }
+
+  function evaluateHumanChoice(before, operation, number) {
+    if (!state?.humanHand?.length || !state?.availableOperations?.length) return 60;
+    const choices = [];
+    state.availableOperations.forEach((candidateOperation) => {
+      state.humanHand.forEach((candidateNumber, index) => {
+        const remaining = [...state.humanHand];
+        remaining.splice(index, 1);
+        if (!remaining.length) return;
+        const after = applyOperation(before, candidateOperation, candidateNumber);
+        choices.push({
+          operation: candidateOperation,
+          number: candidateNumber,
+          distance: handDistance(remaining, after),
+        });
+      });
+    });
+    if (!choices.length) return 60;
+    const bestDistance = Math.min(...choices.map((item) => item.distance));
+    const chosen = choices.find((item) => item.operation === operation && item.number === number);
+    if (!chosen) return 60;
+    const regret = Math.max(0, chosen.distance - bestDistance);
+    return Math.round(Math.max(0, Math.min(100, 100 - regret * 10)));
+  }
+
+  function startPerformanceClock() {
+    if (!state?.performance) return;
+    state.performance.phaseStartedAt = Date.now();
+  }
+
+  function recordPerformanceResponse({ timeout = false } = {}) {
+    if (!state?.performance) return;
+    const startedAt = Number(state.performance.phaseStartedAt || 0);
+    const elapsed = timeout
+      ? TURN_LIMIT_MS
+      : startedAt > 0 ? Math.max(0, Math.min(TURN_LIMIT_MS, Date.now() - startedAt)) : null;
+    if (elapsed !== null) state.performance.responseTimesMs.push(Math.round(elapsed));
+    if (timeout) state.performance.timeouts += 1;
+    state.performance.phaseStartedAt = 0;
+  }
+
+  function markManualStop() {
+    if (state.phase !== "human-decision") return;
+    recordPerformanceResponse();
+    state.performance.manualStop = true;
+    state.performance.stopDistance = handDistance(state.humanHand, state.currentValue);
+    beginShowdown("당신이 스톱했어요.");
+  }
+
   function clearPendingTimeout() {
     if (pendingTimeout) window.clearTimeout(pendingTimeout);
     pendingTimeout = null;
@@ -457,6 +510,16 @@
       historyExpanded: false,
       gameOver: false,
       acornRunId: newAcornRunId(),
+      performance: {
+        draws: 0,
+        drawDistances: [],
+        manualStop: false,
+        stopDistance: null,
+        timeouts: 0,
+        autoStopTimedOut: false,
+        responseTimesMs: [],
+        phaseStartedAt: 0,
+      },
     };
 
     // 실제 카드 배정은 준비 카운트다운이 끝난 뒤에만 진행합니다.
@@ -712,6 +775,7 @@
   function startHumanTimer({ preserveDeadline = false } = {}) {
     clearHumanTimer({ keepDeadline: preserveDeadline });
     if (!preserveDeadline || !state.turnDeadline) state.turnDeadline = Date.now() + TURN_LIMIT_MS;
+    startPerformanceClock();
     turnTimerInterval = window.setInterval(updateHumanTimer, 100);
     updateHumanTimer();
   }
@@ -759,7 +823,10 @@
   }
 
   function handleHumanTimeout() {
+    recordPerformanceResponse({ timeout: true });
     if (state.phase === "human-decision") {
+      state.performance.autoStopTimedOut = true;
+      state.performance.stopDistance = handDistance(state.humanHand, state.currentValue);
       beginShowdown("시간이 다 되어 자동으로 스톱했어요.");
       return;
     }
@@ -799,6 +866,7 @@
 
   function handleHumanNumber(number) {
     if (state.phase !== "human-play" || !state.selectedOperation || state.selectedNumber !== null) return;
+    recordPerformanceResponse();
     state.selectedNumber = number;
     state.phase = "human-resolving";
     clearHumanTimer();
@@ -819,11 +887,14 @@
     if (!operation || number === null) return;
 
     const before = state.currentValue;
+    const choiceScore = evaluateHumanChoice(before, operation, number);
+    const distanceBefore = handDistance(state.humanHand, before);
     const after = applyOperation(before, operation, number);
     removeOne(state.humanHand, number);
+    const distanceAfter = handDistance(state.humanHand, after);
     state.availableOperations.splice(state.availableOperations.indexOf(operation), 1);
     state.currentValue = after;
-    state.history.push({ player: "human", type: "calculation", before, operation, number, after, timedOut });
+    state.history.push({ player: "human", type: "calculation", before, operation, number, after, timedOut, choiceScore, distanceBefore, distanceAfter });
     state.lastCalculationNote = operation === "÷" && before % number !== 0
       ? `${before} ÷ ${number}은 소수점을 버려 ${after}로 계산했어요.`
       : "";
@@ -842,6 +913,9 @@
 
   function startHumanDraw() {
     if (state.phase !== "human-decision") return;
+    recordPerformanceResponse();
+    state.performance.draws += 1;
+    state.performance.drawDistances.push(handDistance(state.humanHand, state.currentValue));
     const drawn = drawCard();
     if (drawn === null || !state.availableOperations.length) {
       beginShowdown("더 이상 계산을 이어갈 수 없어요.");
@@ -1057,6 +1131,28 @@
     render();
     els.resultOverlay.classList.remove("is-hidden");
     claimSquirrelAcorns(result);
+    document.dispatchEvent(new CustomEvent("todayforest-oot-solo-finished", {
+      detail: {
+        runId: state.acornRunId,
+        result,
+        difficulty: state.difficulty || selectedDifficulty,
+        opponentPersonality: state.aiPersonality || "",
+        finalValue: state.currentValue,
+        myTarget: humanTarget,
+        myDistance: humanDistance,
+        opponentDistance: aiDistance,
+        history: state.history.map((item) => ({ ...item })),
+        performance: {
+          draws: state.performance.draws,
+          drawDistances: [...state.performance.drawDistances],
+          manualStop: state.performance.manualStop,
+          stopDistance: state.performance.stopDistance,
+          timeouts: state.performance.timeouts,
+          autoStopTimedOut: state.performance.autoStopTimedOut,
+          responseTimesMs: [...state.performance.responseTimesMs],
+        },
+      },
+    }));
 
     activeGameCompleted = true;
     trackOneOfTen("oneoften_game_complete", {
@@ -1206,7 +1302,7 @@
   });
   els.changeDifficultyButton.addEventListener("click", toggleResultDifficulty);
   els.introStartButton.addEventListener("click", startAfterIntro);
-  els.stopButton.addEventListener("click", () => beginShowdown("당신이 스톱했어요."));
+  els.stopButton.addEventListener("click", markManualStop);
   els.drawButton.addEventListener("click", startHumanDraw);
   els.selectedOperationPreview.addEventListener("click", cancelOperationFromPreview);
   els.newGameButton.addEventListener("click", prepareNewGame);

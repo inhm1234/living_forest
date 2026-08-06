@@ -2390,6 +2390,19 @@ function renderResult(match) {
   claimMatchAcorns(match.matchId);
 
   const result = draw ? "draw" : won ? "win" : "lose";
+  document.dispatchEvent(new CustomEvent("todayforest-oot-player-finished", {
+    detail: {
+      matchId: match.matchId,
+      result,
+      matchSource: match.matchSource || "friend",
+      battleMode: match.battleMode || "casual",
+      finalValue: match.currentValue,
+      myTarget: match.myTargetCard,
+      myDistance: match.myDistance,
+      opponentDistance: match.opponentDistance,
+      actions: getActions().map((action) => ({ ...action })),
+    },
+  }));
   const pointResult = match.pointResult || null;
   trackOneOfTenOnce("oneoften_game_complete", `${match.matchSource || "friend"}-complete-${match.matchId}`, {
     mode: analyticsBattleMode(match.battleMode, match.matchSource),
