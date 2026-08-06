@@ -89,6 +89,11 @@ body.forest-codex-open { overflow: hidden; }
   background: #edf5ef;
 }
 .forest-codex-tabs button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   min-height: 40px;
   border: 0;
   border-radius: 12px;
@@ -104,6 +109,14 @@ body.forest-codex-open { overflow: hidden; }
   color: #4f715b;
   box-shadow: 0 5px 14px rgba(84, 111, 92, .09);
 }
+.forest-codex-tab-new {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #79a984;
+  box-shadow: 0 0 0 3px rgba(121, 169, 132, .12);
+}
+.forest-codex-tab-new[hidden] { display: none; }
 .forest-codex-body {
   max-height: calc(min(780px, 100dvh - 36px) - 132px);
   overflow-y: auto;
@@ -337,4 +350,17 @@ body.forest-codex-open { overflow: hidden; }
 @media (max-width: 390px) {
   .forest-codex-route-heading { align-items: flex-start; }
   .forest-codex-route-heading > span { margin-top: 1px; }
+}
+
+
+/* 새 숲친구를 도감에서 바로 찾았을 때의 짧은 강조 */
+.forest-codex-card.is-new-focus {
+  animation: forestCodexNewFocus 1.5s ease-out both;
+}
+@keyframes forestCodexNewFocus {
+  0%, 100% { box-shadow: 0 9px 24px rgba(76, 99, 83, .06); }
+  28% { box-shadow: 0 0 0 3px rgba(126, 177, 139, .18), 0 12px 28px rgba(76, 99, 83, .11); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .forest-codex-card.is-new-focus { animation: none; }
 }

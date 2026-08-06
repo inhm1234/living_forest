@@ -200,14 +200,24 @@ function readSeenKeys() {
   }
 }
 
-function markCurrentKeysSeen() {
-  if (!codexUserId) return;
+function keysForTab(tab = activeTab) {
+  return tab === "animals" ? discoveredAnimalKeys() : discoveredDecorationKeys();
+}
+
+function markKeysSeen(keys = []) {
+  if (!codexUserId || !keys.length) return;
+  const seen = readSeenKeys();
+  keys.forEach((key) => seen.add(String(key)));
   try {
-    window.localStorage.setItem(seenStorageKey(), JSON.stringify(unlockedKeys()));
+    window.localStorage.setItem(seenStorageKey(), JSON.stringify([...seen].sort()));
   } catch (_) {
     // 저장소가 막혀 있어도 도감 자체는 정상 작동합니다.
   }
   renderNewBadge();
+}
+
+function markTabSeen(tab = activeTab) {
+  markKeysSeen(keysForTab(tab));
 }
 
 function unseenEntryKeys() {
@@ -215,8 +225,26 @@ function unseenEntryKeys() {
   return unlockedKeys().filter((key) => !seen.has(key));
 }
 
+function unseenKeysForTab(tab = activeTab) {
+  const prefix = tab === "animals" ? "animal:" : "decoration:";
+  return unseenEntryKeys().filter((key) => key.startsWith(prefix));
+}
+
 function hasUnseenEntries() {
   return unseenEntryKeys().length > 0;
+}
+
+function renderTabBadges() {
+  if (!dialog) return;
+  dialog.querySelectorAll("[data-codex-tab]").forEach((button) => {
+    const tab = button.dataset.codexTab === "animals" ? "animals" : "decorations";
+    const indicator = button.querySelector("[data-codex-tab-new]");
+    const count = unseenKeysForTab(tab).length;
+    if (indicator) indicator.hidden = count < 1;
+    button.setAttribute("aria-label", count > 0
+      ? `${tab === "animals" ? "숲친구" : "작은 것"}, 새 기록 ${count}개`
+      : (tab === "animals" ? "숲친구" : "작은 것"));
+  });
 }
 
 function renderNewBadge() {
@@ -230,6 +258,7 @@ function renderNewBadge() {
   moreButton?.classList.toggle("has-codex-new", hasNew);
   moreButton?.setAttribute("aria-label", hasNew ? "더보기, 새 숲 도감 기록 있음" : "더보기");
   if (moreBadge) moreBadge.hidden = !hasNew;
+  renderTabBadges();
 }
 
 function ensureDialog() {
@@ -247,8 +276,8 @@ function ensureDialog() {
           <button class="forest-codex-close" type="button" aria-label="숲 도감 닫기">×</button>
         </header>
         <nav class="forest-codex-tabs" aria-label="숲 도감 종류">
-          <button type="button" data-codex-tab="decorations" aria-selected="true">작은 것</button>
-          <button type="button" data-codex-tab="animals" aria-selected="false">숲친구</button>
+          <button type="button" data-codex-tab="decorations" aria-selected="true"><span>작은 것</span><i class="forest-codex-tab-new" data-codex-tab-new aria-hidden="true" hidden></i></button>
+          <button type="button" data-codex-tab="animals" aria-selected="false"><span>숲친구</span><i class="forest-codex-tab-new" data-codex-tab-new aria-hidden="true" hidden></i></button>
         </nav>
         <div class="forest-codex-body" data-codex-body aria-live="polite"></div>
       </section>
@@ -264,7 +293,10 @@ function ensureDialog() {
   dialog.querySelectorAll("[data-codex-tab]").forEach((button) => {
     button.addEventListener("click", () => {
       activeTab = button.dataset.codexTab === "animals" ? "animals" : "decorations";
+      highlightedNewKeys = new Set([...highlightedNewKeys, ...unseenKeysForTab(activeTab)]);
       renderDialog();
+      markTabSeen(activeTab);
+      renderTabBadges();
     });
   });
   return dialog;
@@ -340,7 +372,7 @@ function animalCard(animal, row) {
   const route = letterRoute(animal.deliveryHours);
 
   return `
-    <article class="forest-codex-card is-unlocked is-animal-card">
+    <article class="forest-codex-card is-unlocked is-animal-card" data-codex-key="animal:${escapeHtml(animal.kind)}">
       <div class="forest-codex-art is-animal">
         <img src="${escapeHtml(animal.asset)}" alt="${escapeHtml(animal.name)}" />
         ${isNew ? `<span class="forest-codex-entry-new">새 기록</span>` : ""}
@@ -448,6 +480,7 @@ function renderDialog() {
     button.setAttribute("aria-selected", String(selected));
     button.classList.toggle("is-active", selected);
   });
+  renderTabBadges();
 
   const body = root.querySelector("[data-codex-body]");
   if (!body) return;
@@ -478,11 +511,9 @@ async function fetchCodex({ quiet = false } = {}) {
     };
 
     if (quiet && dialog && !dialog.hidden) {
-      highlightedNewKeys = new Set(unseenEntryKeys());
-      markCurrentKeysSeen();
-    } else {
-      renderNewBadge();
+      highlightedNewKeys = new Set([...highlightedNewKeys, ...unseenEntryKeys()]);
     }
+    renderNewBadge();
     return true;
   } catch (error) {
     console.warn("TodayForest forest codex load skipped:", error);
@@ -507,16 +538,37 @@ async function fetchCodex({ quiet = false } = {}) {
   }
 }
 
-async function openCodex() {
+function scrollToCodexKey(key = "") {
+  if (!key || !dialog) return;
+  window.requestAnimationFrame(() => {
+    const target = dialog.querySelector(`[data-codex-key="${CSS.escape(String(key))}"]`);
+    if (!target) return;
+    target.classList.add("is-new-focus");
+    target.scrollIntoView({ block: "center", behavior: "smooth" });
+    window.setTimeout(() => target.classList.remove("is-new-focus"), 1800);
+  });
+}
+
+async function openCodex({ tab = "", focusKey = "" } = {}) {
   const root = ensureDialog();
   root.hidden = false;
   document.body.classList.add("forest-codex-open");
   renderDialog();
   const loaded = await fetchCodex();
   if (loaded) {
-    highlightedNewKeys = new Set(unseenEntryKeys());
+    const unseen = unseenEntryKeys();
+    highlightedNewKeys = new Set(unseen);
+    if (tab === "animals" || tab === "decorations") {
+      activeTab = tab;
+    } else if (unseen.some((key) => key.startsWith("animal:"))) {
+      activeTab = "animals";
+    } else if (unseen.some((key) => key.startsWith("decoration:"))) {
+      activeTab = "decorations";
+    }
     renderDialog();
-    markCurrentKeysSeen();
+    markTabSeen(activeTab);
+    renderTabBadges();
+    scrollToCodexKey(focusKey);
   }
   root.querySelector(".forest-codex-close")?.focus();
 }
@@ -527,6 +579,62 @@ function closeCodex() {
   highlightedNewKeys = new Set();
   document.body.classList.remove("forest-codex-open");
   menuButton?.focus();
+}
+
+function ensureEncounterCodexNotice() {
+  const card = document.querySelector("#animalEncounterCard");
+  if (!card) return null;
+  let notice = card.querySelector("[data-animal-codex-notice]");
+  if (notice) return notice;
+
+  notice = document.createElement("div");
+  notice.className = "animal-encounter-codex-notice";
+  notice.dataset.animalCodexNotice = "";
+  notice.hidden = true;
+  notice.innerHTML = `
+    <span><b>새로운 숲친구가 도감에 기록됐어요.</b><small>처음 만난 모습을 천천히 살펴볼 수 있어요.</small></span>
+    <button type="button" data-animal-codex-open>도감에서 살펴보기</button>
+  `;
+  const actions = card.querySelector(".animal-encounter-actions");
+  actions?.insertAdjacentElement("beforebegin", notice);
+
+  notice.querySelector("[data-animal-codex-open]")?.addEventListener("click", () => {
+    const kind = String(notice.dataset.animalKind || "");
+    if (!kind) return;
+    void openCodex({ tab: "animals", focusKey: `animal:${kind}` });
+  });
+  return notice;
+}
+
+function hideEncounterCodexNotice() {
+  const notice = ensureEncounterCodexNotice();
+  if (!notice) return;
+  notice.hidden = true;
+  delete notice.dataset.animalKind;
+}
+
+async function syncEncounterCodexNotice(kind = "") {
+  const cleanKind = String(kind || "");
+  const notice = ensureEncounterCodexNotice();
+  const card = document.querySelector("#animalEncounterCard");
+  if (!notice || !card || !cleanKind) return;
+  hideEncounterCodexNotice();
+
+  if (isLoading) {
+    window.setTimeout(() => { void syncEncounterCodexNotice(cleanKind); }, 250);
+    return;
+  }
+  await fetchCodex({ quiet: true });
+  if (card.hidden || String(card.dataset.animalKind || "") !== cleanKind) return;
+
+  const row = animalRows().get(cleanKind);
+  const key = `animal:${cleanKind}`;
+  const isFirstMeeting = Number(row?.visit_count || 0) === 1 && unseenEntryKeys().includes(key);
+  if (!isFirstMeeting) return;
+
+  notice.dataset.animalKind = cleanKind;
+  notice.hidden = false;
+  window.requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
 }
 
 function closeMoreMenu() {
@@ -549,6 +657,10 @@ function install() {
     if (event.key === "Escape" && dialog && !dialog.hidden) closeCodex();
   });
   window.addEventListener("todayforest:garden-session-ready", () => { void fetchCodex({ quiet: true }); });
+  window.addEventListener("todayforest:animal-encounter-open", (event) => {
+    void syncEncounterCodexNotice(event?.detail?.kind);
+  });
+  window.addEventListener("todayforest:animal-encounter-close", hideEncounterCodexNotice);
   window.setTimeout(() => { void fetchCodex({ quiet: true }); }, 1200);
 }
 

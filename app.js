@@ -3477,6 +3477,7 @@ function openPositionedAnimalEncounter(visitId = "", { preview = false, nudge = 
 
 function closeAnimalEncounterCard({ notifySpecialFriend = true } = {}) {
   const specialFriend = activeSpecialForestFriendEncounter();
+  window.dispatchEvent(new CustomEvent("todayforest:animal-encounter-close"));
   animalEncounterVisitId = "";
   animalEncounterAnchorVisitId = "";
   activeSpecialForestFriendEncounterKey = "";
@@ -3576,6 +3577,9 @@ function openAnimalEncounterForVisit(visitId) {
   if (els.animalEncounterCard) {
     els.animalEncounterCard.dataset.animalKind = animal.kind;
     openPositionedAnimalEncounter(visit.id, { preview: false, nudge: true });
+    window.dispatchEvent(new CustomEvent("todayforest:animal-encounter-open", {
+      detail: { kind: animal.kind, visitId: visit.id },
+    }));
   }
   if (discoveredNow) renderGardenStatus();
 }
