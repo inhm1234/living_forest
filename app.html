@@ -32,7 +32,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=forest-visitors-v1" />
+  <link rel="stylesheet" href="style.css?v=found-item-reward-v1" />
   <link rel="stylesheet" href="decoration-recipes.css?v=decoration-recipes-v1-2" />
   <link rel="stylesheet" href="public-home-phase8-9.css?v=phase8-9-landing-adfit-v1-0" />
   <link rel="stylesheet" href="oot-notifications.css?v=garden-button-labels-v1-3" />
@@ -330,6 +330,22 @@
             <strong>반짝이는 곳을 눌러보세요</strong>
           </div>
           <div class="ground-shadow" aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <div class="found-item-reward-reveal" id="foundItemRewardReveal" role="status" aria-live="polite" hidden>
+        <div class="found-item-reward-glow" aria-hidden="true"></div>
+        <div class="found-item-reward-card">
+          <span class="found-item-reward-kicker">숲에서 작은 것을 찾았어요</span>
+          <span class="found-item-reward-art" aria-hidden="true">
+            <i class="found-item-reward-spark is-one">✦</i>
+            <i class="found-item-reward-spark is-two">✦</i>
+            <i class="found-item-reward-spark is-three">·</i>
+            <img id="foundItemRewardImage" src="" alt="" />
+          </span>
+          <strong id="foundItemRewardName">작은 것</strong>
+          <p id="foundItemRewardDetail"></p>
+          <small id="foundItemRewardDestination"></small>
         </div>
       </div>
 
@@ -1448,7 +1464,7 @@
   <script src="assets/garden/tree_growth_v2/tree-growth-stage-map.js?v=tree-growth-14-v1"></script>
   <script src="assets/garden/tree_growth_v2/tree-growth-atlas.js?v=tree-growth-14-v1"></script>
   <script src="assets/garden/tree_growth_v2/tree-growth-renderer.js?v=tree-growth-14-v1"></script>
-  <script type="module" src="app.js?v=forest-visitors-v1-1"></script>
+  <script type="module" src="app.js?v=found-item-reward-v1"></script>
   <script type="module" src="forest-codex.js?v=forest-codex-v1-4"></script>
   <script type="module" src="friend-connection-safety.js?v=first-day-qa-v1-0"></script>
   <script type="module" src="tree-animal-call.js?v=tree-call-decorate-fix-v2"></script>

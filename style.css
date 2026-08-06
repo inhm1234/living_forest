@@ -521,6 +521,135 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(115, 173,
 .found-item-hint span { color: #9b9879; }
 .found-item-hint strong { color: #687e63; font-size: 11px; font-weight: 950; }
 
+/* FOUND ITEM REWARD REVEAL v1
+   반짝임을 눌렀을 때 보관함으로 들어가기 전에 무엇을 얻었는지 눈으로 확인할 수 있게 합니다. */
+.found-item-reward-reveal {
+  position: absolute;
+  z-index: 31;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .22s ease;
+}
+.found-item-reward-reveal[hidden] { display: none; }
+.found-item-reward-reveal.is-visible { opacity: 1; }
+.found-item-reward-glow {
+  position: absolute;
+  width: min(330px, 78%);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,251,207,.82) 0 12%, rgba(243,255,222,.52) 37%, rgba(255,255,255,0) 70%);
+  filter: blur(2px);
+  transform: scale(.72);
+  opacity: 0;
+}
+.found-item-reward-card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  width: min(286px, calc(100% - 28px));
+  padding: 20px 20px 18px;
+  border: 1px solid rgba(255,255,255,.90);
+  border-radius: 26px;
+  background: linear-gradient(150deg, rgba(255,255,247,.96), rgba(239,251,234,.94));
+  box-shadow: 0 24px 48px rgba(71,96,79,.19), inset 0 1px 0 rgba(255,255,255,.96);
+  backdrop-filter: blur(10px);
+  transform: translateY(12px) scale(.94);
+  opacity: 0;
+}
+.found-item-reward-reveal.is-visible .found-item-reward-glow { animation: foundItemRewardGlow 3.7s ease both; }
+.found-item-reward-reveal.is-visible .found-item-reward-card { animation: foundItemRewardCard 3.9s cubic-bezier(.2,.78,.25,1) both; }
+.found-item-reward-kicker { color: #91a07d; font-size: 10px; font-weight: 950; letter-spacing: .04em; }
+.found-item-reward-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 126px;
+  height: 116px;
+  margin: 5px 0 1px;
+}
+.found-item-reward-art::before {
+  content: "";
+  position: absolute;
+  width: 104px;
+  height: 54px;
+  bottom: 4px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(108,142,105,.18), transparent 68%);
+  filter: blur(4px);
+}
+.found-item-reward-art img {
+  position: relative;
+  z-index: 1;
+  display: block;
+  max-width: 112px;
+  max-height: 104px;
+  object-fit: contain;
+  filter: drop-shadow(0 9px 11px rgba(78,111,76,.18));
+  transform-origin: 50% 85%;
+}
+.found-item-reward-reveal.is-visible .found-item-reward-art img { animation: foundItemRewardArt 1.05s cubic-bezier(.18,.8,.27,1.2) both; }
+.found-item-reward-spark { position: absolute; z-index: 2; color: #ecc768; font-style: normal; text-shadow: 0 0 12px rgba(255,237,148,.96); }
+.found-item-reward-spark.is-one { top: 13px; left: 8px; font-size: 20px; }
+.found-item-reward-spark.is-two { top: 3px; right: 12px; font-size: 15px; }
+.found-item-reward-spark.is-three { right: 3px; bottom: 25px; font-size: 24px; }
+.found-item-reward-reveal.is-visible .found-item-reward-spark { animation: foundItemRewardSpark 1.3s ease-in-out infinite alternate; }
+.found-item-reward-reveal.is-visible .found-item-reward-spark.is-two { animation-delay: .24s; }
+.found-item-reward-reveal.is-visible .found-item-reward-spark.is-three { animation-delay: .48s; }
+.found-item-reward-card strong { color: #4e7059; font-size: 20px; font-weight: 950; letter-spacing: -.045em; }
+.found-item-reward-card p { margin: 6px 0 0; color: #74877b; font-size: 12px; font-weight: 760; line-height: 1.5; text-align: center; word-break: keep-all; }
+.found-item-reward-card small {
+  margin-top: 11px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(224,241,217,.64);
+  color: #6c846e;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.35;
+  text-align: center;
+}
+.found-item-reward-reveal.is-inventory .found-item-reward-card small { background: rgba(239,237,218,.70); color: #8a8167; }
+
+@keyframes foundItemRewardCard {
+  0% { opacity: 0; transform: translateY(16px) scale(.91); }
+  13%, 82% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-5px) scale(.985); }
+}
+@keyframes foundItemRewardGlow {
+  0% { opacity: 0; transform: scale(.66); }
+  18%, 72% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.08); }
+}
+@keyframes foundItemRewardArt {
+  0% { opacity: 0; transform: translateY(14px) scale(.65) rotate(-4deg); }
+  58% { opacity: 1; transform: translateY(-3px) scale(1.07) rotate(1deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+}
+@keyframes foundItemRewardSpark { from { opacity: .35; transform: translateY(2px) scale(.8); } to { opacity: 1; transform: translateY(-3px) scale(1.15); } }
+
+@media (max-width: 520px) {
+  .found-item-reward-reveal { padding: 18px; }
+  .found-item-reward-card { width: min(264px, calc(100% - 18px)); padding: 17px 16px 15px; border-radius: 23px; }
+  .found-item-reward-art { width: 116px; height: 105px; }
+  .found-item-reward-art img { max-width: 103px; max-height: 94px; }
+  .found-item-reward-card strong { font-size: 19px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .found-item-reward-reveal,
+  .found-item-reward-glow,
+  .found-item-reward-card,
+  .found-item-reward-art img,
+  .found-item-reward-spark { animation: none !important; transition: none !important; }
+  .found-item-reward-reveal.is-visible,
+  .found-item-reward-reveal.is-visible .found-item-reward-card,
+  .found-item-reward-reveal.is-visible .found-item-reward-glow { opacity: 1; transform: none; }
+}
+
 .branch-letters { position: absolute; z-index: 5; inset: 0; pointer-events: none; }
 .branch-letters[hidden] { display: none; }
 .branch-letter-item, .branch-letter-bundle {

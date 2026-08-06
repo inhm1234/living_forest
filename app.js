@@ -898,6 +898,7 @@ let firstWalkGuideLayoutTimer = null;
 let firstWalkGuideTravelTimer = null;
 let firstWalkGuidePosition = null;
 let firstWalkCompletionFoundItemId = "";
+let foundItemRewardRevealTimer = null;
 // ?tutorialPreview=intro 는 실제 기록·성장·장식을 건드리지 않는 검수 전용 산책입니다.
 // 이미 오늘 기록한 계정에서도 처음부터 끝까지 확인할 수 있도록 메모리에서만 진행 상태를 가집니다.
 const tutorialSandbox = { recorded: false, found: false };
@@ -989,6 +990,11 @@ const els = {
   foundItemsLayer: $("#foundItemsLayer"),
   foundItemSparkle: $("#foundItemSparkle"),
   foundItemHint: $("#foundItemHint"),
+  foundItemRewardReveal: $("#foundItemRewardReveal"),
+  foundItemRewardImage: $("#foundItemRewardImage"),
+  foundItemRewardName: $("#foundItemRewardName"),
+  foundItemRewardDetail: $("#foundItemRewardDetail"),
+  foundItemRewardDestination: $("#foundItemRewardDestination"),
   gardenDecorateControls: $("#gardenDecorateControls"),
   openGardenDecorate: $("#openGardenDecorate"),
   gardenDecorateEditActions: $("#gardenDecorateEditActions"),
@@ -5235,6 +5241,46 @@ async function saveGardenDecorateMode() {
   showToast("정원 배치와 보관함을 저장했어요.");
 }
 
+function hideFoundItemRewardReveal() {
+  if (foundItemRewardRevealTimer) window.clearTimeout(foundItemRewardRevealTimer);
+  foundItemRewardRevealTimer = null;
+  els.foundItemRewardReveal?.classList.remove("is-visible");
+  if (!els.foundItemRewardReveal) return;
+  window.setTimeout(() => {
+    if (!els.foundItemRewardReveal?.classList.contains("is-visible")) {
+      els.foundItemRewardReveal.hidden = true;
+    }
+  }, 260);
+}
+
+function showFoundItemRewardReveal(item, { alreadyOwnedSameType = false } = {}) {
+  const catalogItem = foundItemCatalog[item?.itemKey];
+  if (!catalogItem || !els.foundItemRewardReveal) return;
+
+  if (foundItemRewardRevealTimer) window.clearTimeout(foundItemRewardRevealTimer);
+  els.foundItemRewardReveal.hidden = false;
+  els.foundItemRewardReveal.classList.remove("is-visible", "is-inventory", "is-placed");
+  els.foundItemRewardReveal.classList.add(
+    normalizedFoundItemStorageState(item.storageState) === FOUND_ITEM_STORAGE.INVENTORY
+      ? "is-inventory"
+      : "is-placed"
+  );
+  if (els.foundItemRewardImage) els.foundItemRewardImage.src = catalogItem.asset;
+  if (els.foundItemRewardName) els.foundItemRewardName.textContent = catalogItem.name;
+  if (els.foundItemRewardDetail) els.foundItemRewardDetail.textContent = catalogItem.detail;
+  if (els.foundItemRewardDestination) {
+    els.foundItemRewardDestination.textContent = alreadyOwnedSameType
+      ? "이미 만난 작은 것이라 보관함에 하나 더 넣었어요."
+      : normalizedFoundItemStorageState(item.storageState) === FOUND_ITEM_STORAGE.INVENTORY
+        ? "보관함에 소중히 넣어두었어요."
+        : "새로운 작은 것이 정원에 자리를 잡았어요.";
+  }
+
+  void els.foundItemRewardReveal.offsetWidth;
+  els.foundItemRewardReveal.classList.add("is-visible");
+  foundItemRewardRevealTimer = window.setTimeout(() => hideFoundItemRewardReveal(), 4200);
+}
+
 async function claimFoundItem() {
   if (isFirstDayQaMode()) {
     const record = todayGardenRecord();
@@ -5316,10 +5362,7 @@ async function claimFoundItem() {
     return;
   }
   renderFirstWalkTutorial();
-  const catalogItem = foundItemCatalog[nextItem.itemKey];
-  showToast(nextItem.storageState === FOUND_ITEM_STORAGE.INVENTORY
-    ? `이미 정원에 있는 장식이라 보관함에 넣어두었어요. (${catalogItem.name})`
-    : `숲에서 작은 것을 찾았어요. ${catalogItem.detail}`);
+  showFoundItemRewardReveal(nextItem, { alreadyOwnedSameType });
 }
 
 function updateTodayRecordAction() {
