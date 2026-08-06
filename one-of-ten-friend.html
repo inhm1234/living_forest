@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="assets/pwa/icon-192.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/pwa/apple-touch-icon.png" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="one-of-ten-friend.css?v=friend-match-adfit-v1-0" />
+  <link rel="stylesheet" href="one-of-ten-friend.css?v=friend-acorn-v1-1" />
   <link rel="stylesheet" href="oot-notifications.css?v=oot-push-v0-5" />
 </head>
 <body>
@@ -323,14 +323,6 @@
         <em>VS</em>
         <div><small id="opponentTargetLabel">친구의 가까운 카드</small><b id="opponentTarget">-</b><span id="opponentDistance">거리 -</span></div>
       </div>
-      <section class="ootf-acorn-reward" data-acorn-reward-panel hidden aria-live="polite">
-        <div class="ootf-acorn-reward-head">
-          <span aria-hidden="true">🌰</span>
-          <div><small>이번 대전</small><strong>도토리 <b data-acorn-earned>0</b>개 획득</strong></div>
-        </div>
-        <p data-acorn-reward-message>도토리 정산을 확인하고 있어요.</p>
-        <small class="ootf-acorn-reward-balance">보유 도토리 <b data-acorn-after>0</b>개</small>
-      </section>
       <section class="ootf-point-result is-hidden" id="resultPointPanel" aria-live="polite">
         <div class="ootf-point-result-head">
           <span id="resultPointMode">● 원포인트 대전</span>
@@ -343,6 +335,14 @@
         </div>
         <p id="resultPointMessage"></p>
         <small id="resultTierMessage"></small>
+      </section>
+      <section class="ootf-acorn-reward" data-acorn-reward-panel hidden aria-live="polite">
+        <div class="ootf-acorn-reward-head">
+          <span aria-hidden="true">🌰</span>
+          <div><small>이번 대전 보상</small><strong>도토리 <b data-acorn-earned>0</b>개</strong></div>
+        </div>
+        <p data-acorn-reward-message>도토리 보상을 확인하고 있어요.</p>
+        <span class="ootf-acorn-reward-balance">보유 도토리 <b data-acorn-after>0</b>개</span>
       </section>
       <div class="ootf-rematch-box" id="resultRematchBox" aria-live="polite">
         <strong id="resultSeriesStatus">같은 친구와 이어서 플레이할 수 있어요.</strong>
@@ -405,9 +405,9 @@
   </aside>
 
   <div class="ootf-toast is-hidden" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="one-of-ten-acorns.js?v=acorn-v1-1"></script>
   <script type="module" src="oot-notifications.js?v=oot-push-v0-6-opt"></script>
-  <script type="module" src="one-of-ten-acorns.js?v=acorn-v1"></script>
-  <script type="module" src="one-of-ten-friend.js?v=friend-match-acorn-v1"></script>
+  <script type="module" src="one-of-ten-friend.js?v=friend-match-qa-v1-2"></script>
   <script src="one-of-ten-friend-adfit.js?v=friend-adfit-v1-0"></script>
 </body>
 </html>
