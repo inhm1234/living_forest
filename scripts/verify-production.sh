@@ -33,6 +33,14 @@ if grep -RIl --exclude='*.map' 'forest2026' "$DIST_DIR" | grep -q .; then
   fail "legacy DEV password leaked into production artifact"
 fi
 
+# The admin statistics page must not expose the legacy Google Apps Script endpoint/key.
+if grep -q 'script.google.com' "$DIST_DIR/admin.js"; then
+  fail "legacy admin stats endpoint leaked into admin.js"
+fi
+if grep -q 'TODAYFOREST_STATS_KEY' "$DIST_DIR/admin.js"; then
+  fail "legacy admin stats key leaked into admin.js"
+fi
+
 # Syntax-check every shipped JavaScript file.
 while IFS= read -r -d '' file; do
   node --check "$file" >/dev/null
