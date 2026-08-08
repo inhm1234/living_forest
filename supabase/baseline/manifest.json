@@ -1,0 +1,12 @@
+{
+  "snapshot_date": "2026-08-08",
+  "tables": 57,
+  "functions_from_snapshot": 165,
+  "functions_added_after_snapshot": 1,
+  "rls_policies": 29,
+  "indexes_in_snapshot": 141,
+  "ordinary_triggers_included": 9,
+  "secret_bearing_webhook_trigger_included": false,
+  "all_public_tables_rls_enabled": true,
+  "anon_security_definer_execute_after_hardening": 0
+}
