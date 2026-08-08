@@ -21,6 +21,10 @@ for forbidden in qa-login.html qa-login.js qa-login.css README.md README.txt UPL
   [[ ! -e "$DIST_DIR/$forbidden" ]] || fail "internal file leaked into dist: $forbidden"
 done
 
+for forbidden in node_modules tests playwright-report test-results package.json package-lock.json playwright.config.js; do
+  [[ ! -e "$DIST_DIR/$forbidden" ]] || fail "test/tooling material leaked into dist: $forbidden"
+done
+
 if find "$DIST_DIR" -type f -name '*.sql' -print -quit | grep -q .; then
   fail "SQL file leaked into production artifact"
 fi

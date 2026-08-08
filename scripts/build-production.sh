@@ -15,6 +15,13 @@ rsync -a --delete \
   --exclude '/.git/' \
   --exclude '/.github/' \
   --exclude '/.gitignore' \
+  --exclude '/node_modules/' \
+  --exclude '/tests/' \
+  --exclude '/playwright-report/' \
+  --exclude '/test-results/' \
+  --exclude '/package.json' \
+  --exclude '/package-lock.json' \
+  --exclude '/playwright.config.js' \
   --exclude '/dev/' \
   --exclude '/docs/' \
   --exclude '/scripts/' \
