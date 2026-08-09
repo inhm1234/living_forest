@@ -83,3 +83,14 @@ if missing:
 PY
 
 printf 'Production artifact verification passed.\n'
+
+# Browser error monitoring must ship on core pages with privacy-first settings.
+[[ -f "$DIST_DIR/todayforest-error-monitor.js" ]] || fail "error monitor bootstrap is missing"
+for page in index.html app.html one-of-ten.html one-of-ten-friend.html admin.html; do
+  grep -q 'todayforest-error-monitor.js' "$DIST_DIR/$page" || fail "error monitor missing from $page"
+done
+
+grep -q 'sendDefaultPii: false' "$DIST_DIR/todayforest-error-monitor.js" || fail "Sentry PII safeguard is missing"
+grep -q 'maxBreadcrumbs: 0' "$DIST_DIR/todayforest-error-monitor.js" || fail "Sentry breadcrumb safeguard is missing"
+grep -q 'tracesSampleRate: 0' "$DIST_DIR/todayforest-error-monitor.js" || fail "Sentry tracing safeguard is missing"
+grep -q 'replaysSessionSampleRate: 0' "$DIST_DIR/todayforest-error-monitor.js" || fail "Sentry replay safeguard is missing"
