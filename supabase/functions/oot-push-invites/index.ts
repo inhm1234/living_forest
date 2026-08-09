@@ -32,13 +32,19 @@ type PushJob = {
 };
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const SUPABASE_SECRET_KEYS = Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}";
+let SUPABASE_SECRET_KEY = "";
+try {
+  SUPABASE_SECRET_KEY = JSON.parse(SUPABASE_SECRET_KEYS)?.default ?? "";
+} catch {
+  SUPABASE_SECRET_KEY = "";
+}
 const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY") ?? "";
 const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY") ?? "";
 const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT") ?? "https://todayforest.pages.dev/";
 const OOT_PUSH_WEBHOOK_SECRET = Deno.env.get("OOT_PUSH_WEBHOOK_SECRET") ?? "";
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+const supabase = createClient(SUPABASE_URL, SUPABASE_SECRET_KEY, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
@@ -134,7 +140,7 @@ async function sendJob(job: PushJob) {
 }
 
 async function processDuePushes() {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
+  if (!SUPABASE_URL || !SUPABASE_SECRET_KEY || !VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
     throw new Error("PUSH_SECRETS_MISSING");
   }
 
