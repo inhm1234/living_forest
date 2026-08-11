@@ -1,0 +1,63 @@
+name: Deploy TodayForest DEV to Cloudflare Pages
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: todayforest-pages-dev
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Verify, smoke test, and deploy DEV preview
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DEV_SUPABASE_URL: ${{ vars.DEV_SUPABASE_URL }}
+      DEV_SUPABASE_PUBLISHABLE_KEY: ${{ vars.DEV_SUPABASE_PUBLISHABLE_KEY }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build DEV artifact
+        run: bash scripts/build-development.sh
+
+      - name: Verify DEV artifact
+        run: bash scripts/verify-development.sh
+
+      - name: Install smoke-test dependency
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Run safe smoke tests against DEV artifact
+        env:
+          TEST_DIST_DIR: dist-dev
+        run: npm run test:smoke
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: todayforest-dev-playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Deploy verified DEV preview to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist-dev --project-name=todayforest --branch=dev
