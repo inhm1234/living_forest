@@ -1,13 +1,12 @@
 /* Production mirror of dev/garden-login-test/garden.js v19. */
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./todayforest-supabase-config.js";
 import {
   DECORATION_RECIPE_CATALOG,
   decorationRecipeByKey,
   decorationRecipeResultCatalog,
 } from "./decoration-recipes.js?v=decoration-recipes-v1";
 
-const SUPABASE_URL = "https://xdcsppaptcmgpvnzgoab.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_oMrSqUFX9UM1n4Ks-AhYKw_OvcZOfPs";
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     persistSession: true,

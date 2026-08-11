@@ -1,3 +1,4 @@
+import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./todayforest-supabase-config.js";
 const APP_URL = "/app.html";
 const APP_QUERY_KEYS = new Set([
   "code", "invite", "sharedMemory", "sharedTree", "togetherForest",
@@ -34,8 +35,8 @@ if (hasAppIntent()) {
   // 앱 전용 의도가 없을 때만 Supabase SDK를 불러옵니다. OAuth code 전달은 CDN 상태와 무관하게 즉시 실행됩니다.
   import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm").then(({ createClient }) => {
     const supabase = createClient(
-      "https://xdcsppaptcmgpvnzgoab.supabase.co",
-      "sb_publishable_oMrSqUFX9UM1n4Ks-AhYKw_OvcZOfPs",
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY,
       {
         auth: {
           persistSession: true,

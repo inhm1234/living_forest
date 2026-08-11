@@ -1,5 +1,7 @@
 const { defineConfig } = require("@playwright/test");
 
+const testDistDir = process.env.TEST_DIST_DIR || "dist";
+
 module.exports = defineConfig({
   testDir: "./tests",
   timeout: 30_000,
@@ -19,7 +21,7 @@ module.exports = defineConfig({
     screenshot: "only-on-failure",
   },
   webServer: {
-    command: "python3 -m http.server 4173 --bind 127.0.0.1 --directory dist",
+    command: `python3 -m http.server 4173 --bind 127.0.0.1 --directory ${testDistDir}`,
     url: "http://127.0.0.1:4173/",
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,

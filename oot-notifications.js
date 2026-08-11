@@ -1,7 +1,6 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./todayforest-supabase-config.js";
 
-const SUPABASE_URL = "https://xdcsppaptcmgpvnzgoab.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_oMrSqUFX9UM1n4Ks-AhYKw_OvcZOfPs";
 const VAPID_PUBLIC_KEY = "BDTxlizK_5G6jjdeDFibq9Zyzugu75fQXHbOBn-yQAM2xIDJpMV3Dam5Az4mUvCmJhV_LHNqOmJWeoRsIpf2x88";
 const PRESENCE_INTERVAL_MS = 25000;
 const BADGE_FALLBACK_INTERVAL_MS = 30000;
