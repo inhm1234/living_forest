@@ -1,0 +1,41 @@
+name: Supabase keepalive (prevent free-plan pause)
+
+# Supabase 무료 플랜은 7일간 활동이 없으면 프로젝트를 일시정지함
+# → 3일마다 DB에 가벼운 조회를 1번 보내서 깨워 둠
+on:
+  schedule:
+    - cron: "17 0 */3 * *"   # 3일마다 09:17 (한국시간)
+  workflow_dispatch:          # Actions 탭에서 수동 실행 가능
+
+permissions:
+  contents: read
+  actions: write              # 아래 '자동 비활성화 방지' 단계용
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping Supabase (todayforest)
+        env:
+          SUPABASE_URL: https://xdcsppaptcmgpvnzgoab.supabase.co
+          SUPABASE_KEY: sb_publishable_oMrSqUFX9UM1n4Ks-AhYKw_OvcZOfPs
+        run: |
+          code=$(curl -s -o /tmp/res.txt -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/garden_records?select=id&limit=1" \
+            -H "apikey: $SUPABASE_KEY")
+          echo "HTTP $code"; cat /tmp/res.txt; echo
+          if [ "$code" != "200" ]; then
+            echo "::error::Supabase 응답 이상 (HTTP $code) - 대시보드에서 일시정지 여부 확인 필요"
+            exit 1
+          fi
+
+      # GitHub는 60일간 커밋이 없는 저장소의 예약 실행을 자동으로 꺼버림
+      # → 매번 이 워크플로를 다시 '활성화'해서 타이머를 초기화
+      - name: Keep this scheduled workflow enabled
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X PUT \
+            "repos/${{ github.repository }}/actions/workflows/supabase-keepalive.yml/enable" \
+            || echo "enable 호출 실패(무시 가능)"
