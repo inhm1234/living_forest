@@ -19,8 +19,9 @@ jobs:
       - name: Ping Supabase (todayforest)
         env:
           SUPABASE_URL: https://xdcsppaptcmgpvnzgoab.supabase.co
-          SUPABASE_KEY: sb_publishable_oMrSqUFX9UM1n4Ks-AhYKw_OvcZOfPs
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}   # GitHub Secrets에 저장한 비밀 키
         run: |
+          if [ -z "$SUPABASE_KEY" ]; then echo "::error::SUPABASE_SECRET_KEY 시크릿이 없음"; exit 1; fi
           code=$(curl -s -o /tmp/res.txt -w "%{http_code}" \
             "$SUPABASE_URL/rest/v1/garden_records?select=id&limit=1" \
             -H "apikey: $SUPABASE_KEY")
